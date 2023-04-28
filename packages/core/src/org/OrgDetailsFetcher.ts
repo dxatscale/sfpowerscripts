@@ -1,9 +1,9 @@
-import extractDomainFromUrl from '../utils/extractDomainFromUrl';
-import { convertAliasToUsername } from '../utils/AliasList';
-import SFPLogger, { LoggerLevel } from '@dxatscale/sfp-logger';
-import ScratchOrgInfoFetcher from './ScratchOrgInfoFetcher';
-import OrganizationFetcher from './OrganizationFetcher';
-import { AuthInfo, Connection, Org, sfdc } from '@salesforce/core';
+import extractDomainFromUrl from "../utils/extractDomainFromUrl";
+import { convertAliasToUsername } from "../utils/AliasList";
+import SFPLogger, { LoggerLevel } from "@dxatscale/sfp-logger";
+import ScratchOrgInfoFetcher from "./ScratchOrgInfoFetcher";
+import OrganizationFetcher from "./OrganizationFetcher";
+import { AuthInfo, Connection, Org, sfdc } from "@salesforce/core";
 
 export default class OrgDetailsFetcher {
     private static usernamesToOrgDetails: { [P: string]: OrgDetails } = {};
@@ -20,7 +20,6 @@ export default class OrgDetailsFetcher {
         const authInfo = await AuthInfo.create({ username: this.username });
 
         let authInfoFields = authInfo.getFields();
-      
 
         let sfdxAuthUrl: string;
         try {
@@ -38,7 +37,7 @@ export default class OrgDetailsFetcher {
 
         OrgDetailsFetcher.usernamesToOrgDetails[this.username] = {
             sfdxAuthUrl: sfdxAuthUrl,
-            instanceUrl: authInfoFields.instanceUrl, 
+            instanceUrl: authInfoFields.instanceUrl,
             ...authInfoFields,
             ...scratchOrgInfo,
             ...organization,
@@ -53,9 +52,9 @@ export default class OrgDetailsFetcher {
         if (OrgDetailsFetcher.usernamesToOrgDetails[this.username]) {
             let domain = extractDomainFromUrl(OrgDetailsFetcher.usernamesToOrgDetails[this.username].instanceUrl);
             if (domain) return domain;
-            else return '';
+            else return "";
         } else {
-            return '';
+            return "";
         }
     }
 
@@ -74,14 +73,14 @@ export default class OrgDetailsFetcher {
 
         if (scratchOrgInfo) {
             return {
-                isScratchOrg:true,
+                isScratchOrg: true,
                 status: scratchOrgInfo.Status,
             };
         } else {
             throw new Error(
                 `No information for scratch org with ID ${sfdc.trimTo15(
-                    orgId
-                )} found in Dev Hub ${hubOrg.getUsername()}`
+                    orgId,
+                )} found in Dev Hub ${hubOrg.getUsername()}`,
             );
         }
     }
@@ -106,11 +105,11 @@ export default class OrgDetailsFetcher {
 
 export interface OrgDetails extends ScratchOrgDetails, Organization {
     sfdxAuthUrl: string;
-    instanceUrl:string;
+    instanceUrl: string;
 }
 
 export interface ScratchOrgDetails {
-    isScratchOrg:boolean;
+    isScratchOrg: boolean;
     status: string;
 }
 

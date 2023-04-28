@@ -1,12 +1,12 @@
 //TODO: Replace with SDR
-import * as path from 'path';
-import { MetadataInfo, METADATA_INFO, MetadataDescribe, SOURCE_EXTENSION_REGEX } from './MetadataInfo';
-import FileUtils from '../utils/Fileutils';
-import * as _ from 'lodash';
-import ignore from 'ignore';
-import * as fs from 'fs-extra';
-import * as glob from 'glob';
-import ProjectConfig from '../project/ProjectConfig';
+import * as path from "path";
+import { MetadataInfo, METADATA_INFO, MetadataDescribe, SOURCE_EXTENSION_REGEX } from "./MetadataInfo";
+import FileUtils from "../utils/Fileutils";
+import * as _ from "lodash";
+import ignore from "ignore";
+import * as fs from "fs-extra";
+import * as glob from "glob";
+import ProjectConfig from "../project/ProjectConfig";
 
 const SEP = /\/|\\/;
 
@@ -14,35 +14,35 @@ export default class MetadataFiles {
     public static sourceOnly: boolean = false;
     forceignore: any;
     public constructor() {
-        if (fs.existsSync('.forceignore')) {
-            this.forceignore = ignore().add(fs.readFileSync('.forceignore', 'utf8').toString());
+        if (fs.existsSync(".forceignore")) {
+            this.forceignore = ignore().add(fs.readFileSync(".forceignore", "utf8").toString());
         } else {
             this.forceignore = ignore();
         }
     }
     static getFullApiName(fileName: string): string {
-        let fullName = '';
+        let fullName = "";
         let metadateType = MetadataInfo.getMetadataName(fileName);
         let splitFilepath = fileName.split(SEP);
         let isObjectChild = METADATA_INFO.CustomObject.childXmlNames.includes(metadateType);
         if (isObjectChild) {
             let objectName = splitFilepath[splitFilepath.length - 3];
-            let fieldName = splitFilepath[splitFilepath.length - 1].split('.')[0];
-            fullName = objectName.concat('.' + fieldName);
+            let fieldName = splitFilepath[splitFilepath.length - 1].split(".")[0];
+            fullName = objectName.concat("." + fieldName);
         } else {
-            fullName = splitFilepath[splitFilepath.length - 1].split('.')[0];
+            fullName = splitFilepath[splitFilepath.length - 1].split(".")[0];
         }
         return fullName;
     }
     static getFullApiNameWithExtension(fileName: string): string {
-        let fullName = '';
+        let fullName = "";
         let metadateType = MetadataInfo.getMetadataName(fileName);
         let splitFilepath = fileName.split(SEP);
         let isObjectChild = METADATA_INFO.CustomObject.childXmlNames.includes(metadateType);
         if (isObjectChild) {
             let objectName = splitFilepath[splitFilepath.length - 3];
             let fieldName = splitFilepath[splitFilepath.length - 1];
-            fullName = objectName.concat('.' + fieldName);
+            fullName = objectName.concat("." + fieldName);
         } else {
             fullName = splitFilepath[splitFilepath.length - 1];
         }
@@ -53,10 +53,10 @@ export default class MetadataFiles {
         let result = true;
         let splitFilepath = filepath.split(SEP);
         let componentName = splitFilepath[splitFilepath.length - 1];
-        componentName = componentName.substring(0, componentName.indexOf('.'));
+        componentName = componentName.substring(0, componentName.indexOf("."));
         if (name === METADATA_INFO.CustomField.xmlName || name === METADATA_INFO.CustomObject.xmlName) {
             //Custom Field or Custom Object
-            result = componentName.endsWith('__c') || componentName.endsWith('__mdt');
+            result = componentName.endsWith("__c") || componentName.endsWith("__mdt");
         }
         return result;
     }
@@ -68,45 +68,45 @@ export default class MetadataFiles {
         let metadataDescribe: MetadataDescribe = METADATA_INFO[name];
         if (isObjectChild) {
             let objectName = splitFilepath[lastIndex - 2];
-            let fieldName = splitFilepath[lastIndex].split('.')[0];
-            member = objectName.concat('.' + fieldName);
+            let fieldName = splitFilepath[lastIndex].split(".")[0];
+            member = objectName.concat("." + fieldName);
         } else if (metadataDescribe.inFolder) {
             let baseName = metadataDescribe.directoryName;
             let baseIndex = filepath.indexOf(baseName) + baseName.length;
             let cmpPath = filepath.substring(baseIndex + 1); // add 1 to remove the path seperator
-            cmpPath = cmpPath.substring(0, cmpPath.indexOf('.'));
-            member = cmpPath.replace(SEP, '/');
+            cmpPath = cmpPath.substring(0, cmpPath.indexOf("."));
+            member = cmpPath.replace(SEP, "/");
         } else {
             if (SOURCE_EXTENSION_REGEX.test(splitFilepath[lastIndex])) {
-                member = splitFilepath[lastIndex].replace(SOURCE_EXTENSION_REGEX, '');
+                member = splitFilepath[lastIndex].replace(SOURCE_EXTENSION_REGEX, "");
             } else {
-                const auraRegExp = new RegExp('aura');
-                const lwcRegExp = new RegExp('lwc');
-                const staticResourceRegExp = new RegExp('staticresources');
-                const experienceBundleRegExp = new RegExp('experiences');
+                const auraRegExp = new RegExp("aura");
+                const lwcRegExp = new RegExp("lwc");
+                const staticResourceRegExp = new RegExp("staticresources");
+                const experienceBundleRegExp = new RegExp("experiences");
                 if (auraRegExp.test(filepath) || lwcRegExp.test(filepath)) {
                     member = splitFilepath[lastIndex - 1];
                 } else if (staticResourceRegExp.test(filepath)) {
                     //Return the fileName
-                    let baseName = 'staticresources';
+                    let baseName = "staticresources";
                     let baseIndex = filepath.indexOf(baseName) + baseName.length;
                     let cmpPath = filepath.substring(baseIndex + 1); // add 1 to remove the path seperator
                     member = cmpPath.split(SEP)[0];
                     let extension = path.parse(member).ext;
 
-                    member = member.replace(new RegExp(extension + '$'), '');
+                    member = member.replace(new RegExp(extension + "$"), "");
                 } else if (experienceBundleRegExp.test(filepath)) {
                     //Return the fileName
-                    let baseName = 'experiences';
+                    let baseName = "experiences";
                     let baseIndex = filepath.indexOf(baseName) + baseName.length;
                     let cmpPath = filepath.substring(baseIndex + 1); // add 1 to remove the path seperator
                     member = cmpPath.split(SEP)[0];
                     let extension = path.parse(member).ext;
 
-                    member = member.replace(new RegExp(extension + '$'), '');
+                    member = member.replace(new RegExp(extension + "$"), "");
                 } else {
                     let extension = path.parse(splitFilepath[lastIndex]).ext;
-                    member = splitFilepath[lastIndex].replace(new RegExp(extension + '$'), '');
+                    member = splitFilepath[lastIndex].replace(new RegExp(extension + "$"), "");
                 }
             }
         }
@@ -140,13 +140,13 @@ export default class MetadataFiles {
 
                             let name = FileUtils.getFileNameWithoutExtension(
                                 metadataFile,
-                                METADATA_INFO[keys[i]].sourceExtension
+                                METADATA_INFO[keys[i]].sourceExtension,
                             );
 
                             if (METADATA_INFO[keys[i]].isChildComponent) {
                                 let fileParts = metadataFile.split(SEP);
                                 let parentName = fileParts[fileParts.length - 3];
-                                name = parentName + '.' + name;
+                                name = parentName + "." + name;
                             }
 
                             METADATA_INFO[keys[i]].components.push(name);
@@ -157,7 +157,7 @@ export default class MetadataFiles {
                 }
 
                 if (!found) {
-                    const auraRegExp = new RegExp('aura');
+                    const auraRegExp = new RegExp("aura");
                     if (auraRegExp.test(metadataFile) && SOURCE_EXTENSION_REGEX.test(metadataFile)) {
                         if (_.isNil(METADATA_INFO.AuraDefinitionBundle.files)) {
                             METADATA_INFO.AuraDefinitionBundle.files = [];
@@ -192,7 +192,7 @@ export default class MetadataFiles {
             return false;
         }
         const moduleFolder = packageDirectories.find((packageFolder) => {
-            let packageFolderNormalized = path.relative('', packageFolder);
+            let packageFolderNormalized = path.relative("", packageFolder);
             return filePath.startsWith(packageFolderNormalized);
         });
         return moduleFolder !== undefined;
@@ -207,7 +207,7 @@ export default class MetadataFiles {
      */
     public static copyFile(filePath: string, outputFolder: string) {
         console.log(`Copying file ${filePath} from file system to ${outputFolder}`);
-        const LWC_IGNORE_FILES = ['jsconfig.json', '.eslintrc.json'];
+        const LWC_IGNORE_FILES = ["jsconfig.json", ".eslintrc.json"];
         const pairStatResources = METADATA_INFO.StaticResource.directoryName;
         const pairStatResourcesRegExp = new RegExp(pairStatResources);
         const pairAuaraRegExp = new RegExp(METADATA_INFO.AuraDefinitionBundle.directoryName);
@@ -223,9 +223,9 @@ export default class MetadataFiles {
             return;
         }
 
-        if (filePath.startsWith('.')) {
+        if (filePath.startsWith(".")) {
             let parts = path.parse(filePath);
-            if (parts.dir === '') {
+            if (parts.dir === "") {
                 fs.copyFileSync(filePath, path.join(outputFolder, filePath));
                 return;
             }
@@ -244,7 +244,7 @@ export default class MetadataFiles {
         }
         // Create folder structure
         for (let i = 0; i < filePathParts.length - 1; i++) {
-            let folder = filePathParts[i].replace('"', '');
+            let folder = filePathParts[i].replace('"', "");
             outputFolder = path.join(outputFolder, folder);
             if (fs.existsSync(outputFolder) == false) {
                 fs.mkdirSync(outputFolder);
@@ -252,17 +252,17 @@ export default class MetadataFiles {
         }
 
         // Copy all file with same base name
-        let associatedFilePattern = '';
+        let associatedFilePattern = "";
         if (SOURCE_EXTENSION_REGEX.test(filePath)) {
-            associatedFilePattern = filePath.replace(SOURCE_EXTENSION_REGEX, '.*');
+            associatedFilePattern = filePath.replace(SOURCE_EXTENSION_REGEX, ".*");
         } else {
             let extension = path.parse(filePath).ext;
-            associatedFilePattern = filePath.replace(extension, '.*');
+            associatedFilePattern = filePath.replace(extension, ".*");
         }
         let files = glob.sync(associatedFilePattern);
         for (let i = 0; i < files.length; i++) {
             if (fs.lstatSync(files[i]).isDirectory() == false) {
-                let oneFilePath = path.join('.', files[i]);
+                let oneFilePath = path.join(".", files[i]);
                 let oneFilePathParts = oneFilePath.split(SEP);
                 fileName = oneFilePathParts[oneFilePathParts.length - 1];
                 let outputPath = path.join(outputFolder, fileName);
@@ -272,7 +272,7 @@ export default class MetadataFiles {
 
         // Hadle ObjectTranslations
         // If a file fieldTranslation is copied, make sure the ObjectTranslation File is also copied
-        if (filePath.endsWith('Translation-meta.xml') && filePath.indexOf('globalValueSet') < 0) {
+        if (filePath.endsWith("Translation-meta.xml") && filePath.indexOf("globalValueSet") < 0) {
             let parentFolder = filePathParts[filePathParts.length - 2];
             let objectTranslation = parentFolder + METADATA_INFO.CustomObjectTranslation.sourceExtension;
             let outputPath = path.join(outputFolder, objectTranslation);
@@ -284,16 +284,16 @@ export default class MetadataFiles {
 
         //FOR STATIC RESOURCES - WHERE THE CORRESPONDING DIRECTORY + THE ROOT META FILE HAS TO BE INCLUDED
         if (pairStatResourcesRegExp.test(filePath)) {
-            outputFolder = path.join('.', copyOutputFolder);
-            let srcFolder = '.';
-            let staticRecourceRoot = '';
-            let resourceFile = '';
+            outputFolder = path.join(".", copyOutputFolder);
+            let srcFolder = ".";
+            let staticRecourceRoot = "";
+            let resourceFile = "";
             for (let i = 0; i < filePathParts.length; i++) {
                 outputFolder = path.join(outputFolder, filePathParts[i]);
                 srcFolder = path.join(srcFolder, filePathParts[i]);
                 if (filePathParts[i] === METADATA_INFO.StaticResource.directoryName) {
                     let fileOrDirname = filePathParts[i + 1];
-                    let fileOrDirnameParts = fileOrDirname.split('.');
+                    let fileOrDirnameParts = fileOrDirname.split(".");
                     srcFolder = path.join(srcFolder, fileOrDirnameParts[0]);
                     outputFolder = path.join(outputFolder, fileOrDirnameParts[0]);
                     resourceFile = srcFolder + METADATA_INFO.StaticResource.sourceExtension;
@@ -316,14 +316,14 @@ export default class MetadataFiles {
         }
         //FOR AURA components and LWC components
         if (pairAuaraRegExp.test(filePath)) {
-            outputFolder = path.join('.', copyOutputFolder);
-            let srcFolder = '.';
+            outputFolder = path.join(".", copyOutputFolder);
+            let srcFolder = ".";
             for (let i = 0; i < filePathParts.length; i++) {
                 outputFolder = path.join(outputFolder, filePathParts[i]);
                 srcFolder = path.join(srcFolder, filePathParts[i]);
-                if (filePathParts[i] === 'aura' || filePathParts[i] === 'lwc') {
+                if (filePathParts[i] === "aura" || filePathParts[i] === "lwc") {
                     let fileOrDirname = filePathParts[i + 1];
-                    let fileOrDirnameParts = fileOrDirname.split('.');
+                    let fileOrDirnameParts = fileOrDirname.split(".");
                     srcFolder = path.join(srcFolder, fileOrDirnameParts[0]);
                     outputFolder = path.join(outputFolder, fileOrDirnameParts[0]);
 

@@ -1,11 +1,11 @@
-const fs = require('fs');
-const path = require('path');
-const _ = require('lodash');
-const os = require('os');
+const fs = require("fs");
+const path = require("path");
+const _ = require("lodash");
+const os = require("os");
 
 const SEP = /\/|\\/;
 
-export const PLUGIN_CACHE_FOLDER = 'sfpowerkit';
+export const PLUGIN_CACHE_FOLDER = "sfpowerkit";
 
 export default class FileUtils {
     /**
@@ -28,12 +28,12 @@ export default class FileUtils {
      * @param folder the folder from which files wille be loaded
      * @param extension File extension to load.
      */
-    public static getAllFilesSync(folder: string, extension: string = '.xml'): string[] {
+    public static getAllFilesSync(folder: string, extension: string = ".xml"): string[] {
         let result: string[] = [];
         let pathExists = fs.existsSync(folder);
         let folderName = path.basename(folder);
         if (!pathExists) {
-            console.log('Folder does not exist:', folderName);
+            console.log("Folder does not exist:", folderName);
             return result;
         }
         let content: string[] = fs.readdirSync(folder);
@@ -41,7 +41,7 @@ export default class FileUtils {
             let curFile = path.join(folder, file);
             let stats = fs.statSync(curFile);
             if (stats.isFile()) {
-                if (extension.indexOf(path.extname(curFile)) != -1 || extension === '') {
+                if (extension.indexOf(path.extname(curFile)) != -1 || extension === "") {
                     result.push(curFile);
                 }
             } else if (stats.isDirectory()) {
@@ -56,7 +56,7 @@ export default class FileUtils {
         let homedir = os.homedir();
         let configDir = homedir + path.sep + PLUGIN_CACHE_FOLDER;
         if (!fs.existsSync(configDir)) {
-            console.log('Config folder does not exists, Creating Folder');
+            console.log("Config folder does not exists, Creating Folder");
             fs.mkdirSync(configDir);
         }
 
@@ -71,7 +71,7 @@ export default class FileUtils {
         let homedir = os.homedir();
         let configDir = homedir + path.sep + PLUGIN_CACHE_FOLDER;
         if (!fs.existsSync(configDir)) {
-            console.log('Config folder does not exists, Creating Folder');
+            console.log("Config folder does not exists, Creating Folder");
             fs.mkdirSync(configDir);
         }
         return configDir + path.sep + fileName;
@@ -84,15 +84,15 @@ export default class FileUtils {
      */
     public static mkDirByPathSync(targetDir: string, { isRelativeToScript = false } = {}) {
         const sep = path.sep;
-        const initDir = path.isAbsolute(targetDir) ? sep : '';
-        const baseDir = isRelativeToScript ? __dirname : '.';
+        const initDir = path.isAbsolute(targetDir) ? sep : "";
+        const baseDir = isRelativeToScript ? __dirname : ".";
 
         targetDir.split(sep).reduce((parentDir, childDir) => {
             const curDir = path.resolve(baseDir, parentDir, childDir);
             try {
                 fs.mkdirSync(curDir);
             } catch (err) {
-                if (err.code !== 'EEXIST' && err.code !== 'EPERM' && err.code !== 'EISDIR') {
+                if (err.code !== "EEXIST" && err.code !== "EPERM" && err.code !== "EISDIR") {
                     throw err;
                 }
             }
@@ -110,7 +110,7 @@ export default class FileUtils {
         if (extension) {
             fileName = fileName.substr(0, fileName.lastIndexOf(extension));
         } else {
-            fileName = fileName.substr(0, fileName.indexOf('.'));
+            fileName = fileName.substr(0, fileName.indexOf("."));
         }
         return fileName;
     }
@@ -145,7 +145,7 @@ export default class FileUtils {
      */
     public static getFolderPath(src, foldername) {
         let exists = fs.existsSync(src);
-        let toReturn = '';
+        let toReturn = "";
         if (exists) {
             let stats = fs.statSync(src);
             let isDirectory = stats.isDirectory();
@@ -161,7 +161,7 @@ export default class FileUtils {
                             toReturn = FileUtils.getFolderPath(path.join(src, childItemName), foldername);
                         }
                     }
-                    if (toReturn !== '') {
+                    if (toReturn !== "") {
                         break;
                     }
                 }
@@ -193,8 +193,8 @@ export default class FileUtils {
         }
     }
     public static makefolderid(length): string {
-        var result = '';
-        var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        var result = "";
+        var characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
         var charactersLength = characters.length;
         for (var i = 0; i < length; i++) {
             result += characters.charAt(Math.floor(Math.random() * charactersLength));

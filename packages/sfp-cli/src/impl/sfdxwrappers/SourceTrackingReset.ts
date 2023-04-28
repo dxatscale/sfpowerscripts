@@ -1,4 +1,4 @@
-import { SFDXCommand } from '@dxatscale/sfdx-process-wrapper/lib/SFDXCommand';
+import { SFDXCommand } from "@dxatscale/sfdx-process-wrapper/lib/SFDXCommand";
 
 export default class SourceTrackingReset extends SFDXCommand {
     public constructor(private targetOrg: string) {
@@ -6,11 +6,11 @@ export default class SourceTrackingReset extends SFDXCommand {
     }
 
     getSFDXCommand(): string {
-        return 'sfdx force:source:tracking:reset';
+        return "sfdx force:source:tracking:reset";
     }
 
     getCommandName(): string {
-        return 'SourceTrackingReset';
+        return "SourceTrackingReset";
     }
 
     getGeneratedParams(): string {

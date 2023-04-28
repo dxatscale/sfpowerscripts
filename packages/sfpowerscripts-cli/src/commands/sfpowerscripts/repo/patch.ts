@@ -1,29 +1,29 @@
-import { Messages } from '@salesforce/core';
-import { flags } from '@salesforce/command';
-import SfpowerscriptsCommand from '../../../SfpowerscriptsCommand';
-import ReleaseDefinition from '../../../impl/release/ReleaseDefinition';
-import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig';
-import GroupConsoleLogs from '../../../ui/GroupConsoleLogs';
-import FetchImpl from '../../../impl/artifacts/FetchImpl';
-import ReleaseDefinitionSchema from '../../../impl/release/ReleaseDefinitionSchema';
-import path = require('path');
-import ArtifactFetcher, { Artifact } from '@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFetcher';
-import SfpPackage from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
-import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder';
-import SFPLogger, { ConsoleLogger, Logger, LoggerLevel } from '@dxatscale/sfp-logger';
-import SfpPackageInquirer from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageInquirer';
-import Git from '@dxatscale/sfpowerscripts.core/lib/git/Git';
-import * as fs from 'fs-extra';
-import { COLOR_KEY_MESSAGE } from '@dxatscale/sfp-logger';
-import { EOL } from 'os';
-import { COLOR_WARNING } from '@dxatscale/sfp-logger';
-import { COLOR_HEADER } from '@dxatscale/sfp-logger';
+import { Messages } from "@salesforce/core";
+import { flags } from "@salesforce/command";
+import SfpowerscriptsCommand from "../../../SfpowerscriptsCommand";
+import ReleaseDefinition from "../../../impl/release/ReleaseDefinition";
+import ProjectConfig from "@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig";
+import GroupConsoleLogs from "../../../ui/GroupConsoleLogs";
+import FetchImpl from "../../../impl/artifacts/FetchImpl";
+import ReleaseDefinitionSchema from "../../../impl/release/ReleaseDefinitionSchema";
+import path = require("path");
+import ArtifactFetcher, { Artifact } from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFetcher";
+import SfpPackage from "@dxatscale/sfpowerscripts.core/lib/package/SfpPackage";
+import SfpPackageBuilder from "@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder";
+import SFPLogger, { ConsoleLogger, Logger, LoggerLevel } from "@dxatscale/sfp-logger";
+import SfpPackageInquirer from "@dxatscale/sfpowerscripts.core/lib/package/SfpPackageInquirer";
+import Git from "@dxatscale/sfpowerscripts.core/lib/git/Git";
+import * as fs from "fs-extra";
+import { COLOR_KEY_MESSAGE } from "@dxatscale/sfp-logger";
+import { EOL } from "os";
+import { COLOR_WARNING } from "@dxatscale/sfp-logger";
+import { COLOR_HEADER } from "@dxatscale/sfp-logger";
 
 Messages.importMessagesDirectory(__dirname);
-const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'patch');
+const messages = Messages.loadMessages("@dxatscale/sfpowerscripts", "patch");
 
 export default class Patch extends SfpowerscriptsCommand {
-    public static description = messages.getMessage('commandDescription');
+    public static description = messages.getMessage("commandDescription");
 
     public static examples = [`$ sfdx sfpowerscripts:repo:patch -n <releaseName>`];
 
@@ -32,59 +32,59 @@ export default class Patch extends SfpowerscriptsCommand {
 
     protected static flagsConfig = {
         releasedefinitions: flags.array({
-            char: 'p',
+            char: "p",
             required: true,
-            description: messages.getMessage('releaseDefinitionFlagDescription'),
+            description: messages.getMessage("releaseDefinitionFlagDescription"),
         }),
         sourcebranchname: flags.string({
-            char: 's',
+            char: "s",
             required: true,
-            description: messages.getMessage('sourcebranchNameFlagDescription'),
+            description: messages.getMessage("sourcebranchNameFlagDescription"),
         }),
         targetbranchname: flags.string({
-            char: 't',
+            char: "t",
             required: true,
-            description: messages.getMessage('targetbranchNameFlagDescription'),
+            description: messages.getMessage("targetbranchNameFlagDescription"),
         }),
         scriptpath: flags.filepath({
-            char: 'f',
-            description: messages.getMessage('scriptPathFlagDescription'),
+            char: "f",
+            description: messages.getMessage("scriptPathFlagDescription"),
         }),
         npm: flags.boolean({
-            description: messages.getMessage('npmFlagDescription'),
-            exclusive: ['scriptpath'],
+            description: messages.getMessage("npmFlagDescription"),
+            exclusive: ["scriptpath"],
         }),
         scope: flags.string({
-            description: messages.getMessage('scopeFlagDescription'),
-            dependsOn: ['npm'],
-            parse: async (scope) => scope.replace(/@/g, '').toLowerCase(),
+            description: messages.getMessage("scopeFlagDescription"),
+            dependsOn: ["npm"],
+            parse: async (scope) => scope.replace(/@/g, "").toLowerCase(),
         }),
         npmrcpath: flags.filepath({
-            description: messages.getMessage('npmrcPathFlagDescription'),
-            dependsOn: ['npm'],
+            description: messages.getMessage("npmrcPathFlagDescription"),
+            dependsOn: ["npm"],
             required: false,
         }),
         logsgroupsymbol: flags.array({
-            char: 'g',
-            description: messages.getMessage('logsGroupSymbolFlagDescription'),
+            char: "g",
+            description: messages.getMessage("logsGroupSymbolFlagDescription"),
         }),
         loglevel: flags.enum({
-            description: 'logging level for this command invocation',
-            default: 'info',
+            description: "logging level for this command invocation",
+            default: "info",
             required: false,
             options: [
-                'trace',
-                'debug',
-                'info',
-                'warn',
-                'error',
-                'fatal',
-                'TRACE',
-                'DEBUG',
-                'INFO',
-                'WARN',
-                'ERROR',
-                'FATAL',
+                "trace",
+                "debug",
+                "info",
+                "warn",
+                "error",
+                "fatal",
+                "TRACE",
+                "DEBUG",
+                "INFO",
+                "WARN",
+                "ERROR",
+                "FATAL",
             ],
         }),
     };
@@ -94,30 +94,24 @@ export default class Patch extends SfpowerscriptsCommand {
         try {
             let logger: Logger = new ConsoleLogger();
 
-            SFPLogger.log(
-                COLOR_HEADER(`Source Branch: ${this.flags.sourcebranchname}`),
-                LoggerLevel.INFO,
-                logger
-            );
+            SFPLogger.log(COLOR_HEADER(`Source Branch: ${this.flags.sourcebranchname}`), LoggerLevel.INFO, logger);
             SFPLogger.log(
                 COLOR_HEADER(`Release Defintion: ${this.flags.releasedefinitions}`),
                 LoggerLevel.INFO,
-                logger
+                logger,
             );
+            SFPLogger.log(COLOR_HEADER(`Target Branch: ${this.flags.targetbranchname}`), LoggerLevel.INFO, logger);
             SFPLogger.log(
-                COLOR_HEADER(`Target Branch: ${this.flags.targetbranchname}`),
-                LoggerLevel.INFO,
-                logger
-            );
-            SFPLogger.log(
-                COLOR_HEADER(`-------------------------------------------------------------------------------------------`)
+                COLOR_HEADER(
+                    `-------------------------------------------------------------------------------------------`,
+                ),
             );
 
             //Load release definition
             let releaseDefinitions = await this.loadReleaseDefintions(this.flags.releasedefinitions);
 
             SFPLogger.log(EOL, LoggerLevel.INFO, logger);
-            SFPLogger.log(COLOR_WARNING('This process may take a bit of time'), LoggerLevel.INFO, logger);
+            SFPLogger.log(COLOR_WARNING("This process may take a bit of time"), LoggerLevel.INFO, logger);
 
             //Create temporary git rep
             git = await Git.initiateRepoAtTempLocation(logger, null, this.flags.sourcebranchname);
@@ -129,7 +123,7 @@ export default class Patch extends SfpowerscriptsCommand {
                 this.flags.scriptpath,
                 this.flags.scope,
                 this.flags.npmrcpath,
-                logger
+                logger,
             );
 
             //overwrite modules
@@ -137,27 +131,29 @@ export default class Patch extends SfpowerscriptsCommand {
 
             SFPLogger.log(
                 COLOR_KEY_MESSAGE(
-                    `Patching of Branch ${this.flags.targetbranchname} with release ${this.flags.releasedefinitions} completed`
+                    `Patching of Branch ${this.flags.targetbranchname} with release ${this.flags.releasedefinitions} completed`,
                 ),
-                LoggerLevel.INFO
+                LoggerLevel.INFO,
             );
-            SFPLogger.log(COLOR_KEY_MESSAGE(`New Branch with patches created ${this.flags.targetbranchname}`), LoggerLevel.INFO);
+            SFPLogger.log(
+                COLOR_KEY_MESSAGE(`New Branch with patches created ${this.flags.targetbranchname}`),
+                LoggerLevel.INFO,
+            );
         } finally {
             if (git) await git.deleteTempoRepoIfAny();
         }
     }
-
 
     private async fetchArtifacts(
         releaseDefintions: ReleaseDefinitionSchema[],
         fetchArtifactScript: string,
         scope: string,
         npmrcPath: string,
-        logger: Logger
+        logger: Logger,
     ) {
-        let groupSection = new GroupConsoleLogs('Fetching artifacts').begin();
-        SFPLogger.log(COLOR_KEY_MESSAGE('Fetching artifacts'), LoggerLevel.INFO, logger);
-        let fetchImpl: FetchImpl = new FetchImpl('artifacts', fetchArtifactScript, scope, npmrcPath, logger);
+        let groupSection = new GroupConsoleLogs("Fetching artifacts").begin();
+        SFPLogger.log(COLOR_KEY_MESSAGE("Fetching artifacts"), LoggerLevel.INFO, logger);
+        let fetchImpl: FetchImpl = new FetchImpl("artifacts", fetchArtifactScript, scope, npmrcPath, logger);
         await fetchImpl.fetchArtifacts(releaseDefintions);
         groupSection.end();
     }
@@ -177,8 +173,8 @@ export default class Patch extends SfpowerscriptsCommand {
         let revisedProjectConfig = ProjectConfig.getSFDXProjectConfig(temporaryWorkingDirectory);
         for (const releaseDefinition of releaseDefinitions) {
             let revisedArtifactDirectory = path.join(
-                'artifacts',
-                releaseDefinition.release.replace(/[/\\?%*:|"<>]/g, '-')
+                "artifacts",
+                releaseDefinition.release.replace(/[/\\?%*:|"<>]/g, "-"),
             );
 
             let artifacts = ArtifactFetcher.fetchArtifacts(revisedArtifactDirectory, null, logger);
@@ -192,23 +188,21 @@ export default class Patch extends SfpowerscriptsCommand {
             let sfpPackageInquirer: SfpPackageInquirer = new SfpPackageInquirer(sfpPackages, logger);
             let sfdxProjectConfigFromLeadingArtifact = sfpPackageInquirer.getLatestProjectConfig();
 
-
             let idx = 0;
             for (const sfpPackage of sfpPackages) {
                 SFPLogger.log(`Processing package ${sfpPackage.packageName}`);
 
-                let packageDescriptorFromArtifact=ProjectConfig.getPackageDescriptorFromConfig(
+                let packageDescriptorFromArtifact = ProjectConfig.getPackageDescriptorFromConfig(
                     sfpPackage.packageName,
-                    sfdxProjectConfigFromLeadingArtifact
+                    sfdxProjectConfigFromLeadingArtifact,
                 );
-
 
                 //Retrieve the project directory path from the current working directory and remove it
                 try {
                     //Find path
                     let pathToPackageInSourceBranch = ProjectConfig.getPackageDescriptorFromConfig(
                         sfpPackage.packageName,
-                        revisedProjectConfig
+                        revisedProjectConfig,
                     ).path;
                     //Remove the path mentioned in the target path
                     fs.removeSync(path.join(temporaryWorkingDirectory, pathToPackageInSourceBranch));
@@ -222,13 +216,13 @@ export default class Patch extends SfpowerscriptsCommand {
                 //Copy from artifacts to each package directory
                 fs.copySync(
                     path.join(sfpPackage.sourceDir, sfpPackage.packageDirectory),
-                    path.join(temporaryWorkingDirectory, sfpPackage.packageDirectory)
+                    path.join(temporaryWorkingDirectory, sfpPackage.packageDirectory),
                 );
                 SFPLogger.log(
                     COLOR_KEY_MESSAGE(
-                        `Succesfully copied from artifact ${sfpPackage.packageName} ${sfpPackage.package_version_number} to target directory`
+                        `Succesfully copied from artifact ${sfpPackage.packageName} ${sfpPackage.package_version_number} to target directory`,
                     ),
-                    LoggerLevel.INFO
+                    LoggerLevel.INFO,
                 );
 
                 //Find package index and replace the descriptor from the artifact
@@ -242,7 +236,7 @@ export default class Patch extends SfpowerscriptsCommand {
                             } else {
                                 return sfdxPackage;
                             }
-                        }
+                        },
                     );
                 } else {
                     //Package is not in the source branch, so  find an anchor package
@@ -250,55 +244,49 @@ export default class Patch extends SfpowerscriptsCommand {
                     while (true) {
                         if ((currentIdx = -1)) {
                             //There is no package above me to anchor. so just add it 0
-                            revisedProjectConfig.packageDirectories.splice(
-                                0,
-                                0,
-                                packageDescriptorFromArtifact
-                            );
+                            revisedProjectConfig.packageDirectories.splice(0, 0, packageDescriptorFromArtifact);
                         } else {
                             packageIndex = this.getPackageIndex(
                                 sfpPackages[currentIdx].packageName,
-                                revisedProjectConfig
+                                revisedProjectConfig,
                             );
                             if (packageIndex >= 0) {
                                 revisedProjectConfig.packageDirectories.splice(
                                     packageIndex,
                                     0,
-                                    packageDescriptorFromArtifact
+                                    packageDescriptorFromArtifact,
                                 );
                             } else currentIdx--;
                         }
                     }
                 }
                 //Write sfdx project.json immediately
-                fs.writeJSONSync(
-                    path.join(temporaryWorkingDirectory, 'sfdx-project.json'),
-                    revisedProjectConfig,
-                    {
-                        spaces: 4,
-                    }
-                );
+                fs.writeJSONSync(path.join(temporaryWorkingDirectory, "sfdx-project.json"), revisedProjectConfig, {
+                    spaces: 4,
+                });
 
                 //Commit to git
                 try {
                     await git.commitFile(
-                        [sfpPackage.packageDescriptor.path, 'sfdx-project.json'],
-                        `Reset ${sfpPackage.packageName} to ${sfpPackage.package_version_number}`
+                        [sfpPackage.packageDescriptor.path, "sfdx-project.json"],
+                        `Reset ${sfpPackage.packageName} to ${sfpPackage.package_version_number}`,
                     );
-                    await git.addAnnotatedTag(`${sfpPackage.packageName}_v${sfpPackage.package_version_number}-ALIGN`,
-                     `${sfpPackage.packageName} ${sfpPackage.packageType} Package ${sfpPackage.package_version_number}`);
+                    await git.addAnnotatedTag(
+                        `${sfpPackage.packageName}_v${sfpPackage.package_version_number}-ALIGN`,
+                        `${sfpPackage.packageName} ${sfpPackage.packageType} Package ${sfpPackage.package_version_number}`,
+                    );
                 } catch (error) {
                     //Ignore
                 }
 
                 SFPLogger.log(
                     COLOR_KEY_MESSAGE(`Processed ${sfpPackage.packageName} to ${sfpPackage.package_version_number}`),
-                    LoggerLevel.INFO
+                    LoggerLevel.INFO,
                 );
 
                 idx++;
             }
-            SFPLogger.log('Packages' + sfpPackages.length, LoggerLevel.TRACE, logger);
+            SFPLogger.log("Packages" + sfpPackages.length, LoggerLevel.TRACE, logger);
         }
         //Push back
         await git.pushToRemote(this.flags.targetbranchname, true);

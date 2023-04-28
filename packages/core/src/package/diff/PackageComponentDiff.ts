@@ -1,17 +1,17 @@
-import * as xml2js from 'xml2js';
-import * as path from 'path';
-import * as fs from 'fs-extra';
-import * as rimraf from 'rimraf';
-import * as _ from 'lodash';
-import simplegit from 'simple-git';
-import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
-import ProjectConfig from '../../project/ProjectConfig';
-import MetadataFiles from '../../metadata/MetadataFiles';
-import { SOURCE_EXTENSION_REGEX, MetadataInfo, METADATA_INFO } from '../../metadata/MetadataInfo';
-import { MetadataResolver } from '@salesforce/source-deploy-retrieve';
-import GitDiffUtils, { DiffFile, DiffFileStatus } from '../../git/GitDiffUtil';
+import * as xml2js from "xml2js";
+import * as path from "path";
+import * as fs from "fs-extra";
+import * as rimraf from "rimraf";
+import * as _ from "lodash";
+import simplegit from "simple-git";
+import SFPLogger, { Logger, LoggerLevel } from "@dxatscale/sfp-logger";
+import ProjectConfig from "../../project/ProjectConfig";
+import MetadataFiles from "../../metadata/MetadataFiles";
+import { SOURCE_EXTENSION_REGEX, MetadataInfo, METADATA_INFO } from "../../metadata/MetadataInfo";
+import { MetadataResolver } from "@salesforce/source-deploy-retrieve";
+import GitDiffUtils, { DiffFile, DiffFileStatus } from "../../git/GitDiffUtil";
 
-const deleteNotSupported = ['RecordType'];
+const deleteNotSupported = ["RecordType"];
 const git = simplegit();
 let sfdxManifest;
 
@@ -32,13 +32,13 @@ export default class PackageComponentDiff {
         private sfdxPackage: string,
         private revisionFrom?: string,
         private revisionTo?: string,
-        private isDestructive?: boolean
+        private isDestructive?: boolean,
     ) {
-        if (this.revisionTo == null || this.revisionTo.trim() === '') {
-            this.revisionTo = 'HEAD';
+        if (this.revisionTo == null || this.revisionTo.trim() === "") {
+            this.revisionTo = "HEAD";
         }
         if (this.revisionFrom == null) {
-            this.revisionFrom = '';
+            this.revisionFrom = "";
         }
         this.destructivePackageObjPost = [];
         this.destructivePackageObjPre = [];
@@ -52,20 +52,20 @@ export default class PackageComponentDiff {
         rimraf.sync(outputFolder);
 
         const sepRegex = /\n|\r/;
-        let data = '';
+        let data = "";
 
         //check if same commit
-        const commitFrom = await git.raw(['rev-list', '-n', '1', this.revisionFrom]);
-        const commitTo = await git.raw(['rev-list', '-n', '1', this.revisionTo]);
+        const commitFrom = await git.raw(["rev-list", "-n", "1", this.revisionFrom]);
+        const commitTo = await git.raw(["rev-list", "-n", "1", this.revisionTo]);
         if (commitFrom === commitTo) {
             throw new Error(`Unable to compute diff, as both commits are same`);
         }
         //Make it relative to make the command works from a project created as a subfolder in a repository
         data = await git.diff([
-            '--raw',
+            "--raw",
             this.revisionFrom,
             this.revisionTo,
-            '--relative',
+            "--relative",
             ProjectConfig.getPackageDescriptorFromConfig(this.sfdxPackage, sfdxManifest).path,
         ]);
 
@@ -121,7 +121,7 @@ export default class PackageComponentDiff {
         }
 
         if (this.isDestructive) {
-            SFPLogger.log('Creating Destructive Manifest..', LoggerLevel.TRACE, this.logger);
+            SFPLogger.log("Creating Destructive Manifest..", LoggerLevel.TRACE, this.logger);
             await this.createDestructiveChanges(deletedFiles, outputFolder);
         }
 
@@ -134,13 +134,13 @@ export default class PackageComponentDiff {
         SFPLogger.log(`Generating output summary`, LoggerLevel.TRACE, this.logger);
 
         try {
-            await this.gitDiffUtils.copyFile('.forceignore', outputFolder, this.logger);
+            await this.gitDiffUtils.copyFile(".forceignore", outputFolder, this.logger);
         } catch (e) {
             SFPLogger.log(`.forceignore not found, skipping..`, LoggerLevel.DEBUG, this.logger);
         }
         try {
             let cleanedUpProjectManifest = ProjectConfig.cleanupMPDFromProjectDirectory(null, this.sfdxPackage);
-            fs.writeJSONSync(path.join(outputFolder, 'sfdx-project.json'), cleanedUpProjectManifest, { spaces: 4 });
+            fs.writeJSONSync(path.join(outputFolder, "sfdx-project.json"), cleanedUpProjectManifest, { spaces: 4 });
         } catch (error) {
             SFPLogger.log(`sfdx-project.json not found, skipping..`, LoggerLevel.DEBUG, this.logger);
         }
@@ -181,7 +181,7 @@ export default class PackageComponentDiff {
             let filePath = filePaths[i].path;
             try {
                 let matcher = filePath.match(SOURCE_EXTENSION_REGEX);
-                let extension = '';
+                let extension = "";
                 if (matcher) {
                     extension = matcher[0];
                 } else {
@@ -196,71 +196,71 @@ export default class PackageComponentDiff {
                         //Support on Custom Fields and Custom Objects for now
 
                         this.resultOutput.push({
-                            action: 'Skip',
+                            action: "Skip",
                             componentName: MetadataFiles.getMemberNameFromFilepath(filePath, name),
-                            metadataType: 'StandardField/CustomMetadata',
-                            message: '',
-                            path: '--',
+                            metadataType: "StandardField/CustomMetadata",
+                            message: "",
+                            path: "--",
                         });
 
                         continue;
                     }
                     let member = MetadataFiles.getMemberNameFromFilepath(filePath, name);
                     if (name === METADATA_INFO.CustomField.xmlName) {
-                        let isFormular = await this.gitDiffUtils.isFileIncludesContent(filePaths[i], '<formula>');
+                        let isFormular = await this.gitDiffUtils.isFileIncludesContent(filePaths[i], "<formula>");
                         if (isFormular) {
                             this.destructivePackageObjPre = this.buildDestructiveTypeObj(
                                 this.destructivePackageObjPre,
                                 name,
-                                member
+                                member,
                             );
 
                             SFPLogger.log(
                                 `${filePath} ${MetadataFiles.isCustomMetadata(filePath, name)}`,
                                 LoggerLevel.DEBUG,
-                                this.logger
+                                this.logger,
                             );
 
                             this.resultOutput.push({
-                                action: 'Delete',
+                                action: "Delete",
                                 componentName: member,
                                 metadataType: name,
-                                message: '',
-                                path: 'Manual Intervention Required',
+                                message: "",
+                                path: "Manual Intervention Required",
                             });
                         } else {
                             this.destructivePackageObjPost = this.buildDestructiveTypeObj(
                                 this.destructivePackageObjPost,
                                 name,
-                                member
+                                member,
                             );
                         }
                         SFPLogger.log(
                             `${filePath} ${MetadataFiles.isCustomMetadata(filePath, name)}`,
                             LoggerLevel.DEBUG,
-                            this.logger
+                            this.logger,
                         );
 
                         this.resultOutput.push({
-                            action: 'Delete',
+                            action: "Delete",
                             componentName: member,
                             metadataType: name,
-                            message: '',
-                            path: 'destructiveChanges.xml',
+                            message: "",
+                            path: "destructiveChanges.xml",
                         });
                     } else {
                         if (!deleteNotSupported.includes(name)) {
                             this.destructivePackageObjPost = this.buildDestructiveTypeObj(
                                 this.destructivePackageObjPost,
                                 name,
-                                member
+                                member,
                             );
                             this.resultOutput.push({
-                                action: 'Delete',
+                                action: "Delete",
                                 componentName: member,
                                 metadataType: name,
-                                message: '',
-                                path: 'destructiveChanges.xml',
+                                message: "",
+                                path: "destructiveChanges.xml",
                             });
                         } else {
                             //add the component in the manual action list
@@ -270,16 +270,16 @@ export default class PackageComponentDiff {
                 }
             } catch (ex) {
                 this.resultOutput.push({
-                    action: 'ERROR',
-                    componentName: '',
-                    metadataType: '',
+                    action: "ERROR",
+                    componentName: "",
+                    metadataType: "",
                     message: ex.message,
                     path: filePath,
                 });
             }
         }
 
-        this.writeDestructivechanges(this.destructivePackageObjPost, outputFolder, 'destructiveChanges.xml');
+        this.writeDestructivechanges(this.destructivePackageObjPost, outputFolder, "destructiveChanges.xml");
     }
 
     private writeDestructivechanges(destrucObj: Array<any>, outputFolder: string, fileName: string) {
@@ -295,7 +295,7 @@ export default class PackageComponentDiff {
             let dest = {
                 Package: {
                     $: {
-                        xmlns: 'http://soap.sforce.com/2006/04/metadata',
+                        xmlns: "http://soap.sforce.com/2006/04/metadata",
                     },
                     types: destrucObj,
                 },
@@ -347,9 +347,9 @@ export default class PackageComponentDiff {
             if (statusRegEx.test(fileContents[i])) {
                 let lineParts = fileContents[i].split(statusRegEx);
 
-                let finalPath = path.join('.', lineParts[1].replace(lineBreakRegEx, ''));
+                let finalPath = path.join(".", lineParts[1].replace(lineBreakRegEx, ""));
                 finalPath = finalPath.trim();
-                finalPath = finalPath.replace('\\303\\251', 'é');
+                finalPath = finalPath.replace("\\303\\251", "é");
 
                 if (!(await metadataFiles.isInModuleFolder(finalPath))) {
                     continue;
@@ -381,8 +381,8 @@ export default class PackageComponentDiff {
 
                 let paths = lineParts[1].trim().split(tabRegEx);
 
-                let finalPath = path.join('.', paths[1].trim());
-                finalPath = finalPath.replace('\\303\\251', 'é');
+                let finalPath = path.join(".", paths[1].trim());
+                finalPath = finalPath.replace("\\303\\251", "é");
                 let revisionPart = lineParts[0].split(/\t|\s/);
 
                 if (!(await metadataFiles.isInModuleFolder(finalPath))) {
@@ -394,16 +394,16 @@ export default class PackageComponentDiff {
                 }
 
                 diffFile.addedEdited.push({
-                    revisionFrom: '0000000',
+                    revisionFrom: "0000000",
                     revisionTo: revisionPart[3],
-                    renamedPath: path.join('.', paths[0].trim()),
+                    renamedPath: path.join(".", paths[0].trim()),
                     path: finalPath,
                 });
 
                 //allow deletion of renamed components
                 diffFile.deleted.push({
                     revisionFrom: revisionPart[2],
-                    revisionTo: '0000000',
+                    revisionTo: "0000000",
                     path: paths[0].trim(),
                 });
             }
@@ -412,9 +412,9 @@ export default class PackageComponentDiff {
     }
 }
 enum AdapterId {
-    Bundle = 'bundle',
-    Decomposed = 'decomposed',
-    Default = 'default',
-    MatchingContentFile = 'matchingContentFile',
-    MixedContent = 'mixedContent',
+    Bundle = "bundle",
+    Decomposed = "decomposed",
+    Default = "default",
+    MatchingContentFile = "matchingContentFile",
+    MixedContent = "mixedContent",
 }

@@ -1,4 +1,4 @@
-import TriggerApexTestImpl from '@dxatscale/sfpowerscripts.core/lib/apextest/TriggerApexTests';
+import TriggerApexTestImpl from "@dxatscale/sfpowerscripts.core/lib/apextest/TriggerApexTests";
 import {
     RunAllTestsInPackageOptions,
     RunAllTestsInOrg,
@@ -7,20 +7,20 @@ import {
     RunSpecifiedTestsOption,
     TestLevel,
     TestOptions,
-} from '@dxatscale/sfpowerscripts.core/lib/apextest/TestOptions';
-import { CoverageOptions } from '@dxatscale/sfpowerscripts.core/lib/apex/coverage/IndividualClassCoverage';
-import SfpPackage, { ApexClasses } from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
-import PackageTestCoverage from '@dxatscale/sfpowerscripts.core/lib/package/coverage/PackageTestCoverage';
-import { LoggerLevel, Org } from '@salesforce/core';
-import SFPLogger, { ConsoleLogger } from '@dxatscale/sfp-logger/lib/SFPLogger';
-import * as fs from 'fs-extra';
-const path = require('path');
-import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder';
+} from "@dxatscale/sfpowerscripts.core/lib/apextest/TestOptions";
+import { CoverageOptions } from "@dxatscale/sfpowerscripts.core/lib/apex/coverage/IndividualClassCoverage";
+import SfpPackage, { ApexClasses } from "@dxatscale/sfpowerscripts.core/lib/package/SfpPackage";
+import PackageTestCoverage from "@dxatscale/sfpowerscripts.core/lib/package/coverage/PackageTestCoverage";
+import { LoggerLevel, Org } from "@salesforce/core";
+import SFPLogger, { ConsoleLogger } from "@dxatscale/sfp-logger/lib/SFPLogger";
+import * as fs from "fs-extra";
+const path = require("path");
+import SfpPackageBuilder from "@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder";
 
 export default class TriggerApexTest {
     constructor(
         private targetOrg: string,
-        private testLevel: TestLevel | 'RunAggregatedTests',
+        private testLevel: TestLevel | "RunAggregatedTests",
         private specifiedTests: string,
         private apexTestSuite: string,
         private isSynchronous: boolean,
@@ -28,30 +28,30 @@ export default class TriggerApexTest {
         private packages: string[],
         private isValidatePackageCoverage: boolean,
         private isValidateIndividualClassCoverage: boolean,
-        private coveragePercent: number
+        private coveragePercent: number,
     ) {}
 
     async exec() {
         let testOptions: TestOptions;
         let coverageOptions: CoverageOptions;
-        let outputdir = path.join('.testresults');
+        let outputdir = path.join(".testresults");
         const sfpPackages: SfpPackage[] = [];
 
         if (this.testLevel === TestLevel.RunAllTestsInOrg.toString()) {
             testOptions = new RunAllTestsInOrg(this.waitTime, outputdir, this.isSynchronous);
         } else if (this.testLevel === TestLevel.RunAllTestsInPackage.toString()) {
             if (this.packages == null || this.packages[0] == null) {
-                throw new Error('Package name must be specified when test level is RunAllTestsInPackage');
+                throw new Error("Package name must be specified when test level is RunAllTestsInPackage");
             }
             let pkg: SfpPackage = await SfpPackageBuilder.buildPackageFromProjectDirectory(
                 new ConsoleLogger(),
                 null,
-                this.packages[0]
+                this.packages[0],
             );
             testOptions = new RunAllTestsInPackageOptions(pkg, this.waitTime, outputdir);
-        } else if (this.testLevel === 'RunAggregatedTests') {
+        } else if (this.testLevel === "RunAggregatedTests") {
             if (this.packages == null || this.packages.length === 0) {
-                throw new Error('At least one package is required to run aggregated Apex tests');
+                throw new Error("At least one package is required to run aggregated Apex tests");
             }
 
             const logLevelBackup = SFPLogger.logLevel;
@@ -63,7 +63,7 @@ export default class TriggerApexTest {
                 const sfpPackage: SfpPackage = await SfpPackageBuilder.buildPackageFromProjectDirectory(
                     new ConsoleLogger(),
                     null,
-                    pkg
+                    pkg,
                 );
                 sfpPackages.push(sfpPackage);
 
@@ -75,7 +75,7 @@ export default class TriggerApexTest {
             if (apexTestClasses.length > 0) {
                 testOptions = new RunSpecifiedTestsOption(this.waitTime, outputdir, apexTestClasses.toString());
             } else {
-                throw new Error('No test classes found in package/s');
+                throw new Error("No test classes found in package/s");
             }
         } else if (this.testLevel === TestLevel.RunApexTestSuite.toString()) {
             testOptions = new RunApexTestSuitesOption(
@@ -83,7 +83,7 @@ export default class TriggerApexTest {
                 outputdir,
                 this.apexTestSuite,
                 null,
-                this.isSynchronous
+                this.isSynchronous,
             );
         } else if (this.testLevel === TestLevel.RunLocalTests.toString()) {
             testOptions = new RunLocalTests(this.waitTime, outputdir, this.isSynchronous);
@@ -92,17 +92,17 @@ export default class TriggerApexTest {
                 this.waitTime,
                 outputdir,
                 this.specifiedTests,
-                this.isSynchronous
+                this.isSynchronous,
             );
         } else {
-            throw new Error('Unimplemented Option, please check the option');
+            throw new Error("Unimplemented Option, please check the option");
         }
 
         if (
             (this.isValidateIndividualClassCoverage || this.isValidatePackageCoverage) &&
             this.testLevel !== TestLevel.RunAllTestsInPackage.toString()
         ) {
-            throw new Error('Code coverage validation is only available for test level RunAllTestsInPackage');
+            throw new Error("Code coverage validation is only available for test level RunAllTestsInPackage");
         } else {
             coverageOptions = {
                 isPackageCoverageToBeValidated: this.isValidatePackageCoverage,
@@ -117,11 +117,11 @@ export default class TriggerApexTest {
         if (!result.result) {
             throw new Error(`Error: ${result.message}`);
         } else {
-            console.log(`\n ${result.message ? result.message : ''}`);
+            console.log(`\n ${result.message ? result.message : ""}`);
         }
 
         let isCoverageFailure: boolean = false;
-        if (this.testLevel === 'RunAggregatedTests') {
+        if (this.testLevel === "RunAggregatedTests") {
             // Validate code coverage for packages
             const conn = (await Org.create({ aliasOrUsername: this.targetOrg })).getConnection();
 
@@ -133,14 +133,14 @@ export default class TriggerApexTest {
                     sfpPackage,
                     this.getCoverageReport(outputdir),
                     new ConsoleLogger(),
-                    conn
+                    conn,
                 );
                 let result = await packageTestCoverage.validateTestCoverage(this.coveragePercent);
 
                 if (!result.result) {
                     isCoverageFailure = true;
                     console.log(
-                        `${sfpPackage.packageName} package does not meet coverage requirements. ${result.message}`
+                        `${sfpPackage.packageName} package does not meet coverage requirements. ${result.message}`,
                     );
                 }
             }
@@ -154,7 +154,7 @@ export default class TriggerApexTest {
     }
 
     private getCoverageReport(outputDir: string): any {
-        let testCoverageJSON = fs.readFileSync(path.join(outputDir, 'test-result-codecoverage.json')).toString();
+        let testCoverageJSON = fs.readFileSync(path.join(outputDir, "test-result-codecoverage.json")).toString();
 
         return JSON.parse(testCoverageJSON);
     }

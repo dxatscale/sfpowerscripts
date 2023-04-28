@@ -1,6 +1,6 @@
-const Table = require('cli-table');
-import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
-import { ZERO_BORDER_TABLE } from './TableConstants';
+const Table = require("cli-table");
+import SFPLogger, { Logger, LoggerLevel } from "@dxatscale/sfp-logger";
+import { ZERO_BORDER_TABLE } from "./TableConstants";
 
 export default class PushErrorDisplayer {
     public static printMetadataFailedToPush(error: any, packageLogger: Logger) {
@@ -8,10 +8,10 @@ export default class PushErrorDisplayer {
 
         let table;
         let pushComponentFailureIntoTable;
-        if (error.name === 'sourceConflictDetected') {
+        if (error.name === "sourceConflictDetected") {
             table = new Table({
-                head: ['State', 'API Name', 'Metadata Type', 'File Path'],
-                chars: ZERO_BORDER_TABLE
+                head: ["State", "API Name", "Metadata Type", "File Path"],
+                chars: ZERO_BORDER_TABLE,
             });
 
             pushComponentFailureIntoTable = (componentFailure) => {
@@ -25,15 +25,15 @@ export default class PushErrorDisplayer {
                 // Replace "undefined" values with "NA". cli-table breaks for undefined cells
                 item.forEach((elem, idx, item) => {
                     if (elem === undefined) {
-                        item[idx] = 'NA';
+                        item[idx] = "NA";
                     }
                 });
 
                 table.push(item);
             };
-        } else if (error.name === 'DeployFailed') {
+        } else if (error.name === "DeployFailed") {
             table = new Table({
-                head: ['Metadata Type', 'API Name', 'Problem Type', 'FilePath','Problem'],
+                head: ["Metadata Type", "API Name", "Problem Type", "FilePath", "Problem"],
             });
 
             pushComponentFailureIntoTable = (componentFailure) => {
@@ -48,14 +48,14 @@ export default class PushErrorDisplayer {
                 // Replace "undefined" values with "NA". cli-table breaks for undefined cells
                 item.forEach((elem, idx, item) => {
                     if (elem === undefined) {
-                        item[idx] = 'NA';
+                        item[idx] = "NA";
                     }
                 });
 
                 table.push(item);
             };
         } else {
-            SFPLogger.log('Unknown error type. Failed to print table.', LoggerLevel.ERROR, packageLogger);
+            SFPLogger.log("Unknown error type. Failed to print table.", LoggerLevel.ERROR, packageLogger);
             return;
         }
 
@@ -68,7 +68,7 @@ export default class PushErrorDisplayer {
             pushComponentFailureIntoTable(failure);
         }
 
-        SFPLogger.log('The following components resulted in failures:', LoggerLevel.ERROR, packageLogger);
+        SFPLogger.log("The following components resulted in failures:", LoggerLevel.ERROR, packageLogger);
 
         SFPLogger.log(table.toString(), LoggerLevel.ERROR, packageLogger);
     }

@@ -4,7 +4,7 @@
  * Licensed under the BSD 3-Clause license.
  * For full license text, see LICENSE.txt file in the repo root or https://opensource.org/licenses/BSD-3-Clause
  */
-import { ApexTestResultData, ApexTestResultOutcome, TestResult } from '@salesforce/apex-node';
+import { ApexTestResultData, ApexTestResultOutcome, TestResult } from "@salesforce/apex-node";
 
 export type CliJsonFormat = {
     summary: object;
@@ -60,13 +60,11 @@ type CliCoverageResult = {
     };
 };
 
-const skippedProperties = ['skipRate', 'coveredLines', 'totalLines'];
-const timeProperties = ['testExecutionTimeInMs', 'testTotalTimeInMs', 'commandTimeInMs'];
+const skippedProperties = ["skipRate", "coveredLines", "totalLines"];
+const timeProperties = ["testExecutionTimeInMs", "testTotalTimeInMs", "commandTimeInMs"];
 
 export class JsonReporter {
-    public format(
-        result: TestResult
-    ): {
+    public format(result: TestResult): {
         summary: object;
         tests: CliTestResult[];
         coverage?: CliCoverageResult;
@@ -91,7 +89,7 @@ export class JsonReporter {
             }
 
             if (timeProperties.includes(key)) {
-                key = key.replace('InMs', '');
+                key = key.replace("InMs", "");
                 value = `${value} ms`;
             }
 

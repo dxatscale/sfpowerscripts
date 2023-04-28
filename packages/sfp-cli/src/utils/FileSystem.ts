@@ -1,5 +1,5 @@
-import fs = require('fs');
-import path = require('path');
+import fs = require("fs");
+import path = require("path");
 
 export default class FileSystem {
     static readdirRecursive(directory: string): string[] {

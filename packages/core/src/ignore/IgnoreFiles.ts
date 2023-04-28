@@ -1,4 +1,4 @@
-import ignore, { Ignore } from 'ignore';
+import ignore, { Ignore } from "ignore";
 
 export default class IgnoreFiles {
     private _ignore: Ignore;

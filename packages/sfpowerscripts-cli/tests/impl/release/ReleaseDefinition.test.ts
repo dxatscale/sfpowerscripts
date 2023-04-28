@@ -1,39 +1,39 @@
-import { jest, expect } from '@jest/globals';
-const fs = require('fs-extra');
-import ReleaseDefinition from '../../../src/impl/release/ReleaseDefinition';
+import { jest, expect } from "@jest/globals";
+const fs = require("fs-extra");
+import ReleaseDefinition from "../../../src/impl/release/ReleaseDefinition";
 
-describe('Given a release definition, validateReleaseDefinition', () => {
+describe("Given a release definition, validateReleaseDefinition", () => {
     let releaseDefinitionYaml: string;
 
     beforeEach(() => {
-        const fsMock = jest.spyOn(fs, 'readFileSync');
+        const fsMock = jest.spyOn(fs, "readFileSync");
         fsMock.mockImplementation(() => {
             return releaseDefinitionYaml;
         });
     });
 
-    it('should throw if artifacts field is missing', async () => {
+    it("should throw if artifacts field is missing", async () => {
         releaseDefinitionYaml = `
       release: "test-release"
     `;
 
         expect(async () => {
-            await ReleaseDefinition.loadReleaseDefinition('path');
+            await ReleaseDefinition.loadReleaseDefinition("path");
         }).rejects.toThrowError();
     });
 
-    it('should throw if release field is missing', async () => {
+    it("should throw if release field is missing", async () => {
         releaseDefinitionYaml = `
       artifacts:
         packageA: "1.0.0-0"
     `;
 
         expect(async () => {
-            await ReleaseDefinition.loadReleaseDefinition('path');
+            await ReleaseDefinition.loadReleaseDefinition("path");
         }).rejects.toThrowError();
     });
 
-    it('should not throw an error for valid package dependency', async () => {
+    it("should not throw an error for valid package dependency", async () => {
         releaseDefinitionYaml = `
       release: "test-release"
       artifacts:
@@ -43,11 +43,11 @@ describe('Given a release definition, validateReleaseDefinition', () => {
     `;
 
         expect(async () => {
-            await ReleaseDefinition.loadReleaseDefinition('path');
+            await ReleaseDefinition.loadReleaseDefinition("path");
         }).toBeDefined();
     });
 
-    it('should throw an error for an invalid package dependency', async () => {
+    it("should throw an error for an invalid package dependency", async () => {
         releaseDefinitionYaml = `
       release: "test-release"
       artifacts:
@@ -57,11 +57,11 @@ describe('Given a release definition, validateReleaseDefinition', () => {
     `;
 
         expect(async () => {
-            await ReleaseDefinition.loadReleaseDefinition('path');
+            await ReleaseDefinition.loadReleaseDefinition("path");
         }).rejects.toThrowError();
     });
 
-    it('should not throw an error for valid release parameters', async () => {
+    it("should not throw an error for valid release parameters", async () => {
         releaseDefinitionYaml = `
       release: "test-release"
       skipIfAlreadyInstalled: true
@@ -71,11 +71,11 @@ describe('Given a release definition, validateReleaseDefinition', () => {
     `;
 
         expect(async () => {
-            await ReleaseDefinition.loadReleaseDefinition('path');
+            await ReleaseDefinition.loadReleaseDefinition("path");
         }).toBeDefined();
     });
 
-    it('should throw an error if baselineOrg specified but skipIfAlreadyInstalled is false', async () => {
+    it("should throw an error if baselineOrg specified but skipIfAlreadyInstalled is false", async () => {
         releaseDefinitionYaml = `
       release: "test-release"
       skipIfAlreadyInstalled: false
@@ -85,11 +85,11 @@ describe('Given a release definition, validateReleaseDefinition', () => {
     `;
 
         expect(async () => {
-            await ReleaseDefinition.loadReleaseDefinition('path');
+            await ReleaseDefinition.loadReleaseDefinition("path");
         }).rejects.toThrowError();
     });
 
-    it('should not throw an error for valid changelog parameters', async () => {
+    it("should not throw an error for valid changelog parameters", async () => {
         releaseDefinitionYaml = `
       release: "test-release"
       artifacts:
@@ -103,11 +103,11 @@ describe('Given a release definition, validateReleaseDefinition', () => {
     `;
 
         expect(async () => {
-            await ReleaseDefinition.loadReleaseDefinition('path');
+            await ReleaseDefinition.loadReleaseDefinition("path");
         }).toBeDefined();
     });
 
-    it('should throw an error if required changelog parameters are missing', async () => {
+    it("should throw an error if required changelog parameters are missing", async () => {
         releaseDefinitionYaml = `
       release: "test-release"
       artifacts:
@@ -119,7 +119,7 @@ describe('Given a release definition, validateReleaseDefinition', () => {
     `;
 
         expect(async () => {
-            await ReleaseDefinition.loadReleaseDefinition('path');
+            await ReleaseDefinition.loadReleaseDefinition("path");
         }).rejects.toThrow();
     });
 });

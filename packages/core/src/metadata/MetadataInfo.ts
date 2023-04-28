@@ -1,45 +1,45 @@
 //TODO: Replace with SDR
-import * as _ from 'lodash';
-import * as path from 'path';
-import * as fs from 'fs-extra';
+import * as _ from "lodash";
+import * as path from "path";
+import * as fs from "fs-extra";
 
 export const SOURCE_EXTENSION_REGEX = /\.[a-zA-Z]+-meta\.xml/;
 const SPLITED_TYPES = {
     CustomField: {
-        suffix: 'field',
-        folder: 'fields',
+        suffix: "field",
+        folder: "fields",
     },
     BusinessProcess: {
-        suffix: 'businessProcess',
-        folder: 'businessProcesses',
+        suffix: "businessProcess",
+        folder: "businessProcesses",
     },
     CompactLayout: {
-        suffix: 'compactLayout',
-        folder: 'compactLayouts',
+        suffix: "compactLayout",
+        folder: "compactLayouts",
     },
     FieldSet: {
-        suffix: 'fieldSet',
-        folder: 'fieldSets',
+        suffix: "fieldSet",
+        folder: "fieldSets",
     },
     RecordType: {
-        suffix: 'recordType',
-        folder: 'recordTypes',
+        suffix: "recordType",
+        folder: "recordTypes",
     },
     ListView: {
-        suffix: 'listView',
-        folder: 'listViews',
+        suffix: "listView",
+        folder: "listViews",
     },
     SharingReason: {
-        suffix: 'sharingReason',
-        folder: 'sharingReasons',
+        suffix: "sharingReason",
+        folder: "sharingReasons",
     },
     ValidationRule: {
-        suffix: 'validationRule',
-        folder: 'validationRules',
+        suffix: "validationRule",
+        folder: "validationRules",
     },
     WebLink: {
-        suffix: 'webLink',
-        folder: 'webLinks',
+        suffix: "webLink",
+        folder: "webLinks",
     },
 };
 
@@ -101,18 +101,18 @@ export interface MetadataInfo {
 export class MetadataInfo {
     static loadMetadataInfo(): MetadataInfo {
         let metadataInfo: MetadataInfo = {};
-        let resourcePath = path.join(__dirname, '..', '..', 'resources', 'metadatainfo.json');
-        const fileData = fs.readFileSync(resourcePath, 'utf8');
+        let resourcePath = path.join(__dirname, "..", "..", "resources", "metadatainfo.json");
+        const fileData = fs.readFileSync(resourcePath, "utf8");
         let metadataInfoJSON = JSON.parse(fileData);
         metadataInfoJSON.metadataObjects.forEach((metadata) => {
             let metadataDescribe = metadata as MetadataDescribe;
             if (_.isNil(metadata.suffix)) {
-                if (metadata.xmlName === 'AuraDefinitionBundle') {
-                    metadata.suffix = 'cmp';
-                    metadataDescribe.suffix = 'cmp';
-                } else if (metadata.xmlName == 'LightningComponentBundle') {
-                    metadata.suffix = 'js';
-                    metadataDescribe.suffix = 'js';
+                if (metadata.xmlName === "AuraDefinitionBundle") {
+                    metadata.suffix = "cmp";
+                    metadataDescribe.suffix = "cmp";
+                } else if (metadata.xmlName == "LightningComponentBundle") {
+                    metadata.suffix = "js";
+                    metadataDescribe.suffix = "js";
                 }
             }
             metadataDescribe.sourceExtension = `.${metadata.suffix}-meta.xml`;
@@ -148,20 +148,20 @@ export class MetadataInfo {
 
     static getMetadataName(metadataFile: string, validateSourceExtension = true): string {
         let matcher = metadataFile.match(SOURCE_EXTENSION_REGEX);
-        let extension = '';
+        let extension = "";
         if (matcher) {
             extension = matcher[0];
         } else {
             extension = path.parse(metadataFile).ext;
         }
         //SfPowerKit.ux.log(extension);
-        let metadataName = '';
+        let metadataName = "";
 
-        const auraRegExp = new RegExp('aura');
-        const lwcRegExp = new RegExp('lwc');
-        const staticResourceRegExp = new RegExp('staticresources');
-        const experienceBundleRegExp = new RegExp('experiences');
-        const documentRegExp = new RegExp('documents');
+        const auraRegExp = new RegExp("aura");
+        const lwcRegExp = new RegExp("lwc");
+        const staticResourceRegExp = new RegExp("staticresources");
+        const experienceBundleRegExp = new RegExp("experiences");
+        const documentRegExp = new RegExp("documents");
         if (auraRegExp.test(metadataFile) && (SOURCE_EXTENSION_REGEX.test(metadataFile) || !validateSourceExtension)) {
             metadataName = METADATA_INFO.AuraDefinitionBundle.xmlName;
         } else if (
@@ -190,7 +190,7 @@ export class MetadataInfo {
                 let metaDescribe = METADATA_INFO[keys[i]];
                 if (
                     metaDescribe.sourceExtension === extension ||
-                    ('.' + metaDescribe.suffix === extension && !validateSourceExtension) ||
+                    ("." + metaDescribe.suffix === extension && !validateSourceExtension) ||
                     metaDescribe.folderExtension === extension
                 ) {
                     metadataName = metaDescribe.xmlName;

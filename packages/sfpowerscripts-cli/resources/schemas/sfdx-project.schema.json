@@ -69,7 +69,7 @@
                     },
                     "unpackagedMetadata": {
                         "$ref": "#/definitions/packageDirectory.unpackagedMetadata"
-                    } ,
+                    },
                     "releaseNotesUrl": {
                         "$ref": "#/definitions/packageDirectory.releaseNotesUrl"
                     },
@@ -121,7 +121,7 @@
                     "skipCoverageValidation": {
                         "$ref": "#/definitions/packageDirectory.skipCoverageValidation"
                     },
-                    "tags":{
+                    "tags": {
                         "$ref": "#/definitions/packageDirectory.tags"
                     },
                     "testSynchronous": {
@@ -277,13 +277,13 @@
             "description": "Metadata not meant to be packaged, but deployed when testing packaged metadata",
             "required": ["path"],
             "properties": {
-              "path": {
-                "type": "string",
-                "title": "Path",
-                "description": "The path name of the package directory containing the unpackaged metadata"
-              }
+                "path": {
+                    "type": "string",
+                    "title": "Path",
+                    "description": "The path name of the package directory containing the unpackaged metadata"
+                }
             }
-          },
+        },
         "packageDirectory.includeProfileUserLicenses": {
             "type": "boolean",
             "title": "Include Profile User Licenses",
@@ -451,13 +451,13 @@
         },
         "packageDirectory.enableFHT": {
             "type": "boolean",
-            "default" : true,
+            "default": true,
             "title": "Enable Field History Tracking support?",
             "description": "Enable automated update of field history tracking in the target org upon deployment"
         },
         "packageDirectory.enableFT": {
             "type": "boolean",
-            "default" : true,
+            "default": true,
             "title": "Enable Feed Tracking support?",
             "description": "Enable automated update of feed tracking in the target org upon deployment"
         },
@@ -526,26 +526,25 @@
                 },
                 "externalDependencyMap": {
                     "title": "Map of external package and its dependencies",
-                    "type":"object",
+                    "type": "object",
                     "description": "Use this map to define dependencies of unlocked packages built elsewhere, This information will be used by sfpowerscripts while expanding package dependencies",
-                   "patternProperties": {
-                                ".*": {
-                                      "type": "array",
-                                       "items": {
-                                          "type": "object",
-                                          "additionalProperties": false,
-                                          "required": ["package"],
-                                          "properties": {
-                                              "package": {
-                                                  "type": "string"
-                                              },
-                                              "versionNumber": {
-                                                  "type": "string"
-                                              }
-                                          }
-                                      
-                                      }
-                                  }
+                    "patternProperties": {
+                        ".*": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "required": ["package"],
+                                "properties": {
+                                    "package": {
+                                        "type": "string"
+                                    },
+                                    "versionNumber": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }

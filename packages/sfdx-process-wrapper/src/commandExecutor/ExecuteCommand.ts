@@ -1,7 +1,6 @@
-import child_process = require('child_process');
-import SFPLogger, { COLOR_TRACE, Logger, LoggerLevel } from '@dxatscale/sfp-logger';
-import defaultProcessOptions from './DefaultProcessOptions';
-
+import child_process = require("child_process");
+import SFPLogger, { COLOR_TRACE, Logger, LoggerLevel } from "@dxatscale/sfp-logger";
+import defaultProcessOptions from "./DefaultProcessOptions";
 
 export default class ExecuteCommand {
     public constructor(protected logger?: Logger, protected logLevel?: LoggerLevel, protected showProgress?: boolean) {}
@@ -10,7 +9,7 @@ export default class ExecuteCommand {
         command: string,
         workingdirectory: string,
         timeout: number = 0,
-        isEnableErrorFromOutputStream: boolean = false
+        isEnableErrorFromOutputStream: boolean = false,
     ): Promise<any> {
         return new Promise((resolve, reject) => {
             try {
@@ -23,22 +22,22 @@ export default class ExecuteCommand {
                 });
 
                 // variables for collecting data written to STDOUT and STDERR
-                let stdoutContents = '';
-                let stderrContents = '';
+                let stdoutContents = "";
+                let stderrContents = "";
 
                 // collect data written to STDOUT into a string
-                childProcess.stdout.on('data', (data) => {
+                childProcess.stdout.on("data", (data) => {
                     stdoutContents += data.toString();
                     if (this.showProgress) SFPLogger.log(COLOR_TRACE(data), LoggerLevel.INFO, this.logger);
                 });
 
                 // collect data written to STDERR into a string
-                childProcess.stderr.on('data', (data) => {
+                childProcess.stderr.on("data", (data) => {
                     stderrContents += data.toString();
                 });
 
-                childProcess.once('close', (code: number, signal: string) => {
-                    if (code === 0 || (code === null && signal === 'SIGTERM')) {
+                childProcess.once("close", (code: number, signal: string) => {
+                    if (code === 0 || (code === null && signal === "SIGTERM")) {
                         resolve(stdoutContents);
                     } else {
                         if (stderrContents && !isEnableErrorFromOutputStream) reject(new Error(stderrContents));
@@ -46,7 +45,7 @@ export default class ExecuteCommand {
                     }
                 });
 
-                childProcess.once('error', (err: Error) => {
+                childProcess.once("error", (err: Error) => {
                     if (stderrContents && !isEnableErrorFromOutputStream) reject(new Error(stderrContents));
                     else reject(new Error(stdoutContents));
                 });

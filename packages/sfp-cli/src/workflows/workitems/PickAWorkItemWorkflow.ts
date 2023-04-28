@@ -1,6 +1,6 @@
-import inquirer = require('inquirer');
-import { SfpProjectConfig } from '../../types/SfpProjectConfig';
-import { WorkItem } from '../../types/WorkItem';
+import inquirer = require("inquirer");
+import { SfpProjectConfig } from "../../types/SfpProjectConfig";
+import { WorkItem } from "../../types/WorkItem";
 
 export default class PickAWorkItemWorkflow {
     public constructor(private sfpProjectConfig: SfpProjectConfig) {}
@@ -11,22 +11,22 @@ export default class PickAWorkItemWorkflow {
             workItems = workItems
                 .filter((elem) => !elem.isDeleted)
                 .map((elem) => {
-                    elem['name'] = elem.id;
+                    elem["name"] = elem.id;
                     return elem;
                 });
 
             let workItem = await inquirer.prompt([
                 {
-                    type: 'list',
-                    name: 'username',
-                    message: 'Pick a Work Item',
+                    type: "list",
+                    name: "username",
+                    message: "Pick a Work Item",
                     choices: workItems,
                 },
             ]);
 
             return workItem;
         } else {
-            throw new Error('No WorkItem found');
+            throw new Error("No WorkItem found");
         }
     }
 }

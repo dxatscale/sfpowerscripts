@@ -117,7 +117,7 @@
             "title": "Disable installation of unlocked packages as source package",
             "description": "Prepare by default utilizes source package for installing unlocked packages to the scratchorg, disabling this flag will allow to install it ",
             "type": "boolean",
-            "default":false
+            "default": false
         },
         "fetchArtifacts": {
             "title": "Fetch Artifacts using below mechanism",

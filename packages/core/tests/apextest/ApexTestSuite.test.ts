@@ -1,16 +1,16 @@
-import { jest, expect } from '@jest/globals';
-const fs = require('fs-extra');
-import ApexTestSuite from '../../src/apextest/ApexTestSuite';
-const glob = require('glob');
+import { jest, expect } from "@jest/globals";
+const fs = require("fs-extra");
+import ApexTestSuite from "../../src/apextest/ApexTestSuite";
+const glob = require("glob");
 
-describe('Provided an apex test suite from a source directory', () => {
-    it('should return all the apexclasses', () => {
-        const globMock = jest.spyOn(glob, 'sync');
+describe("Provided an apex test suite from a source directory", () => {
+    it("should return all the apexclasses", () => {
+        const globMock = jest.spyOn(glob, "sync");
         globMock.mockImplementation(() => {
-            return new Array('/path/to/test.testSuite-meta.xml');
+            return new Array("/path/to/test.testSuite-meta.xml");
         });
 
-        const fsReadMock = jest.spyOn(fs, 'readFileSync');
+        const fsReadMock = jest.spyOn(fs, "readFileSync");
         fsReadMock.mockImplementationOnce(() => {
             return `
         <?xml version="1.0" encoding="UTF-8"?>
@@ -35,8 +35,8 @@ describe('Provided an apex test suite from a source directory', () => {
         expect(apexTestSuite.getConstituentClasses()).resolves.toStrictEqual(resultTestClasses);
     });
 
-    it('should throw an error if apex test suite is not avaiable in the directory', async () => {
-        const globMock = jest.spyOn(glob, 'sync');
+    it("should throw an error if apex test suite is not avaiable in the directory", async () => {
+        const globMock = jest.spyOn(glob, "sync");
         globMock.mockImplementation(() => {
             return [];
         });
@@ -46,13 +46,13 @@ describe('Provided an apex test suite from a source directory', () => {
         expect(apexTestSuite.getConstituentClasses()).rejects.toThrowError();
     });
 
-    it('should return apexclass even if there is only one', () => {
-        const globMock = jest.spyOn(glob, 'sync');
+    it("should return apexclass even if there is only one", () => {
+        const globMock = jest.spyOn(glob, "sync");
         globMock.mockImplementation(() => {
-            return new Array('/path/to/test.testSuite-meta.xml');
+            return new Array("/path/to/test.testSuite-meta.xml");
         });
 
-        const fsReadMock = jest.spyOn(fs, 'readFileSync');
+        const fsReadMock = jest.spyOn(fs, "readFileSync");
         fsReadMock.mockImplementationOnce(() => {
             return `
       <?xml version="1.0" encoding="UTF-8"?>

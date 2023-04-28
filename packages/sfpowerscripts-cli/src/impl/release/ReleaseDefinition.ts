@@ -1,12 +1,12 @@
-import ReleaseDefinitionSchema from './ReleaseDefinitionSchema';
-import Ajv from 'ajv';
-const yaml = require('js-yaml');
-import lodash = require('lodash');
-import get18DigitSalesforceId from '../../utils/Get18DigitSalesforceId';
-import Git from '@dxatscale/sfpowerscripts.core/lib/git/Git';
-import { ConsoleLogger } from '@dxatscale/sfp-logger';
-const fs = require('fs-extra');
-const path = require('path');
+import ReleaseDefinitionSchema from "./ReleaseDefinitionSchema";
+import Ajv from "ajv";
+const yaml = require("js-yaml");
+import lodash = require("lodash");
+import get18DigitSalesforceId from "../../utils/Get18DigitSalesforceId";
+import Git from "@dxatscale/sfpowerscripts.core/lib/git/Git";
+import { ConsoleLogger } from "@dxatscale/sfp-logger";
+const fs = require("fs-extra");
+const path = require("path");
 
 export default class ReleaseDefinition {
     get releaseDefinition() {
@@ -29,13 +29,13 @@ export default class ReleaseDefinition {
         //Check whether path contains gitRef
         let releaseDefinitionSchema: ReleaseDefinitionSchema;
         try {
-            if (pathToReleaseDefinition.includes(':')) {
+            if (pathToReleaseDefinition.includes(":")) {
                 let git = await Git.initiateRepo();
                 await git.fetch();
                 let releaseFile = await git.show([pathToReleaseDefinition]);
                 releaseDefinitionSchema = yaml.load(releaseFile);
             } else {
-                releaseDefinitionSchema = yaml.load(fs.readFileSync(pathToReleaseDefinition, 'UTF8'));
+                releaseDefinitionSchema = yaml.load(fs.readFileSync(pathToReleaseDefinition, "UTF8"));
             }
         } catch (error) {
             throw new Error(`Unable to read the release definition file due to ${JSON.stringify(error)}`);
@@ -53,8 +53,8 @@ export default class ReleaseDefinition {
 
     private validateReleaseDefinition(releaseDefinition: ReleaseDefinitionSchema): void {
         let schema = fs.readJSONSync(
-            path.join(__dirname, '..', '..', '..', 'resources', 'schemas', 'releasedefinition.schema.json'),
-            { encoding: 'UTF-8' }
+            path.join(__dirname, "..", "..", "..", "resources", "schemas", "releasedefinition.schema.json"),
+            { encoding: "UTF-8" },
         );
 
         let validator = new Ajv({ allErrors: true }).compile(schema);
@@ -69,7 +69,7 @@ export default class ReleaseDefinition {
                 errorMsg += `\n${errorNum + 1}: ${error.instancePath}: ${error.message} ${JSON.stringify(
                     error.params,
                     null,
-                    4
+                    4,
                 )}`;
             });
 

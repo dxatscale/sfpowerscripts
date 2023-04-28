@@ -1,5 +1,5 @@
-import { Connection, User, AuthInfo, LoggerLevel } from '@salesforce/core';
-import SFPLogger from '@dxatscale/sfp-logger';
+import { Connection, User, AuthInfo, LoggerLevel } from "@salesforce/core";
+import SFPLogger from "@dxatscale/sfp-logger";
 
 export default class PasswordGenerator {
     public async exec(userName: string) {
@@ -13,7 +13,7 @@ export default class PasswordGenerator {
 
         await passwordBuffer.value(async (buffer: Buffer) => {
             try {
-                pwd = buffer.toString('utf8');
+                pwd = buffer.toString("utf8");
 
                 // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
                 // @ts-ignore TODO: expose `soap` on Connection however appropriate
@@ -22,10 +22,10 @@ export default class PasswordGenerator {
             } catch (e) {
                 console.log(e);
                 pwd = undefined;
-                if (e.message === 'INSUFFICIENT_ACCESS: Cannot set password for self') {
+                if (e.message === "INSUFFICIENT_ACCESS: Cannot set password for self") {
                     SFPLogger.log(
                         `${e.message}. Incase of scratch org, Add "features": ["EnableSetPasswordInApi"] in your project-scratch-def.json then create your scratch org.`,
-                        LoggerLevel.WARN
+                        LoggerLevel.WARN,
                     );
                 } else {
                     SFPLogger.log(`${e.message}`, LoggerLevel.WARN);

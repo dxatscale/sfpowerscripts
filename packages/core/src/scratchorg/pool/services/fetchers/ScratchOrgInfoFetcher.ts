@@ -1,8 +1,8 @@
-import SFPLogger, { LoggerLevel } from '@dxatscale/sfp-logger';
-import { Org } from '@salesforce/core';
-import ScratchOrg from '../../../ScratchOrg';
-const retry = require('async-retry');
-const ORDER_BY_FILTER = ' ORDER BY CreatedDate ASC';
+import SFPLogger, { LoggerLevel } from "@dxatscale/sfp-logger";
+import { Org } from "@salesforce/core";
+import ScratchOrg from "../../../ScratchOrg";
+const retry = require("async-retry");
+const ORDER_BY_FILTER = " ORDER BY CreatedDate ASC";
 
 export default class ScratchOrgInfoFetcher {
     constructor(private hubOrg: Org) {}
@@ -17,25 +17,25 @@ export default class ScratchOrgInfoFetcher {
                 scratchOrg.orgId = scratchOrg.orgId.slice(0, 15);
                 return `'${scratchOrg.orgId}'`;
             })
-            .join(',');
+            .join(",");
 
         let query = `SELECT Id, ScratchOrg FROM ScratchOrgInfo WHERE ScratchOrg IN ( ${scratchOrgIds} )`;
-        SFPLogger.log('QUERY:' + query, LoggerLevel.TRACE);
+        SFPLogger.log("QUERY:" + query, LoggerLevel.TRACE);
 
         return retry(
             async (bail) => {
                 const results = (await hubConn.query(query)) as any;
-                let resultAsObject = this.arrayToObject(results.records, 'ScratchOrg');
+                let resultAsObject = this.arrayToObject(results.records, "ScratchOrg");
 
                 SFPLogger.log(JSON.stringify(resultAsObject), LoggerLevel.TRACE);
 
                 scratchOrgs.forEach((scratchOrg) => {
-                    scratchOrg.recordId = resultAsObject[scratchOrg.orgId]['Id'];
+                    scratchOrg.recordId = resultAsObject[scratchOrg.orgId]["Id"];
                 });
 
                 return scratchOrgs;
             },
-            { retries: 3, minTimeout: 3000 }
+            { retries: 3, minTimeout: 3000 },
         );
     }
 
@@ -60,11 +60,11 @@ export default class ScratchOrgInfoFetcher {
                         query + `AND ( Allocation_status__c ='Available' OR Allocation_status__c = 'In Progress' ) `;
                 }
                 query = query + ORDER_BY_FILTER;
-                SFPLogger.log('QUERY:' + query, LoggerLevel.TRACE);
+                SFPLogger.log("QUERY:" + query, LoggerLevel.TRACE);
                 const results = (await hubConn.query(query)) as any;
                 return results;
             },
-            { retries: 3, minTimeout: 3000 }
+            { retries: 3, minTimeout: 3000 },
         );
     }
 
@@ -74,13 +74,13 @@ export default class ScratchOrgInfoFetcher {
         return retry(
             async (bail) => {
                 let query;
-                    query = `SELECT Id, Pooltag__c,SignupUsername,Description,ScratchOrg FROM ScratchOrgInfo WHERE Pooltag__c = null  AND Status = 'Active'`;
+                query = `SELECT Id, Pooltag__c,SignupUsername,Description,ScratchOrg FROM ScratchOrgInfo WHERE Pooltag__c = null  AND Status = 'Active'`;
                 query = query + ORDER_BY_FILTER;
-                SFPLogger.log('QUERY:' + query, LoggerLevel.TRACE);
+                SFPLogger.log("QUERY:" + query, LoggerLevel.TRACE);
                 const results = (await hubConn.query(query)) as any;
                 return results;
             },
-            { retries: 3, minTimeout: 3000 }
+            { retries: 3, minTimeout: 3000 },
         );
     }
 
@@ -91,11 +91,11 @@ export default class ScratchOrgInfoFetcher {
             async (bail) => {
                 let query = `SELECT Id, SignupUsername FROM ActiveScratchOrg WHERE ScratchOrgInfoId IN (${scrathOrgIds}) `;
 
-                SFPLogger.log('QUERY:' + query, LoggerLevel.TRACE);
+                SFPLogger.log("QUERY:" + query, LoggerLevel.TRACE);
                 const results = (await hubConn.query(query)) as any;
                 return results;
             },
-            { retries: 3, minTimeout: 3000 }
+            { retries: 3, minTimeout: 3000 },
         );
     }
 
@@ -105,12 +105,12 @@ export default class ScratchOrgInfoFetcher {
         return retry(
             async (bail) => {
                 let query = `SELECT Id, CreatedDate, ScratchOrg, ExpirationDate, SignupUsername, SignupEmail, Password__c, Allocation_status__c,LoginUrl FROM ScratchOrgInfo WHERE Pooltag__c = '${tag}' AND Status = 'Active' `;
-                SFPLogger.log('QUERY:' + query, LoggerLevel.TRACE);
+                SFPLogger.log("QUERY:" + query, LoggerLevel.TRACE);
                 const results = (await hubConn.query(query)) as any;
-                SFPLogger.log('RESULT:' + JSON.stringify(results), LoggerLevel.TRACE);
+                SFPLogger.log("RESULT:" + JSON.stringify(results), LoggerLevel.TRACE);
                 return results.totalSize;
             },
-            { retries: 3, minTimeout: 3000 }
+            { retries: 3, minTimeout: 3000 },
         );
     }
 
@@ -120,11 +120,11 @@ export default class ScratchOrgInfoFetcher {
         return retry(
             async (bail) => {
                 let query = `SELECT Id, CreatedDate, ScratchOrg, ExpirationDate, SignupUsername, SignupEmail, Password__c, Allocation_status__c,LoginUrl FROM ScratchOrgInfo WHERE Pooltag__c = '${tag}' AND Status = 'Active' `;
-                SFPLogger.log('QUERY:' + query, LoggerLevel.TRACE);
+                SFPLogger.log("QUERY:" + query, LoggerLevel.TRACE);
                 const results = (await hubConn.query(query)) as any;
                 return results.totalSize;
             },
-            { retries: 3, minTimeout: 3000 }
+            { retries: 3, minTimeout: 3000 },
         );
     }
 
@@ -135,21 +135,21 @@ export default class ScratchOrgInfoFetcher {
                 let query = `SELECT Id FROM ActiveScratchOrg WHERE ScratchOrg = '${scratchOrgId}'`;
                 let records = (await hubConn.query<any>(query)).records;
 
-                SFPLogger.log('Retrieve Active ScratchOrg Id:' + JSON.stringify(records), LoggerLevel.TRACE);
+                SFPLogger.log("Retrieve Active ScratchOrg Id:" + JSON.stringify(records), LoggerLevel.TRACE);
                 return records[0].Id;
             },
-            { retries: 3, minTimeout: 3000 }
+            { retries: 3, minTimeout: 3000 },
         );
     }
 
     public async getActiveScratchOrgRecordsAsMapByUser(hubOrg: Org) {
         let conn = this.hubOrg.getConnection();
         let query =
-            'SELECT count(id) In_Use, SignupEmail FROM ActiveScratchOrg GROUP BY SignupEmail ORDER BY count(id) DESC';
+            "SELECT count(id) In_Use, SignupEmail FROM ActiveScratchOrg GROUP BY SignupEmail ORDER BY count(id) DESC";
         const results = (await conn.query(query)) as any;
         SFPLogger.log(`Info Fetched: ${JSON.stringify(results)}`, LoggerLevel.DEBUG);
 
-        let scratchOrgRecordAsMapByUser = this.arrayToObject(results.records, 'SignupEmail');
+        let scratchOrgRecordAsMapByUser = this.arrayToObject(results.records, "SignupEmail");
         return scratchOrgRecordAsMapByUser;
     }
 
@@ -158,11 +158,11 @@ export default class ScratchOrgInfoFetcher {
         let query = `SELECT Id FROM ActiveScratchOrg WHERE SignupUsername = '${username}'`;
         return retry(
             async (bail) => {
-                SFPLogger.log('QUERY:' + query, LoggerLevel.TRACE);
+                SFPLogger.log("QUERY:" + query, LoggerLevel.TRACE);
                 const results = (await conn.query(query)) as any;
                 return results.records[0].Id;
             },
-            { retries: 3, minTimeout: 3000 }
+            { retries: 3, minTimeout: 3000 },
         );
     }
 
@@ -171,11 +171,11 @@ export default class ScratchOrgInfoFetcher {
         let query = `SELECT Id FROM ScratchOrgInfo WHERE SignupUsername = '${username}'`;
         return retry(
             async (bail) => {
-                SFPLogger.log('QUERY:' + query, LoggerLevel.TRACE);
+                SFPLogger.log("QUERY:" + query, LoggerLevel.TRACE);
                 const results = (await conn.query(query)) as any;
                 return results.records[0].Id;
             },
-            { retries: 3, minTimeout: 3000 }
+            { retries: 3, minTimeout: 3000 },
         );
     }
 

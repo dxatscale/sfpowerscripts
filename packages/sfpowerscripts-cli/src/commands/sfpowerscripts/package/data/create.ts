@@ -1,16 +1,16 @@
-import { flags } from '@salesforce/command';
-import { Messages } from '@salesforce/core';
-import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig';
-import { COLOR_SUCCESS, ConsoleLogger } from '@dxatscale/sfp-logger';
-import PackageCreateCommand from '../../../../PackageCreateCommand';
-import SfpPackage, { PackageType } from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
-import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder';
+import { flags } from "@salesforce/command";
+import { Messages } from "@salesforce/core";
+import ProjectConfig from "@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig";
+import { COLOR_SUCCESS, ConsoleLogger } from "@dxatscale/sfp-logger";
+import PackageCreateCommand from "../../../../PackageCreateCommand";
+import SfpPackage, { PackageType } from "@dxatscale/sfpowerscripts.core/lib/package/SfpPackage";
+import SfpPackageBuilder from "@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder";
 
 Messages.importMessagesDirectory(__dirname);
-const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'create_data_package');
+const messages = Messages.loadMessages("@dxatscale/sfpowerscripts", "create_data_package");
 
 export default class CreateDataPackage extends PackageCreateCommand {
-    public static description = messages.getMessage('commandDescription');
+    public static description = messages.getMessage("commandDescription");
 
     public static examples = [
         `$ sfdx sfpowerscripts:package:data:create -n mypackage -v <version>`,
@@ -25,51 +25,51 @@ export default class CreateDataPackage extends PackageCreateCommand {
     protected static flagsConfig = {
         package: flags.string({
             required: true,
-            char: 'n',
-            description: messages.getMessage('packageFlagDescription'),
+            char: "n",
+            description: messages.getMessage("packageFlagDescription"),
         }),
         versionnumber: flags.string({
             required: true,
-            char: 'v',
-            description: messages.getMessage('versionNumberFlagDescription'),
+            char: "v",
+            description: messages.getMessage("versionNumberFlagDescription"),
         }),
         artifactdir: flags.directory({
-            description: messages.getMessage('artifactDirectoryFlagDescription'),
-            default: 'artifacts',
+            description: messages.getMessage("artifactDirectoryFlagDescription"),
+            default: "artifacts",
         }),
         diffcheck: flags.boolean({
-            description: messages.getMessage('diffCheckFlagDescription'),
+            description: messages.getMessage("diffCheckFlagDescription"),
         }),
         branch: flags.string({
-            description: messages.getMessage('branchFlagDescription'),
+            description: messages.getMessage("branchFlagDescription"),
         }),
         gittag: flags.boolean({
-            description: messages.getMessage('gitTagFlagDescription'),
+            description: messages.getMessage("gitTagFlagDescription"),
         }),
         repourl: flags.string({
-            char: 'r',
-            description: messages.getMessage('repoUrlFlagDescription'),
+            char: "r",
+            description: messages.getMessage("repoUrlFlagDescription"),
         }),
         refname: flags.string({
-            description: messages.getMessage('refNameFlagDescription'),
+            description: messages.getMessage("refNameFlagDescription"),
         }),
         loglevel: flags.enum({
-            description: 'logging level for this command invocation',
-            default: 'info',
+            description: "logging level for this command invocation",
+            default: "info",
             required: false,
             options: [
-                'trace',
-                'debug',
-                'info',
-                'warn',
-                'error',
-                'fatal',
-                'TRACE',
-                'DEBUG',
-                'INFO',
-                'WARN',
-                'ERROR',
-                'FATAL',
+                "trace",
+                "debug",
+                "info",
+                "warn",
+                "error",
+                "fatal",
+                "TRACE",
+                "DEBUG",
+                "INFO",
+                "WARN",
+                "ERROR",
+                "FATAL",
             ],
         }),
     };
@@ -89,7 +89,7 @@ export default class CreateDataPackage extends PackageCreateCommand {
                 sourceVersion: this.commitId,
                 repositoryUrl: this.repositoryURL,
                 branch: this.branch,
-            }
+            },
         );
 
         console.log(COLOR_SUCCESS(`Created data package ${sfpPackage.packageName}`));

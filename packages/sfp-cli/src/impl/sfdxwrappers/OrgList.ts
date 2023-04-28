@@ -1,4 +1,4 @@
-import { SFDXCommand } from '@dxatscale/sfdx-process-wrapper/lib/SFDXCommand';
+import { SFDXCommand } from "@dxatscale/sfdx-process-wrapper/lib/SFDXCommand";
 
 export default class OrgList extends SFDXCommand {
     public constructor() {
@@ -6,14 +6,14 @@ export default class OrgList extends SFDXCommand {
     }
 
     getSFDXCommand(): string {
-        return 'sfdx force:org:list';
+        return "sfdx force:org:list";
     }
 
     getCommandName(): string {
-        return 'OrgList';
+        return "OrgList";
     }
 
     getGeneratedParams(): string {
-        return '';
+        return "";
     }
 }

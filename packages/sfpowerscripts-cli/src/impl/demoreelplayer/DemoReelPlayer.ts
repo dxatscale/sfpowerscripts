@@ -1,8 +1,8 @@
-import path = require('path');
-import * as fs from 'fs-extra';
-import { marked } from 'marked';
-const TerminalRenderer = require('marked-terminal');
-import { delay } from '@dxatscale/sfpowerscripts.core/lib/utils/Delay';
+import path = require("path");
+import * as fs from "fs-extra";
+import { marked } from "marked";
+const TerminalRenderer = require("marked-terminal");
+import { delay } from "@dxatscale/sfpowerscripts.core/lib/utils/Delay";
 
 export default class DemoReelPlayer {
     public async execute(demoReelFolderPath: string) {
@@ -12,12 +12,12 @@ export default class DemoReelPlayer {
             renderer: new TerminalRenderer(),
         });
 
-        let demoReel: demoReel = fs.readJSONSync(path.join(demoReelFolderPath, 'demo.json'), {
-            encoding: 'UTF-8',
+        let demoReel: demoReel = fs.readJSONSync(path.join(demoReelFolderPath, "demo.json"), {
+            encoding: "UTF-8",
         });
         for (let response of demoReel.sequence) {
             let ext = path.extname(path.resolve(demoReelFolderPath, response.filepath));
-            let data = fs.readFileSync(path.resolve(demoReelFolderPath, response.filepath), 'utf8');
+            let data = fs.readFileSync(path.resolve(demoReelFolderPath, response.filepath), "utf8");
 
             if (response.data) {
                 Object.entries(response.data).forEach((entry) => {
@@ -29,7 +29,7 @@ export default class DemoReelPlayer {
                 let count = 0;
                 while (count <= response.repeat) {
                     await delay(response.preDelay);
-                    if (ext === '.md') {
+                    if (ext === ".md") {
                         console.log(marked(data));
                     } else {
                         console.log(data);
@@ -39,7 +39,7 @@ export default class DemoReelPlayer {
                 }
             } else {
                 await delay(response.preDelay);
-                if (ext === '.md') {
+                if (ext === ".md") {
                     console.log(marked(data));
                 } else {
                     console.log(data);

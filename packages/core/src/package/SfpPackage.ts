@@ -1,5 +1,5 @@
-import _ from 'lodash';
-import { ApexSortedByType } from '../apex/parser/ApexTypeFetcher';
+import _ from "lodash";
+import { ApexSortedByType } from "../apex/parser/ApexTypeFetcher";
 
 export type ApexClasses = Array<string>;
 
@@ -56,7 +56,7 @@ export default class SfpPackage extends PackageInfo {
     public destructiveChangesPath: string;
     public resolvedPackageDirectory: string;
 
-    public version: string = '4';
+    public version: string = "4";
 
     //Just a few helpers to resolve api differene
     public get packageName(): string {
@@ -67,8 +67,7 @@ export default class SfpPackage extends PackageInfo {
         return this.package_version_number;
     }
 
-    public set versionNumber(versionNumber:string)
-    {
+    public set versionNumber(versionNumber: string) {
         this.package_version_number = versionNumber;
     }
 
@@ -101,16 +100,13 @@ export default class SfpPackage extends PackageInfo {
     }
 }
 
-export enum PackageType
-{
-   Unlocked = "unlocked",
-   Source = "source",
-   Data =  "data"
+export enum PackageType {
+    Unlocked = "unlocked",
+    Source = "source",
+    Data = "data",
 }
 
 export interface DiffPackageMetadata {
-  
- 
     sourceVersionFrom?: string;
     sourceVersionTo?: string;
     isProfilesFound?: boolean;
@@ -124,7 +120,7 @@ export interface DiffPackageMetadata {
     destructiveChanges?: any;
     sourceDir?: string;
     invalidatedTestClasses?: ApexClasses;
-    isPayLoadContainTypesSupportedByProfiles?:boolean;
+    isPayLoadContainTypesSupportedByProfiles?: boolean;
 }
 export interface SfpPackageParams {
     overridePackageTypeWith?: string;

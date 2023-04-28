@@ -1,12 +1,12 @@
-import { NativeMetricSender } from '../NativeMetricSender';
-import { telemetry } from '@newrelic/telemetry-sdk';
+import { NativeMetricSender } from "../NativeMetricSender";
+import { telemetry } from "@newrelic/telemetry-sdk";
 import {
     CountMetric,
     GaugeMetric,
     MetricBatch,
     MetricClient,
-} from '@newrelic/telemetry-sdk/dist/src/telemetry/metrics';
-import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
+} from "@newrelic/telemetry-sdk/dist/src/telemetry/metrics";
+import SFPLogger, { Logger, LoggerLevel } from "@dxatscale/sfp-logger";
 
 export class NewRelicMetricSender extends NativeMetricSender {
     constructor(logger: Logger) {
@@ -38,7 +38,7 @@ export class NewRelicMetricSender extends NativeMetricSender {
                 SFPLogger.log(
                     `Unable to transmit metrics for metric ${metric} due to` + error,
                     LoggerLevel.WARN,
-                    this.logger
+                    this.logger,
                 );
         });
     }
@@ -59,7 +59,7 @@ export class NewRelicMetricSender extends NativeMetricSender {
                 SFPLogger.log(
                     `Unable to transmit metrics for metric ${metric} due to` + error,
                     LoggerLevel.WARN,
-                    this.logger
+                    this.logger,
                 );
         });
     }

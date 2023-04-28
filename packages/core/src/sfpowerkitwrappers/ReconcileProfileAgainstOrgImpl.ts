@@ -1,18 +1,18 @@
-import child_process = require('child_process');
-import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
-import { onExit } from '../utils/OnExit';
+import child_process = require("child_process");
+import SFPLogger, { Logger, LoggerLevel } from "@dxatscale/sfp-logger";
+import { onExit } from "../utils/OnExit";
 
 export default class ReconcileProfileAgainstOrgImpl {
     public constructor(private target_org: string, private project_directory: string, private logger: Logger) {}
 
     public async exec() {
         let command = this.buildExecCommand();
-        let child = child_process.exec(command, { encoding: 'utf8', cwd: this.project_directory });
+        let child = child_process.exec(command, { encoding: "utf8", cwd: this.project_directory });
 
-        child.stdout.on('data', (data) => {
+        child.stdout.on("data", (data) => {
             SFPLogger.log(data.toString(), LoggerLevel.INFO, this.logger);
         });
-        child.stderr.on('data', (data) => {
+        child.stderr.on("data", (data) => {
             SFPLogger.log(data.toString(), LoggerLevel.INFO, this.logger);
         });
 

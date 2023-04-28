@@ -1,5 +1,5 @@
-import fs = require('fs-extra');
-import path = require('path');
+import fs = require("fs-extra");
+import path = require("path");
 
 export default class FileSystem {
     /**
@@ -11,7 +11,7 @@ export default class FileSystem {
     static readdirRecursive(
         searchDirectory: string,
         includeDirectories: boolean = false,
-        isAbsolute: boolean = false
+        isAbsolute: boolean = false,
     ): string[] {
         const result: string[] = [];
 

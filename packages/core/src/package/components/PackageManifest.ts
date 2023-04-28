@@ -1,8 +1,8 @@
-import path from 'path';
-import * as fs from 'fs-extra';
-import { ApexClasses } from '../SfpPackage';
-import xml2json from '../../utils/xml2json';
-const xml2js = require('xml2js');
+import path from "path";
+import * as fs from "fs-extra";
+import { ApexClasses } from "../SfpPackage";
+import xml2json from "../../utils/xml2json";
+const xml2js = require("xml2js");
 
 export default class PackageManifest {
     private _manifestJson;
@@ -32,7 +32,7 @@ export default class PackageManifest {
     static async create(mdapiDir: string): Promise<PackageManifest> {
         const packageManifest = new PackageManifest();
 
-        const packageXml: string = fs.readFileSync(path.join(mdapiDir, 'package.xml'), 'utf8');
+        const packageXml: string = fs.readFileSync(path.join(mdapiDir, "package.xml"), "utf8");
 
         packageManifest._manifestXml = packageXml;
         packageManifest._manifestJson = await xml2json(packageXml);
@@ -50,7 +50,7 @@ export default class PackageManifest {
         const packageManifest = new PackageManifest();
 
         const packageJson = {
-            $: { xmlns: 'http://soap.sforce.com/2006/04/metadata' },
+            $: { xmlns: "http://soap.sforce.com/2006/04/metadata" },
             types: [],
             version: apiVersion,
         };
@@ -71,7 +71,7 @@ export default class PackageManifest {
         });
 
         const builder = new xml2js.Builder({
-            xmldec: { version: '1.0', encoding: 'UTF-8' },
+            xmldec: { version: "1.0", encoding: "UTF-8" },
         });
 
         let packageObj = {
@@ -94,7 +94,7 @@ export default class PackageManifest {
         packageManifest._manifestJson = manifest;
 
         const builder = new xml2js.Builder({
-            xmldec: { version: '1.0', encoding: 'UTF-8' },
+            xmldec: { version: "1.0", encoding: "UTF-8" },
         });
 
         packageManifest._manifestXml = builder.buildObject(manifest);
@@ -112,12 +112,12 @@ export default class PackageManifest {
         if (this._manifestJson.Package.types) {
             if (Array.isArray(this._manifestJson.Package.types)) {
                 for (const type of this._manifestJson.Package.types) {
-                    if (type.name === 'Profile') {
+                    if (type.name === "Profile") {
                         isProfilesFound = true;
                         break;
                     }
                 }
-            } else if (this.manifestJson.Package.types.name === 'Profile') {
+            } else if (this.manifestJson.Package.types.name === "Profile") {
                 isProfilesFound = true;
             }
         }
@@ -129,18 +129,18 @@ export default class PackageManifest {
      *
      * @returns true or false, for whether there are profiles
      */
-     public isPermissionSetsInPackage(): boolean {
+    public isPermissionSetsInPackage(): boolean {
         let isPermissionSetFound = false;
 
         if (this._manifestJson.Package.types) {
             if (Array.isArray(this._manifestJson.Package.types)) {
                 for (const type of this._manifestJson.Package.types) {
-                    if (type.name === 'PermissionSet') {
+                    if (type.name === "PermissionSet") {
                         isPermissionSetFound = true;
                         break;
                     }
                 }
-            } else if (this.manifestJson.Package.types.name === 'PermissionSet') {
+            } else if (this.manifestJson.Package.types.name === "PermissionSet") {
                 isPermissionSetFound = true;
             }
         }
@@ -152,12 +152,12 @@ export default class PackageManifest {
         let isPermissionSetGroupFound = false;
         if (Array.isArray(this._manifestJson?.Package?.types)) {
             for (let type of this._manifestJson.Package.types) {
-                if (type.name === 'PermissionSetGroup') {
+                if (type.name === "PermissionSetGroup") {
                     isPermissionSetGroupFound = true;
                     break;
                 }
             }
-        } else if (this._manifestJson?.Package?.types?.name === 'PermissionSetGroup') {
+        } else if (this._manifestJson?.Package?.types?.name === "PermissionSetGroup") {
             isPermissionSetGroupFound = true;
         }
         return isPermissionSetGroupFound;
@@ -173,14 +173,14 @@ export default class PackageManifest {
         if (this._manifestJson.Package.types) {
             if (Array.isArray(this._manifestJson.Package.types)) {
                 for (const type of this._manifestJson.Package.types) {
-                    if (type.name === 'ApexClass' || type.name === 'ApexTrigger') {
+                    if (type.name === "ApexClass" || type.name === "ApexTrigger") {
                         isApexFound = true;
                         break;
                     }
                 }
             } else if (
-                this._manifestJson.Package.types.name === 'ApexClass' ||
-                this._manifestJson.Package.types.name === 'ApexTrigger'
+                this._manifestJson.Package.types.name === "ApexClass" ||
+                this._manifestJson.Package.types.name === "ApexTrigger"
             ) {
                 isApexFound = true;
             }
@@ -208,7 +208,7 @@ export default class PackageManifest {
 
         if (types) {
             for (const type of types) {
-                if (type.name === 'ApexTrigger') {
+                if (type.name === "ApexTrigger") {
                     if (type.members instanceof Array) {
                         triggers = type.members;
                     } else {
@@ -242,15 +242,15 @@ export default class PackageManifest {
 
     public isPayLoadContainTypesSupportedByProfiles(): boolean {
         const profileSupportedMetadataTypes = [
-            'ApexClass',
-            'CustomApplication',
-            'CustomObject',
-            'CustomField',
-            'Layout',
-            'ApexPage',
-            'CustomTab',
-            'RecordType',
-            'SystemPermissions',
+            "ApexClass",
+            "CustomApplication",
+            "CustomObject",
+            "CustomField",
+            "Layout",
+            "ApexPage",
+            "CustomTab",
+            "RecordType",
+            "SystemPermissions",
         ];
 
         let containsProfileSupportedType = false;

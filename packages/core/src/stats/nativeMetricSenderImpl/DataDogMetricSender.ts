@@ -1,6 +1,6 @@
-import { BufferedMetricsLogger } from 'datadog-metrics';
-import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
-import { NativeMetricSender } from '../NativeMetricSender';
+import { BufferedMetricsLogger } from "datadog-metrics";
+import SFPLogger, { Logger, LoggerLevel } from "@dxatscale/sfp-logger";
+import { NativeMetricSender } from "../NativeMetricSender";
 
 export class DataDogMetricsSender extends NativeMetricSender {
     constructor(logger: Logger) {
@@ -14,11 +14,11 @@ export class DataDogMetricsSender extends NativeMetricSender {
             this.nativeDataDogMetricsLogger = new BufferedMetricsLogger({
                 apiHost: apiHost,
                 apiKey: apiKey,
-                prefix: 'sfpowerscripts.',
+                prefix: "sfpowerscripts.",
                 flushIntervalSeconds: 0,
             });
         } catch (error) {
-            SFPLogger.log('Unable to intialize native datadog logger' + error, LoggerLevel.TRACE, this.logger);
+            SFPLogger.log("Unable to intialize native datadog logger" + error, LoggerLevel.TRACE, this.logger);
         }
     }
 
@@ -31,7 +31,7 @@ export class DataDogMetricsSender extends NativeMetricSender {
             SFPLogger.log(
                 `Unable to transmit metrics for metric ${metric} due to` + error,
                 LoggerLevel.TRACE,
-                this.logger
+                this.logger,
             );
         }
     }
@@ -45,7 +45,7 @@ export class DataDogMetricsSender extends NativeMetricSender {
             SFPLogger.log(
                 `Unable to transmit metrics for metric ${metric} due to` + error,
                 LoggerLevel.TRACE,
-                this.logger
+                this.logger,
             );
         }
     }

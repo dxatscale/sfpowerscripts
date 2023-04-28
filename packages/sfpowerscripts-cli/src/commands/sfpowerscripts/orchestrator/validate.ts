@@ -1,20 +1,20 @@
-import { Messages } from '@salesforce/core';
-import SfpowerscriptsCommand from '../../../SfpowerscriptsCommand';
-import { flags } from '@salesforce/command';
-import ValidateImpl, { ValidateAgainst, ValidateProps, ValidationMode } from '../../../impl/validate/ValidateImpl';
-import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender';
-import SFPLogger, { COLOR_HEADER, COLOR_KEY_MESSAGE } from '@dxatscale/sfp-logger';
-import ValidateError from '../../../errors/ValidateError';
-import ValidateResult from '../../../impl/validate/ValidateResult';
-import * as fs from 'fs-extra';
+import { Messages } from "@salesforce/core";
+import SfpowerscriptsCommand from "../../../SfpowerscriptsCommand";
+import { flags } from "@salesforce/command";
+import ValidateImpl, { ValidateAgainst, ValidateProps, ValidationMode } from "../../../impl/validate/ValidateImpl";
+import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender";
+import SFPLogger, { COLOR_HEADER, COLOR_KEY_MESSAGE } from "@dxatscale/sfp-logger";
+import ValidateError from "../../../errors/ValidateError";
+import ValidateResult from "../../../impl/validate/ValidateResult";
+import * as fs from "fs-extra";
 
 Messages.importMessagesDirectory(__dirname);
-const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'validate');
+const messages = Messages.loadMessages("@dxatscale/sfpowerscripts", "validate");
 
 export default class Validate extends SfpowerscriptsCommand {
     protected static requiresProject = true;
 
-    public static description = messages.getMessage('commandDescription');
+    public static description = messages.getMessage("commandDescription");
 
     protected static requiresDevhubUsername = true;
 
@@ -22,91 +22,91 @@ export default class Validate extends SfpowerscriptsCommand {
         `$ sfdx sfpowerscripts:orchestrator:validate -p "POOL_TAG_1,POOL_TAG_2" -v <devHubUsername>`,
     ];
 
-    static aliases = ['sfpowerscripts:orchestrator:validateAgainstPool'];
+    static aliases = ["sfpowerscripts:orchestrator:validateAgainstPool"];
 
     protected static flagsConfig = {
         pools: flags.array({
-            char: 'p',
-            description: messages.getMessage('poolsFlagDescription'),
+            char: "p",
+            description: messages.getMessage("poolsFlagDescription"),
             required: true,
         }),
         mode: flags.enum({
-            description: 'validation mode',
-            default: 'thorough',
+            description: "validation mode",
+            default: "thorough",
             required: true,
-            options: ['individual', 'fastfeedback', 'thorough', 'ff-release-config', 'thorough-release-config'],
+            options: ["individual", "fastfeedback", "thorough", "ff-release-config", "thorough-release-config"],
         }),
         releaseconfig: flags.string({
-            description: messages.getMessage('configFileFlagDescription'),
+            description: messages.getMessage("configFileFlagDescription"),
         }),
         coveragepercent: flags.integer({
-            description: messages.getMessage('coveragePercentFlagDescription'),
+            description: messages.getMessage("coveragePercentFlagDescription"),
             default: 75,
         }),
         disablesourcepkgoverride: flags.boolean({
-            description: messages.getMessage('disableSourcePackageOverride'),
+            description: messages.getMessage("disableSourcePackageOverride"),
             default: false,
         }),
         deletescratchorg: flags.boolean({
-            char: 'x',
-            description: messages.getMessage('deleteScratchOrgFlagDescription'),
+            char: "x",
+            description: messages.getMessage("deleteScratchOrgFlagDescription"),
             default: false,
         }),
         orginfo: flags.boolean({
-            description: messages.getMessage('orgInfoFlagDescription'),
+            description: messages.getMessage("orgInfoFlagDescription"),
             default: false,
         }),
         keys: flags.string({
             required: false,
-            description: messages.getMessage('keysFlagDescription'),
+            description: messages.getMessage("keysFlagDescription"),
         }),
         basebranch: flags.string({
-            description: messages.getMessage('baseBranchFlagDescription'),
+            description: messages.getMessage("baseBranchFlagDescription"),
         }),
         enableimpactanalysis: flags.boolean({
-            description: messages.getMessage('enableImpactAnalysisFlagDescription'),
-            dependsOn: ['basebranch'],
+            description: messages.getMessage("enableImpactAnalysisFlagDescription"),
+            dependsOn: ["basebranch"],
         }),
         enabledependencyvalidation: flags.boolean({
-            description: messages.getMessage('enableDependencyValidation'),
-            dependsOn: ['basebranch'],
+            description: messages.getMessage("enableDependencyValidation"),
+            dependsOn: ["basebranch"],
         }),
         tag: flags.string({
-            description: messages.getMessage('tagFlagDescription'),
+            description: messages.getMessage("tagFlagDescription"),
         }),
         disableparalleltesting: flags.boolean({
-            description: messages.getMessage('disableParallelTestingFlagDescription'),
+            description: messages.getMessage("disableParallelTestingFlagDescription"),
             default: false,
         }),
         disablediffcheck: flags.boolean({
-            description: messages.getMessage('disableDiffCheckFlagDescription'),
+            description: messages.getMessage("disableDiffCheckFlagDescription"),
             default: false,
         }),
         disableartifactupdate: flags.boolean({
-            description: messages.getMessage('disableArtifactUpdateFlagDescription'),
+            description: messages.getMessage("disableArtifactUpdateFlagDescription"),
             default: false,
         }),
         logsgroupsymbol: flags.array({
-            char: 'g',
-            description: messages.getMessage('logsGroupSymbolFlagDescription'),
+            char: "g",
+            description: messages.getMessage("logsGroupSymbolFlagDescription"),
         }),
         loglevel: flags.enum({
-            description: 'logging level for this command invocation',
-            default: 'info',
+            description: "logging level for this command invocation",
+            default: "info",
             required: false,
             options: [
-                'trace',
-                'debug',
-                'info',
-                'warn',
-                'error',
-                'fatal',
-                'TRACE',
-                'DEBUG',
-                'INFO',
-                'WARN',
-                'ERROR',
-                'FATAL',
+                "trace",
+                "debug",
+                "info",
+                "warn",
+                "error",
+                "fatal",
+                "TRACE",
+                "DEBUG",
+                "INFO",
+                "WARN",
+                "ERROR",
+                "FATAL",
             ],
         }),
     };
@@ -133,20 +133,19 @@ export default class Validate extends SfpowerscriptsCommand {
                                 (Object.values(ValidationMode) as string[]).indexOf(this.flags.mode)
                             ]
                         ]
-                    }`
-                )}`
-            )
+                    }`,
+                )}`,
+            ),
         );
         if (this.flags.mode != ValidationMode.FAST_FEEDBACK) {
             SFPLogger.log(COLOR_HEADER(`Coverage Percentage: ${this.flags.coveragepercent}`));
         }
         SFPLogger.log(
-            COLOR_HEADER(`Dependency Validation: ${this.flags.enabledependencyvalidation ? 'true' : 'false'}`)
+            COLOR_HEADER(`Dependency Validation: ${this.flags.enabledependencyvalidation ? "true" : "false"}`),
         );
-       
 
         SFPLogger.log(
-            COLOR_HEADER(`-------------------------------------------------------------------------------------------`)
+            COLOR_HEADER(`-------------------------------------------------------------------------------------------`),
         );
 
         let validateResult: ValidateResult;
@@ -172,61 +171,61 @@ export default class Validate extends SfpowerscriptsCommand {
                 diffcheck: !this.flags.disablediffcheck,
                 disableArtifactCommit: this.flags.disableartifactupdate,
                 orgInfo: this.flags.orginfo,
-                disableSourcePackageOverride : this.flags.disablesourcepkgoverride,
-                disableParallelTestExecution: this.flags.disableparalleltesting
+                disableSourcePackageOverride: this.flags.disablesourcepkgoverride,
+                disableParallelTestExecution: this.flags.disableparalleltesting,
             };
 
-            setReleaseConfigForReleaseBasedModes(this.flags.releaseconfig,validateProps);
+            setReleaseConfigForReleaseBasedModes(this.flags.releaseconfig, validateProps);
 
             let validateImpl: ValidateImpl = new ValidateImpl(validateProps);
 
             validateResult = await validateImpl.exec();
 
-            SFPStatsSender.logCount('validate.succeeded', tags);
+            SFPStatsSender.logCount("validate.succeeded", tags);
         } catch (error) {
             if (error instanceof ValidateError) {
                 validateResult = error.data;
             } else SFPLogger.log(error.message);
 
-            SFPStatsSender.logCount('validate.failed', tags);
+            SFPStatsSender.logCount("validate.failed", tags);
 
             process.exitCode = 1;
         } finally {
             let totalElapsedTime: number = Date.now() - executionStartTime;
 
-            SFPStatsSender.logGauge('validate.duration', totalElapsedTime, tags);
+            SFPStatsSender.logGauge("validate.duration", totalElapsedTime, tags);
 
-            SFPStatsSender.logCount('validate.scheduled', tags);
+            SFPStatsSender.logCount("validate.scheduled", tags);
 
             if (validateResult) {
                 SFPStatsSender.logGauge(
-                    'validate.packages.scheduled',
+                    "validate.packages.scheduled",
                     validateResult.deploymentResult?.scheduled,
-                    tags
+                    tags,
                 );
 
                 SFPStatsSender.logGauge(
-                    'validate.packages.succeeded',
+                    "validate.packages.succeeded",
                     validateResult.deploymentResult?.deployed?.length,
-                    tags
+                    tags,
                 );
 
                 SFPStatsSender.logGauge(
-                    'validate.packages.failed',
+                    "validate.packages.failed",
                     validateResult.deploymentResult?.failed?.length,
-                    tags
+                    tags,
                 );
             }
         }
 
-        function setReleaseConfigForReleaseBasedModes(releaseconfigPath:string,validateProps: ValidateProps) {
-            if (validateProps.validationMode == ValidationMode.FASTFEEDBACK_LIMITED_BY_RELEASE_CONFIG ||
-                validateProps.validationMode == ValidationMode.THOROUGH_LIMITED_BY_RELEASE_CONFIG) {
+        function setReleaseConfigForReleaseBasedModes(releaseconfigPath: string, validateProps: ValidateProps) {
+            if (
+                validateProps.validationMode == ValidationMode.FASTFEEDBACK_LIMITED_BY_RELEASE_CONFIG ||
+                validateProps.validationMode == ValidationMode.THOROUGH_LIMITED_BY_RELEASE_CONFIG
+            ) {
                 if (releaseconfigPath && fs.existsSync(releaseconfigPath)) {
                     validateProps.releaseConfigPath = releaseconfigPath;
-                }
-
-                else {
+                } else {
                     if (!releaseconfigPath)
                         throw new Error(`Release config is required when using validation by release config`);
                     else if (!fs.existsSync(releaseconfigPath))

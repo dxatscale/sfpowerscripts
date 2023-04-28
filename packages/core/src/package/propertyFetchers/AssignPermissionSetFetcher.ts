@@ -1,6 +1,6 @@
-import { Logger } from '@dxatscale/sfp-logger';
-import SfpPackage from '../SfpPackage';
-import PropertyFetcher from './PropertyFetcher';
+import { Logger } from "@dxatscale/sfp-logger";
+import SfpPackage from "../SfpPackage";
+import PropertyFetcher from "./PropertyFetcher";
 
 export default class AssignPermissionSetFetcher implements PropertyFetcher {
     public getSfpowerscriptsProperties(packageContents: SfpPackage, packageLogger?: Logger) {

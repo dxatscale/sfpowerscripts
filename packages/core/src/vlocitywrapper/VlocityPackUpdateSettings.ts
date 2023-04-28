@@ -1,5 +1,5 @@
-import { SFDXCommand } from '@dxatscale/sfdx-process-wrapper/lib/SFDXCommand';
-import { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
+import { SFDXCommand } from "@dxatscale/sfdx-process-wrapper/lib/SFDXCommand";
+import { Logger, LoggerLevel } from "@dxatscale/sfp-logger";
 
 export default class VlocityPackUpdateSettings extends SFDXCommand {
     public constructor(project_directory: string, target_org: string, logger: Logger, logLevel: LoggerLevel) {
@@ -7,10 +7,10 @@ export default class VlocityPackUpdateSettings extends SFDXCommand {
     }
 
     getSFDXCommand(): string {
-        return 'vlocity';
+        return "vlocity";
     }
     getCommandName(): string {
-        return 'vlocity:packUpdateSettings';
+        return "vlocity:packUpdateSettings";
     }
 
     getGeneratedParams(): string {

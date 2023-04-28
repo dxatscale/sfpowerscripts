@@ -1,11 +1,11 @@
-import { ReleaseChangelog, Release, Artifact } from './ReleaseChangelog';
-import CommitUpdater from './CommitUpdater';
-import WorkItemUpdater from './WorkItemUpdater';
-import OrgsUpdater from './OrgsUpdater';
-import ReadPackageChangelog from './ReadPackageChangelog';
-import * as fs from 'fs-extra';
-import SfpPackage from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
-var hash = require('object-hash');
+import { ReleaseChangelog, Release, Artifact } from "./ReleaseChangelog";
+import CommitUpdater from "./CommitUpdater";
+import WorkItemUpdater from "./WorkItemUpdater";
+import OrgsUpdater from "./OrgsUpdater";
+import ReadPackageChangelog from "./ReadPackageChangelog";
+import * as fs from "fs-extra";
+import SfpPackage from "@dxatscale/sfpowerscripts.core/lib/package/SfpPackage";
+var hash = require("object-hash");
 
 export default class ReleaseChangelogUpdater {
     constructor(
@@ -14,7 +14,7 @@ export default class ReleaseChangelogUpdater {
         private artifactsToSfpPackage: { [p: string]: SfpPackage },
         private packagesToChangelogFilePaths: { [p: string]: string },
         private workItemFilters: string[],
-        private org: string
+        private org: string,
     ) {}
 
     update(): ReleaseChangelog {
@@ -35,14 +35,14 @@ export default class ReleaseChangelogUpdater {
             }
 
             let readPackageChangelog: ReadPackageChangelog = (changelogFilePath: string) => {
-                return JSON.parse(fs.readFileSync(changelogFilePath, 'utf8'));
+                return JSON.parse(fs.readFileSync(changelogFilePath, "utf8"));
             };
 
             new CommitUpdater(
                 latestRelease,
                 artifactsToLatestCommitId,
                 this.packagesToChangelogFilePaths,
-                readPackageChangelog
+                readPackageChangelog,
             ).update();
 
             new WorkItemUpdater(latestRelease, this.workItemFilters).update();
@@ -115,7 +115,7 @@ export default class ReleaseChangelogUpdater {
     private initLatestRelease(
         releaseName: string,
         buildNumber: number,
-        artifactsToSfpPackage: { [p: string]: SfpPackage }
+        artifactsToSfpPackage: { [p: string]: SfpPackage },
     ): Release {
         let latestRelease: Release = {
             names: [releaseName],
@@ -135,7 +135,7 @@ export default class ReleaseChangelogUpdater {
                 commits: undefined,
             };
 
-            latestRelease['artifacts'].push(artifact);
+            latestRelease["artifacts"].push(artifact);
         }
 
         latestRelease.hashId = hash(latestRelease.artifacts);

@@ -1,11 +1,11 @@
-import Git from '../git/Git';
-import IgnoreFiles from '../ignore/IgnoreFiles';
-import ProjectConfig from '../project/ProjectConfig';
-import MetadataFiles from '../metadata/MetadataFiles';
-import Component from './Component';
-import * as fs from 'fs-extra';
-import path = require('path');
-import SFPLogger, { LoggerLevel } from '@dxatscale/sfp-logger';
+import Git from "../git/Git";
+import IgnoreFiles from "../ignore/IgnoreFiles";
+import ProjectConfig from "../project/ProjectConfig";
+import MetadataFiles from "../metadata/MetadataFiles";
+import Component from "./Component";
+import * as fs from "fs-extra";
+import path = require("path");
+import SFPLogger, { LoggerLevel } from "@dxatscale/sfp-logger";
 
 export default class ChangedComponentsFetcher {
     constructor(private baseBranch: string) {}
@@ -17,7 +17,7 @@ export default class ChangedComponentsFetcher {
 
         let projectConfig = ProjectConfig.getSFDXProjectConfig(null);
 
-        if (!this.baseBranch.includes('origin')) {
+        if (!this.baseBranch.includes("origin")) {
             // for user convenience, use full ref name to avoid errors involving missing local refs
             this.baseBranch = `remotes/origin/${this.baseBranch}`;
         }
@@ -28,12 +28,12 @@ export default class ChangedComponentsFetcher {
         diff = diff.filter((filepath) =>
             projectConfig.packageDirectories.find((pkg) =>
                 // TODO: make comparison more robust
-                filepath.includes(pkg.path)
-            )
+                filepath.includes(pkg.path),
+            ),
         );
 
         // Apply root forceignore to the diff
-        let ignoreFiles: IgnoreFiles = new IgnoreFiles(fs.readFileSync('.forceignore', 'utf8'));
+        let ignoreFiles: IgnoreFiles = new IgnoreFiles(fs.readFileSync(".forceignore", "utf8"));
         diff = ignoreFiles.filter(diff);
 
         let componentSuccesses = this.getComponentSuccessesFromReports();
@@ -48,7 +48,7 @@ export default class ChangedComponentsFetcher {
                 const packageName = projectConfig.packageDirectories[indexOfPackage].package;
 
                 const componentSuccess = componentSuccesses.find(
-                    (component) => component.fullName === fullApiName && component.id
+                    (component) => component.fullName === fullApiName && component.id,
                 );
 
                 if (componentSuccess) {
@@ -80,11 +80,11 @@ export default class ChangedComponentsFetcher {
     private getComponentSuccessesFromReports(): any[] {
         let componentSuccesses: any[] = [];
 
-        const reportsDir: string = '.sfpowerscripts/mdapiDeployReports';
+        const reportsDir: string = ".sfpowerscripts/mdapiDeployReports";
         if (fs.existsSync(reportsDir)) {
             let reports = fs.readdirSync(reportsDir);
             reports.forEach((report) => {
-                let data = JSON.parse(fs.readFileSync(path.join(reportsDir, report), 'utf8'));
+                let data = JSON.parse(fs.readFileSync(path.join(reportsDir, report), "utf8"));
                 componentSuccesses = componentSuccesses.concat(data.result.details.componentSuccesses);
             });
         }

@@ -1,5 +1,5 @@
-import { SFDXCommand } from '@dxatscale/sfdx-process-wrapper/lib/SFDXCommand';
-import { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
+import { SFDXCommand } from "@dxatscale/sfdx-process-wrapper/lib/SFDXCommand";
+import { Logger, LoggerLevel } from "@dxatscale/sfp-logger";
 
 export default class SFDMURunImpl extends SFDXCommand {
     public constructor(
@@ -8,16 +8,16 @@ export default class SFDMURunImpl extends SFDXCommand {
         private targetOrgDomain: string,
         private packageDirectory: string,
         logger: Logger,
-        logLevel: LoggerLevel
+        logLevel: LoggerLevel,
     ) {
         super(target_org, working_directory, logger, logLevel);
     }
 
     getSFDXCommand(): string {
-        return 'sfdx sfdmu:run';
+        return "sfdx sfdmu:run";
     }
     getCommandName(): string {
-        return 'sfdmu:run';
+        return "sfdmu:run";
     }
 
     getGeneratedParams(): string {

@@ -8,7 +8,7 @@ export interface DeploySourceResult {
     deploy_id: string;
     result: boolean;
     message: string;
-    response?:MetadataApiDeployStatus
+    response?: MetadataApiDeployStatus;
 }
 
 export enum DeploymentType {

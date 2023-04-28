@@ -1,4 +1,4 @@
-import { Org } from '@salesforce/core';
+import { Org } from "@salesforce/core";
 
 export default class ScratchOrgLimitsFetcher {
     constructor(private hubOrg: Org) {}

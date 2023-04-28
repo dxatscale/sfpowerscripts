@@ -1,5 +1,5 @@
-import UndirectedGraph from './UndirectedGraph';
-import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig';
+import UndirectedGraph from "./UndirectedGraph";
+import ProjectConfig from "@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig";
 
 /**
  * Class for the manipulation of package build collections
@@ -37,7 +37,7 @@ export default class BuildCollections {
                                 this._graph.addVertex(packageInCollection);
                             } else
                                 throw new Error(
-                                    `Package '${packageInCollection}' in collection ${pkg.buildCollection} is not a valid package`
+                                    `Package '${packageInCollection}' in collection ${pkg.buildCollection} is not a valid package`,
                                 );
                         }
 
@@ -45,7 +45,7 @@ export default class BuildCollections {
                     });
                 } else
                     throw new Error(
-                        `Property 'buildCollection' must be of type Array. Received ${pkg.buildCollection}`
+                        `Property 'buildCollection' must be of type Array. Received ${pkg.buildCollection}`,
                     );
             }
         }

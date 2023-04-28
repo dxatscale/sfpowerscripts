@@ -1,7 +1,7 @@
-import { Org } from '@salesforce/core';
-import { PoolBaseImpl } from './PoolBaseImpl';
-import ScratchOrgInfoFetcher from './services/fetchers/ScratchOrgInfoFetcher';
-import ScratchOrgOperator from '../ScratchOrgOperator';
+import { Org } from "@salesforce/core";
+import { PoolBaseImpl } from "./PoolBaseImpl";
+import ScratchOrgInfoFetcher from "./services/fetchers/ScratchOrgInfoFetcher";
+import ScratchOrgOperator from "../ScratchOrgOperator";
 
 export default class PoolOrgDeleteImpl extends PoolBaseImpl {
     username: string;
@@ -19,7 +19,7 @@ export default class PoolOrgDeleteImpl extends PoolBaseImpl {
         } catch (err) {
             throw new Error(
                 `Either the scratch org doesn't exist or you do not have the correct permissions, Failed with ` +
-                    err.message
+                    err.message,
             );
         }
     }

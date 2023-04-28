@@ -1,30 +1,29 @@
-import BatchingTopoSort from './BatchingTopoSort';
-import DependencyHelper from './DependencyHelper';
-import Bottleneck from 'bottleneck';
-import PackageDiffImpl, { PackageDiffOptions } from '@dxatscale/sfpowerscripts.core/lib/package/diff/PackageDiffImpl';
-import { EOL } from 'os';
-import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender';
-import { Stage } from '../Stage';
-import * as fs from 'fs-extra';
-import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig';
-import BuildCollections from './BuildCollections';
-const Table = require('cli-table');
-import SFPLogger, { COLOR_KEY_VALUE, ConsoleLogger, FileLogger, LoggerLevel, VoidLogger } from '@dxatscale/sfp-logger';
-import { COLOR_KEY_MESSAGE } from '@dxatscale/sfp-logger';
-import { COLOR_HEADER } from '@dxatscale/sfp-logger';
-import { COLOR_ERROR } from '@dxatscale/sfp-logger';
-import SfpPackage, { PackageType } from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
-import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder';
-import getFormattedTime from '@dxatscale/sfpowerscripts.core/lib/utils/GetFormattedTime';
-import { COLON_MIDDLE_BORDER_TABLE, ZERO_BORDER_TABLE } from '../../ui/TableConstants';
-import PackageDependencyResolver from '@dxatscale/sfpowerscripts.core/lib/package/dependencies/PackageDependencyResolver';
-import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
-import Git from '@dxatscale/sfpowerscripts.core/lib/git/Git';
-import TransitiveDependencyResolver from '@dxatscale/sfpowerscripts.core/lib/package/dependencies/TransitiveDependencyResolver';
-import GroupConsoleLogs from '../../ui/GroupConsoleLogs';
+import BatchingTopoSort from "./BatchingTopoSort";
+import DependencyHelper from "./DependencyHelper";
+import Bottleneck from "bottleneck";
+import PackageDiffImpl, { PackageDiffOptions } from "@dxatscale/sfpowerscripts.core/lib/package/diff/PackageDiffImpl";
+import { EOL } from "os";
+import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender";
+import { Stage } from "../Stage";
+import * as fs from "fs-extra";
+import ProjectConfig from "@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig";
+import BuildCollections from "./BuildCollections";
+const Table = require("cli-table");
+import SFPLogger, { COLOR_KEY_VALUE, ConsoleLogger, FileLogger, LoggerLevel, VoidLogger } from "@dxatscale/sfp-logger";
+import { COLOR_KEY_MESSAGE } from "@dxatscale/sfp-logger";
+import { COLOR_HEADER } from "@dxatscale/sfp-logger";
+import { COLOR_ERROR } from "@dxatscale/sfp-logger";
+import SfpPackage, { PackageType } from "@dxatscale/sfpowerscripts.core/lib/package/SfpPackage";
+import SfpPackageBuilder from "@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder";
+import getFormattedTime from "@dxatscale/sfpowerscripts.core/lib/utils/GetFormattedTime";
+import { COLON_MIDDLE_BORDER_TABLE, ZERO_BORDER_TABLE } from "../../ui/TableConstants";
+import PackageDependencyResolver from "@dxatscale/sfpowerscripts.core/lib/package/dependencies/PackageDependencyResolver";
+import SFPOrg from "@dxatscale/sfpowerscripts.core/lib/org/SFPOrg";
+import Git from "@dxatscale/sfpowerscripts.core/lib/git/Git";
+import TransitiveDependencyResolver from "@dxatscale/sfpowerscripts.core/lib/package/dependencies/TransitiveDependencyResolver";
+import GroupConsoleLogs from "../../ui/GroupConsoleLogs";
 import UserDefinedExternalDependency from "@dxatscale/sfpowerscripts.core/lib/project/UserDefinedExternalDependency";
-import PackageDependencyDisplayer from '@dxatscale/sfpowerscripts.core/lib/display/PackageDependencyDisplayer';
-
+import PackageDependencyDisplayer from "@dxatscale/sfpowerscripts.core/lib/display/PackageDependencyDisplayer";
 
 const PRIORITY_UNLOCKED_PKG_WITH_DEPENDENCY = 1;
 const PRIORITY_UNLOCKED_PKG_WITHOUT_DEPENDENCY = 3;
@@ -46,7 +45,7 @@ export interface BuildProps {
     currentStage: Stage;
     baseBranch?: string;
     diffOptions?: PackageDiffOptions;
-    includeOnlyPackages?:string[]
+    includeOnlyPackages?: string[];
 }
 export default class BuildImpl {
     private limiter: Bottleneck;
@@ -92,7 +91,7 @@ export default class BuildImpl {
         this.repository_url = await git.getRemoteOriginUrl(this.props.repourl);
         this.commit_id = await git.getHeadCommit();
 
-        this.packagesToBeBuilt = this.getPackagesToBeBuilt(this.props.projectDirectory,this.props.includeOnlyPackages);
+        this.packagesToBeBuilt = this.getPackagesToBeBuilt(this.props.projectDirectory, this.props.includeOnlyPackages);
 
         // Read Manifest
         this.projectConfig = ProjectConfig.getSFDXProjectConfig(this.props.projectDirectory);
@@ -105,7 +104,7 @@ export default class BuildImpl {
         if (this.props.isDiffCheckEnabled) {
             let packagesToBeBuiltWithReasons = await this.filterPackagesToBeBuiltByChanged(
                 this.props.projectDirectory,
-                this.packagesToBeBuilt
+                this.packagesToBeBuilt,
             );
             table = this.createDiffPackageScheduledDisplayedAsATable(packagesToBeBuiltWithReasons);
             this.packagesToBeBuilt = Array.from(packagesToBeBuiltWithReasons.keys()); //Assign it back to the instance variable
@@ -113,25 +112,23 @@ export default class BuildImpl {
             table = this.createAllPackageScheduledDisplayedAsATable();
         }
         //Log Packages to be built
-        SFPLogger.log(COLOR_KEY_MESSAGE('Packages scheduled for build'));
+        SFPLogger.log(COLOR_KEY_MESSAGE("Packages scheduled for build"));
         SFPLogger.log(table.toString());
 
-        
         //Fix transitive dependency gap
-        let groupDependencyResolutionLogs = new GroupConsoleLogs("Resolving dependencies",this.logger).begin();
-        this.projectConfig = await this.resolvePackageDependencies(this.projectConfig)
+        let groupDependencyResolutionLogs = new GroupConsoleLogs("Resolving dependencies", this.logger).begin();
+        this.projectConfig = await this.resolvePackageDependencies(this.projectConfig);
         groupDependencyResolutionLogs.end();
 
-
-        let buildPackagesLogs = new GroupConsoleLogs("Building Packages",this.logger).begin();
+        let buildPackagesLogs = new GroupConsoleLogs("Building Packages", this.logger).begin();
 
         for await (const pkg of this.packagesToBeBuilt) {
             let type = this.getPriorityandTypeOfAPackage(this.projectConfig, pkg).type;
-            SFPStatsSender.logCount('build.scheduled.packages', {
+            SFPStatsSender.logCount("build.scheduled.packages", {
                 package: pkg,
                 type: type,
                 is_diffcheck_enabled: String(this.props.isDiffCheckEnabled),
-                is_dependency_validated: this.props.isQuickBuild ? 'false' : 'true',
+                is_dependency_validated: this.props.isQuickBuild ? "false" : "true",
                 pr_mode: String(this.props.isBuildAllAsSourcePackages),
             });
         }
@@ -154,7 +151,7 @@ export default class BuildImpl {
             const packageDependencyResolver = new PackageDependencyResolver(
                 this.sfpOrg.getConnection(),
                 this.projectConfig,
-                this.packagesToBeBuilt
+                this.packagesToBeBuilt,
             );
             this.projectConfig = await packageDependencyResolver.resolvePackageDependencyVersions();
         }
@@ -165,21 +162,21 @@ export default class BuildImpl {
             let { priority, type } = this.getPriorityandTypeOfAPackage(this.projectConfig, pkg);
             let packagePromise: Promise<SfpPackage> = this.limiter
                 .schedule({ id: pkg, priority: priority }, () =>
-                    this.createPackage(type, pkg, this.props.isBuildAllAsSourcePackages)
+                    this.createPackage(type, pkg, this.props.isBuildAllAsSourcePackages),
                 )
                 .then(
                     (sfpPackage: SfpPackage) => {
                         this.generatedPackages.push(sfpPackage);
-                        SFPStatsSender.logCount('build.succeeded.packages', {
+                        SFPStatsSender.logCount("build.succeeded.packages", {
                             package: pkg,
                             type: type,
                             is_diffcheck_enabled: String(this.props.isDiffCheckEnabled),
-                            is_dependency_validated: this.props.isQuickBuild ? 'false' : 'true',
+                            is_dependency_validated: this.props.isQuickBuild ? "false" : "true",
                             pr_mode: String(this.props.isBuildAllAsSourcePackages),
                         });
                         this.queueChildPackages(sfpPackage);
                     },
-                    (reason: any) => this.handlePackageError(reason, pkg)
+                    (reason: any) => this.handlePackageError(reason, pkg),
                 );
 
             pushedPackages.push(pkg);
@@ -199,32 +196,31 @@ export default class BuildImpl {
         await this.recursiveAll(this.packageCreationPromises);
 
         buildPackagesLogs.end();
-        
+
         return {
             generatedPackages: this.generatedPackages,
             failedPackages: this.failedPackages,
         };
-      
     }
 
     private createDiffPackageScheduledDisplayedAsATable(packagesToBeBuilt: Map<string, any>) {
-        let tableHead = ['Package', 'Reason to be built', 'Last Known Tag'];
+        let tableHead = ["Package", "Reason to be built", "Last Known Tag"];
         if (this.isMultiConfigFilesEnabled && this.props.currentStage == Stage.BUILD) {
-            tableHead.push('Scratch Org Config File');
+            tableHead.push("Scratch Org Config File");
         }
         let table = new Table({
             head: tableHead,
-            chars: ZERO_BORDER_TABLE
+            chars: ZERO_BORDER_TABLE,
         });
         for (const pkg of packagesToBeBuilt.keys()) {
             let item = [
                 pkg,
                 packagesToBeBuilt.get(pkg).reason,
-                packagesToBeBuilt.get(pkg).tag ? packagesToBeBuilt.get(pkg).tag : '',
+                packagesToBeBuilt.get(pkg).tag ? packagesToBeBuilt.get(pkg).tag : "",
             ];
             if (this.isMultiConfigFilesEnabled && this.props.currentStage == Stage.BUILD) {
                 item.push(
-                    this.scratchOrgDefinitions[pkg] ? this.scratchOrgDefinitions[pkg] : this.props.configFilePath
+                    this.scratchOrgDefinitions[pkg] ? this.scratchOrgDefinitions[pkg] : this.props.configFilePath,
                 );
             }
 
@@ -234,19 +230,19 @@ export default class BuildImpl {
     }
 
     private createAllPackageScheduledDisplayedAsATable() {
-        let tableHead = ['Package', 'Reason to be built'];
+        let tableHead = ["Package", "Reason to be built"];
         if (this.isMultiConfigFilesEnabled && this.props.currentStage == Stage.BUILD) {
-            tableHead.push('Scratch Org Config File');
+            tableHead.push("Scratch Org Config File");
         }
         let table = new Table({
             head: tableHead,
-            chars: ZERO_BORDER_TABLE
+            chars: ZERO_BORDER_TABLE,
         });
         for (const pkg of this.packagesToBeBuilt) {
-            let item = [pkg, 'Activated as part of all package build'];
+            let item = [pkg, "Activated as part of all package build"];
             if (this.isMultiConfigFilesEnabled && this.props.currentStage == Stage.BUILD) {
                 item.push(
-                    this.scratchOrgDefinitions[pkg] ? this.scratchOrgDefinitions[pkg] : this.props.configFilePath
+                    this.scratchOrgDefinitions[pkg] ? this.scratchOrgDefinitions[pkg] : this.props.configFilePath,
                 );
             }
             table.push(item);
@@ -260,7 +256,7 @@ export default class BuildImpl {
         if (this.props.diffOptions)
             this.props.diffOptions.pathToReplacementForceIgnore = this.getPathToForceIgnoreForCurrentStage(
                 this.projectConfig,
-                this.props.currentStage
+                this.props.currentStage,
             );
 
         for await (const pkg of allPackagesInRepo) {
@@ -268,7 +264,7 @@ export default class BuildImpl {
                 new ConsoleLogger(),
                 pkg,
                 this.props.projectDirectory,
-                this.props.diffOptions
+                this.props.diffOptions,
             );
             let packageDiffCheck = await diffImpl.exec();
 
@@ -278,7 +274,7 @@ export default class BuildImpl {
                 if (buildCollections.isPackageInACollection(pkg)) {
                     buildCollections.listPackagesInCollection(pkg).forEach((packageInCollection) => {
                         if (!packagesToBeBuilt.has(packageInCollection)) {
-                            packagesToBeBuilt.set(packageInCollection, { reason: 'Part of a build collection' });
+                            packagesToBeBuilt.set(packageInCollection, { reason: "Part of a build collection" });
                         }
                     });
                 }
@@ -291,7 +287,7 @@ export default class BuildImpl {
         let projectConfig = ProjectConfig.getSFDXProjectConfig(projectDirectory);
         let sfdxpackages = [];
 
-        let packageDescriptors = projectConfig['packageDirectories'].filter((pkg) => {
+        let packageDescriptors = projectConfig["packageDirectories"].filter((pkg) => {
             if (
                 pkg.ignoreOnStage?.find((stage) => {
                     stage = stage.toLowerCase();
@@ -304,39 +300,42 @@ export default class BuildImpl {
 
         //Filter Packages
         if (includeOnlyPackages) {
-           //Display include only packages
-          printIncludeOnlyPackages();
+            //Display include only packages
+            printIncludeOnlyPackages();
             packageDescriptors = packageDescriptors.filter((pkg) => {
-                if (includeOnlyPackages.find((includedPkg)=>{return includedPkg == pkg.package}))
-                 return true;
+                if (
+                    includeOnlyPackages.find((includedPkg) => {
+                        return includedPkg == pkg.package;
+                    })
+                )
+                    return true;
                 else return false;
             });
         }
 
- //       Ignore aliasfied packages on  stages fix #1289
+        //       Ignore aliasfied packages on  stages fix #1289
         packageDescriptors = packageDescriptors.filter((pkg) => {
-            return !(
-                (this.props.currentStage === 'prepare') &&
-                pkg.aliasfy &&
-                pkg.type !== PackageType.Data
-            );
+            return !(this.props.currentStage === "prepare" && pkg.aliasfy && pkg.type !== PackageType.Data);
         });
 
         for (const pkg of packageDescriptors) {
-            if (pkg.package && pkg.versionNumber) sfdxpackages.push(pkg['package']);
+            if (pkg.package && pkg.versionNumber) sfdxpackages.push(pkg["package"]);
         }
         return sfdxpackages;
 
-       function printIncludeOnlyPackages() {
-            SFPLogger.log(COLOR_KEY_MESSAGE(`Build will include the below packages as per inclusive filter`),LoggerLevel.TRACE);
-            SFPLogger.log(COLOR_KEY_VALUE(`${includeOnlyPackages.toString()}`),LoggerLevel.TRACE);
+        function printIncludeOnlyPackages() {
+            SFPLogger.log(
+                COLOR_KEY_MESSAGE(`Build will include the below packages as per inclusive filter`),
+                LoggerLevel.TRACE,
+            );
+            SFPLogger.log(COLOR_KEY_VALUE(`${includeOnlyPackages.toString()}`), LoggerLevel.TRACE);
         }
     }
 
     private printQueueDetails() {
         SFPLogger.log(`${EOL}Packages currently processed:{${this.packagesInQueue.length}} + ${this.packagesInQueue}`);
         SFPLogger.log(
-            `Awaiting Dependencies to be resolved:{${this.packagesToBeBuilt.length}} + ${this.packagesToBeBuilt}`
+            `Awaiting Dependencies to be resolved:{${this.packagesToBeBuilt.length}} + ${this.packagesToBeBuilt}`,
         );
     }
 
@@ -345,9 +344,9 @@ export default class BuildImpl {
         SFPLogger.log(COLOR_ERROR(`Package Creation Failed for ${pkg}`));
         try {
             // Append error to log file
-            fs.appendFileSync(`.sfpowerscripts/logs/${pkg}`, reason.message, 'utf8');
+            fs.appendFileSync(`.sfpowerscripts/logs/${pkg}`, reason.message, "utf8");
 
-            let data = fs.readFileSync(`.sfpowerscripts/logs/${pkg}`, 'utf8');
+            let data = fs.readFileSync(`.sfpowerscripts/logs/${pkg}`, "utf8");
             SFPLogger.log(data);
         } catch (e) {
             SFPLogger.log(`Unable to display logs for pkg ${pkg}`);
@@ -365,11 +364,11 @@ export default class BuildImpl {
 
         //Remove myself and my  childs
         this.failedPackages.push(pkg);
-        SFPStatsSender.logCount('build.failed.packages', { package: pkg });
+        SFPStatsSender.logCount("build.failed.packages", { package: pkg });
         this.packagesToBeBuilt = this.packagesToBeBuilt.filter((pkg) => {
             if (this.childs[pkg].includes(pkg)) {
                 this.childs[pkg].forEach((removedChilds) => {
-                    SFPStatsSender.logCount('build.failed.packages', {
+                    SFPStatsSender.logCount("build.failed.packages", {
                         package: removedChilds,
                     });
                 });
@@ -387,7 +386,7 @@ export default class BuildImpl {
 
         this.packagesToBeBuilt.forEach((pkg) => {
             const indexOfFulfilledParent = this.parentsToBeFulfilled[pkg]?.findIndex(
-                (parent) => parent === sfpPackage.packageName
+                (parent) => parent === sfpPackage.packageName,
             );
             if (indexOfFulfilledParent !== -1 && indexOfFulfilledParent != null) {
                 if (!this.props.isQuickBuild) this.resolveDependenciesOnCompletedPackage(pkg, sfpPackage);
@@ -404,21 +403,21 @@ export default class BuildImpl {
                 let { priority, type } = this.getPriorityandTypeOfAPackage(this.projectConfig, pkg);
                 let packagePromise: Promise<SfpPackage> = this.limiter
                     .schedule({ id: pkg, priority: priority }, () =>
-                        this.createPackage(type, pkg, this.props.isBuildAllAsSourcePackages)
+                        this.createPackage(type, pkg, this.props.isBuildAllAsSourcePackages),
                     )
                     .then(
                         (sfpPackage: SfpPackage) => {
-                            SFPStatsSender.logCount('build.succeeded.packages', {
+                            SFPStatsSender.logCount("build.succeeded.packages", {
                                 package: pkg,
                                 type: type,
                                 is_diffcheck_enabled: String(this.props.isDiffCheckEnabled),
-                                is_dependency_validated: this.props.isQuickBuild ? 'false' : 'true',
+                                is_dependency_validated: this.props.isQuickBuild ? "false" : "true",
                                 pr_mode: String(this.props.isBuildAllAsSourcePackages),
                             });
                             this.generatedPackages.push(sfpPackage);
                             this.queueChildPackages(sfpPackage);
                         },
-                        (reason: any) => this.handlePackageError(reason, pkg)
+                        (reason: any) => this.handlePackageError(reason, pkg),
                     );
                 pushedPackages.push(pkg);
                 this.packagesInQueue.push(pkg);
@@ -429,8 +428,8 @@ export default class BuildImpl {
         if (pushedPackages.length > 0) {
             SFPLogger.log(
                 COLOR_KEY_MESSAGE(
-                    `${EOL}Packages being pushed to the queue:{${pushedPackages.length}} + ${pushedPackages}`
-                )
+                    `${EOL}Packages being pushed to the queue:{${pushedPackages.length}} + ${pushedPackages}`,
+                ),
             );
         }
         //Remove Pushed Packages from the packages array
@@ -443,7 +442,7 @@ export default class BuildImpl {
     private resolveDependenciesOnCompletedPackage(dependentPackage: string, completedPackage: SfpPackage) {
         const pkgDescriptor = ProjectConfig.getPackageDescriptorFromConfig(dependentPackage, this.projectConfig);
         const dependency = pkgDescriptor.dependencies.find(
-            (dependency) => dependency.package === completedPackage.packageName
+            (dependency) => dependency.package === completedPackage.packageName,
         );
         dependency.versionNumber = completedPackage.versionNumber;
     }
@@ -470,15 +469,15 @@ export default class BuildImpl {
         SFPLogger.log(
             COLOR_HEADER(
                 `${EOL}${sfpPackage.packageName} package created in ${getFormattedTime(
-                    sfpPackage.creation_details.creation_time
-                )}`
-            )
+                    sfpPackage.creation_details.creation_time,
+                )}`,
+            ),
         );
 
         SFPLogger.log(COLOR_HEADER(`-- Package Details:--`));
         const table = new Table({
             chars: COLON_MIDDLE_BORDER_TABLE,
-            style: { 'padding-left': 2 },
+            style: { "padding-left": 2 },
         });
         table.push([COLOR_HEADER(`Package Type`), COLOR_KEY_MESSAGE(sfpPackage.package_type)]);
         table.push([COLOR_HEADER(`Package Version Number`), COLOR_KEY_MESSAGE(sfpPackage.package_version_number)]);
@@ -497,10 +496,10 @@ export default class BuildImpl {
             }
 
             table.push([COLOR_HEADER(`Metadata Count`), COLOR_KEY_MESSAGE(sfpPackage.metadataCount)]);
-            table.push([COLOR_HEADER(`Apex In Package`), COLOR_KEY_MESSAGE(sfpPackage.isApexFound ? 'Yes' : 'No')]);
+            table.push([COLOR_HEADER(`Apex In Package`), COLOR_KEY_MESSAGE(sfpPackage.isApexFound ? "Yes" : "No")]);
             table.push([
                 COLOR_HEADER(`Profiles In Package`),
-                COLOR_KEY_MESSAGE(sfpPackage.isProfilesFound ? 'Yes' : 'No'),
+                COLOR_KEY_MESSAGE(sfpPackage.isProfilesFound ? "Yes" : "No"),
             ]);
 
             if (sfpPackage.diffPackageMetadata) {
@@ -524,11 +523,15 @@ export default class BuildImpl {
             SFPLogger.log(table.toString());
 
             const packageDependencies = this.projectConfig.packageDirectories.find(
-                (dir) => dir.package === sfpPackage.package_name
+                (dir) => dir.package === sfpPackage.package_name,
             ).dependencies;
             if (packageDependencies && Array.isArray(packageDependencies) && packageDependencies.length > 0) {
                 SFPLogger.log(COLOR_HEADER(`  Resolved package dependencies:`));
-                PackageDependencyDisplayer.printPackageDependencies(packageDependencies, this.projectConfig, new ConsoleLogger());
+                PackageDependencyDisplayer.printPackageDependencies(
+                    packageDependencies,
+                    this.projectConfig,
+                    new ConsoleLogger(),
+                );
             }
         }
     }
@@ -536,7 +539,7 @@ export default class BuildImpl {
     private async createPackage(
         packageType: string,
         sfdx_package: string,
-        isValidateMode: boolean
+        isValidateMode: boolean,
     ): Promise<SfpPackage> {
         SFPLogger.log(COLOR_KEY_MESSAGE(`Package creation initiated for ${sfdx_package}`));
         let configFilePath = this.props.configFilePath;
@@ -545,8 +548,8 @@ export default class BuildImpl {
                 configFilePath = this.scratchOrgDefinitions[sfdx_package];
                 SFPLogger.log(
                     COLOR_KEY_MESSAGE(
-                        `Matched scratch org definition file found for ${sfdx_package}: ${configFilePath}`
-                    )
+                        `Matched scratch org definition file found for ${sfdx_package}: ${configFilePath}`,
+                    ),
                 );
             }
         }
@@ -564,7 +567,7 @@ export default class BuildImpl {
                 configFilePath: configFilePath,
                 pathToReplacementForceIgnore: this.getPathToForceIgnoreForCurrentStage(
                     this.projectConfig,
-                    this.props.currentStage
+                    this.props.currentStage,
                 ),
                 revisionFrom:
                     this.props.diffOptions?.packagesMappedToLastKnownCommitId &&
@@ -574,7 +577,7 @@ export default class BuildImpl {
                 revisionTo:
                     this.props.diffOptions?.packagesMappedToLastKnownCommitId &&
                     this.props.diffOptions?.packagesMappedToLastKnownCommitId[sfdx_package]
-                        ? 'HEAD'
+                        ? "HEAD"
                         : null,
             },
             {
@@ -588,7 +591,7 @@ export default class BuildImpl {
                 baseBranch: this.props.baseBranch,
                 buildNumber: this.props.buildNumber.toString(),
             },
-            this.projectConfig
+            this.projectConfig,
         );
     }
 
@@ -619,7 +622,8 @@ export default class BuildImpl {
     }
 
     private getMultiScratchOrgDefinitionFileMap(projectConfig: any): { [key: string]: any }[] {
-        this.isMultiConfigFilesEnabled = this.projectConfig?.plugins?.sfpowerscripts?.scratchOrgDefFilePaths?.enableMultiDefinitionFiles;
+        this.isMultiConfigFilesEnabled =
+            this.projectConfig?.plugins?.sfpowerscripts?.scratchOrgDefFilePaths?.enableMultiDefinitionFiles;
         let configFiles: { [key: string]: any }[];
         if (this.isMultiConfigFilesEnabled) {
             configFiles = this.projectConfig?.plugins?.sfpowerscripts?.scratchOrgDefFilePaths?.packages;
@@ -627,18 +631,20 @@ export default class BuildImpl {
         return configFiles;
     }
 
-    private async resolvePackageDependencies(projectConfig: any){
-        let isDependencyResolverEnabled = !projectConfig?.plugins?.sfpowerscripts?.disableTransitiveDependencyResolver
-       
-        if(isDependencyResolverEnabled){
-            const transitiveDependencyResolver = new TransitiveDependencyResolver(projectConfig,this.logger)
-            let resolvedDependencyMap =  await transitiveDependencyResolver.resolveTransitiveDependencies();
-            projectConfig = await ProjectConfig.updateProjectConfigWithDependencies(projectConfig,resolvedDependencyMap);
-            projectConfig = await (new UserDefinedExternalDependency()).cleanupEntries(projectConfig);
+    private async resolvePackageDependencies(projectConfig: any) {
+        let isDependencyResolverEnabled = !projectConfig?.plugins?.sfpowerscripts?.disableTransitiveDependencyResolver;
+
+        if (isDependencyResolverEnabled) {
+            const transitiveDependencyResolver = new TransitiveDependencyResolver(projectConfig, this.logger);
+            let resolvedDependencyMap = await transitiveDependencyResolver.resolveTransitiveDependencies();
+            projectConfig = await ProjectConfig.updateProjectConfigWithDependencies(
+                projectConfig,
+                resolvedDependencyMap,
+            );
+            projectConfig = await new UserDefinedExternalDependency().cleanupEntries(projectConfig);
             return projectConfig;
-        }else{
-            return projectConfig
+        } else {
+            return projectConfig;
         }
     }
-
 }

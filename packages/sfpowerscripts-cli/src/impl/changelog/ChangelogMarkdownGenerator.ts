@@ -1,14 +1,14 @@
-import { ReleaseChangelog, Release, org } from './ReleaseChangelog';
-import { URL } from 'url';
-import { EOL } from 'os';
-const markdownTable = require('markdown-table');
+import { ReleaseChangelog, Release, org } from "./ReleaseChangelog";
+import { URL } from "url";
+import { EOL } from "os";
+const markdownTable = require("markdown-table");
 
 export default class ChangelogMarkdownGenerator {
     constructor(
         private releaseChangelog: ReleaseChangelog,
         private workItemURL: string,
         private limit: number,
-        private showAllArtifacts: boolean
+        private showAllArtifacts: boolean,
     ) {}
 
     /**
@@ -16,7 +16,7 @@ export default class ChangelogMarkdownGenerator {
      * @returns
      */
     generate(): string {
-        let payload: string = '';
+        let payload: string = "";
 
         if (this.releaseChangelog.orgs) {
             payload = this.generateOrgs(this.releaseChangelog.orgs, payload);
@@ -38,15 +38,14 @@ export default class ChangelogMarkdownGenerator {
             let release: Release = this.releaseChangelog.releases[releaseNum];
 
             if (!release.names) {
-                payload += `\n<a id=${release['name']}></a>\n `; // Create anchor from release hash Id
-                payload += `# ${release['name']}\n`;
+                payload += `\n<a id=${release["name"]}></a>\n `; // Create anchor from release hash Id
+                payload += `# ${release["name"]}\n`;
             } else {
                 payload += `\n<a id=${release.hashId}></a>\n`; // Create anchor from release hash Id
                 payload += `# ${release.names.join(`/`)}\n `;
                 payload += `Cumulative Release Number: <b>${release.buildNumber}</b> \n\n`;
-                if(release.date)
-                  payload += `Matching defintion first created or deployed to an org on: ${release.date}\n `
-
+                if (release.date)
+                    payload += `Matching defintion first created or deployed to an org on: ${release.date}\n `;
             }
 
             payload = this.generateArtifacts(payload, release);
@@ -58,7 +57,7 @@ export default class ChangelogMarkdownGenerator {
             payload = this.generateCommits(payload, release, versionChangeOnly, noChangeInVersion);
 
             if (versionChangeOnly.length > 0) {
-                payload += '\n### Additional Information\n';
+                payload += "\n### Additional Information\n";
                 payload += `The following artifacts' version may have changed due to an update in the scratch org definition file, `;
                 payload += `incremented package version in SFDX project configuration, or build all packages:\n`;
 
@@ -66,7 +65,7 @@ export default class ChangelogMarkdownGenerator {
             }
 
             if (noChangeInVersion.length > 0 && this.showAllArtifacts) {
-                payload += '\nArtifacts with no changes:\n';
+                payload += "\nArtifacts with no changes:\n";
                 noChangeInVersion.forEach((artifactName) => (payload += `  - ${artifactName}\n`));
             }
         }
@@ -77,18 +76,18 @@ export default class ChangelogMarkdownGenerator {
         payload: string,
         release: Release,
         versionChangeOnly: string[],
-        noChangeInVersion: string[]
+        noChangeInVersion: string[],
     ) {
         let isCommitsSectionEmpty: boolean = true;
 
-        payload += '\n### Commits :book:\n';
+        payload += "\n### Commits :book:\n";
         for (let artifact of release.artifacts) {
             if (artifact.from !== artifact.to) {
                 if (artifact.commits.length > 0) {
                     isCommitsSectionEmpty = false;
                     payload += `\n#### ${artifact.name}\n`;
 
-                    let tableOfCommits = [['Date', 'Time', 'Commit ID', 'Commit Message']];
+                    let tableOfCommits = [["Date", "Time", "Commit ID", "Commit Message"]];
                     for (let commit of artifact.commits) {
                         let commitDate: Date = new Date(commit.date);
                         tableOfCommits.push([
@@ -98,7 +97,7 @@ export default class ChangelogMarkdownGenerator {
                             commit.message,
                         ]);
                     }
-                    payload += markdownTable(tableOfCommits) + '\n';
+                    payload += markdownTable(tableOfCommits) + "\n";
                 } else {
                     versionChangeOnly.push(artifact.name);
                 }
@@ -114,12 +113,12 @@ export default class ChangelogMarkdownGenerator {
     }
 
     private generateWorkItems(payload: string, release: Release) {
-        payload += '### Work Items :gem:\n';
+        payload += "### Work Items :gem:\n";
         if (Object.keys(release.workItems).length > 0) {
             for (let workItem in release.workItems) {
                 let specificWorkItemURL: string;
                 if (this.workItemURL != null) {
-                    if (this.workItemURL.endsWith('/')) {
+                    if (this.workItemURL.endsWith("/")) {
                         specificWorkItemURL = this.workItemURL.concat(workItem);
                     } else {
                         specificWorkItemURL = this.workItemURL.concat(`/${workItem}`);
@@ -134,7 +133,7 @@ export default class ChangelogMarkdownGenerator {
     }
 
     private generateArtifacts(payload: string, release: Release) {
-        payload += '### Artifacts :package:\n';
+        payload += "### Artifacts :package:\n";
         for (let artifactNum = 0; artifactNum < release.artifacts.length; artifactNum++) {
             if (release.artifacts[artifactNum].from !== release.artifacts[artifactNum].to || this.showAllArtifacts)
                 payload += `- **${release.artifacts[artifactNum].name}**     v${release.artifacts[artifactNum].version} (${release.artifacts[artifactNum].to})\n\n`;
@@ -143,13 +142,13 @@ export default class ChangelogMarkdownGenerator {
     }
 
     private generateOrgs(orgs: org[], payload: string) {
-        const baseAddr = 'https://img.shields.io/static/v1';
+        const baseAddr = "https://img.shields.io/static/v1";
         for (let org of orgs) {
             let url = new URL(
                 `?label=${org.name}&message=${org.latestRelease.names[org.latestRelease.names.length - 1]}-${
                     org.latestRelease.buildNumber
                 }(${org.retryCount})&color=green`,
-                baseAddr
+                baseAddr,
             );
             payload += `[![${org.name}-${org.latestRelease.names[org.latestRelease.names.length - 1]}-${
                 org.latestRelease.buildNumber
@@ -158,22 +157,21 @@ export default class ChangelogMarkdownGenerator {
         return payload;
     }
 
-
     private getDate(date: Date): string {
         let day: number = date.getDate();
         let month: number = date.getMonth();
         let year: number = date.getFullYear();
-        let pad = (n) => (n < 10 ? '0' + n : n);
+        let pad = (n) => (n < 10 ? "0" + n : n);
 
-        return pad(day) + '/' + pad(month + 1) + '/' + year;
+        return pad(day) + "/" + pad(month + 1) + "/" + year;
     }
 
     private getTime(date: Date): string {
         let hours: number = date.getHours();
         let minutes: number = date.getMinutes();
         let seconds: number = date.getSeconds();
-        let pad = (n) => (n < 10 ? '0' + n : n);
+        let pad = (n) => (n < 10 ? "0" + n : n);
 
-        return pad(hours) + ':' + pad(minutes) + ':' + pad(seconds);
+        return pad(hours) + ":" + pad(minutes) + ":" + pad(seconds);
     }
 }

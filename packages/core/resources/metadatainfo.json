@@ -141,16 +141,8 @@
         },
         {
             "childXmlNames": [
-                "CustomField",
-                "Index",
-                "BusinessProcess",
-                "RecordType",
-                "CompactLayout",
-                "WebLink",
-                "ValidationRule",
-                "SharingReason",
-                "ListView",
-                "FieldSet"
+                "CustomField", "Index", "BusinessProcess", "RecordType", "CompactLayout", "WebLink", "ValidationRule",
+                "SharingReason", "ListView", "FieldSet"
             ],
             "directoryName": "objects",
             "inFolder": false,
@@ -286,13 +278,8 @@
         },
         {
             "childXmlNames": [
-                "WorkflowFieldUpdate",
-                "WorkflowKnowledgePublish",
-                "WorkflowTask",
-                "WorkflowAlert",
-                "WorkflowSend",
-                "WorkflowOutboundMessage",
-                "WorkflowRule"
+                "WorkflowFieldUpdate", "WorkflowKnowledgePublish", "WorkflowTask", "WorkflowAlert", "WorkflowSend",
+                "WorkflowOutboundMessage", "WorkflowRule"
             ],
             "directoryName": "workflows",
             "inFolder": false,

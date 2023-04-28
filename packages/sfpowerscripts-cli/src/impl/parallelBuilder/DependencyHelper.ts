@@ -1,4 +1,4 @@
-import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig';
+import ProjectConfig from "@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig";
 export default class DependencyHelper {
     static getParentsToBeFullFilled(packagesWithParents: AdjacentList, packages: string[]): any {
         for (let [pkgName, parents] of Object.entries(packagesWithParents)) {
@@ -13,26 +13,26 @@ export default class DependencyHelper {
         let projectConfig = ProjectConfig.getSFDXProjectConfig(projectDirectory);
         let dag: AdjacentList = {};
 
-        for (const sfdx_package of projectConfig['packageDirectories']) {
-            if (filterByPackages && !filterByPackages.includes(sfdx_package['package'])) {
+        for (const sfdx_package of projectConfig["packageDirectories"]) {
+            if (filterByPackages && !filterByPackages.includes(sfdx_package["package"])) {
                 continue;
             }
             let dependents: string[] = [];
 
-            for (const pkg of projectConfig['packageDirectories']) {
-                if (pkg['dependencies'] != null) {
-                    for (const dependent of pkg['dependencies']) {
+            for (const pkg of projectConfig["packageDirectories"]) {
+                if (pkg["dependencies"] != null) {
+                    for (const dependent of pkg["dependencies"]) {
                         if (
-                            dependent['package'] == sfdx_package['package'] &&
+                            dependent["package"] == sfdx_package["package"] &&
                             filterByPackages &&
-                            filterByPackages.includes(pkg['package'])
+                            filterByPackages.includes(pkg["package"])
                         ) {
-                            dependents.push(pkg['package']);
+                            dependents.push(pkg["package"]);
                         }
                     }
                 }
             }
-            dag[sfdx_package['package']] = dependents;
+            dag[sfdx_package["package"]] = dependents;
         }
         return dag;
     }
@@ -43,29 +43,29 @@ export default class DependencyHelper {
 
         //Get The packages in the project directory
         let packagesInTheProjectDirectoryOnlyByNames: string[] = [];
-        projectConfig['packageDirectories'].forEach((pkg) => {
-            packagesInTheProjectDirectoryOnlyByNames.push(pkg['package']);
+        projectConfig["packageDirectories"].forEach((pkg) => {
+            packagesInTheProjectDirectoryOnlyByNames.push(pkg["package"]);
         });
 
-        for (const sfdx_package of projectConfig['packageDirectories']) {
-            if (filterByPackages && !filterByPackages.includes(sfdx_package['package'])) {
+        for (const sfdx_package of projectConfig["packageDirectories"]) {
+            if (filterByPackages && !filterByPackages.includes(sfdx_package["package"])) {
                 continue;
             }
 
             let parents: string[] = [];
-            if (sfdx_package['dependencies'] != null) {
-                for (const dependent of sfdx_package['dependencies']) {
+            if (sfdx_package["dependencies"] != null) {
+                for (const dependent of sfdx_package["dependencies"]) {
                     //See the dependents are a package in the project directory
                     if (
-                        packagesInTheProjectDirectoryOnlyByNames.includes(dependent['package']) &&
-                        !parents.includes(dependent['package']) &&
+                        packagesInTheProjectDirectoryOnlyByNames.includes(dependent["package"]) &&
+                        !parents.includes(dependent["package"]) &&
                         filterByPackages &&
-                        filterByPackages.includes(dependent['package'])
+                        filterByPackages.includes(dependent["package"])
                     )
-                        parents.push(dependent['package']);
+                        parents.push(dependent["package"]);
                 }
             }
-            dag[sfdx_package['package']] = parents;
+            dag[sfdx_package["package"]] = parents;
         }
 
         return dag;

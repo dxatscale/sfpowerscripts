@@ -1,4 +1,18 @@
 {
+  "formatter": {
+    "enabled": true,
+    "formatWithErrors": true,
+    "indentStyle": "space",
+    "indentSize": 4,
+    "lineWidth": 120,
+    "ignore": [
+      "packages/sfpowerscripts-cli/resources/cytoscape.min.js",
+      "packages/sfdc-soup/",
+      "packages/forcemula",
+      "packages/sfp-cli/npm-shrinkwrap.json",
+      "packages/sfpowerscripts-cli/resources/dagre.js"
+    ]
+  },
   "linter": {
     "enabled": true,
     "rules": {

@@ -1,8 +1,8 @@
-const fs = require('fs-extra');
-import SFPLogger, { LoggerLevel } from '@dxatscale/sfp-logger';
-import _ from 'lodash';
-import { PackageType } from '../package/SfpPackage';
-let path = require('path');
+const fs = require("fs-extra");
+import SFPLogger, { LoggerLevel } from "@dxatscale/sfp-logger";
+import _ from "lodash";
+import { PackageType } from "../package/SfpPackage";
+let path = require("path");
 
 /**
  * Helper functions for retrieving info from project config
@@ -14,10 +14,10 @@ export default class ProjectConfig {
      * @param sfdxPackage
      */
     public static getPackageId(projectConfig: any, sfdxPackage: string) {
-        if (projectConfig['packageAliases']?.[sfdxPackage]) {
-            return projectConfig['packageAliases'][sfdxPackage];
+        if (projectConfig["packageAliases"]?.[sfdxPackage]) {
+            return projectConfig["packageAliases"][sfdxPackage];
         } else {
-            throw Error('No Package Id found in sfdx-project.json. Please ensure package alias have the package added');
+            throw Error("No Package Id found in sfdx-project.json. Please ensure package alias have the package added");
         }
     }
 
@@ -28,7 +28,7 @@ export default class ProjectConfig {
     public static getAllPackages(projectDirectory: string): string[] {
         let projectConfig = ProjectConfig.getSFDXProjectConfig(projectDirectory);
         let sfdxpackages = [];
-        projectConfig['packageDirectories'].forEach((pkg) => {
+        projectConfig["packageDirectories"].forEach((pkg) => {
             //Only push packages that have package and versionNumber, ignore everything else
             if (pkg.package && pkg.versionNumber) sfdxpackages.push(pkg.package);
         });
@@ -36,7 +36,7 @@ export default class ProjectConfig {
     }
 
     public static getAllExternalPackages(
-        projectConfig: any
+        projectConfig: any,
     ): { alias: string; Package2IdOrSubscriberPackageVersionId: string }[] {
         let externalPackages: { alias: string; Package2IdOrSubscriberPackageVersionId: string }[] = [];
         let packagesInCurrentDirectory = ProjectConfig.getAllPackageDirectoriesFromConfig(projectConfig);
@@ -48,7 +48,7 @@ export default class ProjectConfig {
                     (elem) => {
                         return elem.package == key;
                     },
-                    0
+                    0,
                 )
             )
                 externalPackages.push({ alias: key, Package2IdOrSubscriberPackageVersionId: value as string });
@@ -70,7 +70,7 @@ export default class ProjectConfig {
     }
 
     public static getAllPackagesAndItsDependencies(
-        projectConfig: any
+        projectConfig: any,
     ): Map<string, { package: string; versionNumber?: string }[]> {
         let pkgWithDependencies = new Map<string, { package: string; versionNumber?: string }[]>();
         let packages = ProjectConfig.getAllPackageDirectoriesFromConfig(projectConfig);
@@ -109,13 +109,13 @@ export default class ProjectConfig {
         let projectConfigJSON: string;
 
         if (projectDirectory) {
-            projectConfigJSON = path.join(projectDirectory, 'sfdx-project.json');
+            projectConfigJSON = path.join(projectDirectory, "sfdx-project.json");
         } else {
-            projectConfigJSON = 'sfdx-project.json';
+            projectConfigJSON = "sfdx-project.json";
         }
 
         try {
-            return JSON.parse(fs.readFileSync(projectConfigJSON, 'utf8'));
+            return JSON.parse(fs.readFileSync(projectConfigJSON, "utf8"));
         } catch (error) {
             throw new Error(`sfdx-project.json doesn't exist or not readable at ${projectConfigJSON}`);
         }
@@ -128,11 +128,11 @@ export default class ProjectConfig {
      */
     public static getPackageType(
         projectConfig: any,
-        sfdxPackage: string
+        sfdxPackage: string,
     ): PackageType.Unlocked | PackageType.Data | PackageType.Source {
         let packageDescriptor = ProjectConfig.getPackageDescriptorFromConfig(sfdxPackage, projectConfig);
 
-        if (projectConfig['packageAliases']?.[sfdxPackage]) {
+        if (projectConfig["packageAliases"]?.[sfdxPackage]) {
             return PackageType.Unlocked;
         } else {
             if (packageDescriptor.type?.toLowerCase() === PackageType.Data) return PackageType.Data;
@@ -162,8 +162,8 @@ export default class ProjectConfig {
         let sfdxPackageDescriptor: any;
 
         if (sfdxPackage) {
-            projectConfig['packageDirectories'].forEach((pkg) => {
-                if (sfdxPackage == pkg['package']) {
+            projectConfig["packageDirectories"].forEach((pkg) => {
+                if (sfdxPackage == pkg["package"]) {
                     sfdxPackageDescriptor = pkg;
                 }
             });
@@ -185,14 +185,14 @@ export default class ProjectConfig {
         let projectConfig = this.getSFDXProjectConfig(projectDirectory);
 
         //Return the default package directory
-        projectConfig['packageDirectories'].forEach((pkg) => {
-            if (pkg['default'] == true) {
-                packageDirectory = pkg['path'];
+        projectConfig["packageDirectories"].forEach((pkg) => {
+            if (pkg["default"] == true) {
+                packageDirectory = pkg["path"];
                 sfdxPackageDescriptor = pkg;
             }
         });
 
-        if (packageDirectory == null) throw new Error('Package or package directory not exist');
+        if (packageDirectory == null) throw new Error("Package or package directory not exist");
         else return sfdxPackageDescriptor;
     }
 
@@ -214,21 +214,21 @@ export default class ProjectConfig {
      */
     public static cleanupMPDFromProjectConfig(projectConfig: any, sfdxPackage: string): any {
         if (sfdxPackage) {
-            let i = projectConfig['packageDirectories'].length;
+            let i = projectConfig["packageDirectories"].length;
             while (i--) {
-                if (sfdxPackage != projectConfig['packageDirectories'][i]['package']) {
-                    projectConfig['packageDirectories'].splice(i, 1);
+                if (sfdxPackage != projectConfig["packageDirectories"][i]["package"]) {
+                    projectConfig["packageDirectories"].splice(i, 1);
                 }
             }
         } else {
-            let i = projectConfig['packageDirectories'].length;
+            let i = projectConfig["packageDirectories"].length;
             while (i--) {
-                if (!fs.existsSync(projectConfig['packageDirectories'][i]['path'])) {
-                    projectConfig['packageDirectories'].splice(i, 1);
+                if (!fs.existsSync(projectConfig["packageDirectories"][i]["path"])) {
+                    projectConfig["packageDirectories"].splice(i, 1);
                 }
             }
         }
-        projectConfig['packageDirectories'][0]['default'] = true; //add default = true
+        projectConfig["packageDirectories"][0]["default"] = true; //add default = true
         return projectConfig;
     }
 
@@ -239,7 +239,7 @@ export default class ProjectConfig {
      */
     public static cleanupPackagesFromProjectConfig(projectConfig: any, sfdxPackages: string[]): any {
         let revisedPackageDirectory = [];
-        let originalPackageDirectory = projectConfig['packageDirectories'];
+        let originalPackageDirectory = projectConfig["packageDirectories"];
         for (let pkg of originalPackageDirectory) {
             for (const sfdxPackage of sfdxPackages) {
                 if (pkg.name == sfdxPackage) {
@@ -248,7 +248,7 @@ export default class ProjectConfig {
                 }
             }
         }
-        projectConfig['packageDirectories'][0]['default'] = true; //add default = true
+        projectConfig["packageDirectories"][0]["default"] = true; //add default = true
         projectConfig.packageDirectories = revisedPackageDirectory;
         return projectConfig;
     }
@@ -263,11 +263,9 @@ export default class ProjectConfig {
         return ProjectConfig.cleanupPackagesFromProjectConfig(projectConfig, sfdxPackages);
     }
 
-   
-
     public static async updateProjectConfigWithDependencies(
         projectConfig: any,
-        dependencyMap: Map<string, { package: string; versionNumber?: string }[]>
+        dependencyMap: Map<string, { package: string; versionNumber?: string }[]>,
     ) {
         let updatedprojectConfig = await _.cloneDeep(projectConfig);
         updatedprojectConfig.packageDirectories.map((pkg) => {

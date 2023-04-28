@@ -2,7 +2,7 @@
     "commandDescription": "Validate the incoming change against an earlier prepared scratchorg",
     "devhubUsernameFlagDescription": "Authentication username for Dev Hub",
     "poolsFlagDescription": "Fetch scratch-org validation environment from one of listed pools, sequentially",
-    "configFileFlagDescription":"(Required if the release modes are ff-relese-config or thorough-release-config), Path to the config file which determines how the release defintion should be generated",
+    "configFileFlagDescription": "(Required if the release modes are ff-relese-config or thorough-release-config), Path to the config file which determines how the release defintion should be generated",
     "jwtKeyFileFlagDescription": "Path to a file containing the private key",
     "clientIdFlagDescription": "OAuth client ID, also known as the consumer key",
     "shapeFileFlagDescription": "Path to .zip file of scratch org shape / metadata to deploy",
@@ -21,5 +21,4 @@
     "orgInfoFlagDescription": "Display info about the org that is used for validation",
     "disableSourcePackageOverride": "Disables overriding unlocked package installation as source package installation during validate",
     "disableParallelTestingFlagDescription": "Disable test execution in parallel, this will execute apex tests in serial"
-    
 }

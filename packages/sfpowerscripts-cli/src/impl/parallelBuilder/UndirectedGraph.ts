@@ -15,7 +15,7 @@ export default class UndirectedGraph {
     }
 
     addEdge(vertexA: string, vertexB: string): void {
-        if (vertexA === vertexB) throw new Error('Cannot add an edge to a single vertex');
+        if (vertexA === vertexB) throw new Error("Cannot add an edge to a single vertex");
         if (!this._adjacencyList[vertexA]) throw new Error(`Vertex with name ${vertexA} does not exist`);
         if (!this._adjacencyList[vertexB]) throw new Error(`Vertex with name ${vertexB} does not exist`);
 

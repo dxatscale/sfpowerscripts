@@ -1,6 +1,6 @@
-import FHTAnalyser from './FHTAnalyzer';
-import FTAnalyser from './FTAnalyzer';
-import { PackageAnalyzer } from './PackageAnalyzer';
+import FHTAnalyser from "./FHTAnalyzer";
+import FTAnalyser from "./FTAnalyzer";
+import { PackageAnalyzer } from "./PackageAnalyzer";
 
 export class AnalyzerRegistry {
     static getAnalyzers(): PackageAnalyzer[] {

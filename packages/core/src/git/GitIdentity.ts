@@ -1,4 +1,4 @@
-import { SimpleGit } from 'simple-git/promise';
+import { SimpleGit } from "simple-git/promise";
 
 export default class GitIdentity {
     constructor(private git: SimpleGit) {}
@@ -14,10 +14,10 @@ export default class GitIdentity {
         if (process.env.SFPOWERSCRIPTS_GIT_USERNAME) {
             username = process.env.SFPOWERSCRIPTS_GIT_USERNAME;
         } else {
-            username = 'sfpowerscripts';
+            username = "sfpowerscripts";
         }
 
-        await this.git.addConfig('user.name', username);
+        await this.git.addConfig("user.name", username);
     }
 
     private async setEmail(): Promise<void> {
@@ -26,9 +26,9 @@ export default class GitIdentity {
         if (process.env.SFPOWERSCRIPTS_GIT_EMAIL) {
             email = process.env.SFPOWERSCRIPTS_GIT_EMAIL;
         } else {
-            email = 'sfpowerscripts@dxatscale.io';
+            email = "sfpowerscripts@dxatscale.io";
         }
 
-        await this.git.addConfig('user.email', email);
+        await this.git.addConfig("user.email", email);
     }
 }

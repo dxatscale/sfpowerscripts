@@ -1,15 +1,15 @@
-import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig';
-import inquirer = require('inquirer');
-import lodash = require('lodash');
-import PackageVersion, { Positional } from '../../impl/package/PackageVersion';
-import SelectPackageWorkflow from './SelectPackageWorkflow';
-import * as fs from 'fs-extra';
+import ProjectConfig from "@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig";
+import inquirer = require("inquirer");
+import lodash = require("lodash");
+import PackageVersion, { Positional } from "../../impl/package/PackageVersion";
+import SelectPackageWorkflow from "./SelectPackageWorkflow";
+import * as fs from "fs-extra";
 import SFPLogger, {
     COLOR_ERROR,
     COLOR_KEY_MESSAGE,
     COLOR_KEY_VALUE,
     COLOR_SUCCESS,
-} from '@dxatscale/sfp-logger/lib/SFPLogger';
+} from "@dxatscale/sfp-logger/lib/SFPLogger";
 
 export default class PackageVersionWorkflow {
     public async execute() {
@@ -20,7 +20,7 @@ export default class PackageVersionWorkflow {
 
         const mode = await this.getModeSelection();
 
-        if (mode === 'ALL') {
+        if (mode === "ALL") {
             const positional = await this.getPositional();
 
             for (const packageDescriptor of projectConfig.packageDirectories) {
@@ -34,7 +34,7 @@ export default class PackageVersionWorkflow {
 
                 updatedPackageDescriptors.push(packageDescriptor);
             }
-        } else if (mode === 'SINGLE') {
+        } else if (mode === "SINGLE") {
             const selectedPackageDescriptor = await new SelectPackageWorkflow(projectConfig).pickAnExistingPackage();
 
             const newPackageVersion = await this.getNewPackageVersion(selectedPackageDescriptor);
@@ -45,12 +45,12 @@ export default class PackageVersionWorkflow {
 
                 const dependentsOfSelectedPackage = PackageVersionWorkflow.getDependentsOfPackage(
                     selectedPackageDescriptor.package,
-                    projectConfig
+                    projectConfig,
                 );
 
                 if (dependentsOfSelectedPackage.length > 0) {
                     SFPLogger.log(
-                        ` Proceeding to updating dependents of ${COLOR_KEY_VALUE(selectedPackageDescriptor.package)}`
+                        ` Proceeding to updating dependents of ${COLOR_KEY_VALUE(selectedPackageDescriptor.package)}`,
                     );
                     for (const dependent of dependentsOfSelectedPackage) {
                         const newPackageVersion = await this.getNewPackageVersion(dependent);
@@ -72,8 +72,8 @@ export default class PackageVersionWorkflow {
 
         this.printChanges(oldProjectConfig.packageDirectories, updatedPackageDescriptors);
 
-        fs.writeJSONSync('sfdx-project.json', projectConfig, {
-            encoding: 'UTF-8',
+        fs.writeJSONSync("sfdx-project.json", projectConfig, {
+            encoding: "UTF-8",
             spaces: 4,
         });
     }
@@ -81,20 +81,20 @@ export default class PackageVersionWorkflow {
     private async getPositional(): Promise<Positional> {
         const response = await inquirer.prompt([
             {
-                type: 'list',
-                name: 'positional',
+                type: "list",
+                name: "positional",
                 message: `Which position would you like to increment all packages by?`,
                 choices: [
                     {
-                        name: 'Major',
+                        name: "Major",
                         value: Positional.MAJOR,
                     },
                     {
-                        name: 'Minor',
+                        name: "Minor",
                         value: Positional.MINOR,
                     },
                     {
-                        name: 'Patch',
+                        name: "Patch",
                         value: Positional.PATCH,
                     },
                 ],
@@ -104,20 +104,20 @@ export default class PackageVersionWorkflow {
         return response.positional;
     }
 
-    private async getModeSelection(): Promise<'ALL' | 'SINGLE'> {
+    private async getModeSelection(): Promise<"ALL" | "SINGLE"> {
         const response = await inquirer.prompt([
             {
-                type: 'list',
-                name: 'mode',
+                type: "list",
+                name: "mode",
                 message: `Select an option`,
                 choices: [
                     {
                         name: `Increment all packages`,
-                        value: 'ALL',
+                        value: "ALL",
                     },
                     {
                         name: `Choose a package to increment`,
-                        value: 'SINGLE',
+                        value: "SINGLE",
                     },
                 ],
             },
@@ -137,14 +137,14 @@ export default class PackageVersionWorkflow {
             if (dependency.versionNumber) {
                 dependencyName = dependency.package;
             } else {
-                dependencyName = dependency.package.split('@')[0];
+                dependencyName = dependency.package.split("@")[0];
             }
 
             const descriptor = packageDescriptors.find((descriptor) => descriptor.package === dependencyName);
             if (descriptor) {
                 const packageVersion = new PackageVersion(descriptor.versionNumber);
-                if (packageVersion.buildNum === 'NEXT') {
-                    packageVersion.buildNum = 'LATEST';
+                if (packageVersion.buildNum === "NEXT") {
+                    packageVersion.buildNum = "LATEST";
                 }
 
                 if (dependency.versionNumber) {
@@ -181,17 +181,17 @@ export default class PackageVersionWorkflow {
     }
 
     private printChanges(oldPackageDescriptors: any[], updatedPackageDescriptors: any[]) {
-        console.log('Changes:');
+        console.log("Changes:");
         for (const descriptor of updatedPackageDescriptors) {
             const oldPackageDescriptor = oldPackageDescriptors.find(
-                (oldDescriptor) => oldDescriptor.package === descriptor.package
+                (oldDescriptor) => oldDescriptor.package === descriptor.package,
             );
             console.log(
-                ' - ',
+                " - ",
                 `${COLOR_KEY_MESSAGE(oldPackageDescriptor.package)}`,
                 `${COLOR_ERROR(oldPackageDescriptor.versionNumber)}`,
-                ' => ',
-                `${COLOR_SUCCESS(descriptor.versionNumber)}`
+                " => ",
+                `${COLOR_SUCCESS(descriptor.versionNumber)}`,
             );
         }
     }
@@ -204,8 +204,8 @@ export default class PackageVersionWorkflow {
 
         const newPackageVersion = await inquirer.prompt([
             {
-                type: 'list',
-                name: 'version',
+                type: "list",
+                name: "version",
                 message: `Select a new version for ${packageDescriptor.package} (currently ${currentVersionNumber})`,
                 choices: [
                     {
@@ -222,7 +222,7 @@ export default class PackageVersionWorkflow {
                     },
                     {
                         name: `Custom Version`,
-                        value: 'Custom',
+                        value: "Custom",
                     },
                     {
                         name: `Skip Package`,
@@ -232,7 +232,7 @@ export default class PackageVersionWorkflow {
             },
         ]);
 
-        if (newPackageVersion.version === 'Custom') {
+        if (newPackageVersion.version === "Custom") {
             const customVersion = await this.getCustomVersion();
             return customVersion;
         }
@@ -243,15 +243,15 @@ export default class PackageVersionWorkflow {
     private async getCustomVersion(): Promise<string> {
         const customVersion = await inquirer.prompt([
             {
-                type: 'input',
-                name: 'version',
+                type: "input",
+                name: "version",
                 message: `Enter a custom version`,
                 validate: (input, answers) => {
                     const match = input.match(/^[0-9]+\.[0-9]+\.[0-9]+(\.[0-9]+|\.NEXT)?$/);
                     if (match) {
                         return true;
                     } else {
-                        return 'Invalid version number. Must be of the format 1.0.0 , 1.0.0.0 or 1.0.0.0.NEXT';
+                        return "Invalid version number. Must be of the format 1.0.0 , 1.0.0.0 or 1.0.0.0.NEXT";
                     }
                 },
             },

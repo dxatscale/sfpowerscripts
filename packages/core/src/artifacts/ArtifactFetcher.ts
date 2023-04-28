@@ -1,10 +1,10 @@
-import path = require('path');
-import * as fs from 'fs-extra';
-import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
-const glob = require('glob');
-import AdmZip = require('adm-zip');
-import semver = require('semver');
-import tar = require('tar');
+import path = require("path");
+import * as fs from "fs-extra";
+import SFPLogger, { Logger, LoggerLevel } from "@dxatscale/sfp-logger";
+const glob = require("glob");
+import AdmZip = require("adm-zip");
+import semver = require("semver");
+import tar = require("tar");
 
 export default class ArtifactFetcher {
     /**
@@ -26,9 +26,9 @@ export default class ArtifactFetcher {
 
         for (let artifact of artifacts) {
             let artifactFilePaths: Artifact;
-            if (path.extname(artifact) === '.zip') {
+            if (path.extname(artifact) === ".zip") {
                 artifactFilePaths = ArtifactFetcher.fetchArtifactFilePathsFromZipFile(artifact);
-            } else if (path.extname(artifact) === '.tgz') {
+            } else if (path.extname(artifact) === ".tgz") {
                 artifactFilePaths = ArtifactFetcher.fetchArtifactFilePathsFromTarball(artifact);
             } else {
                 throw new Error(`Unhandled artifact format ${artifact}, neither tar or zip file`);
@@ -77,7 +77,7 @@ export default class ArtifactFetcher {
             throw new Error(`Failed to fetch artifact file paths for ${artifact}`);
         }
 
-        let packageMetadataFilePath = path.join(unzippedArtifactsDirectory, artifactName, 'artifact_metadata.json');
+        let packageMetadataFilePath = path.join(unzippedArtifactsDirectory, artifactName, "artifact_metadata.json");
 
         let sourceDirectory = path.join(unzippedArtifactsDirectory, artifactName, `source`);
 
@@ -108,11 +108,11 @@ export default class ArtifactFetcher {
             sync: true,
         });
 
-        let packageMetadataFilePath = path.join(unzippedArtifactsDirectory, 'package', 'artifact_metadata.json');
+        let packageMetadataFilePath = path.join(unzippedArtifactsDirectory, "package", "artifact_metadata.json");
 
-        let sourceDirectory = path.join(unzippedArtifactsDirectory, 'package', `source`);
+        let sourceDirectory = path.join(unzippedArtifactsDirectory, "package", `source`);
 
-        let changelogFilePath = path.join(unzippedArtifactsDirectory, 'package', `changelog.json`);
+        let changelogFilePath = path.join(unzippedArtifactsDirectory, "package", `changelog.json`);
 
         let artifactFilePaths: Artifact = {
             packageMetadataFilePath: packageMetadataFilePath,
@@ -161,16 +161,16 @@ export default class ArtifactFetcher {
         // Consider zip & tarball artifacts only
         artifacts = artifacts.filter((artifact) => {
             let ext: string = path.extname(artifact);
-            return ext === '.zip' || ext === '.tgz';
+            return ext === ".zip" || ext === ".tgz";
         });
 
-        let pattern = new RegExp('(?:^.*)(?:_sfpowerscripts_artifact[_-])(?<version>.*)(?:\\.zip|\\.tgz)$');
+        let pattern = new RegExp("(?:^.*)(?:_sfpowerscripts_artifact[_-])(?<version>.*)(?:\\.zip|\\.tgz)$");
         let versions: string[] = artifacts.map((artifact) => {
             let match: RegExpMatchArray = path.basename(artifact).match(pattern);
             let version = match?.groups.version;
 
             if (version) return version;
-            else throw new Error('Corrupted artifact detected with no version number');
+            else throw new Error("Corrupted artifact detected with no version number");
         });
 
         // Pick artifact with latest semantic version
@@ -200,15 +200,15 @@ export default class ArtifactFetcher {
             throw new Error(`Artifact not found, Please check the inputs`);
         } else if (artifacts.length === 0 && isToSkipOnMissingArtifact) {
             SFPLogger.log(
-                `Skipping task as artifact is missing, and 'Skip If no artifact is found' ${isToSkipOnMissingArtifact}`
+                `Skipping task as artifact is missing, and 'Skip If no artifact is found' ${isToSkipOnMissingArtifact}`,
             );
             return true;
         }
     }
 
     private static makefolderid(length): string {
-        var result = '';
-        var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        var result = "";
+        var characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
         var charactersLength = characters.length;
         for (var i = 0; i < length; i++) {
             result += characters.charAt(Math.floor(Math.random() * charactersLength));

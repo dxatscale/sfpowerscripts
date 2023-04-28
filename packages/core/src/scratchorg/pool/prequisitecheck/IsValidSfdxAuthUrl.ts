@@ -3,11 +3,11 @@ export default function isValidSfdxAuthUrl(sfdxAuthUrl: string): boolean {
         return true;
     } else {
         let match = sfdxAuthUrl.match(
-            /force:\/\/(?<clientId>[a-zA-Z]+):(?<clientSecret>[a-zA-Z0-9]*):(?<refreshToken>[a-zA-Z0-9._=]+)@.+/
+            /force:\/\/(?<clientId>[a-zA-Z]+):(?<clientSecret>[a-zA-Z0-9]*):(?<refreshToken>[a-zA-Z0-9._=]+)@.+/,
         );
 
         if (match !== null) {
-            if (match.groups.refreshToken === 'undefined') {
+            if (match.groups.refreshToken === "undefined") {
                 return false;
             } else {
                 return true;

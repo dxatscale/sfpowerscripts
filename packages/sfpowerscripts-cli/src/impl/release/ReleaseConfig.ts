@@ -1,11 +1,11 @@
-import * as fs from 'fs-extra';
-import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig';
-import Ajv, { _ } from 'ajv';
-import ReleaseDefinitionGeneratorConfigSchema from './ReleaseDefinitionGeneratorConfigSchema';
-import lodash = require('lodash');
-import yaml from 'js-yaml';
-import { Logger } from '@dxatscale/sfp-logger';
-const path = require('path');
+import * as fs from "fs-extra";
+import ProjectConfig from "@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig";
+import Ajv, { _ } from "ajv";
+import ReleaseDefinitionGeneratorConfigSchema from "./ReleaseDefinitionGeneratorConfigSchema";
+import lodash = require("lodash");
+import yaml from "js-yaml";
+import { Logger } from "@dxatscale/sfp-logger";
+const path = require("path");
 
 export default class ReleaseConfig {
     private _releaseDefinitionGeneratorSchema: ReleaseDefinitionGeneratorConfigSchema;
@@ -16,7 +16,7 @@ export default class ReleaseConfig {
     }
 
     public constructor(private logger: Logger, pathToReleaseDefinition: string) {
-        this._releaseDefinitionGeneratorSchema = yaml.load(fs.readFileSync(pathToReleaseDefinition, 'utf8'));
+        this._releaseDefinitionGeneratorSchema = yaml.load(fs.readFileSync(pathToReleaseDefinition, "utf8"));
         this.validateReleaseDefinitionGeneratorConfig(this._releaseDefinitionGeneratorSchema);
 
         // Easy to handle here than with schema
@@ -24,7 +24,7 @@ export default class ReleaseConfig {
             this._releaseDefinitionGeneratorSchema.includeOnlyArtifacts &&
             this.releaseDefinitionGeneratorConfigSchema.excludeArtifacts
         ) {
-            throw new Error('Error: Invalid schema: either use includeArtifacts or excludeArtifacts');
+            throw new Error("Error: Invalid schema: either use includeArtifacts or excludeArtifacts");
         }
         // Easy to handle here than with schema
         if (
@@ -32,7 +32,7 @@ export default class ReleaseConfig {
             this.releaseDefinitionGeneratorConfigSchema.excludePackageDependencies
         ) {
             throw new Error(
-                'Error: Invalid schema: either use includePackageDependencies or excludePackageDependencies'
+                "Error: Invalid schema: either use includePackageDependencies or excludePackageDependencies",
             );
         }
 
@@ -59,11 +59,11 @@ export default class ReleaseConfig {
     }
 
     private validateReleaseDefinitionGeneratorConfig(
-        releaseDefinitionGeneratorSchema: ReleaseDefinitionGeneratorConfigSchema
+        releaseDefinitionGeneratorSchema: ReleaseDefinitionGeneratorConfigSchema,
     ): void {
         let schema = fs.readJSONSync(
-            path.join(__dirname, '..', '..', '..', 'resources', 'schemas', 'releasedefinitiongenerator.schema.json'),
-            { encoding: 'UTF-8' }
+            path.join(__dirname, "..", "..", "..", "resources", "schemas", "releasedefinitiongenerator.schema.json"),
+            { encoding: "UTF-8" },
         );
 
         let validator = new Ajv({ allErrors: true }).compile(schema);
@@ -78,7 +78,7 @@ export default class ReleaseConfig {
                 errorMsg += `\n${errorNum + 1}: ${error.instancePath}: ${error.message} ${JSON.stringify(
                     error.params,
                     null,
-                    4
+                    4,
                 )}`;
             });
 

@@ -1,13 +1,13 @@
-import { Connection } from '@salesforce/core';
-import QueryHelper from '../../queryHelper/QueryHelper';
-import semver from 'semver';
+import { Connection } from "@salesforce/core";
+import QueryHelper from "../../queryHelper/QueryHelper";
+import semver from "semver";
 
 /**
  * Fetcher for second-generation package version in Dev Hub
  */
 export default class Package2VersionFetcher {
     private readonly query: string =
-        'Select SubscriberPackageVersionId, Package2Id, Package2.Name, IsPasswordProtected, IsReleased, MajorVersion, MinorVersion, PatchVersion, BuildNumber, CodeCoverage, HasPassedCodeCoverageCheck from Package2Version ';
+        "Select SubscriberPackageVersionId, Package2Id, Package2.Name, IsPasswordProtected, IsReleased, MajorVersion, MinorVersion, PatchVersion, BuildNumber, CodeCoverage, HasPassedCodeCoverageCheck from Package2Version ";
 
     constructor(private conn: Connection) {}
 
@@ -22,7 +22,7 @@ export default class Package2VersionFetcher {
     async fetchByPackage2Id(
         package2Id: string,
         versionNumber?: string,
-        isValidatedPackages?: boolean
+        isValidatedPackages?: boolean,
     ): Promise<Package2Version[]> {
         let query = this.query;
 
@@ -30,7 +30,7 @@ export default class Package2VersionFetcher {
 
         if (versionNumber) {
             // TODO: validate version number
-            const versions = versionNumber.split('.');
+            const versions = versionNumber.split(".");
 
             if (versions[0]) whereClause += `and MajorVersion=${versions[0]} `;
             if (versions[1]) whereClause += `and MinorVersion=${versions[1]} `;
@@ -43,10 +43,8 @@ export default class Package2VersionFetcher {
         whereClause += `and IsDeprecated = false `;
         query += whereClause;
 
-
         const records = await QueryHelper.query<Package2Version>(query, this.conn, true);
 
-       
         if (records.length > 1) {
             return records.sort((a, b) => {
                 const v1 = `${a.MajorVersion}.${a.MinorVersion}.${a.PatchVersion}-${a.BuildNumber}`;

@@ -1,15 +1,15 @@
-import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig';
-import { flags } from '@oclif/command';
-import inquirer = require('inquirer');
-import CommandsWithInitCheck from '../sharedCommandBase/CommandsWithInitCheck';
-import CreatePackageWorkflow from '../workflows/package/CreatePackageWorkflow';
-import PackageVersionWorkflow from '../workflows/package/PackageVersionWorkflow';
+import ProjectConfig from "@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig";
+import { flags } from "@oclif/command";
+import inquirer = require("inquirer");
+import CommandsWithInitCheck from "../sharedCommandBase/CommandsWithInitCheck";
+import CreatePackageWorkflow from "../workflows/package/CreatePackageWorkflow";
+import PackageVersionWorkflow from "../workflows/package/PackageVersionWorkflow";
 
 export default class Package extends CommandsWithInitCheck {
-    public static description = 'helpers to deal with packages in your project';
+    public static description = "helpers to deal with packages in your project";
 
     static flags = {
-        help: flags.help({ char: 'h' }),
+        help: flags.help({ char: "h" }),
     };
 
     protected async executeCommand(): Promise<any> {
@@ -24,7 +24,7 @@ export default class Package extends CommandsWithInitCheck {
             await createPackageWorkflow.commitStagedPackage(
                 this.sfpProjectConfig.defaultDevHub,
                 newPackage,
-                projectConfig
+                projectConfig,
             );
         }
     }
@@ -32,12 +32,12 @@ export default class Package extends CommandsWithInitCheck {
     private async promptForCommandSelection(): Promise<PackageCommand> {
         const operation = await inquirer.prompt([
             {
-                type: 'list',
-                name: 'type',
-                message: 'Select an operation',
+                type: "list",
+                name: "type",
+                message: "Select an operation",
                 choices: [
-                    { name: 'Manage versions of packages in the project', value: PackageCommand.VERSION_COMMAND },
-                    { name: 'Create a new package in the project', value: PackageCommand.CREATE_PACKAGE_COMMAND },
+                    { name: "Manage versions of packages in the project", value: PackageCommand.VERSION_COMMAND },
+                    { name: "Create a new package in the project", value: PackageCommand.CREATE_PACKAGE_COMMAND },
                 ],
             },
         ]);

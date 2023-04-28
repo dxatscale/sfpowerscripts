@@ -1,7 +1,7 @@
-import ProjectConfig from '../project/ProjectConfig';
-import simplegit, { SimpleGit, LogOptions } from 'simple-git';
-import { Changelog } from './interfaces/GenericChangelogInterfaces';
-import SFPLogger, { LoggerLevel } from '@dxatscale/sfp-logger';
+import ProjectConfig from "../project/ProjectConfig";
+import simplegit, { SimpleGit, LogOptions } from "simple-git";
+import { Changelog } from "./interfaces/GenericChangelogInterfaces";
+import SFPLogger, { LoggerLevel } from "@dxatscale/sfp-logger";
 
 /**
  * A class for generating a changelog between two commits
@@ -12,7 +12,7 @@ export default class GeneratePackageChangelog {
         private readonly sfdx_package: string,
         private readonly revFrom: string,
         private readonly revTo: string,
-        private readonly project_directory: string
+        private readonly project_directory: string,
     ) {}
 
     public async exec(): Promise<Changelog> {
@@ -33,17 +33,15 @@ export default class GeneratePackageChangelog {
 
         let revFrom: string;
         if (this.revFrom) {
-            revFrom = await git.revparse(['--short', `${this.revFrom}^{}`]);
+            revFrom = await git.revparse(["--short", `${this.revFrom}^{}`]);
         }
-       
 
-        let revTo: string = await git.revparse(['--short', `${this.revTo}^{}`]);
+        let revTo: string = await git.revparse(["--short", `${this.revTo}^{}`]);
 
         let options: LogOptions = {
-            file: packageDescriptor ? `${packageDescriptor['path']}*` : packageDescriptor,
+            file: packageDescriptor ? `${packageDescriptor["path"]}*` : packageDescriptor,
         };
-        if(revFrom)
-        { 
+        if (revFrom) {
             options.from = revFrom;
             options.to = revTo;
         }
@@ -57,12 +55,12 @@ export default class GeneratePackageChangelog {
             commits: [],
         };
 
-        changelog['name'] = this.sfdx_package;
-        changelog['from'] = revFrom;
-        changelog['to'] = revTo;
+        changelog["name"] = this.sfdx_package;
+        changelog["from"] = revFrom;
+        changelog["to"] = revTo;
 
         for (let commit of gitLogResult.all) {
-            changelog['commits'].push({
+            changelog["commits"].push({
                 commitId: commit.hash.slice(0, 8),
                 date: commit.date,
                 author: commit.author_name,

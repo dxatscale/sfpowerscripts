@@ -5,7 +5,7 @@ export default class PackageVersion {
     private _major: number;
     private _minor: number;
     private _patch: number;
-    private _buildNum?: number | 'LATEST' | 'NEXT';
+    private _buildNum?: number | "LATEST" | "NEXT";
 
     get major() {
         return this._major;
@@ -15,7 +15,7 @@ export default class PackageVersion {
         if (Number.isInteger(value)) {
             this._major = value;
         } else {
-            throw new Error('Major version must be an integer');
+            throw new Error("Major version must be an integer");
         }
     }
 
@@ -27,7 +27,7 @@ export default class PackageVersion {
         if (Number.isInteger(value)) {
             this._minor = value;
         } else {
-            throw new Error('Minor version must be an integer');
+            throw new Error("Minor version must be an integer");
         }
     }
 
@@ -39,7 +39,7 @@ export default class PackageVersion {
         if (Number.isInteger(value)) {
             this._patch = value;
         } else {
-            throw new Error('Patch version must be an integer');
+            throw new Error("Patch version must be an integer");
         }
     }
 
@@ -47,11 +47,11 @@ export default class PackageVersion {
         return this._buildNum;
     }
 
-    set buildNum(value: number | 'LATEST' | 'NEXT') {
-        if (Number.isInteger(value) || value === 'LATEST' || value === 'NEXT') {
+    set buildNum(value: number | "LATEST" | "NEXT") {
+        if (Number.isInteger(value) || value === "LATEST" || value === "NEXT") {
             this._buildNum = value;
         } else {
-            throw new Error('Build number must be an integer, LATEST or NEXT');
+            throw new Error("Build number must be an integer, LATEST or NEXT");
         }
     }
 
@@ -66,7 +66,7 @@ export default class PackageVersion {
 
     constructor(versionNumber: string) {
         const match = versionNumber.match(
-            /^(?<major>[0-9]+)\.(?<minor>[0-9]+)\.(?<patch>[0-9]+)(\.(?<buildNum>[0-9]+|LATEST|NEXT))?$/
+            /^(?<major>[0-9]+)\.(?<minor>[0-9]+)\.(?<patch>[0-9]+)(\.(?<buildNum>[0-9]+|LATEST|NEXT))?$/,
         );
 
         if (match) {
@@ -76,15 +76,15 @@ export default class PackageVersion {
             this._patch = parseInt(match.groups.patch);
 
             if (match.groups.buildNum) {
-                if (typeof match.groups.buildNum === 'number') {
+                if (typeof match.groups.buildNum === "number") {
                     this._buildNum = parseInt(match.groups.buildNum);
-                } else if (typeof match.groups.buildNum === 'string') {
-                    this._buildNum = match.groups.buildNum as 'LATEST' | 'NEXT';
+                } else if (typeof match.groups.buildNum === "string") {
+                    this._buildNum = match.groups.buildNum as "LATEST" | "NEXT";
                 }
             }
         } else {
             throw new Error(
-                `Invalid version number. Must be of the format 1.0.0 , 1.0.0.0 , 1.0.0.NEXT or 1.0.0.LATEST`
+                `Invalid version number. Must be of the format 1.0.0 , 1.0.0.0 , 1.0.0.NEXT or 1.0.0.LATEST`,
             );
         }
     }
@@ -109,7 +109,7 @@ export default class PackageVersion {
     }
 
     private incrementBuildNumber() {
-        if (typeof this._buildNum === 'number') {
+        if (typeof this._buildNum === "number") {
             this._buildNum++;
         }
     }
@@ -117,7 +117,7 @@ export default class PackageVersion {
     private incrementPatchVersion() {
         this._patch++;
 
-        if (typeof this._buildNum === 'number') {
+        if (typeof this._buildNum === "number") {
             this._buildNum = 0;
         }
     }
@@ -126,7 +126,7 @@ export default class PackageVersion {
         this._minor++;
         this._patch = 0;
 
-        if (typeof this._buildNum === 'number') {
+        if (typeof this._buildNum === "number") {
             this._buildNum = 0;
         }
     }
@@ -136,15 +136,15 @@ export default class PackageVersion {
         this._minor = 0;
         this._patch = 0;
 
-        if (typeof this._buildNum === 'number') {
+        if (typeof this._buildNum === "number") {
             this._buildNum = 0;
         }
     }
 }
 
 export enum Positional {
-    MAJOR = 'major',
-    MINOR = 'minor',
-    PATCH = 'patch',
-    BUILDNUMBER = 'buildnumber',
+    MAJOR = "major",
+    MINOR = "minor",
+    PATCH = "patch",
+    BUILDNUMBER = "buildnumber",
 }

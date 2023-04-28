@@ -1,19 +1,19 @@
-import { flags } from '@salesforce/command';
-import { Messages } from '@salesforce/core';
-import PackageCreateCommand from '../../../../PackageCreateCommand';
-import { COLOR_SUCCESS, ConsoleLogger } from '@dxatscale/sfp-logger';
-import SfpPackage from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
-import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder';
+import { flags } from "@salesforce/command";
+import { Messages } from "@salesforce/core";
+import PackageCreateCommand from "../../../../PackageCreateCommand";
+import { COLOR_SUCCESS, ConsoleLogger } from "@dxatscale/sfp-logger";
+import SfpPackage from "@dxatscale/sfpowerscripts.core/lib/package/SfpPackage";
+import SfpPackageBuilder from "@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder";
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
 
 // Load the specific messages for this file. Messages from @salesforce/command, @salesforce/core,
 // or any library that is using the messages framework can also be loaded this way.
-const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'create_unlocked_package');
+const messages = Messages.loadMessages("@dxatscale/sfpowerscripts", "create_unlocked_package");
 
 export default class CreateUnlockedPackage extends PackageCreateCommand {
-    public static description = messages.getMessage('commandDescription');
+    public static description = messages.getMessage("commandDescription");
 
     protected static requiresUsername = false;
     protected static requiresDevhubUsername = true;
@@ -36,86 +36,86 @@ export default class CreateUnlockedPackage extends PackageCreateCommand {
     protected static flagsConfig = {
         package: flags.string({
             required: true,
-            char: 'n',
-            description: messages.getMessage('packageFlagDescription'),
+            char: "n",
+            description: messages.getMessage("packageFlagDescription"),
         }),
         buildartifactenabled: flags.boolean({
-            char: 'b',
-            description: messages.getMessage('buildArtifactEnabledFlagDescription'),
+            char: "b",
+            description: messages.getMessage("buildArtifactEnabledFlagDescription"),
             deprecated: {
-                message: '--buildartifactenabled is deprecated. Artifacts are always created',
-                messageOverride: '--buildartifactenabled is deprecated. Artifacts are always created',
+                message: "--buildartifactenabled is deprecated. Artifacts are always created",
+                messageOverride: "--buildartifactenabled is deprecated. Artifacts are always created",
             },
         }),
         installationkey: flags.string({
-            char: 'k',
-            description: messages.getMessage('installationKeyFlagDescription'),
-            exclusive: ['installationkeybypass'],
+            char: "k",
+            description: messages.getMessage("installationKeyFlagDescription"),
+            exclusive: ["installationkeybypass"],
         }),
         installationkeybypass: flags.boolean({
-            char: 'x',
-            description: messages.getMessage('installationKeyBypassFlagDescription'),
-            exclusive: ['installationkey'],
+            char: "x",
+            description: messages.getMessage("installationKeyBypassFlagDescription"),
+            exclusive: ["installationkey"],
         }),
         diffcheck: flags.boolean({
-            description: messages.getMessage('diffCheckFlagDescription'),
+            description: messages.getMessage("diffCheckFlagDescription"),
         }),
         gittag: flags.boolean({
-            description: messages.getMessage('gitTagFlagDescription'),
+            description: messages.getMessage("gitTagFlagDescription"),
         }),
         repourl: flags.string({
-            char: 'r',
-            description: messages.getMessage('repoUrlFlagDescription'),
+            char: "r",
+            description: messages.getMessage("repoUrlFlagDescription"),
         }),
         versionnumber: flags.string({
-            description: messages.getMessage('versionNumberFlagDescription'),
+            description: messages.getMessage("versionNumberFlagDescription"),
         }),
         configfilepath: flags.filepath({
-            char: 'f',
-            description: messages.getMessage('configFilePathFlagDescription'),
-            default: 'config/project-scratch-def.json',
+            char: "f",
+            description: messages.getMessage("configFilePathFlagDescription"),
+            default: "config/project-scratch-def.json",
         }),
         artifactdir: flags.directory({
-            description: messages.getMessage('artifactDirectoryFlagDescription'),
-            default: 'artifacts',
+            description: messages.getMessage("artifactDirectoryFlagDescription"),
+            default: "artifacts",
         }),
         enablecoverage: flags.boolean({
-            description: messages.getMessage('enableCoverageFlagDescription'),
+            description: messages.getMessage("enableCoverageFlagDescription"),
         }),
         isvalidationtobeskipped: flags.boolean({
-            char: 's',
-            description: messages.getMessage('isValidationToBeSkippedFlagDescription'),
+            char: "s",
+            description: messages.getMessage("isValidationToBeSkippedFlagDescription"),
         }),
         branch: flags.string({
-            description: messages.getMessage('branchFlagDescription'),
+            description: messages.getMessage("branchFlagDescription"),
         }),
         tag: flags.string({
-            description: messages.getMessage('tagFlagDescription'),
+            description: messages.getMessage("tagFlagDescription"),
         }),
         waittime: flags.string({
-            description: messages.getMessage('waitTimeFlagDescription'),
-            default: '120',
+            description: messages.getMessage("waitTimeFlagDescription"),
+            default: "120",
         }),
         refname: flags.string({
-            description: messages.getMessage('refNameFlagDescription'),
+            description: messages.getMessage("refNameFlagDescription"),
         }),
         loglevel: flags.enum({
-            description: 'logging level for this command invocation',
-            default: 'info',
+            description: "logging level for this command invocation",
+            default: "info",
             required: false,
             options: [
-                'trace',
-                'debug',
-                'info',
-                'warn',
-                'error',
-                'fatal',
-                'TRACE',
-                'DEBUG',
-                'INFO',
-                'WARN',
-                'ERROR',
-                'FATAL',
+                "trace",
+                "debug",
+                "info",
+                "warn",
+                "error",
+                "fatal",
+                "TRACE",
+                "DEBUG",
+                "INFO",
+                "WARN",
+                "ERROR",
+                "FATAL",
             ],
         }),
     };
@@ -152,7 +152,7 @@ export default class CreateUnlockedPackage extends PackageCreateCommand {
                 waitTime: waitTime as string,
                 isCoverageEnabled: isCoverageEnabled as boolean,
                 isSkipValidation: isSkipValidation as boolean,
-            }
+            },
         );
 
         console.log(COLOR_SUCCESS(`Created unlocked package ${sfpPackage.packageName}`));

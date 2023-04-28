@@ -1,12 +1,12 @@
-import SFPLogger, { LoggerLevel, Logger } from '@dxatscale/sfp-logger';
-import path from 'path';
-import FileSystem from '../../utils/FileSystem';
-import { CreatePackage } from './CreatePackage';
-import SfpPackage, { PackageType, SfpPackageParams } from '../SfpPackage';
-import { PackageCreationParams } from '../SfpPackageBuilder';
+import SFPLogger, { LoggerLevel, Logger } from "@dxatscale/sfp-logger";
+import path from "path";
+import FileSystem from "../../utils/FileSystem";
+import { CreatePackage } from "./CreatePackage";
+import SfpPackage, { PackageType, SfpPackageParams } from "../SfpPackage";
+import { PackageCreationParams } from "../SfpPackageBuilder";
 
-const SFDMU_CONFIG = 'export.json';
-const VLOCITY_CONFIG = 'VlocityComponents.yaml';
+const SFDMU_CONFIG = "export.json";
+const VLOCITY_CONFIG = "VlocityComponents.yaml";
 
 export default class CreateDataPackageImpl extends CreatePackage {
     public constructor(
@@ -14,7 +14,7 @@ export default class CreateDataPackageImpl extends CreatePackage {
         protected sfpPackage: SfpPackage,
         protected packageCreationParams: PackageCreationParams,
         protected logger?: Logger,
-        protected params?: SfpPackageParams
+        protected params?: SfpPackageParams,
     ) {
         super(projectDirectory, sfpPackage, packageCreationParams, logger, params);
     }
@@ -26,13 +26,13 @@ export default class CreateDataPackageImpl extends CreatePackage {
     isEmptyPackage(projectDirectory: string, packageDirectory: string): boolean {
         let files: string[] = FileSystem.readdirRecursive(path.join(projectDirectory, packageDirectory));
 
-        let hasExportJson = files.find((file) => path.basename(file) === 'export.json');
+        let hasExportJson = files.find((file) => path.basename(file) === "export.json");
 
-        let hasCsvFile = files.find((file) => path.extname(file) === '.csv');
+        let hasCsvFile = files.find((file) => path.extname(file) === ".csv");
 
-        let hasYAMLFile = files.find((file) => path.extname(file) === '.yaml'); //check for vlocity config
+        let hasYAMLFile = files.find((file) => path.extname(file) === ".yaml"); //check for vlocity config
 
-        if(hasYAMLFile) return false;
+        if (hasYAMLFile) return false;
 
         if (!hasExportJson || !hasCsvFile) return true;
         else return false;
@@ -63,23 +63,23 @@ export default class CreateDataPackageImpl extends CreatePackage {
 
         if (isSfdmu && isVlocity) {
             throw new Error(
-                `Data package '${this.sfpPackage.packageName}' contains both SFDMU & Vlocity configuration`
+                `Data package '${this.sfpPackage.packageName}' contains both SFDMU & Vlocity configuration`,
             );
         } else if (isSfdmu) {
             SFPLogger.log(
                 `Found export.json in ${packageDirectory}.. Utilizing it as data package and will be deployed using sfdmu`,
                 LoggerLevel.INFO,
-                this.logger
+                this.logger,
             );
         } else if (isVlocity) {
             SFPLogger.log(
                 `Found VlocityComponents.yaml in ${packageDirectory}.. Utilizing it as data package and will be deployed using vbt`,
                 LoggerLevel.INFO,
-                this.logger
+                this.logger,
             );
         } else {
             throw new Error(
-                `Could not find export.json or VlocityComponents.yaml in ${packageDirectory}. sfpowerscripts only support vlocity or sfdmu based data packages`
+                `Could not find export.json or VlocityComponents.yaml in ${packageDirectory}. sfpowerscripts only support vlocity or sfdmu based data packages`,
             );
         }
     }

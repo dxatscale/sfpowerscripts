@@ -1,22 +1,18 @@
-import { SfpProjectConfig } from '../../types/SfpProjectConfig';
-import simpleGit, { SimpleGit } from 'simple-git';
-import SFPLogger, {
-    COLOR_KEY_MESSAGE,
-    COLOR_WARNING,
-    LoggerLevel,
-} from '@dxatscale/sfp-logger/lib/SFPLogger';
-import CommitWorkflow from '../git/CommitWorkflow';
-import SyncGit from '../sync/SyncGit';
-import inquirer = require('inquirer');
-import SyncOrg from '../sync/SyncOrg';
-import PushSourceToOrg from '../../impl/sfpcommands/PushSourceToOrg';
-import PickAnOrgWorkflow from '../org/PickAnOrgWorkflow';
-import RepoProviderSelector from '../../impl/repoprovider/RepoProviderSelector';
-import AnalyzeWithPMD from '../../impl/sfpcommands/AnalyzeWithPMD';
-import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig';
-import TriggerApexTest from '../../impl/sfpcommands/TriggerApexTest';
-import SelectPackageWorkflow from '../package/SelectPackageWorkflow';
-import cli from 'cli-ux';
+import { SfpProjectConfig } from "../../types/SfpProjectConfig";
+import simpleGit, { SimpleGit } from "simple-git";
+import SFPLogger, { COLOR_KEY_MESSAGE, COLOR_WARNING, LoggerLevel } from "@dxatscale/sfp-logger/lib/SFPLogger";
+import CommitWorkflow from "../git/CommitWorkflow";
+import SyncGit from "../sync/SyncGit";
+import inquirer = require("inquirer");
+import SyncOrg from "../sync/SyncOrg";
+import PushSourceToOrg from "../../impl/sfpcommands/PushSourceToOrg";
+import PickAnOrgWorkflow from "../org/PickAnOrgWorkflow";
+import RepoProviderSelector from "../../impl/repoprovider/RepoProviderSelector";
+import AnalyzeWithPMD from "../../impl/sfpcommands/AnalyzeWithPMD";
+import ProjectConfig from "@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig";
+import TriggerApexTest from "../../impl/sfpcommands/TriggerApexTest";
+import SelectPackageWorkflow from "../package/SelectPackageWorkflow";
+import cli from "cli-ux";
 
 export default class SubmitWorkItemWorkflow {
     private devOrg: string;
@@ -51,7 +47,7 @@ export default class SubmitWorkItemWorkflow {
             const descriptorofChosenPackages = await selectPackageWorkflow.choosePackages(true);
             const pathOfPackages = descriptorofChosenPackages.map((descriptor) => descriptor.path);
 
-            await new AnalyzeWithPMD(pathOfPackages, 'sfpowerkit', null, 1, '6.39.0').exec();
+            await new AnalyzeWithPMD(pathOfPackages, "sfpowerkit", null, 1, "6.39.0").exec();
         }
 
         if (await this.isRunApexTests()) {
@@ -63,7 +59,7 @@ export default class SubmitWorkItemWorkflow {
 
             const triggerApexTest = new TriggerApexTest(
                 devOrg,
-                'RunAggregatedTests',
+                "RunAggregatedTests",
                 null,
                 null,
                 true,
@@ -71,10 +67,10 @@ export default class SubmitWorkItemWorkflow {
                 packages,
                 false,
                 false,
-                75
+                75,
             );
 
-            cli.action.start('Running Apex tests...');
+            cli.action.start("Running Apex tests...");
             await triggerApexTest.exec();
             cli.action.stop();
         }
@@ -82,7 +78,7 @@ export default class SubmitWorkItemWorkflow {
         await new CommitWorkflow(git, this.sfpProjectConfig).execute();
 
         SFPLogger.log(`Pushing to origin/${currentBranch}`);
-        await git.push('origin', currentBranch);
+        await git.push("origin", currentBranch);
 
         if (await this.isCreatePullRequest()) {
             const repoProvider = RepoProviderSelector.getRepoProvider(this.sfpProjectConfig.repoProvider);
@@ -91,7 +87,7 @@ export default class SubmitWorkItemWorkflow {
             } else {
                 SFPLogger.log(
                     `Install the ${this.sfpProjectConfig.repoProvider} CLI to enable creation of pull requests`,
-                    LoggerLevel.ERROR
+                    LoggerLevel.ERROR,
                 );
             }
         }
@@ -107,8 +103,8 @@ export default class SubmitWorkItemWorkflow {
         if (workItem?.defaultDevOrg == null) {
             SFPLogger.log(
                 `  ${COLOR_WARNING(
-                    `Work Item not intialized, always utilize ${COLOR_KEY_MESSAGE(`sfp work`)} to intialize work`
-                )}`
+                    `Work Item not intialized, always utilize ${COLOR_KEY_MESSAGE(`sfp work`)} to intialize work`,
+                )}`,
             );
             this.devOrg = await new PickAnOrgWorkflow().getADevOrg();
         } else {
@@ -120,9 +116,9 @@ export default class SubmitWorkItemWorkflow {
 
     private async isSyncGit(): Promise<boolean> {
         const answers = await inquirer.prompt({
-            type: 'confirm',
-            name: 'isSyncGit',
-            message: 'Sync local with remote repository?',
+            type: "confirm",
+            name: "isSyncGit",
+            message: "Sync local with remote repository?",
         });
 
         return answers.isSyncGit;
@@ -130,9 +126,9 @@ export default class SubmitWorkItemWorkflow {
 
     private async isSyncOrg(): Promise<boolean> {
         const answers = await inquirer.prompt({
-            type: 'confirm',
-            name: 'isSyncOrg',
-            message: 'Sync local with Dev org?',
+            type: "confirm",
+            name: "isSyncOrg",
+            message: "Sync local with Dev org?",
         });
 
         return answers.isSyncOrg;
@@ -140,9 +136,9 @@ export default class SubmitWorkItemWorkflow {
 
     private async isPushSourceToOrg(): Promise<boolean> {
         const answers = await inquirer.prompt({
-            type: 'confirm',
-            name: 'isPushSourceToOrg',
-            message: 'Push ALL source to Dev org?',
+            type: "confirm",
+            name: "isPushSourceToOrg",
+            message: "Push ALL source to Dev org?",
         });
 
         return answers.isPushSourceToOrg;
@@ -150,9 +146,9 @@ export default class SubmitWorkItemWorkflow {
 
     private async isCreatePullRequest(): Promise<boolean> {
         const answers = await inquirer.prompt({
-            type: 'confirm',
-            name: 'isCreatePullRequest',
-            message: 'Create pull request?',
+            type: "confirm",
+            name: "isCreatePullRequest",
+            message: "Create pull request?",
         });
 
         return answers.isCreatePullRequest;
@@ -160,18 +156,18 @@ export default class SubmitWorkItemWorkflow {
 
     private async isPmdAnalysis(): Promise<boolean> {
         const answers = await inquirer.prompt({
-            type: 'confirm',
-            name: 'isPmdAnalysis',
-            message: 'Run PMD static code analysis?',
+            type: "confirm",
+            name: "isPmdAnalysis",
+            message: "Run PMD static code analysis?",
         });
 
         return answers.isPmdAnalysis;
     }
     private async isRunApexTests(): Promise<boolean> {
         const answers = await inquirer.prompt({
-            type: 'confirm',
-            name: 'isRunApexTests',
-            message: 'Run Apex tests?',
+            type: "confirm",
+            name: "isRunApexTests",
+            message: "Run Apex tests?",
         });
 
         return answers.isRunApexTests;

@@ -1,5 +1,5 @@
-import Git from './Git';
-import child_process = require('child_process');
+import Git from "./Git";
+import child_process = require("child_process");
 
 export default class GitTags {
     constructor(private git: Git, private sfdx_package: string) {}
@@ -11,12 +11,7 @@ export default class GitTags {
      * @param sfdx_package
      */
     async listTagsOnBranch(): Promise<string[]> {
-        let tags: string[] = await this.git.tag([
-            `-l`,
-            `${this.sfdx_package}_v*`,
-            `--sort=creatordate`,
-            `--merged`,
-        ]);
+        let tags: string[] = await this.git.tag([`-l`, `${this.sfdx_package}_v*`, `--sort=creatordate`, `--merged`]);
 
         if (tags.length > 0) return this.filterTagsAgainstBranch(tags);
         else return tags;
@@ -31,13 +26,13 @@ export default class GitTags {
         //TODO: Remove this direct usage
         let gitShowRefTagsBuffer = child_process.execSync(`git show-ref --tags -d | grep "${this.sfdx_package}_v*"`, {
             maxBuffer: 5 * 1024 * 1024,
-            stdio: 'pipe',
-            cwd: this.git.getRepositoryPath()
+            stdio: "pipe",
+            cwd: this.git.getRepositoryPath(),
         });
 
         let gitShowRefTags = gitShowRefTagsBuffer.toString();
 
-        let refTags: string[] = gitShowRefTags.split('\n');
+        let refTags: string[] = gitShowRefTags.split("\n");
         refTags.pop(); // Remove last empty element
 
         // Filter ref tags, only including tags that point to the branch
@@ -46,7 +41,7 @@ export default class GitTags {
 
         // Only match the name of the tags pointing to the branch
         refTagsPointingToBranch = refTagsPointingToBranch.map(
-            (refTagPointingToBranch) => refTagPointingToBranch.match(/(?:refs\/tags\/)(.*)((?:-ALIGN)|(?:\^{}))/)[1]
+            (refTagPointingToBranch) => refTagPointingToBranch.match(/(?:refs\/tags\/)(.*)((?:-ALIGN)|(?:\^{}))/)[1],
         );
 
         // Filter the sorted tags - only including tags that point to the branch
@@ -62,7 +57,7 @@ export default class GitTags {
         let latestTag = tags.pop();
         if (latestTag) {
             let match: RegExpMatchArray = latestTag.match(
-                /^.*_v(?<version>[0-9]+\.[0-9]+\.[0-9]+(\.[0-9]+|\.LATEST|\.NEXT)?(\-ALIGN)?)$/
+                /^.*_v(?<version>[0-9]+\.[0-9]+\.[0-9]+(\.[0-9]+|\.LATEST|\.NEXT)?(\-ALIGN)?)$/,
             );
             if (match) version = this.substituteBuildNumberWithPreRelease(match.groups.version);
             else throw new Error(`Failed to find valid tag for ${this.sfdx_package}`);
@@ -72,34 +67,32 @@ export default class GitTags {
     }
 
     private substituteBuildNumberWithPreRelease(packageVersionNumber: string) {
-        let segments = packageVersionNumber.split('.');
+        let segments = packageVersionNumber.split(".");
         //Strip ALIGN
-        if (segments.length == 4 && segments[3].includes('ALIGN')) {
-            segments[3] = segments[3].substring(0, segments[3].indexOf('-'));
+        if (segments.length == 4 && segments[3].includes("ALIGN")) {
+            segments[3] = segments[3].substring(0, segments[3].indexOf("-"));
         }
 
         if (segments.length === 4) {
             packageVersionNumber = segments.reduce((version, segment, segmentsIdx) => {
-                if (segmentsIdx === 3) return version + '-' + segment;
-                else return version + '.' + segment;
+                if (segmentsIdx === 3) return version + "-" + segment;
+                else return version + "." + segment;
             });
         }
 
         return packageVersionNumber;
     }
 
-
-    public async limitTags(limit: number): Promise<string[]>{
+    public async limitTags(limit: number): Promise<string[]> {
         let rawTags = await this.listTagsOnBranch();
 
         if (rawTags.length <= limit) {
             return [];
         }
 
-        const tags:string [] = rawTags.slice(0, Math.abs(limit) * -1);
+        const tags: string[] = rawTags.slice(0, Math.abs(limit) * -1);
         return tags;
     }
-
 
     public async filteredOldTags(daysToKeep: number, limit?: number): Promise<string[]> {
         const currentTimestamp = Math.floor(Date.now() / 1000);
@@ -118,17 +111,17 @@ export default class GitTags {
         let tags: string[] = await this.getTagsWithTimestamps(rawTags);
 
         const filteredTags = tags
-          .map(tagStr => {
-            const [name, timestampStr] = tagStr.split(' ');
-            const timestamp = parseInt(timestampStr, 10);
-            return { name, timestamp };
-          })
-          .filter(tag => {
-            const daysSinceTag = (currentTimestamp - tag.timestamp) / 86400;
-            return tag.name && daysSinceTag > daysToKeep;
-          });
+            .map((tagStr) => {
+                const [name, timestampStr] = tagStr.split(" ");
+                const timestamp = parseInt(timestampStr, 10);
+                return { name, timestamp };
+            })
+            .filter((tag) => {
+                const daysSinceTag = (currentTimestamp - tag.timestamp) / 86400;
+                return tag.name && daysSinceTag > daysToKeep;
+            });
 
-        return filteredTags.map(tag => tag.name);
+        return filteredTags.map((tag) => tag.name);
     }
 
     private async getTagsWithTimestamps(tags: string[]): Promise<string[]> {
@@ -136,16 +129,16 @@ export default class GitTags {
 
         // Create an array of promises that will get the tagger date for each tag
         tags.forEach((tag: string) => {
-        timestampPromises.push(
-            this.git.log(['--format=%at', `refs/tags/${tag}`])
-            .then((output: string[]) => parseInt(output[0].trim(), 10))
-        );
+            timestampPromises.push(
+                this.git
+                    .log(["--format=%at", `refs/tags/${tag}`])
+                    .then((output: string[]) => parseInt(output[0].trim(), 10)),
+            );
         });
 
         // Wait for all promises to resolve and format the output
         const timestamps: number[] = await Promise.all(timestampPromises);
         const tagsWithTimestamp = tags.map((tag: string, index: number) => `${tag} ${timestamps[index]}`);
-        return tagsWithTimestamp
+        return tagsWithTimestamp;
     }
-
 }

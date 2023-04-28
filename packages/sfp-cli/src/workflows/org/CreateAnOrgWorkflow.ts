@@ -1,22 +1,18 @@
-import ScratchOrg from '@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg';
-import { Org } from '@salesforce/core';
-import inquirer = require('inquirer');
-import PoolListImpl from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolListImpl';
-import { SfpProjectConfig } from '../../types/SfpProjectConfig';
-import { isEmpty } from 'lodash';
-import cli from 'cli-ux';
-import SFPLogger, {
-    COLOR_KEY_MESSAGE,
-    COLOR_SUCCESS,
-    LoggerLevel,
-} from '@dxatscale/sfp-logger/lib/SFPLogger';
-import InstalledArtifactsDisplayer from '@dxatscale/sfpowerscripts.core/lib/display/InstalledArtifactsDisplayer';
-import InstalledPackageDisplayer from '@dxatscale/sfpowerscripts.core/lib/display/InstalledPackagesDisplayer';
-import PoolFetchImpl from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolFetchImpl';
-import OrgOpen from '../../impl/sfdxwrappers/OrgOpen';
-import InstallDependenciesWorkflow from '../package/InstallDependenciesWorkflow';
-import ScratchOrgOperator from '@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrgOperator';
-import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
+import ScratchOrg from "@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg";
+import { Org } from "@salesforce/core";
+import inquirer = require("inquirer");
+import PoolListImpl from "@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolListImpl";
+import { SfpProjectConfig } from "../../types/SfpProjectConfig";
+import { isEmpty } from "lodash";
+import cli from "cli-ux";
+import SFPLogger, { COLOR_KEY_MESSAGE, COLOR_SUCCESS, LoggerLevel } from "@dxatscale/sfp-logger/lib/SFPLogger";
+import InstalledArtifactsDisplayer from "@dxatscale/sfpowerscripts.core/lib/display/InstalledArtifactsDisplayer";
+import InstalledPackageDisplayer from "@dxatscale/sfpowerscripts.core/lib/display/InstalledPackagesDisplayer";
+import PoolFetchImpl from "@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolFetchImpl";
+import OrgOpen from "../../impl/sfdxwrappers/OrgOpen";
+import InstallDependenciesWorkflow from "../package/InstallDependenciesWorkflow";
+import ScratchOrgOperator from "@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrgOperator";
+import SFPOrg from "@dxatscale/sfpowerscripts.core/lib/org/SFPOrg";
 
 export default class CreateAnOrgWorkflow {
     private isOrgCreated = false;
@@ -33,7 +29,7 @@ export default class CreateAnOrgWorkflow {
         if (type === OrgType.POOL) {
             // Now Fetch All Pools in that devhub
             const hubOrg = await Org.create({ aliasOrUsername: devHubUserName });
-            let scratchOrgsInDevHub = await new PoolListImpl(hubOrg, null, true).execute() as ScratchOrg[];
+            let scratchOrgsInDevHub = (await new PoolListImpl(hubOrg, null, true).execute()) as ScratchOrg[];
 
             let tags = this.getPoolTags(scratchOrgsInDevHub);
 
@@ -89,13 +85,13 @@ export default class CreateAnOrgWorkflow {
                 cli.action.start(` Creating A ScratchOrg with duration set to 10 days..`);
                 let hubOrg = await Org.create({ aliasOrUsername: sfpProjectConfig.defaultDevHub });
                 let scratchOrgOperator: ScratchOrgOperator = new ScratchOrgOperator(hubOrg);
-                let result = await scratchOrgOperator.create(id, 'config/project-scratch-def.json', 10);
+                let result = await scratchOrgOperator.create(id, "config/project-scratch-def.json", 10);
                 cli.action.stop();
                 SFPLogger.log(COLOR_KEY_MESSAGE(`  Successfully created a scratchorg for WorkItem ${id}`));
                 return result.username;
             case OrgType.SANDBOX:
                 SFPLogger.log(COLOR_KEY_MESSAGE(`  Coming soon`));
-                throw new Error('Not implemented, Please choose another option and try again');
+                throw new Error("Not implemented, Please choose another option and try again");
         }
     }
 
@@ -108,7 +104,7 @@ export default class CreateAnOrgWorkflow {
     private getPoolTags(result: ScratchOrg[]) {
         let availableSo = [];
         if (result.length > 0) {
-            availableSo = result.filter((soInfo) => soInfo.status === 'Available');
+            availableSo = result.filter((soInfo) => soInfo.status === "Available");
         }
 
         let tagCounts: any = availableSo.reduce(function (obj, v) {
@@ -132,9 +128,9 @@ export default class CreateAnOrgWorkflow {
     private async promptForNeedForOpeningDevEnvironment(): Promise<boolean> {
         const isDevEnvironmentRequiredPrompt = await inquirer.prompt([
             {
-                type: 'confirm',
-                name: 'isOrgToBeOpened',
-                message: 'Do you want to open the org in a web browser?',
+                type: "confirm",
+                name: "isOrgToBeOpened",
+                message: "Do you want to open the org in a web browser?",
                 default: true,
             },
         ]);
@@ -144,10 +140,10 @@ export default class CreateAnOrgWorkflow {
     private async promptForCreatingDevEnvironmentIfPoolEmpty(): Promise<boolean> {
         const isCreateDevEnvironmentRequiredPrompt = await inquirer.prompt([
             {
-                type: 'confirm',
-                name: 'create',
+                type: "confirm",
+                name: "create",
                 message:
-                    'No scratch orgs available in pool, Create a new scratch org (This would take a considerable time)?',
+                    "No scratch orgs available in pool, Create a new scratch org (This would take a considerable time)?",
             },
         ]);
         return isCreateDevEnvironmentRequiredPrompt.create;
@@ -158,13 +154,13 @@ export default class CreateAnOrgWorkflow {
             const scratchOrgAsSFPOrg = await SFPOrg.create({ aliasOrUsername: scratchOrg.username });
 
             let installedManagedPackages = await scratchOrgAsSFPOrg.getAllInstalledManagedPackages();
-            SFPLogger.log('Installed managed packages:', LoggerLevel.INFO);
+            SFPLogger.log("Installed managed packages:", LoggerLevel.INFO);
             InstalledPackageDisplayer.printInstalledPackages(installedManagedPackages, null);
 
             let installedArtifacts = await scratchOrgAsSFPOrg.getInstalledArtifacts();
             InstalledArtifactsDisplayer.printInstalledArtifacts(installedArtifacts, null);
         } catch (error) {
-            SFPLogger.log('Failed to query packages/artifacts installed in the org', LoggerLevel.ERROR);
+            SFPLogger.log("Failed to query packages/artifacts installed in the org", LoggerLevel.ERROR);
         }
     }
 
@@ -173,20 +169,20 @@ export default class CreateAnOrgWorkflow {
             let installDependenciesWorkflow = new InstallDependenciesWorkflow(
                 this.sfpProjectConfig,
                 username,
-                isUpdateMode
+                isUpdateMode,
             );
             await installDependenciesWorkflow.execute();
         } catch (error) {
             SFPLogger.log(error.message, LoggerLevel.ERROR);
             if (this.isOrgCreated)
                 SFPLogger.log(
-                    'Unable to install external dependency packages, Check your sfdx-project.json ',
-                    LoggerLevel.ERROR
+                    "Unable to install external dependency packages, Check your sfdx-project.json ",
+                    LoggerLevel.ERROR,
                 );
             else
                 SFPLogger.log(
-                    'Unable to update external dependency packages, Check your sfdx-project.json ',
-                    LoggerLevel.ERROR
+                    "Unable to update external dependency packages, Check your sfdx-project.json ",
+                    LoggerLevel.ERROR,
                 );
         }
     }
@@ -194,9 +190,9 @@ export default class CreateAnOrgWorkflow {
     private async promptForPoolSelection(pools: Array<any>, defaultPool: string): Promise<string> {
         const pool = await inquirer.prompt([
             {
-                type: 'list',
-                name: 'tag',
-                message: 'Select a Scratch Org Pool (Only pools with alteast 1 org is displayed)',
+                type: "list",
+                name: "tag",
+                message: "Select a Scratch Org Pool (Only pools with alteast 1 org is displayed)",
                 choices: pools,
                 default: { name: defaultPool, value: defaultPool },
             },
@@ -207,9 +203,9 @@ export default class CreateAnOrgWorkflow {
     private async promptForCreatingScratchOrg(): Promise<boolean> {
         const isCreateScratchOrg = await inquirer.prompt([
             {
-                type: 'confirm',
-                name: 'create',
-                message: 'Create a new scratch org (This would take a considerable time)?',
+                type: "confirm",
+                name: "create",
+                message: "Create a new scratch org (This would take a considerable time)?",
             },
         ]);
         return isCreateScratchOrg.create;
@@ -218,9 +214,9 @@ export default class CreateAnOrgWorkflow {
     private async promptForCreatingSandbox(): Promise<boolean> {
         const isCreateSandbox = await inquirer.prompt([
             {
-                type: 'confirm',
-                name: 'create',
-                message: 'Create a new sandbox (This would take a considerable time)?',
+                type: "confirm",
+                name: "create",
+                message: "Create a new sandbox (This would take a considerable time)?",
             },
         ]);
         return isCreateSandbox.create;
@@ -229,13 +225,13 @@ export default class CreateAnOrgWorkflow {
     private async promptForOrgTypeSelection(): Promise<OrgType> {
         const orgType = await inquirer.prompt([
             {
-                type: 'list',
-                name: 'type',
-                message: 'Select a type of dev environment',
+                type: "list",
+                name: "type",
+                message: "Select a type of dev environment",
                 choices: [
-                    { name: 'Fetch a scratchorg from pool', value: OrgType.POOL },
-                    { name: 'Create a scratchorg', value: OrgType.SCRATCHORG },
-                    { name: 'Create a dev sandbox', value: OrgType.SANDBOX },
+                    { name: "Fetch a scratchorg from pool", value: OrgType.POOL },
+                    { name: "Create a scratchorg", value: OrgType.SCRATCHORG },
+                    { name: "Create a dev sandbox", value: OrgType.SANDBOX },
                 ],
             },
         ]);

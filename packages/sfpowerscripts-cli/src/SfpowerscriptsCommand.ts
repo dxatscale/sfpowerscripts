@@ -1,12 +1,12 @@
-import { SfdxCommand } from '@salesforce/command';
-import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender';
-import * as rimraf from 'rimraf';
-import ProjectValidation from './ProjectValidation';
-import DemoReelPlayer from './impl/demoreelplayer/DemoReelPlayer';
-import * as fs from 'fs-extra';
-import SFPLogger, { COLOR_HEADER, ConsoleLogger, LoggerLevel } from '@dxatscale/sfp-logger';
-import { OutputFlags } from '@oclif/core/lib/interfaces';
-import GroupConsoleLogs from './ui/GroupConsoleLogs';
+import { SfdxCommand } from "@salesforce/command";
+import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender";
+import * as rimraf from "rimraf";
+import ProjectValidation from "./ProjectValidation";
+import DemoReelPlayer from "./impl/demoreelplayer/DemoReelPlayer";
+import * as fs from "fs-extra";
+import SFPLogger, { COLOR_HEADER, ConsoleLogger, LoggerLevel } from "@dxatscale/sfp-logger";
+import { OutputFlags } from "@oclif/core/lib/interfaces";
+import GroupConsoleLogs from "./ui/GroupConsoleLogs";
 
 /**
  * A base class that provides common funtionality for sfpowerscripts commands
@@ -19,14 +19,14 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
      * corresponding environment variable at runtime
      */
     private readonly sfpowerscripts_variable_dictionary: string[] = [
-        'sfpowerscripts_incremented_project_version',
-        'sfpowerscripts_artifact_directory',
-        'sfpowerscripts_artifact_metadata_directory',
-        'sfpowerscripts_package_version_id',
-        'sfpowerscripts_package_version_number',
-        'sfpowerscripts_pmd_output_path',
-        'sfpowerscripts_scratchorg_username',
-        'sfpowerscripts_installsourcepackage_deployment_id',
+        "sfpowerscripts_incremented_project_version",
+        "sfpowerscripts_artifact_directory",
+        "sfpowerscripts_artifact_metadata_directory",
+        "sfpowerscripts_package_version_id",
+        "sfpowerscripts_package_version_number",
+        "sfpowerscripts_pmd_output_path",
+        "sfpowerscripts_scratchorg_username",
+        "sfpowerscripts_installsourcepackage_deployment_id",
     ];
 
     private isSfpowerkitFound: boolean;
@@ -57,10 +57,10 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
 
         // Setting the environment variable for disabling sfpowerkit header
 
-        if (SFPLogger.logLevel > LoggerLevel.DEBUG) process.env.SFPOWERKIT_NOHEADER = 'true';
+        if (SFPLogger.logLevel > LoggerLevel.DEBUG) process.env.SFPOWERKIT_NOHEADER = "true";
 
         //Set Query Limit to max
-        process.env.SFDX_MAX_QUERY_LIMIT = '50000';
+        process.env.SFDX_MAX_QUERY_LIMIT = "50000";
 
         //If demo mode, display demo reel and return
         if (process.env.SFPOWERSCRIPTS_DEMO_MODE) {
@@ -79,18 +79,18 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
         }
 
         //Clear temp directory before every run
-        rimraf.sync('.sfpowerscripts');
+        rimraf.sync(".sfpowerscripts");
 
         //Initialise StatsD
         this.initializeStatsD();
 
         //Check sfpowerkit installation
         for (const plugin of this.config.plugins) {
-            if (plugin.name == 'sfpowerkit') {
+            if (plugin.name == "sfpowerkit") {
                 this.isSfpowerkitFound = true;
-            } else if (plugin.name == 'sfdmu') {
+            } else if (plugin.name == "sfdmu") {
                 this.isSfdmuFound = true;
-            } else if (plugin.name == '@dxatscale/sfpowerscripts') {
+            } else if (plugin.name == "@dxatscale/sfpowerscripts") {
                 this.sfpowerscriptsConfig = plugin;
             }
         }
@@ -98,29 +98,29 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
         if (!this.flags.json) {
             SFPLogger.log(
                 COLOR_HEADER(
-                    `-------------------------------------------------------------------------------------------`
-                )
+                    `-------------------------------------------------------------------------------------------`,
+                ),
             );
             SFPLogger.log(
                 COLOR_HEADER(
-                    `sfpowerscripts  -- The DX@Scale CI/CD Orchestrator -Version:${this.sfpowerscriptsConfig.version} -Release:${this.sfpowerscriptsConfig.pjson.release}`
-                )
+                    `sfpowerscripts  -- The DX@Scale CI/CD Orchestrator -Version:${this.sfpowerscriptsConfig.version} -Release:${this.sfpowerscriptsConfig.pjson.release}`,
+                ),
             );
 
             SFPLogger.log(
                 COLOR_HEADER(
-                    `-------------------------------------------------------------------------------------------`
-                )
+                    `-------------------------------------------------------------------------------------------`,
+                ),
             );
         }
 
         if (!this.isSfpowerkitFound) {
-            throw new Error('sfpowerscripts require sfpowerkit to function, please install sfpowerkit and try again!');
+            throw new Error("sfpowerscripts require sfpowerkit to function, please install sfpowerkit and try again!");
         }
 
         if (!process.env.DISABLE_SFDMU_CHECK) {
             if (!this.isSfdmuFound) {
-                throw new Error('sfpowerscripts require sfdmu to function, please install sfdmu and try again!');
+                throw new Error("sfpowerscripts require sfdmu to function, please install sfdmu and try again!");
             }
         }
 
@@ -142,11 +142,11 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
      * @param flags
      */
     private loadSfpowerscriptsVariables(flags: OutputFlags<any>): void {
-        require('dotenv').config();
+        require("dotenv").config();
 
         for (let flag in flags) {
             for (let sfpowerscripts_variable of this.sfpowerscripts_variable_dictionary) {
-                if (typeof flags[flag] === 'string' && flags[flag].includes(sfpowerscripts_variable)) {
+                if (typeof flags[flag] === "string" && flags[flag].includes(sfpowerscripts_variable)) {
                     console.log(`Substituting ${flags[flag]} with ${process.env[flags[flag]]}`);
                     flags[flag] = process.env[flags[flag]];
                     break;
@@ -160,29 +160,29 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
             SFPStatsSender.initialize(
                 process.env.SFPOWERSCRIPTS_STATSD_PORT,
                 process.env.SFPOWERSCRIPTS_STATSD_HOST,
-                process.env.SFPOWERSCRIPTS_STATSD_PROTOCOL
+                process.env.SFPOWERSCRIPTS_STATSD_PROTOCOL,
             );
         }
         if (process.env.SFPOWERSCRIPTS_DATADOG) {
             SFPStatsSender.initializeNativeMetrics(
-                'DataDog',
+                "DataDog",
                 process.env.SFPOWERSCRIPTS_DATADOG_HOST,
                 process.env.SFPOWERSCRIPTS_DATADOG_API_KEY,
-                new ConsoleLogger()
+                new ConsoleLogger(),
             );
         } else if (process.env.SFPOWERSCRIPTS_NEWRELIC) {
             SFPStatsSender.initializeNativeMetrics(
-                'NewRelic',
+                "NewRelic",
                 null,
                 process.env.SFPOWERSCRIPTS_NEWRELIC_API_KEY,
-                new ConsoleLogger()
+                new ConsoleLogger(),
             );
         } else if (process.env.SFPOWERSCRIPTS_SPLUNK) {
             SFPStatsSender.initializeNativeMetrics(
-                'Splunk',
+                "Splunk",
                 process.env.SFPOWERSCRIPTS_SPLUNK_HOST,
                 process.env.SFPOWERSCRIPTS_SPLUNK_API_KEY,
-                new ConsoleLogger()
+                new ConsoleLogger(),
             );
         }
 
@@ -190,16 +190,16 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
     }
 
     private setLogLevel() {
-        if (this.flags.loglevel === 'trace' || this.flags.loglevel === 'TRACE') SFPLogger.logLevel = LoggerLevel.TRACE;
-        else if (this.flags.loglevel === 'debug' || this.flags.loglevel === 'DEBUG')
+        if (this.flags.loglevel === "trace" || this.flags.loglevel === "TRACE") SFPLogger.logLevel = LoggerLevel.TRACE;
+        else if (this.flags.loglevel === "debug" || this.flags.loglevel === "DEBUG")
             SFPLogger.logLevel = LoggerLevel.DEBUG;
-        else if (this.flags.loglevel === 'info' || this.flags.loglevel === 'INFO')
+        else if (this.flags.loglevel === "info" || this.flags.loglevel === "INFO")
             SFPLogger.logLevel = LoggerLevel.INFO;
-        else if (this.flags.loglevel === 'warn' || this.flags.loglevel === 'WARN')
+        else if (this.flags.loglevel === "warn" || this.flags.loglevel === "WARN")
             SFPLogger.logLevel = LoggerLevel.WARN;
-        else if (this.flags.loglevel === 'error' || this.flags.loglevel === 'ERROR')
+        else if (this.flags.loglevel === "error" || this.flags.loglevel === "ERROR")
             SFPLogger.logLevel = LoggerLevel.ERROR;
-        else if (this.flags.loglevel === 'fatal' || this.flags.loglevel === 'FATAL')
+        else if (this.flags.loglevel === "fatal" || this.flags.loglevel === "FATAL")
             SFPLogger.logLevel = LoggerLevel.FATAL;
         else SFPLogger.logLevel = LoggerLevel.INFO;
     }
@@ -209,7 +209,7 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
             let player: DemoReelPlayer = new DemoReelPlayer();
             await player.execute(process.env.SFPOWERSCRIPTS_DEMOREEL_FOLDER_PATH);
         } else {
-            console.log('Demo reel doesnt exist, Please check the path and try again');
+            console.log("Demo reel doesnt exist, Please check the path and try again");
         }
     }
 }

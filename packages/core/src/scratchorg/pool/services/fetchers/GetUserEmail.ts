@@ -1,7 +1,7 @@
-import { LoggerLevel, Org } from '@salesforce/core';
+import { LoggerLevel, Org } from "@salesforce/core";
 
-let retry = require('async-retry');
-import SFPLogger from '@dxatscale/sfp-logger';
+let retry = require("async-retry");
+import SFPLogger from "@dxatscale/sfp-logger";
 
 export async function getUserEmail(username: string, hubOrg: Org) {
     let hubConn = hubOrg.getConnection();
@@ -9,12 +9,12 @@ export async function getUserEmail(username: string, hubOrg: Org) {
     return retry(
         async (bail) => {
             if (!username) {
-                bail(new Error('username cannot be null. provide a valid username'));
+                bail(new Error("username cannot be null. provide a valid username"));
                 return;
             }
             let query = `SELECT email FROM user WHERE username='${username}'`;
 
-            SFPLogger.log('QUERY:' + query, LoggerLevel.TRACE);
+            SFPLogger.log("QUERY:" + query, LoggerLevel.TRACE);
             const results = (await hubConn.query(query)) as any;
 
             if (results.records.size < 1) {
@@ -23,6 +23,6 @@ export async function getUserEmail(username: string, hubOrg: Org) {
             }
             return results.records[0].Email;
         },
-        { retries: 3, minTimeout: 3000 }
+        { retries: 3, minTimeout: 3000 },
     );
 }

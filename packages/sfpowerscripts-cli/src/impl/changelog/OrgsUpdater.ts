@@ -1,5 +1,5 @@
-import { ReleaseChangelog, Release, ReleaseId } from './ReleaseChangelog';
-import lodash = require('lodash');
+import { ReleaseChangelog, Release, ReleaseId } from "./ReleaseChangelog";
+import lodash = require("lodash");
 
 export default class OrgsUpdater {
     private latestReleaseId: ReleaseId;
@@ -9,7 +9,7 @@ export default class OrgsUpdater {
         private releaseChangelog: ReleaseChangelog,
         private latestRelease: Release,
         private org: string,
-        private releaseWithMatchingHashId: Release
+        private releaseWithMatchingHashId: Release,
     ) {
         this.latestReleaseId = this.convertReleaseToId(this.latestRelease);
 
@@ -49,9 +49,9 @@ export default class OrgsUpdater {
             console.log(
                 `Updating ${this.org} org with`,
                 this.latestRelease.names[this.latestRelease.names.length - 1] +
-                    '-' +
+                    "-" +
                     this.latestRelease.buildNumber +
-                    `(0)`
+                    `(0)`,
             );
         } else {
             // Update orgs
@@ -59,7 +59,7 @@ export default class OrgsUpdater {
 
             if (org) {
                 let indexOfReleaseToOrg = org.releases.findIndex(
-                    (orgRelease) => orgRelease.hashId === this.idOfReleaseWithMatchingHashId.hashId
+                    (orgRelease) => orgRelease.hashId === this.idOfReleaseWithMatchingHashId.hashId,
                 );
                 if (org.latestRelease.hashId !== this.idOfReleaseWithMatchingHashId.hashId) {
                     if (indexOfReleaseToOrg >= 0) {
@@ -88,9 +88,9 @@ export default class OrgsUpdater {
                 console.log(
                     `Updating ${this.org} org with`,
                     org.latestRelease.names[org.latestRelease.names.length - 1] +
-                        '-' +
+                        "-" +
                         org.latestRelease.buildNumber +
-                        `(${org.retryCount})`
+                        `(${org.retryCount})`,
                 );
             } else {
                 // new org
@@ -104,7 +104,7 @@ export default class OrgsUpdater {
                     `Updating ${this.org} org with`,
                     `${this.idOfReleaseWithMatchingHashId.names[this.idOfReleaseWithMatchingHashId.names.length - 1]}-${
                         this.idOfReleaseWithMatchingHashId.buildNumber
-                    }(0)`
+                    }(0)`,
                 );
             }
         }

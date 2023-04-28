@@ -1,8 +1,8 @@
-import SFPLogger, { COLOR_WARNING, LoggerLevel } from '@dxatscale/sfp-logger';
-const fs = require('fs-extra');
-import child_process = require('child_process');
-import FetchAnArtifact from './FetchAnArtifact';
-import defaultShell from '@dxatscale/sfpowerscripts.core/lib/utils/DefaultShell';
+import SFPLogger, { COLOR_WARNING, LoggerLevel } from "@dxatscale/sfp-logger";
+const fs = require("fs-extra");
+import child_process = require("child_process");
+import FetchAnArtifact from "./FetchAnArtifact";
+import defaultShell from "@dxatscale/sfpowerscripts.core/lib/utils/DefaultShell";
 
 export class FetchAnArtifactUsingScript implements FetchAnArtifact {
     constructor(private scriptPath: string) {}
@@ -11,7 +11,7 @@ export class FetchAnArtifactUsingScript implements FetchAnArtifact {
         packageName: string,
         artifactDirectory: string,
         version: string,
-        isToContinueOnMissingArtifact: boolean
+        isToContinueOnMissingArtifact: boolean,
     ) {
         try {
             let cmd: string;
@@ -20,7 +20,7 @@ export class FetchAnArtifactUsingScript implements FetchAnArtifact {
             if (!fs.existsSync(artifactDirectory)) fs.mkdirpSync(artifactDirectory);
 
             if (version) {
-                if (process.platform !== 'win32') {
+                if (process.platform !== "win32") {
                     cmd = `${defaultShell()} -e "${
                         this.scriptPath
                     }" "${packageName}" "${version}" "${artifactDirectory}"`;
@@ -28,7 +28,7 @@ export class FetchAnArtifactUsingScript implements FetchAnArtifact {
                     cmd = `cmd.exe /c "${this.scriptPath}" "${packageName}" "${version}" "${artifactDirectory}"`;
                 }
             } else {
-                if (process.platform !== 'win32') {
+                if (process.platform !== "win32") {
                     cmd = `${defaultShell()} -e ${this.scriptPath} ${packageName} ${artifactDirectory}`;
                 } else {
                     cmd = `cmd.exe /c ${this.scriptPath} ${packageName} ${artifactDirectory}`;
@@ -39,7 +39,7 @@ export class FetchAnArtifactUsingScript implements FetchAnArtifact {
 
             child_process.execSync(cmd, {
                 cwd: process.cwd(),
-                stdio: 'pipe',
+                stdio: "pipe",
             });
 
             SFPLogger.log(`Successfully Fetched ${packageName}`, LoggerLevel.INFO);
@@ -49,8 +49,8 @@ export class FetchAnArtifactUsingScript implements FetchAnArtifact {
                 SFPLogger.log(`Failed to execute script due to ${error.message}`, LoggerLevel.WARN);
                 SFPLogger.log(
                     COLOR_WARNING(
-                        `Artifact  for ${packageName} missing in  Registry provided, This might result in deployment failures`
-                    )
+                        `Artifact  for ${packageName} missing in  Registry provided, This might result in deployment failures`,
+                    ),
                 );
             }
         }

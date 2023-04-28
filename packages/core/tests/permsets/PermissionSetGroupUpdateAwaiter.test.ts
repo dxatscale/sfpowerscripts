@@ -1,15 +1,15 @@
-import { MockTestOrgData, testSetup } from '@salesforce/core/lib/testSetup';
-import { AuthInfo, Connection } from '@salesforce/core';
-import { AnyJson } from '@salesforce/ts-types';
+import { MockTestOrgData, testSetup } from "@salesforce/core/lib/testSetup";
+import { AuthInfo, Connection } from "@salesforce/core";
+import { AnyJson } from "@salesforce/ts-types";
 const $$ = testSetup();
-import PermissionSetGroupUpdateAwaiter from '../../src/permsets/PermissionSetGroupUpdateAwaiter';
-import { expect } from '@jest/globals';
+import PermissionSetGroupUpdateAwaiter from "../../src/permsets/PermissionSetGroupUpdateAwaiter";
+import { expect } from "@jest/globals";
 
-describe('Await till permissionsets groups are updated', () => {
-    it('should return if all permsets groups are updated', async () => {
+describe("Await till permissionsets groups are updated", () => {
+    it("should return if all permsets groups are updated", async () => {
         const testData = new MockTestOrgData();
 
-        $$.setConfigStubContents('AuthInfoConfig', {
+        $$.setConfigStubContents("AuthInfoConfig", {
             contents: await testData.getConfig(),
         });
 
@@ -26,7 +26,7 @@ describe('Await till permissionsets groups are updated', () => {
 
         let permissionSetGroupUpdateAwaiter: PermissionSetGroupUpdateAwaiter = new PermissionSetGroupUpdateAwaiter(
             connection,
-            null
+            null,
         );
         await expect(permissionSetGroupUpdateAwaiter.waitTillAllPermissionSetGroupIsUpdated()).resolves.toBeUndefined();
     });

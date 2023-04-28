@@ -1,11 +1,11 @@
-import { SimpleGit } from 'simple-git';
-import { SfpProjectConfig } from '../../types/SfpProjectConfig';
-import SFPLogger, { LoggerLevel, COLOR_KEY_MESSAGE } from '@dxatscale/sfp-logger/lib/SFPLogger';
-import SourceStatusWorkflow from '../source/SourceStatusWorkflow';
-import inquirer = require('inquirer');
-import PullSourceWorkflow from '../source/PullSourceWorkflow';
-import CommitWorkflow from '../git/CommitWorkflow';
-import PushSourceToOrg from '../../impl/sfpcommands/PushSourceToOrg';
+import { SimpleGit } from "simple-git";
+import { SfpProjectConfig } from "../../types/SfpProjectConfig";
+import SFPLogger, { LoggerLevel, COLOR_KEY_MESSAGE } from "@dxatscale/sfp-logger/lib/SFPLogger";
+import SourceStatusWorkflow from "../source/SourceStatusWorkflow";
+import inquirer = require("inquirer");
+import PullSourceWorkflow from "../source/PullSourceWorkflow";
+import CommitWorkflow from "../git/CommitWorkflow";
+import PushSourceToOrg from "../../impl/sfpcommands/PushSourceToOrg";
 
 export default class SyncOrg {
     constructor(private git: SimpleGit, private sfpProjectConfig: SfpProjectConfig, private devOrg: string) {}
@@ -20,46 +20,46 @@ export default class SyncOrg {
         let isConflict: boolean = false;
 
         for (let component of sourceStatusResult) {
-            if (component.state.endsWith('(Conflict)')) {
+            if (component.state.endsWith("(Conflict)")) {
                 isConflict = true;
                 isLocalChanges = true;
                 isRemoteChanges = true;
                 break;
             }
 
-            if (component.state.startsWith('Local')) {
+            if (component.state.startsWith("Local")) {
                 isLocalChanges = true;
             }
-            if (component.state.startsWith('Remote')) isRemoteChanges = true;
+            if (component.state.startsWith("Remote")) isRemoteChanges = true;
         }
 
         if (isLocalChanges && isRemoteChanges && isConflict) {
-            SFPLogger.log('Source conflict(s) detected', LoggerLevel.WARN);
+            SFPLogger.log("Source conflict(s) detected", LoggerLevel.WARN);
             let syncDirection = await inquirer.prompt({
-                type: 'list',
-                name: 'direction',
-                message: 'Choose to overwrite local or remote changes',
+                type: "list",
+                name: "direction",
+                message: "Choose to overwrite local or remote changes",
                 choices: [
                     {
-                        name: 'Overwrite local changes',
-                        value: 'overwriteLocal',
+                        name: "Overwrite local changes",
+                        value: "overwriteLocal",
                     },
                     {
-                        name: 'Overwrite remote changes',
-                        value: 'overwriteRemote',
+                        name: "Overwrite remote changes",
+                        value: "overwriteRemote",
                     },
                     {
-                        name: 'Abort',
-                        value: 'abort',
+                        name: "Abort",
+                        value: "abort",
                     },
                 ],
             });
 
-            if (syncDirection.direction === 'overwriteLocal') {
+            if (syncDirection.direction === "overwriteLocal") {
                 let pullWorkflow: PullSourceWorkflow = new PullSourceWorkflow(
                     this.devOrg,
                     sourceStatusResult,
-                    this.sfpProjectConfig.defaultDevHub
+                    this.sfpProjectConfig.defaultDevHub,
                 );
                 await pullWorkflow.execute();
 
@@ -67,7 +67,7 @@ export default class SyncOrg {
 
                 // Push any non-conflicting locally added components
                 await new PushSourceToOrg(this.devOrg).exec();
-            } else if (syncDirection.direction === 'overwriteRemote') {
+            } else if (syncDirection.direction === "overwriteRemote") {
                 await new PushSourceToOrg(this.devOrg).exec();
             } else {
                 return;
@@ -76,7 +76,7 @@ export default class SyncOrg {
             let pullWorkflow: PullSourceWorkflow = new PullSourceWorkflow(
                 this.devOrg,
                 sourceStatusResult,
-                this.sfpProjectConfig.defaultDevHub
+                this.sfpProjectConfig.defaultDevHub,
             );
             await pullWorkflow.execute();
 
@@ -89,7 +89,7 @@ export default class SyncOrg {
             let pullWorkflow: PullSourceWorkflow = new PullSourceWorkflow(
                 this.devOrg,
                 sourceStatusResult,
-                this.sfpProjectConfig.defaultDevHub
+                this.sfpProjectConfig.defaultDevHub,
             );
             await pullWorkflow.execute();
 

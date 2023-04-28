@@ -1,27 +1,27 @@
-import { Org } from '@salesforce/core';
-import Bottleneck from 'bottleneck';
-import { PoolConfig } from './PoolConfig';
-import { PoolBaseImpl } from './PoolBaseImpl';
-import ScratchOrg from '../ScratchOrg';
-import ScratchOrgInfoFetcher from './services/fetchers/ScratchOrgInfoFetcher';
-import ScratchOrgLimitsFetcher from './services/fetchers/ScratchOrgLimitsFetcher';
-import ScratchOrgInfoAssigner from './services/updaters/ScratchOrgInfoAssigner';
-import * as rimraf from 'rimraf';
-import * as fs from 'fs-extra';
-import PoolJobExecutor, { ScriptExecutionResult } from './PoolJobExecutor';
-import { PoolError, PoolErrorCodes } from './PoolError';
-import SFPLogger, { COLOR_KEY_MESSAGE, LoggerLevel } from '@dxatscale/sfp-logger';
-import { Result, ok, err } from 'neverthrow';
-import SFPStatsSender from '../../stats/SFPStatsSender';
-import { EOL } from 'os';
-import OrgDetailsFetcher from '../../org/OrgDetailsFetcher';
-import ScratchOrgOperator from '../ScratchOrgOperator';
-import PoolFetchImpl from './PoolFetchImpl';
-import { COLOR_SUCCESS } from '@dxatscale/sfp-logger';
-import { COLOR_ERROR } from '@dxatscale/sfp-logger';
-import getFormattedTime from '../../utils/GetFormattedTime';
-import OrphanedOrgsDeleteImpl from './OrphanedOrgsDeleteImpl';
-import path from 'path';
+import { Org } from "@salesforce/core";
+import Bottleneck from "bottleneck";
+import { PoolConfig } from "./PoolConfig";
+import { PoolBaseImpl } from "./PoolBaseImpl";
+import ScratchOrg from "../ScratchOrg";
+import ScratchOrgInfoFetcher from "./services/fetchers/ScratchOrgInfoFetcher";
+import ScratchOrgLimitsFetcher from "./services/fetchers/ScratchOrgLimitsFetcher";
+import ScratchOrgInfoAssigner from "./services/updaters/ScratchOrgInfoAssigner";
+import * as rimraf from "rimraf";
+import * as fs from "fs-extra";
+import PoolJobExecutor, { ScriptExecutionResult } from "./PoolJobExecutor";
+import { PoolError, PoolErrorCodes } from "./PoolError";
+import SFPLogger, { COLOR_KEY_MESSAGE, LoggerLevel } from "@dxatscale/sfp-logger";
+import { Result, ok, err } from "neverthrow";
+import SFPStatsSender from "../../stats/SFPStatsSender";
+import { EOL } from "os";
+import OrgDetailsFetcher from "../../org/OrgDetailsFetcher";
+import ScratchOrgOperator from "../ScratchOrgOperator";
+import PoolFetchImpl from "./PoolFetchImpl";
+import { COLOR_SUCCESS } from "@dxatscale/sfp-logger";
+import { COLOR_ERROR } from "@dxatscale/sfp-logger";
+import getFormattedTime from "../../utils/GetFormattedTime";
+import OrphanedOrgsDeleteImpl from "./OrphanedOrgsDeleteImpl";
+import path from "path";
 
 export default class PoolCreateImpl extends PoolBaseImpl {
     private limiter;
@@ -37,7 +37,7 @@ export default class PoolCreateImpl extends PoolBaseImpl {
         hubOrg: Org,
         private pool: PoolConfig,
         private poolScriptExecutor: PoolJobExecutor,
-        private logLevel: LoggerLevel
+        private logLevel: LoggerLevel,
     ) {
         super(hubOrg);
         this.limiter = new Bottleneck({
@@ -52,7 +52,6 @@ export default class PoolCreateImpl extends PoolBaseImpl {
 
         const scriptExecPromises: Array<Promise<ScriptExecutionResult>> = [];
 
-
         //fetch current status limits
         this.limits = await new ScratchOrgLimitsFetcher(this.hubOrg).getScratchOrgLimits();
 
@@ -64,13 +63,13 @@ export default class PoolCreateImpl extends PoolBaseImpl {
         this.scratchOrgOperator = new ScratchOrgOperator(this.hubOrg);
 
         // Setup Logging Directory
-        rimraf.sync('script_exec_outputs');
-        fs.mkdirpSync('script_exec_outputs');
+        rimraf.sync("script_exec_outputs");
+        fs.mkdirpSync("script_exec_outputs");
 
         //Compute allocation
         try {
             if (!this.pool.snapshotPool) {
-                SFPLogger.log(COLOR_KEY_MESSAGE('Computing Allocation..'), LoggerLevel.INFO);
+                SFPLogger.log(COLOR_KEY_MESSAGE("Computing Allocation.."), LoggerLevel.INFO);
                 try {
                     this.totalToBeAllocated = await this.computeAllocation();
                 } catch (error) {
@@ -104,13 +103,13 @@ export default class PoolCreateImpl extends PoolBaseImpl {
                 this.pool.scratchOrgs = await this.generateScratchOrgs(
                     this.pool,
                     this.scratchOrgOperator,
-                    this.scratchOrgInfoAssigner
+                    this.scratchOrgInfoAssigner,
                 );
             } else {
                 this.pool.scratchOrgs = await this.fetchScratchOrgsFromSnapshotPool(
                     this.pool,
                     this.scratchOrgInfoFetcher,
-                    this.scratchOrgInfoAssigner
+                    this.scratchOrgInfoAssigner,
                 );
             }
         } catch (error) {
@@ -133,7 +132,7 @@ export default class PoolCreateImpl extends PoolBaseImpl {
         this.pool = await this.finalizeGeneratedScratchOrgs(
             this.pool,
             this.scratchOrgOperator,
-            this.scratchOrgInfoFetcher
+            this.scratchOrgInfoFetcher,
         );
 
         if (!this.pool.scratchOrgs || this.pool.scratchOrgs.length == 0) {
@@ -145,8 +144,6 @@ export default class PoolCreateImpl extends PoolBaseImpl {
             });
         }
         return ok(this.pool);
-
-      
     }
 
     private async computeAllocation(): Promise<number> {
@@ -158,7 +155,7 @@ export default class PoolCreateImpl extends PoolBaseImpl {
     private allocateScratchOrgsPerTag(
         remainingScratchOrgs: number,
         countOfActiveScratchOrgs: number,
-        pool: PoolConfig
+        pool: PoolConfig,
     ) {
         pool.current_allocation = countOfActiveScratchOrgs;
         pool.to_allocate = 0;
@@ -173,20 +170,20 @@ export default class PoolCreateImpl extends PoolBaseImpl {
 
         SFPLogger.log(
             `${EOL}Current Allocation of ScratchOrgs in the pool ${this.pool.tag}: ` + pool.current_allocation,
-            LoggerLevel.INFO
+            LoggerLevel.INFO,
         );
-        SFPLogger.log('Remaining Active scratchOrgs in the org: ' + remainingScratchOrgs, LoggerLevel.INFO);
-        SFPLogger.log('ScratchOrgs to be allocated: ' + pool.to_allocate, LoggerLevel.INFO);
+        SFPLogger.log("Remaining Active scratchOrgs in the org: " + remainingScratchOrgs, LoggerLevel.INFO);
+        SFPLogger.log("ScratchOrgs to be allocated: " + pool.to_allocate, LoggerLevel.INFO);
         return pool.to_allocate;
     }
 
     private async generateScratchOrgs(
         pool: PoolConfig,
         scratchOrgOperator: ScratchOrgOperator,
-        scratchOrgInfoAssigner: ScratchOrgInfoAssigner
+        scratchOrgInfoAssigner: ScratchOrgInfoAssigner,
     ) {
         //Generate Scratch Orgs
-        SFPLogger.log(COLOR_KEY_MESSAGE('Generate Scratch Orgs..'), LoggerLevel.INFO);
+        SFPLogger.log(COLOR_KEY_MESSAGE("Generate Scratch Orgs.."), LoggerLevel.INFO);
 
         const scratchOrgPromises = new Array<Promise<ScratchOrg>>();
 
@@ -199,7 +196,7 @@ export default class PoolCreateImpl extends PoolBaseImpl {
         const startTime = Date.now();
         for (let i = 1; i <= pool.to_allocate; i++) {
             const scratchOrgPromise: Promise<ScratchOrg> = scratchOrgCreationLimiter.schedule(() =>
-                scratchOrgOperator.create(`SO` + i, this.pool.configFilePath, this.pool.expiry, this.pool.waitTime)
+                scratchOrgOperator.create(`SO` + i, this.pool.configFilePath, this.pool.expiry, this.pool.waitTime),
             );
             scratchOrgPromises.push(scratchOrgPromise);
         }
@@ -208,8 +205,8 @@ export default class PoolCreateImpl extends PoolBaseImpl {
         //Wait for all orgs to be created
         const scratchOrgCreationResults = await Promise.allSettled(scratchOrgPromises);
         //Only worry about scrath orgs that have suceeded
-        const isFulfilled = <T>(p: PromiseSettledResult<T>): p is PromiseFulfilledResult<T> => p.status === 'fulfilled';
-        const isRejected = <T>(p: PromiseSettledResult<T>): p is PromiseRejectedResult => p.status === 'rejected';
+        const isFulfilled = <T>(p: PromiseSettledResult<T>): p is PromiseFulfilledResult<T> => p.status === "fulfilled";
+        const isRejected = <T>(p: PromiseSettledResult<T>): p is PromiseRejectedResult => p.status === "rejected";
 
         let scratchOrgs = scratchOrgCreationResults.filter(isFulfilled).map((p) => p.value);
         const rejectedScratchOrgs = scratchOrgCreationResults.filter(isRejected).map((p) => p.reason);
@@ -220,8 +217,8 @@ export default class PoolCreateImpl extends PoolBaseImpl {
                 SFPLogger.log(
                     `A scratch org creation was rejected due to saleforce not responding within the set wait time of ${pool.waitTime} mins \n` +
                         `Time elasped so far ${COLOR_KEY_MESSAGE(
-                            getFormattedTime(elapsedTime)
-                        )},You might need to inrease the wait time further and rety `
+                            getFormattedTime(elapsedTime),
+                        )},You might need to inrease the wait time further and rety `,
                 );
             } else SFPLogger.log(`A scratch org creation was rejected due to ${reason.message}`);
         }
@@ -230,8 +227,8 @@ export default class PoolCreateImpl extends PoolBaseImpl {
         const elapsedTime = Date.now() - startTime;
         SFPLogger.log(
             `Created ${COLOR_SUCCESS(scratchOrgs.length)} of ${pool.to_allocate} successfully with ${COLOR_ERROR(
-                rejectedScratchOrgs.length
-            )} failures in ${COLOR_KEY_MESSAGE(getFormattedTime(elapsedTime))}`
+                rejectedScratchOrgs.length,
+            )} failures in ${COLOR_KEY_MESSAGE(getFormattedTime(elapsedTime))}`,
         );
 
         SFPStatsSender.logElapsedTime(`pool.scratchorg.creation.time`, elapsedTime, { pool: pool.tag });
@@ -241,9 +238,9 @@ export default class PoolCreateImpl extends PoolBaseImpl {
             while (index--) {
                 try {
                     const orgDetails = await new OrgDetailsFetcher(scratchOrgs[index].username).getOrgDetails();
-                    if (orgDetails.status === 'Deleted') {
+                    if (orgDetails.status === "Deleted") {
                         throw new Error(
-                            `Throwing away scratch org ${this.pool.scratchOrgs[index].alias} as it has a status of deleted`
+                            `Throwing away scratch org ${this.pool.scratchOrgs[index].alias} as it has a status of deleted`,
                         );
                     }
                 } catch (error) {
@@ -261,7 +258,7 @@ export default class PoolCreateImpl extends PoolBaseImpl {
                     Pooltag__c: this.pool.tag,
                     Password__c: scratchOrg.password,
                     SfdxAuthUrl__c: scratchOrg.sfdxAuthUrl,
-                    Allocation_status__c: 'In Progress',
+                    Allocation_status__c: "In Progress",
                 });
             });
 
@@ -273,35 +270,34 @@ export default class PoolCreateImpl extends PoolBaseImpl {
         } else throw new Error(`No scratch orgs were sucesfully generated`);
 
         function addDescriptionToScratchOrg(pool: PoolConfig) {
-
-            const configClonePath = path.join('.sfpowerscripts','scratchorg-configs',`${ makeFileId(8)}.json`);
-            fs.mkdirpSync('.sfpowerscripts/scratchorg-configs');
-            fs.copyFileSync(pool.configFilePath,configClonePath);
+            const configClonePath = path.join(".sfpowerscripts", "scratchorg-configs", `${makeFileId(8)}.json`);
+            fs.mkdirpSync(".sfpowerscripts/scratchorg-configs");
+            fs.copyFileSync(pool.configFilePath, configClonePath);
 
             const scratchOrgDefn = fs.readJSONSync(configClonePath);
             if (!scratchOrgDefn.description)
                 scratchOrgDefn.description = JSON.stringify({
-                    requestedBy: 'sfpowerscripts',
+                    requestedBy: "sfpowerscripts",
                     pool: pool.tag,
                     requestedAt: new Date().toISOString(),
                 });
             else
                 scratchOrgDefn.description = scratchOrgDefn.description.concat(
-                    ' ',
+                    " ",
                     JSON.stringify({
-                        requestedBy: 'sfpowerscripts',
+                        requestedBy: "sfpowerscripts",
                         pool: pool.tag,
                         requestedAt: new Date().toISOString(),
-                    })
+                    }),
                 );
             fs.writeJSONSync(configClonePath, scratchOrgDefn, { spaces: 4 });
             pool.configFilePath = configClonePath;
         }
 
         function makeFileId(length): string {
-            let result = '';
+            let result = "";
             const characters =
-                'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+                "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
             const charactersLength = characters.length;
             for (let i = 0; i < length; i++) {
                 result += characters.charAt(Math.floor(Math.random() * charactersLength));
@@ -313,12 +309,12 @@ export default class PoolCreateImpl extends PoolBaseImpl {
     private async fetchScratchOrgsFromSnapshotPool(
         pool: PoolConfig,
         scratchOrgInfoFetcher: ScratchOrgInfoFetcher,
-        scratchOrgInfoAssigner: ScratchOrgInfoAssigner
+        scratchOrgInfoAssigner: ScratchOrgInfoAssigner,
     ) {
         //Generate Scratch Orgs
         SFPLogger.log(
             COLOR_KEY_MESSAGE(`Fetching Scratch Orgs from snapshot pool ${this.pool.snapshotPool}`),
-            LoggerLevel.INFO
+            LoggerLevel.INFO,
         );
 
         let scratchOrgs = (await new PoolFetchImpl(
@@ -330,7 +326,7 @@ export default class PoolCreateImpl extends PoolBaseImpl {
             undefined,
             undefined,
             true,
-            this.pool.maxAllocation
+            this.pool.maxAllocation,
         ).execute()) as ScratchOrg[];
         scratchOrgs = await scratchOrgInfoFetcher.getScratchOrgRecordId(scratchOrgs);
 
@@ -343,7 +339,7 @@ export default class PoolCreateImpl extends PoolBaseImpl {
                     Pooltag__c: this.pool.tag,
                     Password__c: scratchOrg.password,
                     SfdxAuthUrl__c: scratchOrg.sfdxAuthUrl,
-                    Allocation_status__c: 'In Progress',
+                    Allocation_status__c: "In Progress",
                 });
             });
 
@@ -353,14 +349,14 @@ export default class PoolCreateImpl extends PoolBaseImpl {
             }
             return scratchOrgs;
         } else {
-            throw new Error('No scratch orgs were found to be fetched');
+            throw new Error("No scratch orgs were found to be fetched");
         }
     }
 
     private async finalizeGeneratedScratchOrgs(
         pool: PoolConfig,
         scratchOrgOperator: ScratchOrgOperator,
-        scratchOrgInfoFetcher: ScratchOrgInfoFetcher
+        scratchOrgInfoFetcher: ScratchOrgInfoFetcher,
     ) {
         pool.failedToCreate = 0;
         for (let i = pool.scratchOrgs.length - 1; i >= 0; i--) {
@@ -371,14 +367,14 @@ export default class PoolCreateImpl extends PoolBaseImpl {
 
             SFPLogger.log(
                 `Failed to execute scripts for ${scratchOrg.username} with alias ${scratchOrg.alias} due to ${scratchOrg.failureMessage}`,
-                LoggerLevel.ERROR
+                LoggerLevel.ERROR,
             );
 
             try {
                 //Delete scratchorgs that failed to execute script
 
                 const activeScratchOrgRecordId = await scratchOrgInfoFetcher.getActiveScratchOrgRecordIdGivenScratchOrg(
-                    scratchOrg.orgId
+                    scratchOrg.orgId,
                 );
 
                 await scratchOrgOperator.delete([activeScratchOrgRecordId]);
@@ -386,7 +382,7 @@ export default class PoolCreateImpl extends PoolBaseImpl {
             } catch (error) {
                 SFPLogger.log(
                     `Unable to delete the scratchorg ${scratchOrg.username}.. due to\n` + error,
-                    LoggerLevel.ERROR
+                    LoggerLevel.ERROR,
                 );
             }
 
@@ -399,7 +395,7 @@ export default class PoolCreateImpl extends PoolBaseImpl {
     private async scriptExecutor(scratchOrg: ScratchOrg): Promise<ScratchOrg> {
         SFPLogger.log(
             `Executing Preparation Job ${scratchOrg.alias} with username: ${scratchOrg.username}`,
-            LoggerLevel.INFO
+            LoggerLevel.INFO,
         );
 
         const startTime = Date.now();
@@ -409,23 +405,23 @@ export default class PoolCreateImpl extends PoolBaseImpl {
             scratchOrg.isScriptExecuted = true;
             const submitInfoToPool = await this.scratchOrgInfoAssigner.setScratchOrgInfo({
                 Id: scratchOrg.recordId,
-                Allocation_status__c: 'Available',
+                Allocation_status__c: "Available",
             });
             if (!submitInfoToPool) {
                 scratchOrg.isScriptExecuted = false;
-                scratchOrg.failureMessage = 'Unable to set the scratch org record in Pool';
-                SFPStatsSender.logCount('prepare.org.failed');
+                scratchOrg.failureMessage = "Unable to set the scratch org record in Pool";
+                SFPStatsSender.logCount("prepare.org.failed");
             } else {
-                SFPStatsSender.logCount('prepare.org.succeeded');
+                SFPStatsSender.logCount("prepare.org.succeeded");
             }
 
-            SFPStatsSender.logElapsedTime('prepare.org.singlejob.elapsed_time', Date.now() - startTime, {
+            SFPStatsSender.logElapsedTime("prepare.org.singlejob.elapsed_time", Date.now() - startTime, {
                 poolname: this.pool.tag,
             });
         } else {
             scratchOrg.isScriptExecuted = false;
             scratchOrg.failureMessage = result.error.message;
-            SFPStatsSender.logCount('prepare.org.failed');
+            SFPStatsSender.logCount("prepare.org.failed");
         }
 
         return scratchOrg;

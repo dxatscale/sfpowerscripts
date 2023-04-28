@@ -1,10 +1,10 @@
-import { Connection, Org } from '@salesforce/core';
-import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
-import QueryHelper from '../queryHelper/QueryHelper';
-import { chunkArray } from '../utils/ChunkArray';
+import { Connection, Org } from "@salesforce/core";
+import SFPLogger, { Logger, LoggerLevel } from "@dxatscale/sfp-logger";
+import QueryHelper from "../queryHelper/QueryHelper";
+import { chunkArray } from "../utils/ChunkArray";
 const CODECOV_AGGREGATE_QUERY = `SELECT Id FROM ApexCodeCoverageAggregate`;
 const APEX_TEST_RESULT_QUERY = `SELECT Id FROM ApexTestResult`;
-import { delay } from '../utils/Delay';
+import { delay } from "../utils/Delay";
 
 export default class ClearTestResults {
     private conn: Connection;
@@ -18,12 +18,12 @@ export default class ClearTestResults {
 
         SFPLogger.log(`Clearing Coverage Results`, LoggerLevel.DEBUG, this.logger);
         let codeCoverageAggregate = await QueryHelper.query(CODECOV_AGGREGATE_QUERY, this.conn, true);
-        await this.deleteRecords('ApexCodeCoverageAggregate', codeCoverageAggregate);
+        await this.deleteRecords("ApexCodeCoverageAggregate", codeCoverageAggregate);
         SFPLogger.log(`Cleared Coverage Results`, LoggerLevel.DEBUG, this.logger);
 
         SFPLogger.log(`Clearing Test Results`, LoggerLevel.DEBUG, this.logger);
         let testResults = await QueryHelper.query(APEX_TEST_RESULT_QUERY, this.conn, true);
-        await this.deleteRecords('ApexTestResult', testResults);
+        await this.deleteRecords("ApexTestResult", testResults);
         SFPLogger.log(`Cleared Test Results`, LoggerLevel.DEBUG, this.logger);
 
         SFPLogger.log(`Cleared Existing Coverage and Test Results`, LoggerLevel.INFO, this.logger);

@@ -1,4 +1,4 @@
-import { WorkItem } from '../../types/WorkItem';
+import { WorkItem } from "../../types/WorkItem";
 
 export interface RepoProvider {
     name(): string;

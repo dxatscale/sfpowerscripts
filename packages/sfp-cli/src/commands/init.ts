@@ -1,31 +1,26 @@
-import { flags } from '@oclif/command';
-import inquirer = require('inquirer');
-import {
-    COLOR_ERROR,
-    COLOR_KEY_MESSAGE,
-    COLOR_SUCCESS,
-    COLOR_WARNING,
-} from '@dxatscale/sfp-logger/lib/SFPLogger';
-import OrgAuth from '../impl/sfdxwrappers/OrgAuth';
-import PickAnOrgWorkflow from '../workflows/org/PickAnOrgWorkflow';
-import PoolListImpl from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolListImpl';
-import { isEmpty } from 'lodash';
-import ScratchOrg from '@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg';
-import SfpCommand from '../SfpCommand';
-import * as fs from 'fs-extra';
-import { Org } from '@salesforce/core';
-import path = require('path');
-import RepoProviderSelector from '../impl/repoprovider/RepoProviderSelector';
-import SFPLogger from '@dxatscale/sfp-logger/lib/SFPLogger';
+import { flags } from "@oclif/command";
+import inquirer = require("inquirer");
+import { COLOR_ERROR, COLOR_KEY_MESSAGE, COLOR_SUCCESS, COLOR_WARNING } from "@dxatscale/sfp-logger/lib/SFPLogger";
+import OrgAuth from "../impl/sfdxwrappers/OrgAuth";
+import PickAnOrgWorkflow from "../workflows/org/PickAnOrgWorkflow";
+import PoolListImpl from "@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolListImpl";
+import { isEmpty } from "lodash";
+import ScratchOrg from "@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg";
+import SfpCommand from "../SfpCommand";
+import * as fs from "fs-extra";
+import { Org } from "@salesforce/core";
+import path = require("path");
+import RepoProviderSelector from "../impl/repoprovider/RepoProviderSelector";
+import SFPLogger from "@dxatscale/sfp-logger/lib/SFPLogger";
 
 export default class Init extends SfpCommand {
-    static description = 'intializes the project with various defaults';
+    static description = "intializes the project with various defaults";
 
     static flags = {
-        help: flags.help({ char: 'h' }),
+        help: flags.help({ char: "h" }),
     };
 
-    static args = [{ name: 'caller' }, { name: 'mode' }];
+    static args = [{ name: "caller" }, { name: "mode" }];
 
     async exec() {
         //TODO: check for DX@Scale project
@@ -45,7 +40,7 @@ export default class Init extends SfpCommand {
                     await orgAuth.exec(false);
                 } catch (error) {
                     SFPLogger.log(
-                        COLOR_ERROR(`Unable to authenticate to the org, Please try agin later or fix the error below`)
+                        COLOR_ERROR(`Unable to authenticate to the org, Please try agin later or fix the error below`),
                     );
                     throw error;
                 }
@@ -58,7 +53,7 @@ export default class Init extends SfpCommand {
             this.sfpProjectConfig.defaultDevHub = devHubUserName;
 
             //Select Default Scratch Org Pool
-            let scratchOrgsInDevHub  = await new PoolListImpl(hubOrg, null, true).execute() as ScratchOrg[];
+            let scratchOrgsInDevHub = (await new PoolListImpl(hubOrg, null, true).execute()) as ScratchOrg[];
 
             let tags = this.getPoolTags(scratchOrgsInDevHub);
 
@@ -70,7 +65,7 @@ export default class Init extends SfpCommand {
         }
 
         this.sfpProjectConfig.repoProvider = await this.promptForRepoProvider();
-        if (this.sfpProjectConfig.repoProvider != 'other') {
+        if (this.sfpProjectConfig.repoProvider != "other") {
             let repoProvider = RepoProviderSelector.getRepoProvider(this.sfpProjectConfig.repoProvider);
             let isCLIInstalled = await repoProvider.isCLIInstalled();
             if (isCLIInstalled) {
@@ -79,8 +74,8 @@ export default class Init extends SfpCommand {
                 SFPLogger.log(COLOR_WARNING(` Missing ${this.sfpProjectConfig.repoProvider} CLI`));
                 SFPLogger.log(
                     COLOR_KEY_MESSAGE(
-                        ` Installing ${this.sfpProjectConfig.repoProvider} CLI allows you to automate further. \nPlease read the instructions below`
-                    )
+                        ` Installing ${this.sfpProjectConfig.repoProvider} CLI allows you to automate further. \nPlease read the instructions below`,
+                    ),
                 );
 
                 SFPLogger.log(repoProvider.getInstallationMessage(this.config.platform));
@@ -95,7 +90,7 @@ export default class Init extends SfpCommand {
 
         fs.writeFileSync(
             path.join(this.config.configDir, `${this.projectName}.json`),
-            JSON.stringify(this.sfpProjectConfig)
+            JSON.stringify(this.sfpProjectConfig),
         );
 
         SFPLogger.log(COLOR_SUCCESS(`Project ${this.projectName} succesfully intiialized`));
@@ -104,9 +99,9 @@ export default class Init extends SfpCommand {
     private async promptForPoolSelection(pools: Array<string>): Promise<string> {
         const pool = await inquirer.prompt([
             {
-                type: 'list',
-                name: 'tag',
-                message: 'Select a Default Scratch Org Pool',
+                type: "list",
+                name: "tag",
+                message: "Select a Default Scratch Org Pool",
                 choices: pools,
                 default: this.sfpProjectConfig.defaultPool,
             },
@@ -132,9 +127,9 @@ export default class Init extends SfpCommand {
     private async promptForNeedForDevHub(): Promise<boolean> {
         const isDevHubAuthRequiredPrompt = await inquirer.prompt([
             {
-                type: 'confirm',
-                name: 'isDevHubRequired',
-                message: 'Associate a devhub with this project?',
+                type: "confirm",
+                name: "isDevHubRequired",
+                message: "Associate a devhub with this project?",
                 default: false,
             },
         ]);
@@ -144,9 +139,9 @@ export default class Init extends SfpCommand {
     private async promptForNeedForDevHubAuth(): Promise<boolean> {
         const isDevHubAuthRequiredPrompt = await inquirer.prompt([
             {
-                type: 'confirm',
-                name: 'isDevHubAuthRequired',
-                message: 'Need to authenticate to new DevHub?',
+                type: "confirm",
+                name: "isDevHubAuthRequired",
+                message: "Need to authenticate to new DevHub?",
                 default: false,
             },
         ]);
@@ -156,10 +151,10 @@ export default class Init extends SfpCommand {
     private async promptForInstanceURL(): Promise<string> {
         const instanceURLPrompt = await inquirer.prompt([
             {
-                type: 'input',
-                name: 'instanceURL',
+                type: "input",
+                name: "instanceURL",
                 message:
-                    'Instance URL of the org, in format MyDomainName.my.salesforce.com or leave blank to use login.salesforce.com',
+                    "Instance URL of the org, in format MyDomainName.my.salesforce.com or leave blank to use login.salesforce.com",
             },
         ]);
 
@@ -169,10 +164,10 @@ export default class Init extends SfpCommand {
     private async promptForDefaultBranch(): Promise<string> {
         const defaultBranchPrompt = await inquirer.prompt([
             {
-                type: 'input',
-                name: 'branch',
-                message: 'Default git branch for this repo',
-                default: this.sfpProjectConfig?.defaultBranch ? this.sfpProjectConfig?.defaultBranch : 'main',
+                type: "input",
+                name: "branch",
+                message: "Default git branch for this repo",
+                default: this.sfpProjectConfig?.defaultBranch ? this.sfpProjectConfig?.defaultBranch : "main",
             },
         ]);
 
@@ -182,11 +177,11 @@ export default class Init extends SfpCommand {
     private async promptForRepoProvider(): Promise<string> {
         const repoProviderPrompt = await inquirer.prompt([
             {
-                type: 'list',
-                name: 'repoprovider',
-                message: 'Select a repository provider for this project',
-                choices: ['github', 'azure repo', 'gitlab', 'other'],
-                default: 'github',
+                type: "list",
+                name: "repoprovider",
+                message: "Select a repository provider for this project",
+                choices: ["github", "azure repo", "gitlab", "other"],
+                default: "github",
             },
         ]);
 

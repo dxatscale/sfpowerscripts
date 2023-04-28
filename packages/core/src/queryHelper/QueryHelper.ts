@@ -1,6 +1,6 @@
-import { Connection } from '@salesforce/core';
+import { Connection } from "@salesforce/core";
 
-const retry = require('async-retry');
+const retry = require("async-retry");
 
 export default class QueryHelper {
     static async query<T>(query: string, conn: Connection, isTooling: boolean): Promise<T[]> {
@@ -12,7 +12,7 @@ export default class QueryHelper {
 
                 return records;
             },
-            { retries: 3, minTimeout: 2000 }
+            { retries: 3, minTimeout: 2000 },
         );
     }
 }

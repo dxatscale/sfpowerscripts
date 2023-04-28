@@ -1,26 +1,26 @@
-import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
-import { COLOR_KEY_MESSAGE } from '@dxatscale/sfp-logger';
-import { EOL } from 'os';
+import SFPLogger, { Logger, LoggerLevel } from "@dxatscale/sfp-logger";
+import { COLOR_KEY_MESSAGE } from "@dxatscale/sfp-logger";
+import { EOL } from "os";
 
 //TODO: Move to sfpconsole package
 export default class GroupConsoleLogs {
     private static logGroupSymbols?: string[];
 
-    constructor(private section: string,private logger?:Logger) {}
+    constructor(private section: string, private logger?: Logger) {}
 
     public static setLogGroupsSymbol(logGroupSymbols: string[]) {
         GroupConsoleLogs.logGroupSymbols = logGroupSymbols;
     }
 
-    public begin():GroupConsoleLogs {
+    public begin(): GroupConsoleLogs {
         let sectionStart = this.getSectionStart();
-        if (sectionStart && sectionStart.length > 0) SFPLogger.log(sectionStart, LoggerLevel.INFO,this.logger);
+        if (sectionStart && sectionStart.length > 0) SFPLogger.log(sectionStart, LoggerLevel.INFO, this.logger);
         return this;
     }
 
-    public end():GroupConsoleLogs {
+    public end(): GroupConsoleLogs {
         let sectionEnd = this.getSectionEnd();
-        if (sectionEnd && sectionEnd.length > 0) SFPLogger.log(sectionEnd, LoggerLevel.INFO,this.logger);
+        if (sectionEnd && sectionEnd.length > 0) SFPLogger.log(sectionEnd, LoggerLevel.INFO, this.logger);
         return this;
     }
 

@@ -1,5 +1,5 @@
-import * as _ from 'lodash';
-import SfpPackage from '../package/SfpPackage';
+import * as _ from "lodash";
+import SfpPackage from "../package/SfpPackage";
 
 export class TestOptions {
     synchronous?: boolean;
@@ -64,10 +64,10 @@ export class RunAllTestsInPackageOptions extends RunSpecifiedTestsOption {
 }
 
 export enum TestLevel {
-    RunNoTests = 'NoTestRun',
-    RunSpecifiedTests = 'RunSpecifiedTests',
-    RunApexTestSuite = 'RunApexTestSuite',
-    RunLocalTests = 'RunLocalTests',
-    RunAllTestsInOrg = 'RunAllTestsInOrg',
-    RunAllTestsInPackage = 'RunAllTestsInPackage',
+    RunNoTests = "NoTestRun",
+    RunSpecifiedTests = "RunSpecifiedTests",
+    RunApexTestSuite = "RunApexTestSuite",
+    RunLocalTests = "RunLocalTests",
+    RunAllTestsInOrg = "RunAllTestsInOrg",
+    RunAllTestsInPackage = "RunAllTestsInPackage",
 }

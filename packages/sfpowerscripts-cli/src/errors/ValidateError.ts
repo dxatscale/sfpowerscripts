@@ -1,5 +1,5 @@
-import SfpowerscriptsError from './SfpowerscriptsError';
-import ValidateResult from '../impl/validate/ValidateResult';
+import SfpowerscriptsError from "./SfpowerscriptsError";
+import ValidateResult from "../impl/validate/ValidateResult";
 
 export default class ValidateError extends SfpowerscriptsError {
     /**

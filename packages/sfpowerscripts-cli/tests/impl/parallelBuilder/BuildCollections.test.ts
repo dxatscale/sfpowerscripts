@@ -1,8 +1,8 @@
-import { jest, expect } from '@jest/globals';
-import BuildCollections from '../../../src/impl/parallelBuilder/BuildCollections';
+import { jest, expect } from "@jest/globals";
+import BuildCollections from "../../../src/impl/parallelBuilder/BuildCollections";
 
 let packageManifest = null;
-jest.mock('../../../../core/lib/project/ProjectConfig', () => {
+jest.mock("../../../../core/lib/project/ProjectConfig", () => {
     class ProjectConfig {
         static getSFDXProjectConfig(projectDirectory: string) {
             return packageManifest;
@@ -12,20 +12,20 @@ jest.mock('../../../../core/lib/project/ProjectConfig', () => {
     return ProjectConfig;
 });
 
-describe('Given a BuildCollections class', () => {
-    it('should be able to create a graph of collections defined in a sfdx-project.json', () => {
+describe("Given a BuildCollections class", () => {
+    it("should be able to create a graph of collections defined in a sfdx-project.json", () => {
         packageManifest = packageManifestWithCollections;
         let buildCollections = new BuildCollections(null);
         expect(buildCollections.graph.adjacencyList).toEqual(adjacencyList);
     });
 
-    it('should create an empty graph when there are no collections defined in sfdx-project.json', () => {
+    it("should create an empty graph when there are no collections defined in sfdx-project.json", () => {
         packageManifest = packageManifestWithNoCollections;
         let buildCollections = new BuildCollections(null);
         expect(buildCollections.graph.adjacencyList).toEqual({});
     });
 
-    it('should throw an error when package in collection does not exist', () => {
+    it("should throw an error when package in collection does not exist", () => {
         packageManifest = packageManifestWithError1;
         expect(() => {
             new BuildCollections(null);
@@ -41,143 +41,143 @@ describe('Given a BuildCollections class', () => {
 });
 
 let adjacencyList = {
-    temp: ['core'],
-    core: ['temp', 'mass-dataload', 'sales'],
-    'mass-dataload': ['core'],
-    'access-mgmt': ['bi'],
-    bi: ['access-mgmt'],
-    sales: ['core', 'cases'],
-    cases: ['sales'],
+    temp: ["core"],
+    core: ["temp", "mass-dataload", "sales"],
+    "mass-dataload": ["core"],
+    "access-mgmt": ["bi"],
+    bi: ["access-mgmt"],
+    sales: ["core", "cases"],
+    cases: ["sales"],
 };
 
 const packageManifestWithCollections = {
     packageDirectories: [
         {
-            path: 'packages/temp',
+            path: "packages/temp",
             default: true,
-            package: 'temp',
-            versionName: 'temp',
-            versionNumber: '1.0.0.0',
-            ignoreOnStage: ['prepare', 'validate', 'build'],
-            buildCollection: ['core'],
+            package: "temp",
+            versionName: "temp",
+            versionNumber: "1.0.0.0",
+            ignoreOnStage: ["prepare", "validate", "build"],
+            buildCollection: ["core"],
         },
         {
-            path: 'packages/domains/core',
-            package: 'core',
+            path: "packages/domains/core",
+            package: "core",
             default: false,
-            versionName: 'covax',
-            versionNumber: '1.0.0.0',
-            assignPermSetsPreDeployment: ['PermSetA', 'PermSetB', 'PermSetC'],
+            versionName: "covax",
+            versionNumber: "1.0.0.0",
+            assignPermSetsPreDeployment: ["PermSetA", "PermSetB", "PermSetC"],
         },
         {
-            path: 'packages/frameworks/mass-dataload',
-            package: 'mass-dataload',
+            path: "packages/frameworks/mass-dataload",
+            package: "mass-dataload",
             default: false,
-            type: 'data',
-            versionName: 'mass-dataload',
-            versionNumber: '1.0.0.0',
-            buildCollection: ['core'],
+            type: "data",
+            versionName: "mass-dataload",
+            versionNumber: "1.0.0.0",
+            buildCollection: ["core"],
         },
         {
-            path: 'packages/access-mgmt',
-            package: 'access-mgmt',
+            path: "packages/access-mgmt",
+            package: "access-mgmt",
             default: false,
-            versionName: 'access-mgmt',
-            versionNumber: '1.0.0.0',
-            reconcileProfiles: 'true',
-            buildCollection: ['bi'],
+            versionName: "access-mgmt",
+            versionNumber: "1.0.0.0",
+            reconcileProfiles: "true",
+            buildCollection: ["bi"],
         },
         {
-            path: 'packages/bi',
-            package: 'bi',
+            path: "packages/bi",
+            package: "bi",
             default: false,
-            versionName: 'bi',
-            versionNumber: '1.0.0.0',
-            ignoreOnStage: ['prepare', 'validate'],
+            versionName: "bi",
+            versionNumber: "1.0.0.0",
+            ignoreOnStage: ["prepare", "validate"],
         },
         {
-            path: 'packages/sales',
-            package: 'sales',
+            path: "packages/sales",
+            package: "sales",
             default: false,
-            versionName: 'sales',
-            versionNumber: '1.0.0.0',
-            buildCollection: ['core'],
+            versionName: "sales",
+            versionNumber: "1.0.0.0",
+            buildCollection: ["core"],
         },
         {
-            path: 'packages/cases',
-            package: 'cases',
+            path: "packages/cases",
+            package: "cases",
             default: false,
-            versionName: 'cases',
-            versionNumber: '1.0.0.0',
-            buildCollection: ['sales'],
+            versionName: "cases",
+            versionNumber: "1.0.0.0",
+            buildCollection: ["sales"],
         },
     ],
-    namespace: '',
-    sfdcLoginUrl: 'https://login.salesforce.com',
-    sourceApiVersion: '50.0',
+    namespace: "",
+    sfdcLoginUrl: "https://login.salesforce.com",
+    sourceApiVersion: "50.0",
     packageAliases: {
-        bi: '0x002232323232',
-        core: '0H04X00000000XXXXX',
+        bi: "0x002232323232",
+        core: "0H04X00000000XXXXX",
     },
 };
 
 const packageManifestWithNoCollections = {
     packageDirectories: [
         {
-            path: 'packages/temp',
+            path: "packages/temp",
             default: true,
-            package: 'temp',
-            versionName: 'temp',
-            versionNumber: '1.0.0.0',
+            package: "temp",
+            versionName: "temp",
+            versionNumber: "1.0.0.0",
         },
     ],
-    namespace: '',
-    sfdcLoginUrl: 'https://login.salesforce.com',
-    sourceApiVersion: '50.0',
+    namespace: "",
+    sfdcLoginUrl: "https://login.salesforce.com",
+    sourceApiVersion: "50.0",
 };
 
 const packageManifestWithError1 = {
     packageDirectories: [
         {
-            path: 'packages/temp',
+            path: "packages/temp",
             default: true,
-            package: 'temp',
-            versionName: 'temp',
-            versionNumber: '1.0.0.0',
-            buildCollection: ['UNKNOWN', 'core'],
+            package: "temp",
+            versionName: "temp",
+            versionNumber: "1.0.0.0",
+            buildCollection: ["UNKNOWN", "core"],
         },
         {
-            path: 'packages/domains/core',
-            package: 'core',
+            path: "packages/domains/core",
+            package: "core",
             default: false,
-            versionName: 'covax',
-            versionNumber: '1.0.0.0',
+            versionName: "covax",
+            versionNumber: "1.0.0.0",
         },
     ],
-    namespace: '',
-    sfdcLoginUrl: 'https://login.salesforce.com',
-    sourceApiVersion: '50.0',
+    namespace: "",
+    sfdcLoginUrl: "https://login.salesforce.com",
+    sourceApiVersion: "50.0",
 };
 
 const packageManifestWithError2 = {
     packageDirectories: [
         {
-            path: 'packages/temp',
+            path: "packages/temp",
             default: true,
-            package: 'temp',
-            versionName: 'temp',
-            versionNumber: '1.0.0.0',
-            buildCollection: 'core',
+            package: "temp",
+            versionName: "temp",
+            versionNumber: "1.0.0.0",
+            buildCollection: "core",
         },
         {
-            path: 'packages/domains/core',
-            package: 'core',
+            path: "packages/domains/core",
+            package: "core",
             default: false,
-            versionName: 'covax',
-            versionNumber: '1.0.0.0',
+            versionName: "covax",
+            versionNumber: "1.0.0.0",
         },
     ],
-    namespace: '',
-    sfdcLoginUrl: 'https://login.salesforce.com',
-    sourceApiVersion: '50.0',
+    namespace: "",
+    sfdcLoginUrl: "https://login.salesforce.com",
+    sourceApiVersion: "50.0",
 };

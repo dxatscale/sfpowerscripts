@@ -1,29 +1,25 @@
-import findJavaHome from 'find-java-home';
-import ExecuteCommand from '@dxatscale/sfdx-process-wrapper/lib/commandExecutor/ExecuteCommand';
-import { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
-import path from 'path';
-import SFPLogger from '@dxatscale/sfp-logger';
-import { ConsoleLogger } from '@dxatscale/sfp-logger';
+import findJavaHome from "find-java-home";
+import ExecuteCommand from "@dxatscale/sfdx-process-wrapper/lib/commandExecutor/ExecuteCommand";
+import { Logger, LoggerLevel } from "@dxatscale/sfp-logger";
+import path from "path";
+import SFPLogger from "@dxatscale/sfp-logger";
+import { ConsoleLogger } from "@dxatscale/sfp-logger";
 
-const jarFile = path.join(__dirname,  '..', 'jars', 'apexlink-2.3.5.jar');
+const jarFile = path.join(__dirname, "..", "jars", "apexlink-2.3.5.jar");
 export default class ApexDepedencyCheckImpl {
     public constructor(private logger: Logger, private projectDirectory: string) {}
 
     public async execute() {
-
         let apexLinkProcessExecutor = new ExecuteCommand(this.logger, LoggerLevel.INFO, false);
-        let generatedCommand =  await this.getGeneratedCommandWithParams();
-        let result = await apexLinkProcessExecutor.execCommand(
-           generatedCommand,
-            process.cwd()
-        );
+        let generatedCommand = await this.getGeneratedCommandWithParams();
+        let result = await apexLinkProcessExecutor.execCommand(generatedCommand, process.cwd());
         return JSON.parse(result);
     }
 
     private async getGeneratedCommandWithParams() {
         let javaHome = await this.getJavaHome();
 
-        let command = `${path.join(javaHome, 'bin', 'java')}  -jar  ${jarFile} -depends  -json ${
+        let command = `${path.join(javaHome, "bin", "java")}  -jar  ${jarFile} -depends  -json ${
             this.projectDirectory
         }`;
         return command;
@@ -40,7 +36,7 @@ export default class ApexDepedencyCheckImpl {
                 if (err) {
                     return reject(err);
                 }
-                SFPLogger.log(`Java HOME ${res}`,LoggerLevel.TRACE, new ConsoleLogger())
+                SFPLogger.log(`Java HOME ${res}`, LoggerLevel.TRACE, new ConsoleLogger());
                 resolve(res);
             });
         });

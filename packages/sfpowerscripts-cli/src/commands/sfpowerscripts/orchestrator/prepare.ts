@@ -1,14 +1,14 @@
-import { Messages, SfdxError } from '@salesforce/core';
-import SfpowerscriptsCommand from '../../../SfpowerscriptsCommand';
-import { flags } from '@salesforce/command';
-import PrepareImpl from '../../../impl/prepare/PrepareImpl';
-import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender';
-import { Stage } from '../../../impl/Stage';
-import * as fs from 'fs-extra';
-import ScratchOrgInfoFetcher from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/services/fetchers/ScratchOrgInfoFetcher';
-import Ajv from 'ajv';
-import path = require('path');
-import { PoolErrorCodes } from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolError';
+import { Messages, SfdxError } from "@salesforce/core";
+import SfpowerscriptsCommand from "../../../SfpowerscriptsCommand";
+import { flags } from "@salesforce/command";
+import PrepareImpl from "../../../impl/prepare/PrepareImpl";
+import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender";
+import { Stage } from "../../../impl/Stage";
+import * as fs from "fs-extra";
+import ScratchOrgInfoFetcher from "@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/services/fetchers/ScratchOrgInfoFetcher";
+import Ajv from "ajv";
+import path = require("path");
+import { PoolErrorCodes } from "@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolError";
 import SFPLogger, {
     LoggerLevel,
     COLOR_ERROR,
@@ -16,15 +16,15 @@ import SFPLogger, {
     COLOR_SUCCESS,
     COLOR_TIME,
     COLOR_KEY_MESSAGE,
-} from '@dxatscale/sfp-logger';
-import getFormattedTime from '@dxatscale/sfpowerscripts.core/lib/utils/GetFormattedTime';
-import { PoolConfig } from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolConfig';
-import { COLOR_WARNING } from '@dxatscale/sfp-logger';
-import PoolSchema from '@dxatscale/sfpowerscripts.core/resources/pooldefinition.schema.json';
-import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
+} from "@dxatscale/sfp-logger";
+import getFormattedTime from "@dxatscale/sfpowerscripts.core/lib/utils/GetFormattedTime";
+import { PoolConfig } from "@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolConfig";
+import { COLOR_WARNING } from "@dxatscale/sfp-logger";
+import PoolSchema from "@dxatscale/sfpowerscripts.core/resources/pooldefinition.schema.json";
+import SFPOrg from "@dxatscale/sfpowerscripts.core/lib/org/SFPOrg";
 
 Messages.importMessagesDirectory(__dirname);
-const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'prepare');
+const messages = Messages.loadMessages("@dxatscale/sfpowerscripts", "prepare");
 
 export default class Prepare extends SfpowerscriptsCommand {
     protected static requiresDevhubUsername = true;
@@ -33,44 +33,44 @@ export default class Prepare extends SfpowerscriptsCommand {
     protected static flagsConfig = {
         poolconfig: flags.filepath({
             required: false,
-            default: 'config/poolconfig.json',
-            char: 'f',
-            description: messages.getMessage('poolConfigFlagDescription'),
+            default: "config/poolconfig.json",
+            char: "f",
+            description: messages.getMessage("poolConfigFlagDescription"),
         }),
         npmrcpath: flags.filepath({
-            description: messages.getMessage('npmrcPathFlagDescription'),
+            description: messages.getMessage("npmrcPathFlagDescription"),
             required: false,
         }),
         keys: flags.string({
             required: false,
-            description: messages.getMessage('keysDescription'),
+            description: messages.getMessage("keysDescription"),
         }),
         logsgroupsymbol: flags.array({
-            char: 'g',
-            description: messages.getMessage('logsGroupSymbolFlagDescription'),
+            char: "g",
+            description: messages.getMessage("logsGroupSymbolFlagDescription"),
         }),
         loglevel: flags.enum({
-            description: 'logging level for this command invocation',
-            default: 'info',
+            description: "logging level for this command invocation",
+            default: "info",
             required: false,
             options: [
-                'trace',
-                'debug',
-                'info',
-                'warn',
-                'error',
-                'fatal',
-                'TRACE',
-                'DEBUG',
-                'INFO',
-                'WARN',
-                'ERROR',
-                'FATAL',
+                "trace",
+                "debug",
+                "info",
+                "warn",
+                "error",
+                "fatal",
+                "TRACE",
+                "DEBUG",
+                "INFO",
+                "WARN",
+                "ERROR",
+                "FATAL",
             ],
         }),
     };
 
-    public static description = messages.getMessage('commandDescription');
+    public static description = messages.getMessage("commandDescription");
 
     public static examples = [`$ sfdx sfpowerscripts:orchestrator:prepare -f config/mypoolconfig.json  -v <devhub>`];
 
@@ -94,8 +94,8 @@ export default class Prepare extends SfpowerscriptsCommand {
                 else
                     SFPLogger.log(
                         COLOR_WARNING(
-                            'npmrcPath found in flag, however the configuration doesnt seem to use npm, Are you sure your schema is good?'
-                        )
+                            "npmrcPath found in flag, however the configuration doesnt seem to use npm, Are you sure your schema is good?",
+                        ),
                     );
             }
 
@@ -117,40 +117,40 @@ export default class Prepare extends SfpowerscriptsCommand {
                 let totalElapsedTime = Date.now() - executionStartTime;
                 SFPLogger.log(
                     COLOR_HEADER(
-                        `-----------------------------------------------------------------------------------------------------------`
-                    )
+                        `-----------------------------------------------------------------------------------------------------------`,
+                    ),
                 );
                 SFPLogger.log(
                     COLOR_SUCCESS(
                         `Provisioned {${results.value.scratchOrgs.length}}  scratchorgs out of ${
                             results.value.to_allocate
                         } requested with ${COLOR_ERROR(results.value.failedToCreate)} failed in ${COLOR_TIME(
-                            getFormattedTime(totalElapsedTime)
-                        )} `
-                    )
+                            getFormattedTime(totalElapsedTime),
+                        )} `,
+                    ),
                 );
                 SFPLogger.log(
                     COLOR_HEADER(
-                        `----------------------------------------------------------------------------------------------------------`
-                    )
+                        `----------------------------------------------------------------------------------------------------------`,
+                    ),
                 );
 
                 await this.getCurrentRemainingNumberOfOrgsInPoolAndReport(poolConfig);
 
-                SFPStatsSender.logGauge('prepare.succeededorgs', results.value.scratchOrgs.length, tags);
+                SFPStatsSender.logGauge("prepare.succeededorgs", results.value.scratchOrgs.length, tags);
                 if (results.value.scratchOrgs.length > 0)
-                    SFPStatsSender.logGauge('prepare.duration', Date.now() - executionStartTime, tags);
+                    SFPStatsSender.logGauge("prepare.duration", Date.now() - executionStartTime, tags);
             } else if (results.isErr()) {
                 SFPLogger.log(
                     COLOR_HEADER(
-                        `-----------------------------------------------------------------------------------------------------------`
-                    )
+                        `-----------------------------------------------------------------------------------------------------------`,
+                    ),
                 );
                 SFPLogger.log(COLOR_ERROR(results.error.message), LoggerLevel.ERROR);
                 SFPLogger.log(
                     COLOR_HEADER(
-                        `-----------------------------------------------------------------------------------------------------------`
-                    )
+                        `-----------------------------------------------------------------------------------------------------------`,
+                    ),
                 );
 
                 switch (results.error.errorCode) {
@@ -164,13 +164,13 @@ export default class Prepare extends SfpowerscriptsCommand {
                         process.exitCode = 1;
                         break;
                     case PoolErrorCodes.UnableToProvisionAny:
-                        SFPStatsSender.logGauge('prepare.failedorgs', results.error.failed, tags);
+                        SFPStatsSender.logGauge("prepare.failedorgs", results.error.failed, tags);
                         process.exitCode = 1;
                         break;
                 }
             }
         } catch (err) {
-            throw new SfdxError('Unable to execute command .. ' + err);
+            throw new SfdxError("Unable to execute command .. " + err);
         }
     }
 
@@ -180,21 +180,21 @@ export default class Prepare extends SfpowerscriptsCommand {
         SFPLogger.log(
             COLOR_HEADER(
                 `Scratch Orgs to be submitted to pool in case of failures: ${
-                    poolConfig.succeedOnDeploymentErrors ? 'true' : 'false'
-                }`
-            )
+                    poolConfig.succeedOnDeploymentErrors ? "true" : "false"
+                }`,
+            ),
         );
 
         SFPLogger.log(
-            COLOR_HEADER(`All packages in the repo to be installed: ${poolConfig.installAll ? 'true' : 'false'}`)
+            COLOR_HEADER(`All packages in the repo to be installed: ${poolConfig.installAll ? "true" : "false"}`),
         );
 
         SFPLogger.log(
             COLOR_HEADER(
                 `Enable Source Tracking: ${
-                    poolConfig.enableSourceTracking || poolConfig.enableSourceTracking === undefined ? 'true' : 'false'
-                }`
-            )
+                    poolConfig.enableSourceTracking || poolConfig.enableSourceTracking === undefined ? "true" : "false"
+                }`,
+            ),
         );
 
         if (poolConfig.enableVlocity) SFPLogger.log(COLOR_HEADER(`Enable Vlocity Config: true`));
@@ -202,7 +202,9 @@ export default class Prepare extends SfpowerscriptsCommand {
         if (poolConfig.fetchArtifacts) {
             if (poolConfig.fetchArtifacts.artifactFetchScript)
                 SFPLogger.log(
-                    COLOR_HEADER(`Script provided to fetch artifacts: ${poolConfig.fetchArtifacts.artifactFetchScript}`)
+                    COLOR_HEADER(
+                        `Script provided to fetch artifacts: ${poolConfig.fetchArtifacts.artifactFetchScript}`,
+                    ),
                 );
             if (poolConfig.fetchArtifacts.npm) {
                 SFPLogger.log(COLOR_HEADER(`Fetch artifacts from pre-authenticated NPM registry: true`));
@@ -210,7 +212,7 @@ export default class Prepare extends SfpowerscriptsCommand {
         }
 
         SFPLogger.log(
-            COLOR_HEADER(`-------------------------------------------------------------------------------------------`)
+            COLOR_HEADER(`-------------------------------------------------------------------------------------------`),
         );
     }
 
@@ -219,7 +221,7 @@ export default class Prepare extends SfpowerscriptsCommand {
             const results = await new ScratchOrgInfoFetcher(this.hubOrg).getScratchOrgsByTag(
                 this.flags.tag,
                 false,
-                true
+                true,
             );
 
             let tags = {
@@ -227,9 +229,9 @@ export default class Prepare extends SfpowerscriptsCommand {
                 poolName: poolConfig.tag,
             };
 
-            let availableSo = results.records.filter((soInfo) => soInfo.Allocation_status__c === 'Available');
+            let availableSo = results.records.filter((soInfo) => soInfo.Allocation_status__c === "Available");
 
-            SFPStatsSender.logGauge('pool.available', availableSo.length, tags);
+            SFPStatsSender.logGauge("pool.available", availableSo.length, tags);
         } catch (error) {
             //do nothing, we are not reporting anything if anything goes wrong here
         }
@@ -246,7 +248,7 @@ export default class Prepare extends SfpowerscriptsCommand {
                 errorMsg += `\n${errorNum + 1}: ${error.instancePath}: ${error.message} ${JSON.stringify(
                     error.params,
                     null,
-                    4
+                    4,
                 )}`;
             });
 

@@ -1,6 +1,6 @@
-import { Connection } from '@salesforce/core';
-import chunkCollection from '../../queryHelper/ChunkCollection';
-import QueryHelper from '../../queryHelper/QueryHelper';
+import { Connection } from "@salesforce/core";
+import chunkCollection from "../../queryHelper/ChunkCollection";
+import QueryHelper from "../../queryHelper/QueryHelper";
 
 export default class ApexCodeCoverageAggregateFetcher {
     constructor(private conn: Connection) {}
@@ -10,12 +10,14 @@ export default class ApexCodeCoverageAggregateFetcher {
      * @param listOfApexClassOrTriggerId
      * @returns
      */
-    public async fetchACCAById(listOfApexClassOrTriggerId: string[]): Promise<{
-        ApexClassOrTriggerId: string;
-        NumLinesCovered: number;
-        NumLinesUncovered: number;
-        Coverage: any;
-    }[]> {
+    public async fetchACCAById(listOfApexClassOrTriggerId: string[]): Promise<
+        {
+            ApexClassOrTriggerId: string;
+            NumLinesCovered: number;
+            NumLinesUncovered: number;
+            Coverage: any;
+        }[]
+    > {
         let result: {
             ApexClassOrTriggerId: string;
             NumLinesCovered: number;
@@ -25,7 +27,7 @@ export default class ApexCodeCoverageAggregateFetcher {
 
         const chunks = chunkCollection(listOfApexClassOrTriggerId);
         for (const chunk of chunks) {
-            const formattedChunk = chunk.map(elem => `'${elem}'`).toString();
+            const formattedChunk = chunk.map((elem) => `'${elem}'`).toString();
             let query = `SELECT ApexClassorTriggerId, NumLinesCovered, NumLinesUncovered, Coverage FROM ApexCodeCoverageAggregate WHERE ApexClassorTriggerId IN (${formattedChunk})`;
 
             const records = await QueryHelper.query<{

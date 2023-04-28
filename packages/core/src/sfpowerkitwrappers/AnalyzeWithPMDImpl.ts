@@ -1,5 +1,5 @@
-import{ SFDXCommand} from "@dxatscale/sfdx-process-wrapper/lib/SFDXCommand";
-import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
+import { SFDXCommand } from "@dxatscale/sfdx-process-wrapper/lib/SFDXCommand";
+import SFPLogger, { Logger, LoggerLevel } from "@dxatscale/sfp-logger";
 
 export default class AnalyzeWithPMDImpl extends SFDXCommand {
     public constructor(
@@ -9,19 +9,19 @@ export default class AnalyzeWithPMDImpl extends SFDXCommand {
         private ouputPath: string,
         private version: string,
         protected logger?: Logger,
-        protected logLevel?: LoggerLevel
+        protected logLevel?: LoggerLevel,
     ) {
         super(null, null, logger, logLevel);
     }
 
     getSFDXCommand(): string {
-        return 'sfdx sfpowerkit:source:pmd';
+        return "sfdx sfpowerkit:source:pmd";
     }
     getCommandName(): string {
-        return 'PMD Analysis';
+        return "PMD Analysis";
     }
     getGeneratedParams(): string {
-        let command: string = '';
+        let command: string = "";
 
         if (this.sourceDirectory) command = `-d ${this.sourceDirectory}`;
         if (this.format) command += ` -f ${this.format}`;

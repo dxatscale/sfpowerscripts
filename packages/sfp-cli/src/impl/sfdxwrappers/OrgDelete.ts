@@ -1,5 +1,4 @@
-import { SFDXCommand } from '@dxatscale/sfdx-process-wrapper/lib/SFDXCommand';
-
+import { SFDXCommand } from "@dxatscale/sfdx-process-wrapper/lib/SFDXCommand";
 
 export default class OrgDelete extends SFDXCommand {
     public constructor(private aliasOrUsername?: string, private devHubUserName?: string) {
@@ -7,11 +6,11 @@ export default class OrgDelete extends SFDXCommand {
     }
 
     getSFDXCommand(): string {
-        return 'sfdx force:org:delete';
+        return "sfdx force:org:delete";
     }
 
     getCommandName(): string {
-        return 'OrgDelete';
+        return "OrgDelete";
     }
 
     getGeneratedParams(): string {

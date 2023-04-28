@@ -1,9 +1,9 @@
-import SFPLogger, { COLOR_ERROR, COLOR_KEY_VALUE } from '@dxatscale/sfp-logger/lib/SFPLogger';
-import inquirer = require('inquirer');
-import OrgDelete from '../../impl/sfdxwrappers/OrgDelete';
-import { SfpProjectConfig } from '../../types/SfpProjectConfig';
-import PickAnOrgWorkflow from './PickAnOrgWorkflow';
-import cli from 'cli-ux';
+import SFPLogger, { COLOR_ERROR, COLOR_KEY_VALUE } from "@dxatscale/sfp-logger/lib/SFPLogger";
+import inquirer = require("inquirer");
+import OrgDelete from "../../impl/sfdxwrappers/OrgDelete";
+import { SfpProjectConfig } from "../../types/SfpProjectConfig";
+import PickAnOrgWorkflow from "./PickAnOrgWorkflow";
+import cli from "cli-ux";
 
 export default class DeleteOrgWorkflow {
     public constructor(private sfpProjectConfig: SfpProjectConfig, private username?: string) {}
@@ -23,8 +23,8 @@ export default class DeleteOrgWorkflow {
             } catch (error) {
                 SFPLogger.log(
                     `${COLOR_ERROR(
-                        `Unable to delete this dev org, You may need to delete this from ${this.sfpProjectConfig.repoProvider} pipelines`
-                    )}`
+                        `Unable to delete this dev org, You may need to delete this from ${this.sfpProjectConfig.repoProvider} pipelines`,
+                    )}`,
                 );
             }
         }
@@ -33,8 +33,8 @@ export default class DeleteOrgWorkflow {
 
     private async confirmDeletionOfOrg(username: string) {
         let confirmation = await inquirer.prompt({
-            type: 'confirm',
-            name: 'result',
+            type: "confirm",
+            name: "result",
             message: `Do you want to delete the org ${COLOR_KEY_VALUE(username)}, Proceed?`,
             default: true,
         });

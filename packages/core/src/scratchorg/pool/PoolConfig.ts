@@ -1,4 +1,4 @@
-import ScratchOrg from '../ScratchOrg';
+import ScratchOrg from "../ScratchOrg";
 
 export interface PoolConfig {
     tag: string;
@@ -7,7 +7,7 @@ export interface PoolConfig {
     expiry?: number;
     batchSize?: number;
     configFilePath: string;
-    releaseConfigFile?:string;
+    releaseConfigFile?: string;
     succeedOnDeploymentErrors?: boolean;
     keys?: string;
     installAll: boolean;
@@ -22,8 +22,8 @@ export interface PoolConfig {
             scope: string;
         };
     };
-    disableSourcePackageOverride?:boolean;
-    snapshotPool?:string;
+    disableSourcePackageOverride?: boolean;
+    snapshotPool?: string;
     postDeploymentScriptPath: string;
     preDependencyInstallationScriptPath: string;
     enableVlocity?: boolean;
@@ -34,7 +34,5 @@ export interface PoolConfig {
     to_satisfy_max?: number;
     scratchOrgs?: ScratchOrg[];
     failedToCreate?: number;
-    maxRetryCount?:number;
-
-
+    maxRetryCount?: number;
 }

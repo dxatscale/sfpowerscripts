@@ -3,6 +3,6 @@ export default interface FetchAnArtifact {
         packageName: string,
         artifactDirectory: string,
         version: string,
-        isToContinueOnMissingArtifact: boolean
+        isToContinueOnMissingArtifact: boolean,
     ): void;
 }

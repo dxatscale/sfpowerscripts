@@ -1,8 +1,8 @@
 (function webpackUniversalModuleDefinition(root, factory) {
-    if (typeof exports === 'object' && typeof module === 'object') module.exports = factory(require('dagre'));
-    else if (typeof define === 'function' && define.amd) define(['dagre'], factory);
-    else if (typeof exports === 'object') exports['cytoscapeDagre'] = factory(require('dagre'));
-    else root['cytoscapeDagre'] = factory(root['dagre']);
+    if (typeof exports === "object" && typeof module === "object") module.exports = factory(require("dagre"));
+    else if (typeof define === "function" && define.amd) define(["dagre"], factory);
+    else if (typeof exports === "object") exports["cytoscapeDagre"] = factory(require("dagre"));
+    else root["cytoscapeDagre"] = factory(root["dagre"]);
 })(this, function (__WEBPACK_EXTERNAL_MODULE__4__) {
     return /******/ (function (modules) {
         // webpackBootstrap
@@ -45,29 +45,29 @@
         }; // define __esModule on exports
         /******/
         /******/ /******/ __webpack_require__.r = function (exports) {
-            /******/ if (typeof Symbol !== 'undefined' && Symbol.toStringTag) {
-                /******/ Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+            /******/ if (typeof Symbol !== "undefined" && Symbol.toStringTag) {
+                /******/ Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
                 /******/
             }
-            /******/ Object.defineProperty(exports, '__esModule', { value: true });
+            /******/ Object.defineProperty(exports, "__esModule", { value: true });
             /******/
         }; // create a fake namespace object // mode & 1: value is a module id, require it // mode & 2: merge all properties of value into the ns // mode & 4: return value when already ns object // mode & 8|1: behave like require
         /******/
         /******/ /******/ /******/ /******/ /******/ /******/ __webpack_require__.t = function (value, mode) {
             /******/ if (mode & 1) value = __webpack_require__(value);
             /******/ if (mode & 8) return value;
-            /******/ if (mode & 4 && typeof value === 'object' && value && value.__esModule) return value;
+            /******/ if (mode & 4 && typeof value === "object" && value && value.__esModule) return value;
             /******/ var ns = Object.create(null);
             /******/ __webpack_require__.r(ns);
-            /******/ Object.defineProperty(ns, 'default', { enumerable: true, value: value });
-            /******/ if (mode & 2 && typeof value != 'string')
+            /******/ Object.defineProperty(ns, "default", { enumerable: true, value: value });
+            /******/ if (mode & 2 && typeof value != "string")
                 for (var key in value)
                     __webpack_require__.d(
                         ns,
                         key,
                         function (key) {
                             return value[key];
-                        }.bind(null, key)
+                        }.bind(null, key),
                     );
             /******/ return ns;
             /******/
@@ -77,12 +77,12 @@
             /******/ var getter =
                 module && module.__esModule
                     ? /******/ function getDefault() {
-                          return module['default'];
+                          return module["default"];
                       }
                     : /******/ function getModuleExports() {
                           return module;
                       };
-            /******/ __webpack_require__.d(getter, 'a', getter);
+            /******/ __webpack_require__.d(getter, "a", getter);
             /******/ return getter;
             /******/
         }; // Object.prototype.hasOwnProperty.call
@@ -91,7 +91,7 @@
             return Object.prototype.hasOwnProperty.call(object, property);
         }; // __webpack_public_path__
         /******/
-        /******/ /******/ __webpack_require__.p = ''; // Load entry module and return exports
+        /******/ /******/ __webpack_require__.p = ""; // Load entry module and return exports
         /******/
         /******/
         /******/ /******/ return __webpack_require__((__webpack_require__.s = 0));
@@ -108,10 +108,10 @@
                         return;
                     } // can't register if cytoscape unspecified
 
-                    cytoscape('layout', 'dagre', impl); // register with cytoscape.js
+                    cytoscape("layout", "dagre", impl); // register with cytoscape.js
                 };
 
-                if (typeof cytoscape !== 'undefined') {
+                if (typeof cytoscape !== "undefined") {
                     // expose to global cytoscape (i.e. window.cytoscape)
                     register(cytoscape);
                 }
@@ -123,18 +123,18 @@
             /* 1 */
             /***/ function (module, exports, __webpack_require__) {
                 function _typeof(obj) {
-                    '@babel/helpers - typeof';
-                    if (typeof Symbol === 'function' && typeof Symbol.iterator === 'symbol') {
+                    "@babel/helpers - typeof";
+                    if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
                         _typeof = function _typeof(obj) {
                             return typeof obj;
                         };
                     } else {
                         _typeof = function _typeof(obj) {
                             return obj &&
-                                typeof Symbol === 'function' &&
+                                typeof Symbol === "function" &&
                                 obj.constructor === Symbol &&
                                 obj !== Symbol.prototype
-                                ? 'symbol'
+                                ? "symbol"
                                 : typeof obj;
                         };
                     }
@@ -142,7 +142,7 @@
                 }
 
                 var isFunction = function isFunction(o) {
-                    return typeof o === 'function';
+                    return typeof o === "function";
                 };
 
                 var defaults = __webpack_require__(2);
@@ -202,11 +202,11 @@
                         }
                     };
 
-                    setGObj('nodesep', options.nodeSep);
-                    setGObj('edgesep', options.edgeSep);
-                    setGObj('ranksep', options.rankSep);
-                    setGObj('rankdir', options.rankDir);
-                    setGObj('ranker', options.ranker);
+                    setGObj("nodesep", options.nodeSep);
+                    setGObj("edgesep", options.edgeSep);
+                    setGObj("ranksep", options.rankSep);
+                    setGObj("rankdir", options.rankDir);
+                    setGObj("ranker", options.ranker);
                     g.setGraph(gObj);
                     g.setDefaultEdgeLabel(function () {
                         return {};
@@ -249,7 +249,7 @@
                                 weight: getVal(edge, options.edgeWeight),
                                 name: edge.id(),
                             },
-                            edge.id()
+                            edge.id(),
                         ); // console.log( g.edge(edge.source().id(), edge.target().id(), edge.id()) );
                     }
 
@@ -298,7 +298,7 @@
                     };
 
                     nodes.layoutPositions(layout, options, function (ele) {
-                        ele = _typeof(ele) === 'object' ? ele : this;
+                        ele = _typeof(ele) === "object" ? ele : this;
                         var dModel = ele.scratch().dagre;
                         return constrainPos({
                             x: dModel.x,
@@ -400,6 +400,6 @@
                 /***/
             },
             /******/
-        ]
+        ],
     );
 });

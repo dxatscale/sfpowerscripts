@@ -1,8 +1,8 @@
-import { Org } from '@salesforce/core';
-const retry = require('async-retry');
-import { Result, ok, err } from 'neverthrow';
-import { PoolConfig } from '../PoolConfig';
-import { PoolError, PoolErrorCodes } from '../PoolError';
+import { Org } from "@salesforce/core";
+const retry = require("async-retry");
+import { Result, ok, err } from "neverthrow";
+import { PoolConfig } from "../PoolConfig";
+import { PoolError, PoolErrorCodes } from "../PoolError";
 
 export default class PreRequisiteCheck {
     private static isPrerequisiteChecked: boolean = false;
@@ -18,19 +18,19 @@ export default class PreRequisiteCheck {
     public async checkForPrerequisites(): Promise<void> {
         let sfdxAuthUrlFieldExists = false;
         let conn = this.hubOrg.getConnection();
-        let expectedValues = ['In Progress', 'Available', 'Allocate', 'Assigned','Return'];
+        let expectedValues = ["In Progress", "Available", "Allocate", "Assigned", "Return"];
         let availableValues: string[] = [];
         if (!PreRequisiteCheck.isPrerequisiteChecked) {
             await retry(
                 async (bail) => {
-                    PreRequisiteCheck.describeResult = await conn.sobject('ScratchOrgInfo').describe();
+                    PreRequisiteCheck.describeResult = await conn.sobject("ScratchOrgInfo").describe();
                     if (PreRequisiteCheck.describeResult) {
                         for (const field of PreRequisiteCheck.describeResult.fields) {
-                            if (field.name === 'SfdxAuthUrl__c') {
+                            if (field.name === "SfdxAuthUrl__c") {
                                 sfdxAuthUrlFieldExists = true;
                             }
 
-                            if (field.name === 'Allocation_status__c' && field.picklistValues.length >= 4) {
+                            if (field.name === "Allocation_status__c" && field.picklistValues.length >= 4) {
                                 for (let picklistValue of field.picklistValues) {
                                     if (picklistValue.active) {
                                         availableValues.push(picklistValue.value);
@@ -40,7 +40,7 @@ export default class PreRequisiteCheck {
                         }
                     }
                 },
-                { retries: 3, minTimeout: 30000 }
+                { retries: 3, minTimeout: 30000 },
             );
 
             PreRequisiteCheck.isPrerequisiteChecked = true;
@@ -56,8 +56,10 @@ export default class PreRequisiteCheck {
         }
 
         if (!PreRequisiteCheck.isPrerequisiteMet) {
-              throw new Error( `Required Prerequisite values in ScratchOrgInfo is missing in the DevHub` +
-                               `For more information Please refer https://sfpowerscripts.dxatscale.io/getting-started/prerequisites \n`);
+            throw new Error(
+                `Required Prerequisite values in ScratchOrgInfo is missing in the DevHub` +
+                    `For more information Please refer https://sfpowerscripts.dxatscale.io/getting-started/prerequisites \n`,
+            );
         }
     }
 }

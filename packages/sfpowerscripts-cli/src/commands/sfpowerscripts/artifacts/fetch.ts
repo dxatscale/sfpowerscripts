@@ -1,15 +1,15 @@
-import { flags } from '@salesforce/command';
-import SfpowerscriptsCommand from '../../../SfpowerscriptsCommand';
-import { Messages } from '@salesforce/core';
-import FetchImpl, { ArtifactVersion } from '../../../impl/artifacts/FetchImpl';
-import ReleaseDefinition from '../../../impl/release/ReleaseDefinition';
-import FetchArtifactsError from '../../../impl/artifacts/FetchArtifactsError';
+import { flags } from "@salesforce/command";
+import SfpowerscriptsCommand from "../../../SfpowerscriptsCommand";
+import { Messages } from "@salesforce/core";
+import FetchImpl, { ArtifactVersion } from "../../../impl/artifacts/FetchImpl";
+import ReleaseDefinition from "../../../impl/release/ReleaseDefinition";
+import FetchArtifactsError from "../../../impl/artifacts/FetchArtifactsError";
 
 Messages.importMessagesDirectory(__dirname);
-const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'fetch');
+const messages = Messages.loadMessages("@dxatscale/sfpowerscripts", "fetch");
 
 export default class Fetch extends SfpowerscriptsCommand {
-    public static description = messages.getMessage('commandDescription');
+    public static description = messages.getMessage("commandDescription");
 
     public static examples = [
         `$ sfdx sfpowerscripts:artifacts:fetch -p myreleasedefinition.yaml -f myscript.sh`,
@@ -21,50 +21,50 @@ export default class Fetch extends SfpowerscriptsCommand {
 
     protected static flagsConfig = {
         releasedefinition: flags.filepath({
-            char: 'p',
-            description: messages.getMessage('releaseDefinitionFlagDescription'),
+            char: "p",
+            description: messages.getMessage("releaseDefinitionFlagDescription"),
         }),
         artifactdir: flags.directory({
             required: true,
-            char: 'd',
-            description: messages.getMessage('artifactDirectoryFlagDescription'),
-            default: 'artifacts',
+            char: "d",
+            description: messages.getMessage("artifactDirectoryFlagDescription"),
+            default: "artifacts",
         }),
         scriptpath: flags.filepath({
-            char: 'f',
-            description: messages.getMessage('scriptPathFlagDescription'),
+            char: "f",
+            description: messages.getMessage("scriptPathFlagDescription"),
         }),
         npm: flags.boolean({
-            description: messages.getMessage('npmFlagDescription'),
-            exclusive: ['scriptpath'],
+            description: messages.getMessage("npmFlagDescription"),
+            exclusive: ["scriptpath"],
         }),
         scope: flags.string({
-            description: messages.getMessage('scopeFlagDescription'),
-            dependsOn: ['npm'],
-            parse: async (scope) => scope.replace(/@/g, '').toLowerCase()
+            description: messages.getMessage("scopeFlagDescription"),
+            dependsOn: ["npm"],
+            parse: async (scope) => scope.replace(/@/g, "").toLowerCase(),
         }),
         npmrcpath: flags.filepath({
-            description: messages.getMessage('npmrcPathFlagDescription'),
-            dependsOn: ['npm'],
+            description: messages.getMessage("npmrcPathFlagDescription"),
+            dependsOn: ["npm"],
             required: false,
         }),
         loglevel: flags.enum({
-            description: 'logging level for this command invocation',
-            default: 'info',
+            description: "logging level for this command invocation",
+            default: "info",
             required: false,
             options: [
-                'trace',
-                'debug',
-                'info',
-                'warn',
-                'error',
-                'fatal',
-                'TRACE',
-                'DEBUG',
-                'INFO',
-                'WARN',
-                'ERROR',
-                'FATAL',
+                "trace",
+                "debug",
+                "info",
+                "warn",
+                "error",
+                "fatal",
+                "TRACE",
+                "DEBUG",
+                "INFO",
+                "WARN",
+                "ERROR",
+                "FATAL",
             ],
         }),
     };
@@ -72,11 +72,12 @@ export default class Fetch extends SfpowerscriptsCommand {
     public async execute() {
         this.validateFlags();
 
-        let releaseDefinition = (await ReleaseDefinition.loadReleaseDefinition(this.flags.releasedefinition)).releaseDefinition;
+        let releaseDefinition = (await ReleaseDefinition.loadReleaseDefinition(this.flags.releasedefinition))
+            .releaseDefinition;
 
         let result: {
             success: ArtifactVersion[];
-            failed:  ArtifactVersion[];
+            failed: ArtifactVersion[];
         };
 
         let executionStartTime = Date.now();
@@ -86,7 +87,7 @@ export default class Fetch extends SfpowerscriptsCommand {
                 this.flags.scriptpath,
                 this.flags.npm,
                 this.flags.scope,
-                this.flags.npmrcpath
+                this.flags.npmrcpath,
             );
 
             result = await fetchImpl.fetchArtifacts([releaseDefinition]);
@@ -105,12 +106,9 @@ export default class Fetch extends SfpowerscriptsCommand {
         }
     }
 
-    private printSummary(
-        result: { success: ArtifactVersion[]; failed:ArtifactVersion[] },
-        totalElapsedTime: number
-    ) {
+    private printSummary(result: { success: ArtifactVersion[]; failed: ArtifactVersion[] }, totalElapsedTime: number) {
         console.log(
-            `----------------------------------------------------------------------------------------------------`
+            `----------------------------------------------------------------------------------------------------`,
         );
         console.log(`Fetched ${result.success.length} artifacts`);
 
@@ -118,11 +116,11 @@ export default class Fetch extends SfpowerscriptsCommand {
 
         console.log(`Elapsed Time: ${new Date(totalElapsedTime).toISOString().substr(11, 8)}`);
         console.log(
-            `----------------------------------------------------------------------------------------------------`
+            `----------------------------------------------------------------------------------------------------`,
         );
     }
 
     protected validateFlags() {
-        if (this.flags.npm && !this.flags.scope) throw new Error('--scope parameter is required for NPM');
+        if (this.flags.npm && !this.flags.scope) throw new Error("--scope parameter is required for NPM");
     }
 }

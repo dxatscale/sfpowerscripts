@@ -1,18 +1,18 @@
-import path = require('path');
-import * as fs from 'fs-extra';
-import GeneratePackageChangelog from '../../changelog/GeneratePackageChangelog';
-import { Changelog } from '../../changelog/interfaces/GenericChangelogInterfaces';
-import * as rimraf from 'rimraf';
-import SFPLogger, { LoggerLevel } from '@dxatscale/sfp-logger';
-import AdmZip = require('adm-zip');
-import SfpPackage from '../../package/SfpPackage';
+import path = require("path");
+import * as fs from "fs-extra";
+import GeneratePackageChangelog from "../../changelog/GeneratePackageChangelog";
+import { Changelog } from "../../changelog/interfaces/GenericChangelogInterfaces";
+import * as rimraf from "rimraf";
+import SFPLogger, { LoggerLevel } from "@dxatscale/sfp-logger";
+import AdmZip = require("adm-zip");
+import SfpPackage from "../../package/SfpPackage";
 
 export default class ArtifactGenerator {
     //Generates the universal artifact used by the CLI and AZP
     public static async generateArtifact(
         sfpPackage: SfpPackage,
         project_directory: string,
-        artifact_directory: string
+        artifact_directory: string,
     ): Promise<string> {
         try {
             // Artifact folder consisting of artifact metadata, changelog & source
@@ -33,10 +33,10 @@ export default class ArtifactGenerator {
             fs.mkdirpSync(sourcePackage);
 
             //Clean up temp directory
-            if (fs.existsSync(path.join(sfpPackage.workingDirectory, '.sfpowerscripts')))
-                rimraf.sync(path.join(sfpPackage.workingDirectory, '.sfpowerscripts'));
-            if (fs.existsSync(path.join(sfpPackage.workingDirectory, '.sfdx')))
-                rimraf.sync(path.join(sfpPackage.workingDirectory, '.sfdx'));
+            if (fs.existsSync(path.join(sfpPackage.workingDirectory, ".sfpowerscripts")))
+                rimraf.sync(path.join(sfpPackage.workingDirectory, ".sfpowerscripts"));
+            if (fs.existsSync(path.join(sfpPackage.workingDirectory, ".sfdx")))
+                rimraf.sync(path.join(sfpPackage.workingDirectory, ".sfdx"));
 
             fs.copySync(sfpPackage.workingDirectory, sourcePackage);
             rimraf.sync(sfpPackage.workingDirectory);
@@ -54,7 +54,7 @@ export default class ArtifactGenerator {
                 sfpPackage.packageName,
                 undefined,
                 sfpPackage.sourceVersion,
-                project_directory
+                project_directory,
             );
 
             let packageChangelog: Changelog = await generatePackageChangelog.exec();
@@ -63,14 +63,14 @@ export default class ArtifactGenerator {
 
             fs.writeFileSync(changelogFilepath, JSON.stringify(packageChangelog, null, 4));
 
-            SFPLogger.log('Artifact Copy Completed', LoggerLevel.DEBUG);
+            SFPLogger.log("Artifact Copy Completed", LoggerLevel.DEBUG);
 
             let zip = new AdmZip();
             zip.addLocalFolder(artifactFilepath, artifactFolder);
             SFPLogger.log(`Zipping ${artifactFolder}`, LoggerLevel.DEBUG);
 
             let packageVersionNumber: string = ArtifactGenerator.substituteBuildNumberWithPreRelease(
-                sfpPackage.versionNumber
+                sfpPackage.versionNumber,
             );
 
             let zipArtifactFilepath: string = artifactFilepath + `_` + packageVersionNumber + `.zip`;
@@ -78,7 +78,7 @@ export default class ArtifactGenerator {
 
             SFPLogger.log(
                 `Artifact Generation Completed for ${sfpPackage.packageType} to ${zipArtifactFilepath}`,
-                LoggerLevel.INFO
+                LoggerLevel.INFO,
             );
 
             // Cleanup unzipped artifact
@@ -86,17 +86,17 @@ export default class ArtifactGenerator {
 
             return zipArtifactFilepath;
         } catch (error) {
-            throw new Error('Unable to create artifact' + error);
+            throw new Error("Unable to create artifact" + error);
         }
     }
 
     private static substituteBuildNumberWithPreRelease(packageVersionNumber: string) {
-        let segments = packageVersionNumber.split('.');
+        let segments = packageVersionNumber.split(".");
 
         if (segments.length === 4) {
             packageVersionNumber = segments.reduce((version, segment, segmentsIdx) => {
-                if (segmentsIdx === 3) return version + '-' + segment;
-                else return version + '.' + segment;
+                if (segmentsIdx === 3) return version + "-" + segment;
+                else return version + "." + segment;
             });
         }
 

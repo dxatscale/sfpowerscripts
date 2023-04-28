@@ -1,12 +1,12 @@
-import path from 'path';
-import { Logger } from '@dxatscale/sfp-logger';
-import SFPOrg from '../org/SFPOrg';
-import InstallDataPackageImpl from './packageInstallers/InstallDataPackageImpl';
-import { SfpPackageInstallationOptions } from './packageInstallers/InstallPackage';
-import InstallSourcePackageImpl from './packageInstallers/InstallSourcePackageImpl';
-import InstallUnlockedPackage from './packageInstallers/InstallUnlockedPackage';
-import { PackageInstallationResult } from './packageInstallers/PackageInstallationResult';
-import SfpPackage, { PackageType } from './SfpPackage';
+import path from "path";
+import { Logger } from "@dxatscale/sfp-logger";
+import SFPOrg from "../org/SFPOrg";
+import InstallDataPackageImpl from "./packageInstallers/InstallDataPackageImpl";
+import { SfpPackageInstallationOptions } from "./packageInstallers/InstallPackage";
+import InstallSourcePackageImpl from "./packageInstallers/InstallSourcePackageImpl";
+import InstallUnlockedPackage from "./packageInstallers/InstallUnlockedPackage";
+import { PackageInstallationResult } from "./packageInstallers/PackageInstallationResult";
+import SfpPackage, { PackageType } from "./SfpPackage";
 
 export default class SfpPackageInstaller {
     public static async installPackage(
@@ -15,7 +15,7 @@ export default class SfpPackageInstaller {
         targetOrg: SFPOrg,
         installationOptions: SfpPackageInstallationOptions,
         installationContext?: SfPPackageInstallationContext,
-        overridePackageTypeWith?: string
+        overridePackageTypeWith?: string,
     ): Promise<PackageInstallationResult> {
         let packageType = sfpPackage.packageType;
         if (overridePackageTypeWith) packageType = overridePackageTypeWith;
@@ -26,19 +26,20 @@ export default class SfpPackageInstaller {
                     sfpPackage,
                     targetOrg,
                     installationOptions,
-                    logger
+                    logger,
                 );
                 installUnlockedPackageImpl.isArtifactToBeCommittedInOrg = !installationOptions.disableArtifactCommit;
                 return installUnlockedPackageImpl.exec();
             case PackageType.Source:
-                installationOptions.pathToReplacementForceIgnore =   installationContext?.currentStage == 'prepare'
-                ? path.join(sfpPackage.sourceDir, 'forceignores', '.prepareignore')
-                : null;
+                installationOptions.pathToReplacementForceIgnore =
+                    installationContext?.currentStage == "prepare"
+                        ? path.join(sfpPackage.sourceDir, "forceignores", ".prepareignore")
+                        : null;
                 let installSourcePackageImpl: InstallSourcePackageImpl = new InstallSourcePackageImpl(
                     sfpPackage,
                     targetOrg,
                     installationOptions,
-                    logger
+                    logger,
                 );
                 installSourcePackageImpl.isArtifactToBeCommittedInOrg = !installationOptions.disableArtifactCommit;
                 return installSourcePackageImpl.exec();
@@ -47,12 +48,12 @@ export default class SfpPackageInstaller {
                     sfpPackage,
                     targetOrg,
                     logger,
-                    installationOptions
+                    installationOptions,
                 );
                 installDataPackageImpl.isArtifactToBeCommittedInOrg = !installationOptions.disableArtifactCommit;
                 return installDataPackageImpl.exec();
             default:
-                throw new Error('Unknown Package Type');
+                throw new Error("Unknown Package Type");
         }
     }
 }

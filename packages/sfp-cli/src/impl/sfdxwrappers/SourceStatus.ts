@@ -1,4 +1,4 @@
-import { SFDXCommand } from '@dxatscale/sfdx-process-wrapper/lib/SFDXCommand';
+import { SFDXCommand } from "@dxatscale/sfdx-process-wrapper/lib/SFDXCommand";
 
 export default class SourceStatus extends SFDXCommand {
     public constructor(private targetOrg: string) {
@@ -6,11 +6,11 @@ export default class SourceStatus extends SFDXCommand {
     }
 
     getSFDXCommand(): string {
-        return 'sfdx force:source:status';
+        return "sfdx force:source:status";
     }
 
     getCommandName(): string {
-        return 'SourceStatus';
+        return "SourceStatus";
     }
 
     getGeneratedParams(): string {

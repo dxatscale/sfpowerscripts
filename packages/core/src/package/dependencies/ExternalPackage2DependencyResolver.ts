@@ -1,8 +1,8 @@
-import { Connection } from '@salesforce/core';
-import PackageDependencyResolver from './PackageDependencyResolver';
-import _ from 'lodash';
-import Package2VersionFetcher from '../version/Package2VersionFetcher';
-import Package2Detail from '../Package2Detail';
+import { Connection } from "@salesforce/core";
+import PackageDependencyResolver from "./PackageDependencyResolver";
+import _ from "lodash";
+import Package2VersionFetcher from "../version/Package2VersionFetcher";
+import Package2Detail from "../Package2Detail";
 
 /**
  * Resolves external package dependency versions to their subscriber version
@@ -14,7 +14,7 @@ export default class ExternalPackage2DependencyResolver {
     public async resolveExternalPackage2DependenciesToVersions(
         packagesToBeResolved?: string[],
         packagesToBeSkipped?: string[],
-        isDependencyValidated?: boolean
+        isDependencyValidated?: boolean,
     ): Promise<Package2Detail[]> {
         if (isDependencyValidated == undefined) isDependencyValidated = true;
         //Do a dependency resolution first only for external dependencies
@@ -24,7 +24,7 @@ export default class ExternalPackage2DependencyResolver {
             this.projectConfig,
             packagesToBeSkipped,
             null,
-            isDependencyValidated
+            isDependencyValidated,
         ).resolvePackageDependencyVersions();
 
         let packageVersions: Package2Detail[] = [];
@@ -37,16 +37,13 @@ export default class ExternalPackage2DependencyResolver {
 
         //Resolve provided version Number to SubscriberVersionId
         for (const sfdxPackage of revisedProjectConfig.packageDirectories) {
-           
-            if(packagesToBeResolved && !packagesToBeResolved.includes(sfdxPackage.package))
-              continue;
+            if (packagesToBeResolved && !packagesToBeResolved.includes(sfdxPackage.package)) continue;
 
             if (sfdxPackage.dependencies && Array.isArray(sfdxPackage.dependencies)) {
                 for (let i = 0; i < sfdxPackage.dependencies.length; i++) {
                     let dependency = sfdxPackage.dependencies[i];
 
-                    if (packagesToBeSkipped && packagesToBeSkipped.includes(dependency.package)) 
-                    {
+                    if (packagesToBeSkipped && packagesToBeSkipped.includes(dependency.package)) {
                         let dependendentPackage: Package2Detail = { name: dependency.package };
                         packageVersions.push(dependendentPackage);
                         continue;
@@ -59,7 +56,7 @@ export default class ExternalPackage2DependencyResolver {
                             let packageVersion = await packageVersionFetcher.fetchByPackage2Id(
                                 revisedProjectConfig.packageAliases[dependendentPackage.name],
                                 dependendentPackage.versionNumber,
-                                true
+                                true,
                             );
                             dependendentPackage.subscriberPackageVersionId =
                                 packageVersion[0].SubscriberPackageVersionId;
@@ -87,10 +84,10 @@ export default class ExternalPackage2DependencyResolver {
         let output: { [p: string]: string } = {};
 
         keys = keys.trim();
-        let listOfKeys = keys.split(' ');
+        let listOfKeys = keys.split(" ");
 
         for (let key of listOfKeys) {
-            let packageKeyPair = key.split(':');
+            let packageKeyPair = key.split(":");
             if (packageKeyPair.length === 2) {
                 output[packageKeyPair[0]] = packageKeyPair[1];
             } else {

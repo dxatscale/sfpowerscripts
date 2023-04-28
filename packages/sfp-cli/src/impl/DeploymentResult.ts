@@ -1,4 +1,4 @@
-import SfpPackage from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
+import SfpPackage from "@dxatscale/sfpowerscripts.core/lib/package/SfpPackage";
 
 export interface DeploymentResult {
     scheduled: number;

@@ -1,7 +1,7 @@
-import { Org } from '@salesforce/core';
-import { PoolBaseImpl } from './PoolBaseImpl';
-import ScratchOrg from '../ScratchOrg';
-import ScratchOrgInfoFetcher from './services/fetchers/ScratchOrgInfoFetcher';
+import { Org } from "@salesforce/core";
+import { PoolBaseImpl } from "./PoolBaseImpl";
+import ScratchOrg from "../ScratchOrg";
+import ScratchOrgInfoFetcher from "./services/fetchers/ScratchOrgInfoFetcher";
 
 export default class PoolListImpl extends PoolBaseImpl {
     private tag: string;
@@ -18,7 +18,7 @@ export default class PoolListImpl extends PoolBaseImpl {
         const results = (await new ScratchOrgInfoFetcher(this.hubOrg).getScratchOrgsByTag(
             this.tag,
             null,
-            !this.allScratchOrgs
+            !this.allScratchOrgs,
         )) as any;
 
         let scratchOrgList: ScratchOrg[] = new Array<ScratchOrg>();
@@ -31,12 +31,12 @@ export default class PoolListImpl extends PoolBaseImpl {
                 soDetail.username = element.SignupUsername;
                 soDetail.password = element.Password__c;
                 soDetail.expiryDate = element.ExpirationDate;
-                if (element.Allocation_status__c === 'Assigned') {
-                    soDetail.status = 'In use';
-                } else if (element.Allocation_status__c === 'Available') {
-                    soDetail.status = 'Available';
+                if (element.Allocation_status__c === "Assigned") {
+                    soDetail.status = "In use";
+                } else if (element.Allocation_status__c === "Available") {
+                    soDetail.status = "Available";
                 } else {
-                    soDetail.status = 'Provisioning in progress';
+                    soDetail.status = "Provisioning in progress";
                 }
 
                 scratchOrgList.push(soDetail);

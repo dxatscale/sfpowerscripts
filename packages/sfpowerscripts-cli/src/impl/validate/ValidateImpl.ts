@@ -1,66 +1,66 @@
-import BuildImpl, { BuildProps } from '../parallelBuilder/BuildImpl';
-import DeployImpl, { DeploymentMode, DeployProps, DeploymentResult } from '../deploy/DeployImpl';
-import ArtifactGenerator from '@dxatscale/sfpowerscripts.core/lib/artifacts/generators/ArtifactGenerator';
-import { Stage } from '../Stage';
-import SFPLogger, { COLOR_KEY_VALUE, COLOR_TRACE, ConsoleLogger, Logger, LoggerLevel } from '@dxatscale/sfp-logger';
+import BuildImpl, { BuildProps } from "../parallelBuilder/BuildImpl";
+import DeployImpl, { DeploymentMode, DeployProps, DeploymentResult } from "../deploy/DeployImpl";
+import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/artifacts/generators/ArtifactGenerator";
+import { Stage } from "../Stage";
+import SFPLogger, { COLOR_KEY_VALUE, COLOR_TRACE, ConsoleLogger, Logger, LoggerLevel } from "@dxatscale/sfp-logger";
 import {
     PackageInstallationResult,
     PackageInstallationStatus,
-} from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/PackageInstallationResult';
-import { PackageDiffOptions } from '@dxatscale/sfpowerscripts.core/lib/package/diff/PackageDiffImpl';
-import PoolFetchImpl from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolFetchImpl';
-import { Org } from '@salesforce/core';
-import InstalledArtifactsDisplayer from '@dxatscale/sfpowerscripts.core/lib/display/InstalledArtifactsDisplayer';
-import ValidateError from '../../errors/ValidateError';
-import ChangedComponentsFetcher from '@dxatscale/sfpowerscripts.core/lib/dependency/ChangedComponentsFetcher';
-import DependencyAnalysis from '@dxatscale/sfpowerscripts.core/lib/dependency/DependencyAnalysis';
-import DependencyViolationDisplayer from '@dxatscale/sfpowerscripts.core/lib/display/DependencyViolationDisplayer';
-import ImpactAnalysis from './ImpactAnalysis';
-import ScratchOrg from '@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg';
-import { COLOR_KEY_MESSAGE } from '@dxatscale/sfp-logger';
-import { COLOR_WARNING } from '@dxatscale/sfp-logger';
-import { COLOR_ERROR } from '@dxatscale/sfp-logger';
-import { COLOR_HEADER } from '@dxatscale/sfp-logger';
-import { COLOR_SUCCESS } from '@dxatscale/sfp-logger';
-import { COLOR_TIME } from '@dxatscale/sfp-logger';
-import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender';
-import ScratchOrgInfoFetcher from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/services/fetchers/ScratchOrgInfoFetcher';
-import ScratchOrgInfoAssigner from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/services/updaters/ScratchOrgInfoAssigner';
-import Component from '@dxatscale/sfpowerscripts.core/lib/dependency/Component';
-import ValidateResult from './ValidateResult';
-import PoolOrgDeleteImpl from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolOrgDeleteImpl';
-import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
-import SfpPackage, { PackageType } from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
-import { TestOptions } from '@dxatscale/sfpowerscripts.core/lib/apextest/TestOptions';
+} from "@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/PackageInstallationResult";
+import { PackageDiffOptions } from "@dxatscale/sfpowerscripts.core/lib/package/diff/PackageDiffImpl";
+import PoolFetchImpl from "@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolFetchImpl";
+import { Org } from "@salesforce/core";
+import InstalledArtifactsDisplayer from "@dxatscale/sfpowerscripts.core/lib/display/InstalledArtifactsDisplayer";
+import ValidateError from "../../errors/ValidateError";
+import ChangedComponentsFetcher from "@dxatscale/sfpowerscripts.core/lib/dependency/ChangedComponentsFetcher";
+import DependencyAnalysis from "@dxatscale/sfpowerscripts.core/lib/dependency/DependencyAnalysis";
+import DependencyViolationDisplayer from "@dxatscale/sfpowerscripts.core/lib/display/DependencyViolationDisplayer";
+import ImpactAnalysis from "./ImpactAnalysis";
+import ScratchOrg from "@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg";
+import { COLOR_KEY_MESSAGE } from "@dxatscale/sfp-logger";
+import { COLOR_WARNING } from "@dxatscale/sfp-logger";
+import { COLOR_ERROR } from "@dxatscale/sfp-logger";
+import { COLOR_HEADER } from "@dxatscale/sfp-logger";
+import { COLOR_SUCCESS } from "@dxatscale/sfp-logger";
+import { COLOR_TIME } from "@dxatscale/sfp-logger";
+import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender";
+import ScratchOrgInfoFetcher from "@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/services/fetchers/ScratchOrgInfoFetcher";
+import ScratchOrgInfoAssigner from "@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/services/updaters/ScratchOrgInfoAssigner";
+import Component from "@dxatscale/sfpowerscripts.core/lib/dependency/Component";
+import ValidateResult from "./ValidateResult";
+import PoolOrgDeleteImpl from "@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolOrgDeleteImpl";
+import SFPOrg from "@dxatscale/sfpowerscripts.core/lib/org/SFPOrg";
+import SfpPackage, { PackageType } from "@dxatscale/sfpowerscripts.core/lib/package/SfpPackage";
+import { TestOptions } from "@dxatscale/sfpowerscripts.core/lib/apextest/TestOptions";
 import {
     RunAllTestsInPackageOptions,
     RunSpecifiedTestsOption,
-} from '@dxatscale/sfpowerscripts.core/lib/apextest/TestOptions';
-import { CoverageOptions } from '@dxatscale/sfpowerscripts.core/lib/apex/coverage/IndividualClassCoverage';
-import TriggerApexTests from '@dxatscale/sfpowerscripts.core/lib/apextest/TriggerApexTests';
-import getFormattedTime from '@dxatscale/sfpowerscripts.core/lib/utils/GetFormattedTime';
-import { PostDeployHook } from '../deploy/PostDeployHook';
-import * as rimraf from 'rimraf';
-import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig';
-import InstallUnlockedPackageCollection from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/InstallUnlockedPackageCollection';
-import ExternalPackage2DependencyResolver from '@dxatscale/sfpowerscripts.core/lib/package/dependencies/ExternalPackage2DependencyResolver';
-import ExternalDependencyDisplayer from '@dxatscale/sfpowerscripts.core/lib/display/ExternalDependencyDisplayer';
-import { PreDeployHook } from '../deploy/PreDeployHook';
-import GroupConsoleLogs from '../../ui/GroupConsoleLogs';
-import { COLON_MIDDLE_BORDER_TABLE } from '../../ui/TableConstants';
-import ReleaseConfig from '../release/ReleaseConfig';
-const Table = require('cli-table');
+} from "@dxatscale/sfpowerscripts.core/lib/apextest/TestOptions";
+import { CoverageOptions } from "@dxatscale/sfpowerscripts.core/lib/apex/coverage/IndividualClassCoverage";
+import TriggerApexTests from "@dxatscale/sfpowerscripts.core/lib/apextest/TriggerApexTests";
+import getFormattedTime from "@dxatscale/sfpowerscripts.core/lib/utils/GetFormattedTime";
+import { PostDeployHook } from "../deploy/PostDeployHook";
+import * as rimraf from "rimraf";
+import ProjectConfig from "@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig";
+import InstallUnlockedPackageCollection from "@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/InstallUnlockedPackageCollection";
+import ExternalPackage2DependencyResolver from "@dxatscale/sfpowerscripts.core/lib/package/dependencies/ExternalPackage2DependencyResolver";
+import ExternalDependencyDisplayer from "@dxatscale/sfpowerscripts.core/lib/display/ExternalDependencyDisplayer";
+import { PreDeployHook } from "../deploy/PreDeployHook";
+import GroupConsoleLogs from "../../ui/GroupConsoleLogs";
+import { COLON_MIDDLE_BORDER_TABLE } from "../../ui/TableConstants";
+import ReleaseConfig from "../release/ReleaseConfig";
+const Table = require("cli-table");
 
 export enum ValidateAgainst {
     PROVIDED_ORG,
     PRECREATED_POOL,
 }
 export enum ValidationMode {
-    INDIVIDUAL = 'individual',
-    FAST_FEEDBACK = 'fastfeedback',
-    THOROUGH = 'thorough',
-    FASTFEEDBACK_LIMITED_BY_RELEASE_CONFIG = 'ff-release-config',
-    THOROUGH_LIMITED_BY_RELEASE_CONFIG = 'thorough-release-config',
+    INDIVIDUAL = "individual",
+    FAST_FEEDBACK = "fastfeedback",
+    THOROUGH = "thorough",
+    FASTFEEDBACK_LIMITED_BY_RELEASE_CONFIG = "ff-release-config",
+    THOROUGH_LIMITED_BY_RELEASE_CONFIG = "thorough-release-config",
 }
 
 export interface ValidateProps {
@@ -93,7 +93,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
     constructor(private props: ValidateProps) {}
 
     public async exec(): Promise<ValidateResult> {
-        rimraf.sync('artifacts');
+        rimraf.sync("artifacts");
 
         let deploymentResult: DeploymentResult;
         let scratchOrgUsername: string;
@@ -122,7 +122,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
             deploymentResult = await this.deploySourcePackages(scratchOrgUsername);
 
             if (deploymentResult.failed.length > 0 || deploymentResult.error)
-                throw new ValidateError('Validation failed', { deploymentResult });
+                throw new ValidateError("Validation failed", { deploymentResult });
             else {
                 //Do dependency analysis
                 await this.dependencyAnalysis(this.orgAsSFPOrg, deploymentResult);
@@ -135,7 +135,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
             if (error.message?.includes(`No changes detected in the packages to be built`)) {
                 SFPLogger.log(
                     `WARNING: No changes detected in any of the packages, Validation is treated as a success`,
-                    LoggerLevel.WARN
+                    LoggerLevel.WARN,
                 );
                 return;
             } else if (error instanceof ValidateError) SFPLogger.log(`Error: ${error}`, LoggerLevel.DEBUG);
@@ -149,8 +149,8 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
     private async fetchCommitsOfPackagesInstalledInOrg() {
         let installedArtifacts = await this.orgAsSFPOrg.getInstalledArtifacts();
         if (installedArtifacts.length == 0) {
-            SFPLogger.log(COLOR_ERROR('Failed to query org for Sfpowerscripts Artifacts'));
-            SFPLogger.log(COLOR_KEY_MESSAGE('Building all packages'));
+            SFPLogger.log(COLOR_ERROR("Failed to query org for Sfpowerscripts Artifacts"));
+            SFPLogger.log(COLOR_KEY_MESSAGE("Building all packages"));
         }
 
         //Read artifacts installed in the org
@@ -179,7 +179,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
 
         function printArtifactVersions(orgAsSFPOrg: SFPOrg, installedArtifacts: any) {
             let groupSection = new GroupConsoleLogs(
-                `Artifacts installed in the Org ${orgAsSFPOrg.getUsername()}`
+                `Artifacts installed in the Org ${orgAsSFPOrg.getUsername()}`,
             ).begin();
 
             InstalledArtifactsDisplayer.printInstalledArtifacts(installedArtifacts, null);
@@ -193,10 +193,10 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
             let groupSection = new GroupConsoleLogs(`Validate Dependency tree`).begin();
             SFPLogger.log(
                 COLOR_HEADER(
-                    `-------------------------------------------------------------------------------------------`
-                )
+                    `-------------------------------------------------------------------------------------------`,
+                ),
             );
-            SFPLogger.log(COLOR_KEY_MESSAGE('Validating dependency  tree of changed components..'), LoggerLevel.INFO);
+            SFPLogger.log(COLOR_KEY_MESSAGE("Validating dependency  tree of changed components.."), LoggerLevel.INFO);
             const changedComponents = await this.getChangedComponents();
             const dependencyAnalysis = new DependencyAnalysis(orgAsSFPOrg, changedComponents);
 
@@ -209,13 +209,13 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
                 // deploymentResult.error = `Dependency analysis failed due to ${JSON.stringify(dependencyViolations)}`;
                 // throw new ValidateError(`Dependency Analysis Failed`, { deploymentResult });
             } else {
-                SFPLogger.log(COLOR_SUCCESS('No Dependency violations found so far'), LoggerLevel.INFO);
+                SFPLogger.log(COLOR_SUCCESS("No Dependency violations found so far"), LoggerLevel.INFO);
             }
 
             SFPLogger.log(
                 COLOR_HEADER(
-                    `-------------------------------------------------------------------------------------------`
-                )
+                    `-------------------------------------------------------------------------------------------`,
+                ),
             );
             groupSection.end();
             return dependencyViolations;
@@ -230,7 +230,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
                 await impactAnalysis.exec();
             } catch (err) {
                 SFPLogger.log(err.message);
-                SFPLogger.log('Failed to perform impact analysis');
+                SFPLogger.log("Failed to perform impact analysis");
             }
         }
     }
@@ -248,7 +248,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
         sfdxProjectConfig: any,
         scratchOrgAsSFPOrg: SFPOrg,
         sfpPackage: SfpPackage,
-        deployedPackages?: SfpPackage[]
+        deployedPackages?: SfpPackage[],
     ) {
         let deployedPackagesAsStringArray: Array<string> = [];
         for (const deployedPackage of deployedPackages) {
@@ -259,17 +259,17 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
         let externalPackageResolver = new ExternalPackage2DependencyResolver(
             this.props.hubOrg.getConnection(),
             sfdxProjectConfig,
-            this.props.keys
+            this.props.keys,
         );
         let externalPackage2s = await externalPackageResolver.resolveExternalPackage2DependenciesToVersions(
             [sfpPackage.packageName],
-            deployedPackagesAsStringArray
+            deployedPackagesAsStringArray,
         );
 
         SFPLogger.log(
             `Installing package dependencies of this ${sfpPackage.packageName} in ${scratchOrgAsSFPOrg.getUsername()}`,
             LoggerLevel.INFO,
-            new ConsoleLogger()
+            new ConsoleLogger(),
         );
         //Display resolved dependenencies
         let externalDependencyDisplayer = new ExternalDependencyDisplayer(externalPackage2s, new ConsoleLogger());
@@ -282,15 +282,15 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
             COLOR_KEY_MESSAGE(
                 `Successfully completed external dependencies of this ${
                     sfpPackage.packageName
-                } in ${scratchOrgAsSFPOrg.getUsername()}`
-            )
+                } in ${scratchOrgAsSFPOrg.getUsername()}`,
+            ),
         );
     }
 
     private async handleScratchOrgStatus(
         scratchOrgUsername: string,
         deploymentResult: DeploymentResult,
-        isToDelete: boolean
+        isToDelete: boolean,
     ) {
         //No scratch org available.. just return
         if (scratchOrgUsername == undefined) return;
@@ -301,20 +301,20 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
                 SFPLogger.log(`Attempting to return scratch org ${scratchOrgUsername} back to pool`, LoggerLevel.INFO);
                 const scratchOrgInfoAssigner = new ScratchOrgInfoAssigner(this.props.hubOrg);
                 try {
-                    const result = await scratchOrgInfoAssigner.setScratchOrgStatus(scratchOrgUsername, 'Return');
+                    const result = await scratchOrgInfoAssigner.setScratchOrgStatus(scratchOrgUsername, "Return");
                     if (result)
                         SFPLogger.log(`Succesfully returned ${scratchOrgUsername} back to pool`, LoggerLevel.INFO);
                     else
                         SFPLogger.log(
                             COLOR_WARNING(
-                                `Unable to return scratch org to pool, Please check permissions or update sfpower-pool-package to latest`
-                            )
+                                `Unable to return scratch org to pool, Please check permissions or update sfpower-pool-package to latest`,
+                            ),
                         );
                 } catch (error) {
                     SFPLogger.log(
                         COLOR_WARNING(
-                            `Unable to return scratch org to pool, Please check permissions or update sfpower-pool-package to latest`
-                        )
+                            `Unable to return scratch org to pool, Please check permissions or update sfpower-pool-package to latest`,
+                        ),
                     );
                 }
             } else {
@@ -339,7 +339,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
 
         const deployProps: DeployProps = {
             targetUsername: scratchOrgUsername,
-            artifactDir: 'artifacts',
+            artifactDir: "artifacts",
             waitTime: 120,
             deploymentMode:
                 this.props.disableSourcePackageOverride == true ? DeploymentMode.NORMAL : DeploymentMode.SOURCEPACKAGES,
@@ -369,30 +369,30 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
 
             SFPLogger.log(
                 COLOR_HEADER(
-                    `----------------------------------------------------------------------------------------------------`
-                )
+                    `----------------------------------------------------------------------------------------------------`,
+                ),
             );
             SFPLogger.log(
                 COLOR_SUCCESS(
                     `${deploymentResult.deployed.length} packages deployed in ${COLOR_TIME(
-                        getFormattedTime(totalElapsedTime)
-                    )} with {${COLOR_ERROR(deploymentResult.failed.length)}} failed deployments`
-                )
+                        getFormattedTime(totalElapsedTime),
+                    )} with {${COLOR_ERROR(deploymentResult.failed.length)}} failed deployments`,
+                ),
             );
 
             if (deploymentResult.failed.length > 0) {
                 SFPLogger.log(
                     COLOR_ERROR(
                         `\nPackages Failed to Deploy`,
-                        deploymentResult.failed.map((packageInfo) => packageInfo.sfpPackage.packageName)
-                    )
+                        deploymentResult.failed.map((packageInfo) => packageInfo.sfpPackage.packageName),
+                    ),
                 );
             }
 
             SFPLogger.log(
                 COLOR_HEADER(
-                    `----------------------------------------------------------------------------------------------------`
-                )
+                    `----------------------------------------------------------------------------------------------------`,
+                ),
             );
             groupSection.end();
         }
@@ -401,7 +401,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
     private async buildChangedSourcePackages(packagesInstalledInOrgMappedToCommits: {
         [p: string]: string;
     }): Promise<SfpPackage[]> {
-        let groupSection = new GroupConsoleLogs('Building Packages').begin();
+        let groupSection = new GroupConsoleLogs("Building Packages").begin();
 
         const buildStartTime: number = Date.now();
 
@@ -422,7 +422,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
         buildProps.diffOptions = diffOptions;
 
         //Compute packages to be included
-        buildProps.includeOnlyPackages =  fetchPackagesAsPerReleaseConfig(this.logger,this.props);
+        buildProps.includeOnlyPackages = fetchPackagesAsPerReleaseConfig(this.logger, this.props);
         if (buildProps.includeOnlyPackages) {
             printIncludeOnlyPackages(buildProps.includeOnlyPackages);
         }
@@ -434,13 +434,13 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
 
         if (generatedPackages.length === 0) {
             throw new Error(
-                `No changes detected in the packages to be built\nvalidate will only execute if there is a change in atleast one of the packages`
+                `No changes detected in the packages to be built\nvalidate will only execute if there is a change in atleast one of the packages`,
             );
         }
 
         for (const generatedPackage of generatedPackages) {
             try {
-                await ArtifactGenerator.generateArtifact(generatedPackage, process.cwd(), 'artifacts');
+                await ArtifactGenerator.generateArtifact(generatedPackage, process.cwd(), "artifacts");
             } catch (error) {
                 SFPLogger.log(COLOR_ERROR(`Unable to create artifact for ${generatedPackage.packageName}`));
                 throw error;
@@ -454,13 +454,12 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
 
         return generatedPackages;
 
-        function fetchPackagesAsPerReleaseConfig(logger:Logger,props: ValidateProps) {
+        function fetchPackagesAsPerReleaseConfig(logger: Logger, props: ValidateProps) {
             if (
                 props.validationMode == ValidationMode.FASTFEEDBACK_LIMITED_BY_RELEASE_CONFIG ||
                 props.validationMode == ValidationMode.THOROUGH_LIMITED_BY_RELEASE_CONFIG
             ) {
-               
-                let releaseConfig:ReleaseConfig = new ReleaseConfig(logger, props.releaseConfigPath);
+                let releaseConfig: ReleaseConfig = new ReleaseConfig(logger, props.releaseConfigPath);
                 return releaseConfig.getPackagesAsPerReleaseConfig();
             }
         }
@@ -497,19 +496,19 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
         function printBuildSummary(
             generatedPackages: SfpPackage[],
             failedPackages: string[],
-            totalElapsedTime: number
+            totalElapsedTime: number,
         ): void {
             SFPLogger.log(
                 COLOR_HEADER(
-                    `----------------------------------------------------------------------------------------------------`
-                )
+                    `----------------------------------------------------------------------------------------------------`,
+                ),
             );
             SFPLogger.log(
                 COLOR_SUCCESS(
                     `${generatedPackages.length} packages created in ${COLOR_TIME(
-                        getFormattedTime(totalElapsedTime)
-                    )} with {${COLOR_ERROR(failedPackages.length)}} errors`
-                )
+                        getFormattedTime(totalElapsedTime),
+                    )} with {${COLOR_ERROR(failedPackages.length)}} errors`,
+                ),
             );
 
             if (failedPackages.length > 0) {
@@ -517,15 +516,15 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
             }
             SFPLogger.log(
                 COLOR_HEADER(
-                    `----------------------------------------------------------------------------------------------------`
-                )
+                    `----------------------------------------------------------------------------------------------------`,
+                ),
             );
         }
 
         function printIncludeOnlyPackages(includeOnlyPackages: string[]) {
             SFPLogger.log(
                 COLOR_KEY_MESSAGE(`Build will include the below packages as per inclusive filter`),
-                LoggerLevel.INFO
+                LoggerLevel.INFO,
             );
             SFPLogger.log(COLOR_KEY_VALUE(`${includeOnlyPackages.toString()}`), LoggerLevel.INFO);
         }
@@ -542,12 +541,12 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
             } catch (error) {
                 SFPLogger.log(error.message, LoggerLevel.TRACE);
             }
-            if (scratchOrg && scratchOrg.status === 'Assigned') {
+            if (scratchOrg && scratchOrg.status === "Assigned") {
                 scratchOrgUsername = scratchOrg.username;
                 SFPLogger.log(
                     COLOR_KEY_MESSAGE(`Fetched scratch org ${scratchOrgUsername} from ${COLOR_KEY_VALUE(pool)}`),
                     LoggerLevel.INFO,
-                    this.logger
+                    this.logger,
                 );
 
                 if (displayOrgInfo) printOrgInfo(scratchOrg);
@@ -560,7 +559,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
         if (scratchOrgUsername) return scratchOrgUsername;
         else
             throw new Error(
-                `Failed to fetch scratch org from ${pools}, Are you sure you created this pool using a DevHub authenticated using auth:sfdxurl or auth:web or auth:accesstoken:store`
+                `Failed to fetch scratch org from ${pools}, Are you sure you created this pool using a DevHub authenticated using auth:sfdxurl or auth:web or auth:accesstoken:store`,
             );
 
         function printOrgInfo(scratchOrg: ScratchOrg): void {
@@ -568,13 +567,13 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
 
             SFPLogger.log(
                 COLOR_HEADER(
-                    `----------------------------------------------------------------------------------------------`
-                )
+                    `----------------------------------------------------------------------------------------------`,
+                ),
             );
             SFPLogger.log(COLOR_KEY_VALUE(`-- Org Details:--`));
             const table = new Table({
                 chars: COLON_MIDDLE_BORDER_TABLE,
-                style: { 'padding-left': 2 },
+                style: { "padding-left": 2 },
             });
             table.push([COLOR_HEADER(`Org Id`), COLOR_KEY_MESSAGE(scratchOrg.orgId)]);
             table.push([COLOR_HEADER(`Instance URL`), COLOR_KEY_MESSAGE(scratchOrg.instanceURL)]);
@@ -586,7 +585,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
 
             SFPLogger.log(
                 COLOR_TRACE(`You may use the following commands to authenticate to the org`),
-                LoggerLevel.INFO
+                LoggerLevel.INFO,
             );
             SFPLogger.log(COLOR_TRACE(`cat ${scratchOrg.sfdxAuthUrl} > ./authfile`), LoggerLevel.INFO);
             SFPLogger.log(COLOR_TRACE(`sfdx auth sfdxurl store  --sfdxurlfile authfile`), LoggerLevel.INFO);
@@ -594,8 +593,8 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
 
             SFPLogger.log(
                 COLOR_HEADER(
-                    `----------------------------------------------------------------------------------------------`
-                )
+                    `----------------------------------------------------------------------------------------------`,
+                ),
             );
 
             groupSection.end();
@@ -606,9 +605,9 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
         try {
             const results = await new ScratchOrgInfoFetcher(this.props.hubOrg).getScratchOrgsByTag(tag, false, true);
 
-            const availableSo = results.records.filter((soInfo) => soInfo.Allocation_status__c === 'Available');
+            const availableSo = results.records.filter((soInfo) => soInfo.Allocation_status__c === "Available");
 
-            SFPStatsSender.logGauge('pool.available', availableSo.length, {
+            SFPStatsSender.logGauge("pool.available", availableSo.length, {
                 poolName: tag,
             });
         } catch (error) {
@@ -620,7 +619,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
         sfpPackage: SfpPackage,
         targetUsername: string,
         deployedPackages?: SfpPackage[],
-        devhubUserName?: string
+        devhubUserName?: string,
     ): Promise<{ isToFailDeployment: boolean; message?: string }> {
         //Its a scratch org fetched from pool.. install dependencies
         //Assume hubOrg will be available, no need to check
@@ -634,14 +633,14 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
                         ProjectConfig.getSFDXProjectConfig(null),
                         this.orgAsSFPOrg,
                         sfpPackage,
-                        deployedPackages
+                        deployedPackages,
                     );
                 } else if (this.props.validationMode == ValidationMode.INDIVIDUAL) {
                     await this.installPackageDependencies(
                         ProjectConfig.cleanupMPDFromProjectDirectory(null, sfpPackage.package_name),
                         this.orgAsSFPOrg,
                         sfpPackage,
-                        deployedPackages
+                        deployedPackages,
                     );
                 }
                 break;
@@ -652,14 +651,14 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
                             ProjectConfig.cleanupMPDFromProjectDirectory(null, sfpPackage.package_name),
                             this.orgAsSFPOrg,
                             sfpPackage,
-                            deployedPackages
+                            deployedPackages,
                         );
                     else
                         SFPLogger.log(
                             `${COLOR_WARNING(
-                                `DevHub was not provided, will skip installing /updating external dependencies of this package`
+                                `DevHub was not provided, will skip installing /updating external dependencies of this package`,
                             )}`,
-                            LoggerLevel.INFO
+                            LoggerLevel.INFO,
                         );
                 }
         }
@@ -672,7 +671,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
         packageInstallationResult: PackageInstallationResult,
         targetUsername: string,
         deployedPackages?: SfpPackage[],
-        devhubUserName?: string
+        devhubUserName?: string,
     ): Promise<{ isToFailDeployment: boolean; message?: string }> {
         //Trigger Tests after installation of each package
         if (sfpPackage.packageType && sfpPackage.packageType != PackageType.Data) {
@@ -689,18 +688,18 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
         sfpPackage: SfpPackage,
         targetUsername: string,
         props: ValidateProps,
-        logger: Logger
+        logger: Logger,
     ): Promise<{
         id: string;
         result: boolean;
         message: string;
     }> {
-        if (sfpPackage.packageDescriptor.skipTesting) return { id: null, result: true, message: 'No Tests To Run' };
+        if (sfpPackage.packageDescriptor.skipTesting) return { id: null, result: true, message: "No Tests To Run" };
 
-        if (!sfpPackage.isApexFound) return { id: null, result: true, message: 'No Tests To Run' };
+        if (!sfpPackage.isApexFound) return { id: null, result: true, message: "No Tests To Run" };
 
         if (sfpPackage.packageDescriptor.isOptimizedDeployment == false)
-            return { id: null, result: true, message: 'Tests would have already run' };
+            return { id: null, result: true, message: "Tests would have already run" };
 
         let testOptions: TestOptions, testCoverageOptions: CoverageOptions;
 
@@ -713,12 +712,11 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
             ({ testOptions, testCoverageOptions } = getTestOptionsForFullPackageTest(sfpPackage, props));
         }
         if (testOptions == undefined) {
-            return { id: null, result: true, message: 'No Tests To Run' };
+            return { id: null, result: true, message: "No Tests To Run" };
         }
 
         //override any behaviour if the override is from the deploy props
-        if(this.props.disableParallelTestExecution)
-            testOptions.synchronous = true;
+        if (this.props.disableParallelTestExecution) testOptions.synchronous = true;
 
         displayTestHeader(sfpPackage);
 
@@ -727,16 +725,16 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
             testOptions,
             testCoverageOptions,
             null,
-            logger
+            logger,
         );
 
         return triggerApexTests.exec();
 
         function getTestOptionsForFullPackageTest(
             sfpPackage: SfpPackage,
-            props: ValidateProps
+            props: ValidateProps,
         ): { testOptions: TestOptions; testCoverageOptions: CoverageOptions } {
-            const testOptions = new RunAllTestsInPackageOptions(sfpPackage, 60, '.testresults');
+            const testOptions = new RunAllTestsInPackageOptions(sfpPackage, 60, ".testresults");
             const testCoverageOptions = {
                 isIndividualClassCoverageToBeValidated: false,
                 isPackageCoverageToBeValidated: !sfpPackage.packageDescriptor.skipCoverageValidation,
@@ -747,7 +745,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
 
         function getTestOptionsForFastFeedBackPackage(
             sfpPackage: SfpPackage,
-            props: ValidateProps
+            props: ValidateProps,
         ): { testOptions: TestOptions; testCoverageOptions: CoverageOptions } {
             //Change in security model trigger full
 
@@ -757,7 +755,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
                     sfpPackage.diffPackageMetadata.isPermissionSetFound ||
                     sfpPackage.diffPackageMetadata.isPermissionSetGroupFound
                 ) {
-                    SFPLogger.log(`${COLOR_HEADER('Change in security model, all test classses will be triggered')}`);
+                    SFPLogger.log(`${COLOR_HEADER("Change in security model, all test classses will be triggered")}`);
                     return getTestOptionsForFullPackageTest(sfpPackage, props);
                 }
 
@@ -767,21 +765,21 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
                 if (!impactedTestClasses || impactedTestClasses.length == 0) {
                     SFPLogger.log(
                         `${COLOR_HEADER(
-                            'Unable to find any impacted test classses,skipping tests, You might need to use thorough option'
-                        )}`
+                            "Unable to find any impacted test classses,skipping tests, You might need to use thorough option",
+                        )}`,
                     );
                     return { testOptions: undefined, testCoverageOptions: undefined };
                 }
 
                 SFPLogger.log(
-                    `${COLOR_HEADER('Fast Feedback Mode activated, Only impacted test class will be triggered')}`
+                    `${COLOR_HEADER("Fast Feedback Mode activated, Only impacted test class will be triggered")}`,
                 );
 
                 const testOptions = new RunSpecifiedTestsOption(
                     60,
-                    '.testResults',
+                    ".testResults",
                     impactedTestClasses.join(),
-                    sfpPackage.packageDescriptor.testSynchronous
+                    sfpPackage.packageDescriptor.testSynchronous,
                 );
                 const testCoverageOptions = {
                     isIndividualClassCoverageToBeValidated: false,
@@ -792,10 +790,10 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
             } else {
                 SFPLogger.log(
                     `${COLOR_HEADER(
-                        'Selective components were not found to compute invalidated test class, skipping tests'
-                    )}`
+                        "Selective components were not found to compute invalidated test class, skipping tests",
+                    )}`,
                 );
-                SFPLogger.log(`${COLOR_HEADER('Please use thorough mode on this package, if its new')}`);
+                SFPLogger.log(`${COLOR_HEADER("Please use thorough mode on this package, if its new")}`);
                 return { testOptions: undefined, testCoverageOptions: undefined };
             }
         }
@@ -803,14 +801,14 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
         function displayTestHeader(sfpPackage: SfpPackage) {
             SFPLogger.log(
                 COLOR_HEADER(
-                    `-------------------------------------------------------------------------------------------`
-                )
+                    `-------------------------------------------------------------------------------------------`,
+                ),
             );
             SFPLogger.log(`Triggering Apex tests for ${sfpPackage.packageName}`, LoggerLevel.INFO);
             SFPLogger.log(
                 COLOR_HEADER(
-                    `-------------------------------------------------------------------------------------------`
-                )
+                    `-------------------------------------------------------------------------------------------`,
+                ),
             );
         }
     }

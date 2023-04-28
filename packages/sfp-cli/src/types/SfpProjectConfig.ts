@@ -1,4 +1,4 @@
-import { WorkItem } from './WorkItem';
+import { WorkItem } from "./WorkItem";
 
 export class SfpProjectConfig {
     name?: string;
@@ -11,7 +11,7 @@ export class SfpProjectConfig {
     public getWorkItemGivenBranch(branch: string): WorkItem {
         if (this.workItems) {
             for (const id of Object.keys(this.workItems)) {
-                if (this.workItems[id]['branch']?.toLowerCase() === branch.toLowerCase()) return this.workItems[id];
+                if (this.workItems[id]["branch"]?.toLowerCase() === branch.toLowerCase()) return this.workItems[id];
             }
         } else return undefined;
     }
@@ -22,7 +22,7 @@ export class SfpProjectConfig {
      * @returns
      */
     static toInstance(jsonObj: any): SfpProjectConfig {
-        if (typeof jsonObj !== 'object') throw new Error('toInstance takes an object as an input');
+        if (typeof jsonObj !== "object") throw new Error("toInstance takes an object as an input");
 
         const sfpProjectConfig = new SfpProjectConfig();
         for (var propName in jsonObj) {

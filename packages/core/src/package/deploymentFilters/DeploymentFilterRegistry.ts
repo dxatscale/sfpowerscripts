@@ -1,8 +1,5 @@
-import { DeploymentFilter  } from './DeploymentFilter';
-import EntitlementVersionFilter from './EntitlementVersionFilter';
-
-
-
+import { DeploymentFilter } from "./DeploymentFilter";
+import EntitlementVersionFilter from "./EntitlementVersionFilter";
 
 export class DeploymentFilterRegistry {
     static getImplementations(): DeploymentFilter[] {
@@ -11,8 +8,7 @@ export class DeploymentFilterRegistry {
         //TODO: Make dynamic
         let entitlementVersionFilter = new EntitlementVersionFilter();
         deploymentFilterImpls.push(entitlementVersionFilter);
-        
-        
+
         return deploymentFilterImpls;
     }
 }

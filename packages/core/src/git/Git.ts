@@ -1,8 +1,8 @@
-import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
-import simplegit, { SimpleGit } from 'simple-git';
-import fs = require('fs-extra');
-import GitIdentity from './GitIdentity';
-const tmp = require('tmp');
+import SFPLogger, { Logger, LoggerLevel } from "@dxatscale/sfp-logger";
+import simplegit, { SimpleGit } from "simple-git";
+import fs = require("fs-extra");
+import GitIdentity from "./GitIdentity";
+const tmp = require("tmp");
 
 //Git Abstraction
 export default class Git {
@@ -22,11 +22,11 @@ export default class Git {
     }
 
     async fetch() {
-        return this._git.fetch('origin');
+        return this._git.fetch("origin");
     }
 
     async getHeadCommit(): Promise<string> {
-        return this._git.revparse(['HEAD']);
+        return this._git.revparse(["HEAD"]);
     }
 
     async show(options: string[]): Promise<string> {
@@ -36,7 +36,7 @@ export default class Git {
     async tag(options: string[]): Promise<string[]> {
         let tagResult = await this._git.tag(options);
 
-        let temp: string[] = tagResult.split('\n');
+        let temp: string[] = tagResult.split("\n");
         temp.pop();
 
         return temp;
@@ -45,7 +45,7 @@ export default class Git {
     async diff(options: string[]): Promise<string[]> {
         let diffResult = await this._git.diff(options);
 
-        let temp: string[] = diffResult.split('\n');
+        let temp: string[] = diffResult.split("\n");
         temp.pop();
 
         return temp;
@@ -54,20 +54,20 @@ export default class Git {
     async log(options: string[]): Promise<string[]> {
         let gitLogResult = await this._git.log(options);
 
-        return gitLogResult['all'][0]['hash'].split('\n');
+        return gitLogResult["all"][0]["hash"].split("\n");
     }
 
     public async getRemoteOriginUrl(overrideOriginURL?: string): Promise<string> {
         let remoteOriginURL;
         if (!overrideOriginURL) {
-            remoteOriginURL = (await this._git.getConfig('remote.origin.url')).value;
+            remoteOriginURL = (await this._git.getConfig("remote.origin.url")).value;
             if (!remoteOriginURL) {
-                remoteOriginURL = (await this._git.getConfig('remote.origin.url')).value;
+                remoteOriginURL = (await this._git.getConfig("remote.origin.url")).value;
             }
             SFPLogger.log(`Fetched Remote URL ${remoteOriginURL}`, LoggerLevel.DEBUG);
         } else remoteOriginURL = overrideOriginURL;
 
-        if (!remoteOriginURL) throw new Error('Remote origin must be set in repository');
+        if (!remoteOriginURL) throw new Error("Remote origin must be set in repository");
 
         return remoteOriginURL;
     }
@@ -81,7 +81,7 @@ export default class Git {
         } catch (error) {
             SFPLogger.log(
                 `Unable to commit file, probably due to no change or something else,Please try manually`,
-                LoggerLevel.ERROR
+                LoggerLevel.ERROR,
             );
             throw error;
         }
@@ -91,13 +91,13 @@ export default class Git {
         if (!tags) await this._git.pushTags();
         else {
             for (let tag of tags) {
-                await this._git.push('origin', tag);
+                await this._git.push("origin", tag);
             }
         }
     }
 
     async deleteTags(tags?: string[]) {
-        if (tags) await this._git.push('origin', '--delete', tags);
+        if (tags) await this._git.push("origin", "--delete", tags);
     }
 
     async addAnnotatedTag(tagName: string, annotation: string, commitId?: string) {
@@ -106,20 +106,20 @@ export default class Git {
             if (!commitId) {
                 await this._git.addAnnotatedTag(tagName, annotation);
             } else {
-                const commands = ['tag', tagName, commitId, '-m', annotation];
+                const commands = ["tag", tagName, commitId, "-m", annotation];
                 await this._git.raw(commands);
             }
         } catch (error) {
             SFPLogger.log(
                 `Unable to commit file, probably due to no change or something else,Please try manually`,
-                LoggerLevel.ERROR
+                LoggerLevel.ERROR,
             );
             throw error;
         }
     }
 
     public async isBranchExists(branch: string): Promise<boolean> {
-        const listOfBranches = await this._git.branch(['-la']);
+        const listOfBranches = await this._git.branch(["-la"]);
 
         return listOfBranches.all.find((elem) => elem.endsWith(branch)) ? true : false;
     }
@@ -149,9 +149,9 @@ export default class Git {
         }
 
         SFPLogger.log(
-            `Successfully created temporary repository at ${repoDir} with commit ${commitRef ? commitRef : 'HEAD'}`,
+            `Successfully created temporary repository at ${repoDir} with commit ${commitRef ? commitRef : "HEAD"}`,
             LoggerLevel.INFO,
-            logger
+            logger,
         );
         return git;
     }
@@ -174,21 +174,21 @@ export default class Git {
 
     async addSafeConfig(repoDir: string) {
         //add workaround for safe directory (https://github.com/actions/runner/issues/2033)
-        await this._git.addConfig('safe.directory', repoDir, false, 'global');
+        await this._git.addConfig("safe.directory", repoDir, false, "global");
     }
 
     async pushToRemote(branch: string, isForce: boolean) {
         if (!branch) branch = (await this._git.branch()).current;
         SFPLogger.log(`Pushing ${branch}`, LoggerLevel.INFO, this.logger);
         if (process.env.SFPOWERSCRIPTS_OVERRIDE_ORIGIN_URL) {
-            await this._git.removeRemote('origin');
-            await this._git.addRemote('origin', process.env.SFPOWERSCRIPTS_OVERRIDE_ORIGIN_URL);
+            await this._git.removeRemote("origin");
+            await this._git.addRemote("origin", process.env.SFPOWERSCRIPTS_OVERRIDE_ORIGIN_URL);
         }
 
         if (isForce) {
-            await this._git.push('origin', branch, [`--force`]);
+            await this._git.push("origin", branch, [`--force`]);
         } else {
-            await this._git.push('origin', branch);
+            await this._git.push("origin", branch);
         }
     }
 
@@ -197,7 +197,7 @@ export default class Git {
     }
 
     async getCurrentCommitId() {
-        return this._git.revparse(['HEAD']);
+        return this._git.revparse(["HEAD"]);
     }
 
     async checkout(commitRef: string, isForce?: boolean) {
@@ -223,7 +223,7 @@ export default class Git {
     }
     async createBranch(branch: string) {
         if (await this.isBranchExists(branch)) {
-            await this._git.checkout(branch, ['-f']);
+            await this._git.checkout(branch, ["-f"]);
             try {
                 // For ease-of-use when running locally and local branch exists
                 await this._git.merge([`refs/remotes/origin/${branch}`]);
@@ -231,7 +231,7 @@ export default class Git {
                 SFPLogger.log(`Unable to find remote`, LoggerLevel.TRACE, this.logger);
             }
         } else {
-            await this._git.checkout(['-b', branch]);
+            await this._git.checkout(["-b", branch]);
         }
     }
 }

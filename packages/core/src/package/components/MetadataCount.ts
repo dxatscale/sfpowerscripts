@@ -1,5 +1,5 @@
-import glob from 'glob';
-import path from 'path';
+import glob from "glob";
+import path from "path";
 
 export default class MetadataCount {
     public static getMetadataCount(projectDirectory: string, sourceDirectory: string): number {

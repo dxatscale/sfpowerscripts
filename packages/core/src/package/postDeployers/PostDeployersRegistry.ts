@@ -1,6 +1,6 @@
-import FHTEnabler from './FHTEnabler';
-import FTEnabler from './FTEnabler';
-import { PostDeployer } from './PostDeployer';
+import FHTEnabler from "./FHTEnabler";
+import FTEnabler from "./FTEnabler";
+import { PostDeployer } from "./PostDeployer";
 
 export class PostDeployersRegistry {
     static getPostDeployers(): PostDeployer[] {

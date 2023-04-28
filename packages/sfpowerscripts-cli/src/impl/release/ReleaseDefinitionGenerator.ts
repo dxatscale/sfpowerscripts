@@ -1,17 +1,17 @@
-import { GitError } from 'simple-git';
-import * as fs from 'fs-extra';
-import ReleaseDefinitionSchema from './ReleaseDefinitionSchema';
-import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig';
-import Ajv, { _ } from 'ajv';
-import SFPLogger, { COLOR_HEADER, COLOR_KEY_MESSAGE, Logger } from '@dxatscale/sfp-logger';
-import ReleaseDefinitionGeneratorConfigSchema from './ReleaseDefinitionGeneratorConfigSchema';
-import lodash = require('lodash');
-import { LoggerLevel } from '@dxatscale/sfp-logger';
-import Git from '@dxatscale/sfpowerscripts.core/lib/git/Git';
-import GitTags from '@dxatscale/sfpowerscripts.core/lib/git/GitTags';
-const retry = require('async-retry');
-import yaml from 'js-yaml'
-const path = require('path');
+import { GitError } from "simple-git";
+import * as fs from "fs-extra";
+import ReleaseDefinitionSchema from "./ReleaseDefinitionSchema";
+import ProjectConfig from "@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig";
+import Ajv, { _ } from "ajv";
+import SFPLogger, { COLOR_HEADER, COLOR_KEY_MESSAGE, Logger } from "@dxatscale/sfp-logger";
+import ReleaseDefinitionGeneratorConfigSchema from "./ReleaseDefinitionGeneratorConfigSchema";
+import lodash = require("lodash");
+import { LoggerLevel } from "@dxatscale/sfp-logger";
+import Git from "@dxatscale/sfpowerscripts.core/lib/git/Git";
+import GitTags from "@dxatscale/sfpowerscripts.core/lib/git/GitTags";
+const retry = require("async-retry");
+import yaml from "js-yaml";
+const path = require("path");
 
 export default class ReleaseDefinitionGenerator {
     private _releaseDefinitionGeneratorSchema: ReleaseDefinitionGeneratorConfigSchema;
@@ -30,9 +30,9 @@ export default class ReleaseDefinitionGenerator {
         private directory?: string,
         private noPush: boolean = false,
         private forcePush: boolean = false,
-        private inMemoryMode:boolean = false
+        private inMemoryMode: boolean = false,
     ) {
-        this._releaseDefinitionGeneratorSchema = yaml.load(fs.readFileSync(pathToReleaseDefinition, 'utf8'));
+        this._releaseDefinitionGeneratorSchema = yaml.load(fs.readFileSync(pathToReleaseDefinition, "utf8"));
         this.validateReleaseDefinitionGeneratorConfig(this._releaseDefinitionGeneratorSchema);
 
         // Easy to handle here than with schema
@@ -40,7 +40,7 @@ export default class ReleaseDefinitionGenerator {
             this._releaseDefinitionGeneratorSchema.includeOnlyArtifacts &&
             this.releaseDefinitionGeneratorConfigSchema.excludeArtifacts
         ) {
-            throw new Error('Error: Invalid schema: either use includeArtifacts or excludeArtifacts');
+            throw new Error("Error: Invalid schema: either use includeArtifacts or excludeArtifacts");
         }
         // Easy to handle here than with schema
         if (
@@ -48,7 +48,7 @@ export default class ReleaseDefinitionGenerator {
             this.releaseDefinitionGeneratorConfigSchema.excludePackageDependencies
         ) {
             throw new Error(
-                'Error: Invalid schema: either use includePackageDependencies or excludePackageDependencies'
+                "Error: Invalid schema: either use includePackageDependencies or excludePackageDependencies",
             );
         }
 
@@ -60,21 +60,24 @@ export default class ReleaseDefinitionGenerator {
             throw new Error("Release option 'skipIfAlreadyInstalled' must be true for 'baselineOrg'");
     }
 
-    async exec(): Promise<ReleaseDefinitionSchema | {
-        releaseDefinitonYAML: string;
-        pathToReleaseDefnDirectory: string;
-    }> {
+    async exec(): Promise<
+        | ReleaseDefinitionSchema
+        | {
+              releaseDefinitonYAML: string;
+              pathToReleaseDefnDirectory: string;
+          }
+    > {
         return retry(
             async (bail, retryNum) => {
                 try {
                     return await this.execHandler();
                 } catch (err) {
                     if (err instanceof GitError) {
-                        if (!err.message.includes('failed to push some refs')) {
+                        if (!err.message.includes("failed to push some refs")) {
                             // Do not retry for Git errors that are not related to push
                             bail(err);
                         } else {
-                            SFPLogger.log('Failed to push definition', LoggerLevel.WARN, this.logger);
+                            SFPLogger.log("Failed to push definition", LoggerLevel.WARN, this.logger);
                             SFPLogger.log(`Retrying...(${retryNum})`, LoggerLevel.WARN, this.logger);
                             throw err;
                         }
@@ -88,14 +91,17 @@ export default class ReleaseDefinitionGenerator {
                 retries: 10,
                 minTimeout: 5,
                 randomize: true,
-            }
+            },
         );
     }
 
-    private async execHandler(): Promise<ReleaseDefinitionSchema | {
-        releaseDefinitonYAML: string;
-        pathToReleaseDefnDirectory: string;
-    }> {
+    private async execHandler(): Promise<
+        | ReleaseDefinitionSchema
+        | {
+              releaseDefinitonYAML: string;
+              pathToReleaseDefnDirectory: string;
+          }
+    > {
         let repoDir: string;
         let git;
         try {
@@ -107,7 +113,7 @@ export default class ReleaseDefinitionGenerator {
             let releaseDefiniton = await this.generateReleaseDefintion(
                 fetchedArtifacts.artifacts,
                 fetchedArtifacts.packageDependencies,
-                git
+                git,
             );
             return releaseDefiniton;
         } catch (error) {
@@ -141,7 +147,7 @@ export default class ReleaseDefinitionGenerator {
                 SFPLogger.log(
                     `Unable to capture version of ${sfdxPackage} due to ${error}`,
                     LoggerLevel.WARN,
-                    this.logger
+                    this.logger,
                 );
             }
         }
@@ -151,7 +157,7 @@ export default class ReleaseDefinitionGenerator {
             for (const externalPackage of allExternalPackages) {
                 if (
                     this.getDependencyPredicate(externalPackage.alias) &&
-                    externalPackage.Package2IdOrSubscriberPackageVersionId.startsWith('04t')
+                    externalPackage.Package2IdOrSubscriberPackageVersionId.startsWith("04t")
                 ) {
                     packageDependencies[externalPackage.alias] = externalPackage.Package2IdOrSubscriberPackageVersionId;
                 }
@@ -161,10 +167,17 @@ export default class ReleaseDefinitionGenerator {
         return { artifacts, packageDependencies };
     }
 
-    private async generateReleaseDefintion(artifacts: any, packageDependencies: any, git: Git): Promise<ReleaseDefinitionSchema | {
-    releaseDefinitonYAML: string;
-    pathToReleaseDefnDirectory: string;
-}> {
+    private async generateReleaseDefintion(
+        artifacts: any,
+        packageDependencies: any,
+        git: Git,
+    ): Promise<
+        | ReleaseDefinitionSchema
+        | {
+              releaseDefinitonYAML: string;
+              pathToReleaseDefnDirectory: string;
+          }
+    > {
         artifacts = Object.keys(artifacts)
             .sort()
             .reduce((obj, key) => {
@@ -189,21 +202,23 @@ export default class ReleaseDefinitionGenerator {
         if (Object.keys(packageDependencies).length > 0) releaseDefinition.packageDependencies = packageDependencies;
 
         //add promotePackagesBeforeDeploymentToOrg
-        releaseDefinition.promotePackagesBeforeDeploymentToOrg = this.releaseDefinitionGeneratorConfigSchema.releasedefinitionProperties?.promotePackagesBeforeDeploymentToOrg;
-	    
+        releaseDefinition.promotePackagesBeforeDeploymentToOrg =
+            this.releaseDefinitionGeneratorConfigSchema.releasedefinitionProperties?.promotePackagesBeforeDeploymentToOrg;
+
         //override skip if already installed
-        if(this.releaseDefinitionGeneratorConfigSchema.releasedefinitionProperties?.skipIfAlreadyInstalled)
-          releaseDefinition.skipIfAlreadyInstalled = this.releaseDefinitionGeneratorConfigSchema.releasedefinitionProperties?.skipIfAlreadyInstalled;
+        if (this.releaseDefinitionGeneratorConfigSchema.releasedefinitionProperties?.skipIfAlreadyInstalled)
+            releaseDefinition.skipIfAlreadyInstalled =
+                this.releaseDefinitionGeneratorConfigSchema.releasedefinitionProperties?.skipIfAlreadyInstalled;
 
         //Add changelog info
-        releaseDefinition.changelog = this.releaseDefinitionGeneratorConfigSchema.releasedefinitionProperties?.changelog;
+        releaseDefinition.changelog =
+            this.releaseDefinitionGeneratorConfigSchema.releasedefinitionProperties?.changelog;
 
-        if(this.inMemoryMode)
-         return releaseDefinition;
+        if (this.inMemoryMode) return releaseDefinition;
 
         let releaseDefinitonYAML = yaml.dump(releaseDefinition, {
             styles: {
-                '!!null': 'canonical', // dump null as ~
+                "!!null": "canonical", // dump null as ~
             },
             sortKeys: false, // sort object keys
         });
@@ -235,11 +250,11 @@ export default class ReleaseDefinitionGenerator {
     }
 
     private validateReleaseDefinitionGeneratorConfig(
-        releaseDefinitionGeneratorSchema: ReleaseDefinitionGeneratorConfigSchema
+        releaseDefinitionGeneratorSchema: ReleaseDefinitionGeneratorConfigSchema,
     ): void {
         let schema = fs.readJSONSync(
-            path.join(__dirname, '..', '..', '..', 'resources', 'schemas', 'releasedefinitiongenerator.schema.json'),
-            { encoding: 'UTF-8' }
+            path.join(__dirname, "..", "..", "..", "resources", "schemas", "releasedefinitiongenerator.schema.json"),
+            { encoding: "UTF-8" },
         );
 
         let validator = new Ajv({ allErrors: true }).compile(schema);
@@ -254,7 +269,7 @@ export default class ReleaseDefinitionGenerator {
                 errorMsg += `\n${errorNum + 1}: ${error.instancePath}: ${error.message} ${JSON.stringify(
                     error.params,
                     null,
-                    4
+                    4,
                 )}`;
             });
 

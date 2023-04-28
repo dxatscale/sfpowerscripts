@@ -1,8 +1,8 @@
-import { Connection } from '@salesforce/core';
-import { Record, SaveResult } from 'jsforce';
-import { isArray } from 'lodash';
+import { Connection } from "@salesforce/core";
+import { Record, SaveResult } from "jsforce";
+import { isArray } from "lodash";
 
-const retry = require('async-retry');
+const retry = require("async-retry");
 
 export default class ObjectCRUDHelper {
     static async updateRecord(conn: Connection, sObject: string, record: Record): Promise<string> {
@@ -16,12 +16,12 @@ export default class ObjectCRUDHelper {
                             isAllRecordsSucceeded = false;
                         }
                     }
-                    if (isAllRecordsSucceeded) return 'All records updated';
-                    else throw new Error('Some records have been failed to update');
+                    if (isAllRecordsSucceeded) return "All records updated";
+                    else throw new Error("Some records have been failed to update");
                 } else if (result.success) return result.id;
                 else bail();
             },
-            { retries: 3, minTimeout: 2000 }
+            { retries: 3, minTimeout: 2000 },
         );
     }
 
@@ -32,7 +32,7 @@ export default class ObjectCRUDHelper {
                 if (result.success) return result.id;
                 else bail();
             },
-            { retries: 3, minTimeout: 2000 }
+            { retries: 3, minTimeout: 2000 },
         );
     }
 }

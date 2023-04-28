@@ -1,13 +1,13 @@
-import { AuthInfo, Org, StateAggregator } from '@salesforce/core';
-import ScratchOrg from './ScratchOrg';
-import PasswordGenerator from './PasswordGenerator';
-import SFPLogger, { LoggerLevel } from '@dxatscale/sfp-logger';
-import { Duration } from '@salesforce/kit';
-import { ScratchOrgRequest } from '@salesforce/core';
-import { COLOR_KEY_MESSAGE } from '@dxatscale/sfp-logger';
-import getFormattedTime from '../utils/GetFormattedTime';
-import SFPStatsSender from '../stats/SFPStatsSender';
-const retry = require('async-retry');
+import { AuthInfo, Org, StateAggregator } from "@salesforce/core";
+import ScratchOrg from "./ScratchOrg";
+import PasswordGenerator from "./PasswordGenerator";
+import SFPLogger, { LoggerLevel } from "@dxatscale/sfp-logger";
+import { Duration } from "@salesforce/kit";
+import { ScratchOrgRequest } from "@salesforce/core";
+import { COLOR_KEY_MESSAGE } from "@dxatscale/sfp-logger";
+import getFormattedTime from "../utils/GetFormattedTime";
+import SFPStatsSender from "../stats/SFPStatsSender";
+const retry = require("async-retry");
 
 export default class ScratchOrgOperator {
     constructor(private hubOrg: Org) {}
@@ -16,9 +16,9 @@ export default class ScratchOrgOperator {
         alias: string,
         config_file_path: string,
         expiry: number,
-        waitTime: number = 6
+        waitTime: number = 6,
     ): Promise<ScratchOrg> {
-        SFPLogger.log('Parameters: ' + alias + ' ' + config_file_path + ' ' + expiry + ' ', LoggerLevel.TRACE);
+        SFPLogger.log("Parameters: " + alias + " " + config_file_path + " " + expiry + " ", LoggerLevel.TRACE);
 
         let startTime = Date.now();
         SFPLogger.log(`Requesting Scratch Org ${alias}..`, LoggerLevel.INFO);
@@ -26,7 +26,7 @@ export default class ScratchOrgOperator {
             alias,
             config_file_path,
             Duration.days(expiry),
-            Duration.minutes(waitTime)
+            Duration.minutes(waitTime),
         );
         SFPLogger.log(JSON.stringify(scatchOrgResult), LoggerLevel.TRACE);
 
@@ -45,7 +45,7 @@ export default class ScratchOrgOperator {
             scratchOrg.sfdxAuthUrl = authInfo.getSfdxAuthUrl();
         } catch (error) {
             throw new Error(
-                `Unable to set auth URL, Ignoring this scratch org, as its not suitable for pool due to ${error.message}`
+                `Unable to set auth URL, Ignoring this scratch org, as its not suitable for pool due to ${error.message}`,
             );
         }
 
@@ -55,18 +55,18 @@ export default class ScratchOrgOperator {
         scratchOrg.password = passwordData.password;
 
         if (!passwordData.password) {
-            throw new Error('Unable to setup password to scratch org');
+            throw new Error("Unable to setup password to scratch org");
         } else {
             SFPLogger.log(`Password successfully set for ${scratchOrg.alias}`, LoggerLevel.DEBUG);
         }
 
         SFPLogger.log(
             `Creation request for Scratch Org ${scratchOrg.alias} is completed successfully in ${COLOR_KEY_MESSAGE(
-                getFormattedTime(scratchOrg.elapsedTime)
+                getFormattedTime(scratchOrg.elapsedTime),
             )}`,
-            LoggerLevel.INFO
+            LoggerLevel.INFO,
         );
-        SFPStatsSender.logElapsedTime(`scratchorg.creation.time`,scratchOrg.elapsedTime)
+        SFPStatsSender.logElapsedTime(`scratchorg.creation.time`, scratchOrg.elapsedTime);
         return scratchOrg;
     }
 
@@ -75,9 +75,9 @@ export default class ScratchOrgOperator {
 
         await retry(
             async (bail) => {
-                let result = await hubConn.del('ActiveScratchOrg', scratchOrgIds);
+                let result = await hubConn.del("ActiveScratchOrg", scratchOrgIds);
             },
-            { retries: 3, minTimeout: 3000 }
+            { retries: 3, minTimeout: 3000 },
         );
     }
 
@@ -92,7 +92,7 @@ export default class ScratchOrgOperator {
         };
 
         const { username, scratchOrgInfo, authFields, warnings } = await this.hubOrg.scratchOrgCreate(
-            createCommandOptions
+            createCommandOptions,
         );
 
         await this.setAliasForUsername(username, alias);
@@ -117,14 +117,14 @@ export default class ScratchOrgOperator {
    Thank you for using SFPLogger!`;
 
         const options = {
-            method: 'POST',
+            method: "POST",
             body: JSON.stringify({
                 inputs: [
                     {
                         emailBody: body,
                         emailAddresses: emailId,
                         emailSubject: `${hubOrgUserName} created you a new Salesforce org`,
-                        senderType: 'CurrentUser',
+                        senderType: "CurrentUser",
                     },
                 ],
             }),
@@ -135,7 +135,7 @@ export default class ScratchOrgOperator {
             async (bail) => {
                 await this.hubOrg.getConnection().requestPost(options.url, options.body);
             },
-            { retries: 3, minTimeout: 30000 }
+            { retries: 3, minTimeout: 30000 },
         );
 
         SFPLogger.log(`Succesfully send email to ${emailId} for ${scratchOrg.username}`, LoggerLevel.INFO);

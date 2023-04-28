@@ -5,24 +5,24 @@ import SFPLogger, {
     COLOR_SUCCESS,
     Logger,
     LoggerLevel,
-} from '@dxatscale/sfp-logger';
+} from "@dxatscale/sfp-logger";
 
-import { Duration } from '@salesforce/kit';
-import DeploymentExecutor, { DeploySourceResult } from './DeploymentExecutor';
+import { Duration } from "@salesforce/kit";
+import DeploymentExecutor, { DeploySourceResult } from "./DeploymentExecutor";
 import {
     ComponentSet,
     DeployMessage,
     DeployResult,
     MetadataApiDeployOptions,
     RequestStatus,
-} from '@salesforce/source-deploy-retrieve';
-import * as fs from 'fs-extra';
-import path from 'path';
-import SFPOrg from '../org/SFPOrg';
-import getFormattedTime from '../utils/GetFormattedTime';
-import { TestLevel } from '../apextest/TestOptions';
-import { SfProject } from '@salesforce/core';
-import { SourceTracking } from '@salesforce/source-tracking';
+} from "@salesforce/source-deploy-retrieve";
+import * as fs from "fs-extra";
+import path from "path";
+import SFPOrg from "../org/SFPOrg";
+import getFormattedTime from "../utils/GetFormattedTime";
+import { TestLevel } from "../apextest/TestOptions";
+import { SfProject } from "@salesforce/core";
+import { SourceTracking } from "@salesforce/source-tracking";
 
 export default class DeploySourceToOrgImpl implements DeploymentExecutor {
     public constructor(
@@ -30,7 +30,7 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
         private projectDir: string,
         private componentSet: ComponentSet,
         private deploymentOptions: DeploymentOptions,
-        private logger?: Logger
+        private logger?: Logger,
     ) {}
 
     public async exec(): Promise<DeploySourceResult> {
@@ -67,13 +67,13 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
 
     private handlErrorMesasge(result: DeployResult): string {
         if (result.response.numberComponentErrors == 0) {
-            return 'Unable to fetch report, Check your org for details';
+            return "Unable to fetch report, Check your org for details";
         } else if (result.response.numberComponentErrors > 0) {
             return this.constructComponentErrorMessage(result.response.details.componentFailures, this.logger);
         } else if (result.response.details.runTestResult) {
-            return 'Unable to deploy due to unsatisfactory code coverage and/or test failures';
+            return "Unable to deploy due to unsatisfactory code coverage and/or test failures";
         } else {
-            return 'Unable to fetch report, Check your org for details';
+            return "Unable to fetch report, Check your org for details";
         }
     }
 
@@ -115,7 +115,7 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
         fs.mkdirpSync(deploymentReports);
         fs.writeFileSync(
             path.join(deploymentReports, `${result.response.id}.json`),
-            JSON.stringify(this.formatResultAsJSON(result))
+            JSON.stringify(this.formatResultAsJSON(result)),
         );
     }
 
@@ -165,17 +165,17 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
                 SFPLogger.log(
                     COLOR_SUCCESS(
                         `Succesfully Deployed ${COLOR_HEADER(
-                            response.response.numberComponentsDeployed
-                        )} components in ${getFormattedTime(deploymentDuration)}`
+                            response.response.numberComponentsDeployed,
+                        )} components in ${getFormattedTime(deploymentDuration)}`,
                     ),
                     LoggerLevel.INFO,
-                    this.logger
+                    this.logger,
                 );
             } else
                 SFPLogger.log(
                     COLOR_ERROR(`Failed to deploy after ${getFormattedTime(deploymentDuration)}`),
                     LoggerLevel.INFO,
-                    this.logger
+                    this.logger,
                 );
         });
 

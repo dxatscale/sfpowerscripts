@@ -1,22 +1,18 @@
-import { ComponentSet, MetadataConverter, ConvertResult } from '@salesforce/source-deploy-retrieve';
-import path = require('path');
-import * as fs from 'fs-extra';
-import inquirer = require('inquirer');
-import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig';
-import * as metadataRegistry from '../../metadataRegistry.json';
+import { ComponentSet, MetadataConverter, ConvertResult } from "@salesforce/source-deploy-retrieve";
+import path = require("path");
+import * as fs from "fs-extra";
+import inquirer = require("inquirer");
+import ProjectConfig from "@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig";
+import * as metadataRegistry from "../../metadataRegistry.json";
 
-import SFPLogger, {
-    COLOR_KEY_MESSAGE,
-    COLOR_KEY_VALUE,
-    COLOR_SUCCESS,
-} from '@dxatscale/sfp-logger/lib/SFPLogger';
+import SFPLogger, { COLOR_KEY_MESSAGE, COLOR_KEY_VALUE, COLOR_SUCCESS } from "@dxatscale/sfp-logger/lib/SFPLogger";
 
-import CreatePackageWorkflow, { SFDXPackage } from '../package/CreatePackageWorkflow';
-import SourcePull from '../../impl/sfdxwrappers/SourcePull';
-import SelectPackageWorkflow from '../package/SelectPackageWorkflow';
-import { isEmpty } from 'lodash';
-import cli from 'cli-ux';
-import CreateUnlockedPackage from '../../impl/sfdxwrappers/CreateUnlockedPackage';
+import CreatePackageWorkflow, { SFDXPackage } from "../package/CreatePackageWorkflow";
+import SourcePull from "../../impl/sfdxwrappers/SourcePull";
+import SelectPackageWorkflow from "../package/SelectPackageWorkflow";
+import { isEmpty } from "lodash";
+import cli from "cli-ux";
+import CreateUnlockedPackage from "../../impl/sfdxwrappers/CreateUnlockedPackage";
 
 export default class PullSourceWorkflow {
     private unlockedPackagesToBeCreated: Array<SFDXPackage>;
@@ -26,16 +22,16 @@ export default class PullSourceWorkflow {
 
     async execute(): Promise<void> {
         if (this.sourceStatusResult.length === 0) {
-            SFPLogger.log(COLOR_SUCCESS('  No changes found'));
+            SFPLogger.log(COLOR_SUCCESS("  No changes found"));
             return;
         }
 
         const remoteAdditions = this.sourceStatusResult.filter((elem) => {
             //We only have to ask for files that have -meta.xml, all else changes let cli auto merge when doing pull
-            if (elem.state === 'Remote Add') {
+            if (elem.state === "Remote Add") {
                 if (elem.parentFolder == null) return elem;
-                else if (elem.parentFolder && elem.fullName.includes('-meta.xml')) return elem;
-                else if (elem.parentFolder && (elem.fullName.includes('.cmp') || elem.fullName.includes('.evt')))
+                else if (elem.parentFolder && elem.fullName.includes("-meta.xml")) return elem;
+                else if (elem.parentFolder && (elem.fullName.includes(".cmp") || elem.fullName.includes(".evt")))
                     return elem;
             }
         });
@@ -46,7 +42,7 @@ export default class PullSourceWorkflow {
         }[] = [];
 
         SFPLogger.log(
-            COLOR_KEY_MESSAGE(`  Found ${remoteAdditions.length} new metadata components, which require a new home`)
+            COLOR_KEY_MESSAGE(`  Found ${remoteAdditions.length} new metadata components, which require a new home`),
         );
 
         const projectConfig = ProjectConfig.getSFDXProjectConfig(null);
@@ -90,7 +86,7 @@ export default class PullSourceWorkflow {
                         this.addNewPackageToProjectConfig(
                             newPackage.descriptor,
                             newPackage.indexOfPackage,
-                            projectConfig
+                            projectConfig,
                         );
                         newPackagesDirectories.push(newPackage.descriptor.path);
                         instruction.destination.push({
@@ -98,9 +94,9 @@ export default class PullSourceWorkflow {
                         });
 
                         //For Unlocked Push to array, others push  to type
-                        if (newPackage.type === 'unlocked' || newPackage.type === 'org-unlocked')
+                        if (newPackage.type === "unlocked" || newPackage.type === "org-unlocked")
                             this.unlockedPackagesToBeCreated.push(newPackage);
-                        else newPackage.descriptor['type'] = newPackage.type;
+                        else newPackage.descriptor["type"] = newPackage.type;
 
                         newPackagesDirectories.push(newPackage.descriptor.path);
                     } else {
@@ -110,26 +106,26 @@ export default class PullSourceWorkflow {
                     instruction.destination.push(...metadataRegistry.types[instruction.type].recommended);
                 } else if (metadataRegistry.types[instruction.type].strategy === Strategy.SINGLE) {
                     const singleRecommendedPackage = await this.getSingleRecommendedPackage(
-                        metadataRegistry.types[instruction.type].recommended
+                        metadataRegistry.types[instruction.type].recommended,
                     );
                     instruction.destination.push(
                         metadataRegistry.types[instruction.type].recommended.find(
-                            (elem) => elem.package === singleRecommendedPackage
-                        )
+                            (elem) => elem.package === singleRecommendedPackage,
+                        ),
                     );
                 } else if (metadataRegistry.types[instruction.type].strategy === Strategy.DELETE) {
                     // do nothing
                 } else {
-                    throw new Error('Strategy not defined or unknown');
+                    throw new Error("Strategy not defined or unknown");
                 }
             } else if (moveAction === MoveAction.NEW) {
                 const newPackage = await new CreatePackageWorkflow(projectConfig).stageANewPackage();
                 this.addNewPackageToProjectConfig(newPackage.descriptor, newPackage.indexOfPackage, projectConfig);
 
                 //For Unlocked Push to array, others push  to type
-                if (newPackage.type === 'unlocked' || newPackage.type === 'org-unlocked')
+                if (newPackage.type === "unlocked" || newPackage.type === "org-unlocked")
                     this.unlockedPackagesToBeCreated.push(newPackage);
-                else newPackage.descriptor['type'] = newPackage.type;
+                else newPackage.descriptor["type"] = newPackage.type;
 
                 newPackagesDirectories.push(newPackage.descriptor.path);
 
@@ -159,22 +155,22 @@ export default class PullSourceWorkflow {
         cli.action.start(`  Pulling source components from dev org... ${COLOR_KEY_VALUE(this.devOrg)}..`);
         let pullResult = await new SourcePull(this.devOrg, true).exec(true);
         cli.action.stop();
-        SFPLogger.log(COLOR_SUCCESS('  Successfully pulled source components'));
+        SFPLogger.log(COLOR_SUCCESS("  Successfully pulled source components"));
 
-        cli.action.start('  Moving source components...');
+        cli.action.start("  Moving source components...");
 
         try {
             // rename .forceignore temporarily during merge, which prevents it from ignoring target directory of a merge
-            fs.renameSync('.forceignore', '.forceignore.bak');
+            fs.renameSync(".forceignore", ".forceignore.bak");
 
             for (let instruction of mergePlan) {
                 let isDeleteComponents: boolean = true;
 
                 let components = pullResult.pulledSource.filter((component) => {
                     //Handle Bundles
-                    if (component.fullName.includes('/')) {
+                    if (component.fullName.includes("/")) {
                         if (
-                            component.fullName.split('/')[0] == instruction.fullName.split('/')[0] &&
+                            component.fullName.split("/")[0] == instruction.fullName.split("/")[0] &&
                             component.type === instruction.type
                         )
                             return component;
@@ -189,7 +185,7 @@ export default class PullSourceWorkflow {
 
                 const converter = new MetadataConverter();
 
-                let filePath = components.find((component) => path.extname(component.filePath) === '.xml')?.filePath;
+                let filePath = components.find((component) => path.extname(component.filePath) === ".xml")?.filePath;
 
                 //We dont want non xml files to the merger
                 if (filePath == null) continue;
@@ -207,18 +203,18 @@ export default class PullSourceWorkflow {
                         });
 
                         for (let alias of aliases) {
-                            convertResult = await converter.convert(componentSet, 'source', {
-                                type: 'merge',
+                            convertResult = await converter.convert(componentSet, "source", {
+                                type: "merge",
                                 mergeWith: ComponentSet.fromSource(
-                                    path.resolve(dest.package, alias)
+                                    path.resolve(dest.package, alias),
                                 ).getSourceComponents(),
                                 defaultDirectory: path.join(dest.package, alias),
                                 forceIgnoredPaths: componentSet.forceIgnoredPaths ?? new Set<string>(),
                             });
                         }
                     } else {
-                        convertResult = await converter.convert(componentSet, 'source', {
-                            type: 'merge',
+                        convertResult = await converter.convert(componentSet, "source", {
+                            type: "merge",
                             mergeWith: ComponentSet.fromSource(path.resolve(dest.package)).getSourceComponents(),
                             defaultDirectory: dest.package,
                             forceIgnoredPaths: componentSet.forceIgnoredPaths ?? new Set<string>(),
@@ -244,11 +240,11 @@ export default class PullSourceWorkflow {
                 }
 
                 //Clean up src-temp of empty directories
-                this.removeEmptyDirectories('src-temp/main/default');
+                this.removeEmptyDirectories("src-temp/main/default");
             }
         } finally {
             // restore .forceignore, after merge finishes
-            fs.renameSync('.forceignore.bak', '.forceignore');
+            fs.renameSync(".forceignore.bak", ".forceignore");
         }
 
         cli.action.stop();
@@ -277,7 +273,7 @@ export default class PullSourceWorkflow {
     }
 
     private dedupeXmlFileSuffix(xmlFile: string): string {
-        let deduped = xmlFile.replace(/-meta\.xml/, '');
+        let deduped = xmlFile.replace(/-meta\.xml/, "");
         fs.renameSync(xmlFile, deduped);
 
         return deduped;
@@ -285,10 +281,10 @@ export default class PullSourceWorkflow {
 
     private async getMoveAction(instruction: Instruction) {
         let moveAction = await inquirer.prompt({
-            type: 'list',
-            name: 'action',
+            type: "list",
+            name: "action",
             message: `Select a package for ${COLOR_KEY_MESSAGE(instruction.type)} ${COLOR_KEY_MESSAGE(
-                instruction.fullName
+                instruction.fullName,
             )}`,
             choices: this.getChoicesForMovingMetadata(instruction),
         });
@@ -305,7 +301,7 @@ export default class PullSourceWorkflow {
             let fileNames = await fs.readdir(directory);
             if (fileNames.length > 0) {
                 const recursiveRemovalPromises = fileNames.map((fileName) =>
-                    this.removeEmptyDirectories(path.join(directory, fileName))
+                    this.removeEmptyDirectories(path.join(directory, fileName)),
                 );
                 await Promise.all(recursiveRemovalPromises);
 
@@ -328,31 +324,31 @@ export default class PullSourceWorkflow {
             return [
                 {
                     name: `Recommended (Strategy: ${metadataRegistry.types[metadata.type].strategy}) ${
-                        recommendedPackages ? recommendedPackages : ''
+                        recommendedPackages ? recommendedPackages : ""
                     }`,
                     value: MoveAction.RECOMMENDED,
                 },
-                { name: 'Existing', value: MoveAction.EXISTING },
-                { name: 'New', value: MoveAction.NEW },
-                { name: 'Do nothing', value: MoveAction.NOTHING },
+                { name: "Existing", value: MoveAction.EXISTING },
+                { name: "New", value: MoveAction.NEW },
+                { name: "Do nothing", value: MoveAction.NOTHING },
             ];
         } else {
             return [
-                { name: 'Existing', value: MoveAction.EXISTING },
-                { name: 'New', value: MoveAction.NEW },
-                { name: 'Do nothing', value: MoveAction.NOTHING },
+                { name: "Existing", value: MoveAction.EXISTING },
+                { name: "New", value: MoveAction.NEW },
+                { name: "Do nothing", value: MoveAction.NOTHING },
             ];
         }
     }
 
     private async getPlusOneMoveAction() {
         let plusOneMoveAction = await inquirer.prompt({
-            type: 'list',
-            name: 'action',
+            type: "list",
+            name: "action",
             message: `Select additional package`,
             choices: [
-                { name: 'Existing', value: MoveAction.EXISTING },
-                { name: 'New', value: MoveAction.NEW },
+                { name: "Existing", value: MoveAction.EXISTING },
+                { name: "New", value: MoveAction.NEW },
             ],
         });
 
@@ -361,9 +357,9 @@ export default class PullSourceWorkflow {
 
     private async getSingleRecommendedPackage(recommended: { package: string; aliasfy: boolean }[]) {
         let singleRecommendedPackage = await inquirer.prompt({
-            type: 'list',
-            name: 'package',
-            message: 'Select recommended package',
+            type: "list",
+            name: "package",
+            message: "Select recommended package",
             choices: recommended.map((elem) => elem.package),
         });
 
@@ -380,26 +376,26 @@ export default class PullSourceWorkflow {
     }
 
     private writeProjectConfigToFile(projectConfig: any) {
-        fs.writeJSONSync('sfdx-project.json', projectConfig, { spaces: 2 });
+        fs.writeJSONSync("sfdx-project.json", projectConfig, { spaces: 2 });
     }
 
     private encodeData(s: String): String {
-        return s.replace(/\(/g, '%28').replace(/\)/g, '%29');
+        return s.replace(/\(/g, "%28").replace(/\)/g, "%29");
     }
 }
 
 enum MoveAction {
-    RECOMMENDED = 'recommended',
-    NEW = 'new',
-    EXISTING = 'existing',
-    NOTHING = 'nothing',
+    RECOMMENDED = "recommended",
+    NEW = "new",
+    EXISTING = "existing",
+    NOTHING = "nothing",
 }
 
 enum Strategy {
-    SINGLE = 'single',
-    DUPLICATE = 'duplicate',
-    PLUS_ONE = 'plus-one',
-    DELETE = 'delete',
+    SINGLE = "single",
+    DUPLICATE = "duplicate",
+    PLUS_ONE = "plus-one",
+    DELETE = "delete",
 }
 
 interface Instruction {

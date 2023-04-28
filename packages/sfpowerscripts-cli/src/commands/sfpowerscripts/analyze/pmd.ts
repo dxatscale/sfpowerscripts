@@ -1,36 +1,36 @@
-import { flags } from '@salesforce/command';
-import SfpowerscriptsCommand from '../../../SfpowerscriptsCommand';
-import { Messages, SfdxError } from '@salesforce/core';
-import AnalyzeWithPMDImpl from '@dxatscale/sfpowerscripts.core/lib/sfpowerkitwrappers/AnalyzeWithPMDImpl';
-import xml2js = require('xml2js');
-const fs = require('fs-extra');
-const path = require('path');
-import * as rimraf from 'rimraf';
-const Table = require('cli-table');
-import SFPLogger, { LoggerLevel, COLOR_SUCCESS } from '@dxatscale/sfp-logger';
-import lodash = require('lodash');
-import { ZERO_BORDER_TABLE } from '../../../ui/TableConstants';
+import { flags } from "@salesforce/command";
+import SfpowerscriptsCommand from "../../../SfpowerscriptsCommand";
+import { Messages, SfdxError } from "@salesforce/core";
+import AnalyzeWithPMDImpl from "@dxatscale/sfpowerscripts.core/lib/sfpowerkitwrappers/AnalyzeWithPMDImpl";
+import xml2js = require("xml2js");
+const fs = require("fs-extra");
+const path = require("path");
+import * as rimraf from "rimraf";
+const Table = require("cli-table");
+import SFPLogger, { LoggerLevel, COLOR_SUCCESS } from "@dxatscale/sfp-logger";
+import lodash = require("lodash");
+import { ZERO_BORDER_TABLE } from "../../../ui/TableConstants";
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
 
 // Load the specific messages for this file. Messages from @salesforce/command, @salesforce/core,
 // or any library that is using the messages framework can also be loaded this way.
-const messages = Messages.load('@dxatscale/sfpowerscripts', 'analyze_with_PMD',[
-    'sourceDirectoryFlagDescription',
-    'rulesetFlagDescription',
-    'rulesetPathFlagDescription',
-    'formatFlagDescription',
-    'outputPathFlagDescription',
-    'thresholdFlagDescription',
-    'versionFlagDescription',
-    'isToBreakBuildFlagDescription',
-    'refNameFlagDescription',
-    'commandDescription'
+const messages = Messages.load("@dxatscale/sfpowerscripts", "analyze_with_PMD", [
+    "sourceDirectoryFlagDescription",
+    "rulesetFlagDescription",
+    "rulesetPathFlagDescription",
+    "formatFlagDescription",
+    "outputPathFlagDescription",
+    "thresholdFlagDescription",
+    "versionFlagDescription",
+    "isToBreakBuildFlagDescription",
+    "refNameFlagDescription",
+    "commandDescription",
 ]);
 
 export default class AnalyzeWithPMD extends SfpowerscriptsCommand {
-    public static description = messages.getMessage('commandDescription');
+    public static description = messages.getMessage("commandDescription");
 
     public static examples = [
         `$ sfdx sfpowerscripts:analyze:pmd --sourcedir <dir>\n`,
@@ -44,80 +44,80 @@ export default class AnalyzeWithPMD extends SfpowerscriptsCommand {
     protected static requiresDevhubUsername = false;
     protected static flagsConfig = {
         sourcedir: flags.string({
-            description: messages.getMessage('sourceDirectoryFlagDescription'),
+            description: messages.getMessage("sourceDirectoryFlagDescription"),
         }),
         ruleset: flags.string({
-            description: messages.getMessage('rulesetFlagDescription'),
-            options: ['sfpowerkit', 'Custom'],
-            default: 'sfpowerkit',
+            description: messages.getMessage("rulesetFlagDescription"),
+            options: ["sfpowerkit", "Custom"],
+            default: "sfpowerkit",
         }),
         rulesetpath: flags.string({
-            description: messages.getMessage('rulesetPathFlagDescription'),
+            description: messages.getMessage("rulesetPathFlagDescription"),
         }),
         format: flags.string({
-            description: messages.getMessage('formatFlagDescription'),
+            description: messages.getMessage("formatFlagDescription"),
             options: [
-                'text',
-                'textcolor',
-                'csv',
-                'emacs',
-                'summaryhtml',
-                'html',
-                'xml',
-                'xslt',
-                'yahtml',
-                'vbhtml',
-                'textpad',
-                'sarif',
+                "text",
+                "textcolor",
+                "csv",
+                "emacs",
+                "summaryhtml",
+                "html",
+                "xml",
+                "xslt",
+                "yahtml",
+                "vbhtml",
+                "textpad",
+                "sarif",
             ],
-            default: 'text',
+            default: "text",
         }),
         outputpath: flags.string({
-            char: 'o',
-            description: messages.getMessage('outputPathFlagDescription'),
+            char: "o",
+            description: messages.getMessage("outputPathFlagDescription"),
         }),
         version: flags.string({
             required: false,
-            default: '6.39.0',
-            description: messages.getMessage('versionFlagDescription'),
+            default: "6.39.0",
+            description: messages.getMessage("versionFlagDescription"),
         }),
         threshold: flags.integer({
             required: false,
             default: 1,
             min: 1,
             max: 5,
-            description: messages.getMessage('thresholdFlagDescription'),
+            description: messages.getMessage("thresholdFlagDescription"),
         }),
         istobreakbuild: flags.boolean({
-            char: 'b',
+            char: "b",
             deprecated: {
                 message:
-                '--istobreakbuild has been deprecated, the command will always break if there are critical errors',
+                    "--istobreakbuild has been deprecated, the command will always break if there are critical errors",
                 messageOverride:
-                    '--istobreakbuild has been deprecated, the command will always break if there are critical errors',
+                    "--istobreakbuild has been deprecated, the command will always break if there are critical errors",
             },
-            description: messages.getMessage('isToBreakBuildFlagDescription'),
+            description: messages.getMessage("isToBreakBuildFlagDescription"),
         }),
         refname: flags.string({
-            description: messages.getMessage('refNameFlagDescription'),
+            description: messages.getMessage("refNameFlagDescription"),
         }),
         loglevel: flags.enum({
-            description: 'logging level for this command invocation',
-            default: 'info',
+            description: "logging level for this command invocation",
+            default: "info",
             required: false,
             options: [
-                'trace',
-                'debug',
-                'info',
-                'warn',
-                'error',
-                'fatal',
-                'TRACE',
-                'DEBUG',
-                'INFO',
-                'WARN',
-                'ERROR',
-                'FATAL',
+                "trace",
+                "debug",
+                "info",
+                "warn",
+                "error",
+                "fatal",
+                "TRACE",
+                "DEBUG",
+                "INFO",
+                "WARN",
+                "ERROR",
+                "FATAL",
             ],
         }),
     };
@@ -125,14 +125,14 @@ export default class AnalyzeWithPMD extends SfpowerscriptsCommand {
     public async execute() {
         try {
             // Setup Logging Directory
-            rimraf.sync('sfpowerscripts');
-            fs.mkdirpSync('.sfpowerscripts');
+            rimraf.sync("sfpowerscripts");
+            fs.mkdirpSync(".sfpowerscripts");
 
             const source_directory: string = this.flags.sourcedir;
             const ruleset: string = this.flags.ruleset;
 
-            let rulesetpath = '';
-            if (ruleset == 'Custom') {
+            let rulesetpath = "";
+            if (ruleset == "Custom") {
                 rulesetpath = this.flags.rulesetpath;
                 SFPLogger.log(rulesetpath, LoggerLevel.DEBUG);
             }
@@ -143,15 +143,15 @@ export default class AnalyzeWithPMD extends SfpowerscriptsCommand {
 
             let pmdReport: PmdReport;
 
-            let artifactFilePath = path.join('.sfpowerscripts', 'sf-pmd-output.xml');
+            let artifactFilePath = path.join(".sfpowerscripts", "sf-pmd-output.xml");
             // generate pmd output in XML format, for parsing
-            let pmdImpl = new AnalyzeWithPMDImpl(source_directory, rulesetpath, 'xml', artifactFilePath, version);
+            let pmdImpl = new AnalyzeWithPMDImpl(source_directory, rulesetpath, "xml", artifactFilePath, version);
             await pmdImpl.exec(false);
 
             if (fs.existsSync(artifactFilePath)) {
                 pmdReport = this.parsePmdXmlOutputFile(artifactFilePath);
             } else {
-                throw new SfdxError('Failed to generate PMD output');
+                throw new SfdxError("Failed to generate PMD output");
             }
 
             this.printPmdReport(pmdReport);
@@ -165,15 +165,15 @@ export default class AnalyzeWithPMD extends SfpowerscriptsCommand {
             }
 
             if (this.flags.threshold === 1) {
-                if (pmdReport.summary.priority['1'].nViolations > 0)
+                if (pmdReport.summary.priority["1"].nViolations > 0)
                     throw new SfdxError(
-                        `Build failed due to ${pmdReport.summary.priority['1'].nViolations} critical violations found`
+                        `Build failed due to ${pmdReport.summary.priority["1"].nViolations} critical violations found`,
                     );
             } else {
                 for (let i = 1; i <= this.flags.threshold; i++) {
                     if (pmdReport.summary.priority[i].nViolations > 0) {
                         throw new SfdxError(
-                            `Build failed due to violations with a priority less than or equal to the threshold ${this.flags.threshold}`
+                            `Build failed due to violations with a priority less than or equal to the threshold ${this.flags.threshold}`,
                         );
                     }
                 }
@@ -191,12 +191,12 @@ export default class AnalyzeWithPMD extends SfpowerscriptsCommand {
     private writeDotEnv() {
         if (this.flags.refname) {
             fs.writeFileSync(
-                '.env',
+                ".env",
                 `${this.flags.refname}_sfpowerscripts_pmd_output_path=${this.flags.outputpath}\n`,
-                { flag: 'a' }
+                { flag: "a" },
             );
         } else {
-            fs.writeFileSync('.env', `sfpowerscripts_pmd_output_path=${this.flags.outputpath}\n`, { flag: 'a' });
+            fs.writeFileSync(".env", `sfpowerscripts_pmd_output_path=${this.flags.outputpath}\n`, { flag: "a" });
         }
     }
 
@@ -231,7 +231,7 @@ export default class AnalyzeWithPMD extends SfpowerscriptsCommand {
             data: [],
         };
 
-        let xml: string = fs.readFileSync(xmlFile, 'utf-8');
+        let xml: string = fs.readFileSync(xmlFile, "utf-8");
         xml2js.parseString(xml, (err, result) => {
             if (lodash.isEmpty(result)) {
                 throw new SfdxError(`Empty PMD XML output ${xmlFile}`);
@@ -281,15 +281,15 @@ export default class AnalyzeWithPMD extends SfpowerscriptsCommand {
 
     private printPmdReport(report: PmdReport): void {
         if (report.data.length === 0) {
-            SFPLogger.log(COLOR_SUCCESS('Build succeeded. No violations found.'), LoggerLevel.INFO);
+            SFPLogger.log(COLOR_SUCCESS("Build succeeded. No violations found."), LoggerLevel.INFO);
             return;
         }
 
         for (let i = 0; i < report.data.length; i++) {
             SFPLogger.log(`\n${report.data[i].filepath}`, LoggerLevel.INFO);
             let table = new Table({
-                head: ['Priority', 'Line Number', 'Rule', 'Description'],
-                chars: ZERO_BORDER_TABLE
+                head: ["Priority", "Line Number", "Rule", "Description"],
+                chars: ZERO_BORDER_TABLE,
             });
 
             report.data[i].violations.forEach((violation) => {

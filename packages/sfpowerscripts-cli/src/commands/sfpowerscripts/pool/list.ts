@@ -1,20 +1,20 @@
-import { flags, SfdxCommand } from '@salesforce/command';
-import { AnyJson } from '@salesforce/ts-types';
-import poolListImpl from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolListImpl';
-import { isNullOrUndefined } from 'util';
-import ScratchOrg from '@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg';
-import SFPLogger, { LoggerLevel } from '@dxatscale/sfp-logger';
-import { Messages } from '@salesforce/core';
+import { flags, SfdxCommand } from "@salesforce/command";
+import { AnyJson } from "@salesforce/ts-types";
+import poolListImpl from "@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolListImpl";
+import { isNullOrUndefined } from "util";
+import ScratchOrg from "@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg";
+import SFPLogger, { LoggerLevel } from "@dxatscale/sfp-logger";
+import { Messages } from "@salesforce/core";
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
 
 // Load the specific messages for this file. Messages from @salesforce/command, @salesforce/core,
 // or any library that is using the messages framework can also be loaded this way.
-const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'scratchorg_poollist');
+const messages = Messages.loadMessages("@dxatscale/sfpowerscripts", "scratchorg_poollist");
 
 export default class List extends SfdxCommand {
-    public static description = messages.getMessage('commandDescription');
+    public static description = messages.getMessage("commandDescription");
 
     protected static requiresDevhubUsername = true;
 
@@ -27,37 +27,37 @@ export default class List extends SfdxCommand {
 
     protected static flagsConfig = {
         tag: flags.string({
-            char: 't',
-            description: messages.getMessage('tagDescription'),
+            char: "t",
+            description: messages.getMessage("tagDescription"),
             required: false,
         }),
         mypool: flags.boolean({
-            char: 'm',
-            description: messages.getMessage('mypoolDescription'),
+            char: "m",
+            description: messages.getMessage("mypoolDescription"),
             required: false,
         }),
         allscratchorgs: flags.boolean({
-            char: 'a',
-            description: messages.getMessage('allscratchorgsDescription'),
+            char: "a",
+            description: messages.getMessage("allscratchorgsDescription"),
             required: false,
         }),
         loglevel: flags.enum({
-            description: 'logging level for this command invocation',
-            default: 'info',
+            description: "logging level for this command invocation",
+            default: "info",
             required: false,
             options: [
-                'trace',
-                'debug',
-                'info',
-                'warn',
-                'error',
-                'fatal',
-                'TRACE',
-                'DEBUG',
-                'INFO',
-                'WARN',
-                'ERROR',
-                'FATAL',
+                "trace",
+                "debug",
+                "info",
+                "warn",
+                "error",
+                "fatal",
+                "TRACE",
+                "DEBUG",
+                "INFO",
+                "WARN",
+                "ERROR",
+                "FATAL",
             ],
         }),
     };
@@ -78,9 +78,9 @@ export default class List extends SfdxCommand {
             });
         }
 
-        let scratchOrgInuse = result.filter((element) => element.status === 'In use');
-        let scratchOrgNotInuse = result.filter((element) => element.status === 'Available');
-        let scratchOrgInProvision = result.filter((element) => element.status === 'Provisioning in progress');
+        let scratchOrgInuse = result.filter((element) => element.status === "In use");
+        let scratchOrgNotInuse = result.filter((element) => element.status === "Available");
+        let scratchOrgInProvision = result.filter((element) => element.status === "Provisioning in progress");
 
         if (!this.flags.json) {
             if (result.length > 0) {
@@ -90,7 +90,7 @@ export default class List extends SfdxCommand {
                     this.ux.log(`List of all the pools in the org`);
 
                     this.logTagCount(result);
-                    this.ux.log('===================================');
+                    this.ux.log("===================================");
                 }
 
                 if (this.flags.allscratchorgs) {
@@ -102,9 +102,9 @@ export default class List extends SfdxCommand {
                 }
 
                 if (this.flags.mypool) {
-                    this.ux.table(result, ['tag', 'orgId', 'username', 'password', 'expiryDate', 'status', 'loginURL']);
+                    this.ux.table(result, ["tag", "orgId", "username", "password", "expiryDate", "status", "loginURL"]);
                 } else {
-                    this.ux.table(result, ['tag', 'orgId', 'username', 'expiryDate', 'status', 'loginURL']);
+                    this.ux.table(result, ["tag", "orgId", "username", "expiryDate", "status", "loginURL"]);
                 }
             } else {
                 SFPLogger.log(`No Scratch orgs available, time to create your pool.`, LoggerLevel.ERROR);
@@ -137,6 +137,6 @@ export default class List extends SfdxCommand {
             });
         });
 
-        this.ux.table(tagArray, ['tag', 'count']);
+        this.ux.table(tagArray, ["tag", "count"]);
     }
 }

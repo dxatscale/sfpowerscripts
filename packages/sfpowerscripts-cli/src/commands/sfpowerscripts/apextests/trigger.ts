@@ -6,28 +6,28 @@ import {
     TestLevel,
     TestOptions,
     RunAllTestsInPackageOptions,
-} from '@dxatscale/sfpowerscripts.core/lib/apextest/TestOptions';
-import TriggerApexTests from '@dxatscale/sfpowerscripts.core/lib/apextest/TriggerApexTests';
-import { flags } from '@salesforce/command';
-import SfpowerscriptsCommand from '../../../SfpowerscriptsCommand';
-import { Messages } from '@salesforce/core';
-import SfpPackage from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
+} from "@dxatscale/sfpowerscripts.core/lib/apextest/TestOptions";
+import TriggerApexTests from "@dxatscale/sfpowerscripts.core/lib/apextest/TriggerApexTests";
+import { flags } from "@salesforce/command";
+import SfpowerscriptsCommand from "../../../SfpowerscriptsCommand";
+import { Messages } from "@salesforce/core";
+import SfpPackage from "@dxatscale/sfpowerscripts.core/lib/package/SfpPackage";
 
-import { ConsoleLogger } from '@dxatscale/sfp-logger';
-import { CoverageOptions } from '@dxatscale/sfpowerscripts.core/lib/apex/coverage/IndividualClassCoverage';
-import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder';
-import { PackageType } from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
-const path = require('path');
+import { ConsoleLogger } from "@dxatscale/sfp-logger";
+import { CoverageOptions } from "@dxatscale/sfpowerscripts.core/lib/apex/coverage/IndividualClassCoverage";
+import SfpPackageBuilder from "@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder";
+import { PackageType } from "@dxatscale/sfpowerscripts.core/lib/package/SfpPackage";
+const path = require("path");
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
 
 // Load the specific messages for this file. Messages from @salesforce/command, @salesforce/core,
 // or any library that is using the messages framework can also be loaded this way.
-const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'trigger_apex_test');
+const messages = Messages.loadMessages("@dxatscale/sfpowerscripts", "trigger_apex_test");
 
 export default class TriggerApexTest extends SfpowerscriptsCommand {
-    public static description = messages.getMessage('commandDescription');
+    public static description = messages.getMessage("commandDescription");
 
     public static examples = [
         `$ sfdx sfpowerscripts:apextests:trigger -u scratchorg -l RunLocalTests -s`,
@@ -36,74 +36,74 @@ export default class TriggerApexTest extends SfpowerscriptsCommand {
 
     protected static flagsConfig = {
         testlevel: flags.string({
-            char: 'l',
-            description: messages.getMessage('testLevelFlagDescription'),
+            char: "l",
+            description: messages.getMessage("testLevelFlagDescription"),
             options: [
-                'RunSpecifiedTests',
-                'RunApexTestSuite',
-                'RunLocalTests',
-                'RunAllTestsInOrg',
-                'RunAllTestsInPackage',
+                "RunSpecifiedTests",
+                "RunApexTestSuite",
+                "RunLocalTests",
+                "RunAllTestsInOrg",
+                "RunAllTestsInPackage",
             ],
-            default: 'RunLocalTests',
+            default: "RunLocalTests",
         }),
         package: flags.string({
-            char: 'n',
-            description: messages.getMessage('packageFlagDescription'),
+            char: "n",
+            description: messages.getMessage("packageFlagDescription"),
             required: false,
         }),
         validateindividualclasscoverage: flags.boolean({
-            char: 'c',
-            description: messages.getMessage('validateIndividualClassCoverageFlagDescription'),
+            char: "c",
+            description: messages.getMessage("validateIndividualClassCoverageFlagDescription"),
             default: false,
         }),
         validatepackagecoverage: flags.boolean({
-            description: messages.getMessage('validatePackageCoverageFlagDescription'),
+            description: messages.getMessage("validatePackageCoverageFlagDescription"),
             default: false,
         }),
         synchronous: flags.boolean({
-            char: 's',
+            char: "s",
             deprecated: {
                 message:
-                'synchronous mode is no longer supported, all tests are triggered asynchronously, Please use cli or disable parallel testing in the org ',
+                    "synchronous mode is no longer supported, all tests are triggered asynchronously, Please use cli or disable parallel testing in the org ",
                 messageOverride:
-                    'synchronous mode is no longer supported, all tests are triggered asynchronously, Please use cli or disable parallel testing in the org ',
+                    "synchronous mode is no longer supported, all tests are triggered asynchronously, Please use cli or disable parallel testing in the org ",
             },
-            description: messages.getMessage('synchronousFlagDescription'),
+            description: messages.getMessage("synchronousFlagDescription"),
         }),
         specifiedtests: flags.string({
-            description: messages.getMessage('specifiedTestsFlagDescription'),
+            description: messages.getMessage("specifiedTestsFlagDescription"),
         }),
         apextestsuite: flags.string({
-            description: messages.getMessage('apexTestSuiteFlagDescription'),
+            description: messages.getMessage("apexTestSuiteFlagDescription"),
         }),
         coveragepercent: flags.integer({
-            char: 'p',
-            description: messages.getMessage('coveragePercentFlagDescription'),
+            char: "p",
+            description: messages.getMessage("coveragePercentFlagDescription"),
             default: 75,
         }),
         waittime: flags.number({
-            char: 'w',
-            description: messages.getMessage('waitTimeFlagDescription'),
+            char: "w",
+            description: messages.getMessage("waitTimeFlagDescription"),
             default: 60,
         }),
         loglevel: flags.enum({
-            description: 'logging level for this command invocation',
-            default: 'info',
+            description: "logging level for this command invocation",
+            default: "info",
             required: false,
             options: [
-                'trace',
-                'debug',
-                'info',
-                'warn',
-                'error',
-                'fatal',
-                'TRACE',
-                'DEBUG',
-                'INFO',
-                'WARN',
-                'ERROR',
-                'FATAL',
+                "trace",
+                "debug",
+                "info",
+                "warn",
+                "error",
+                "fatal",
+                "TRACE",
+                "DEBUG",
+                "INFO",
+                "WARN",
+                "ERROR",
+                "FATAL",
             ],
         }),
     };
@@ -115,13 +115,13 @@ export default class TriggerApexTest extends SfpowerscriptsCommand {
         try {
             let testOptions: TestOptions;
             let coverageOptions: CoverageOptions;
-            let outputdir = path.join('.testresults');
+            let outputdir = path.join(".testresults");
 
             if (this.flags.testlevel === TestLevel.RunAllTestsInOrg.toString()) {
                 testOptions = new RunAllTestsInOrg(this.flags.waittime, outputdir, this.flags.synchronous);
             } else if (this.flags.testlevel === TestLevel.RunAllTestsInPackage.toString()) {
                 if (this.flags.package === null) {
-                    throw new Error('Package name must be specified when test level is RunAllTestsInPackage');
+                    throw new Error("Package name must be specified when test level is RunAllTestsInPackage");
                 }
                 let pkg: SfpPackage = await SfpPackageBuilder.buildPackageFromProjectDirectory(
                     new ConsoleLogger(),
@@ -129,7 +129,7 @@ export default class TriggerApexTest extends SfpowerscriptsCommand {
                     this.flags.package,
                     {
                         overridePackageTypeWith: PackageType.Source,
-                    }
+                    },
                 );
                 testOptions = new RunAllTestsInPackageOptions(pkg, this.flags.waittime, outputdir);
             } else if (this.flags.testlevel === TestLevel.RunApexTestSuite.toString()) {
@@ -137,7 +137,7 @@ export default class TriggerApexTest extends SfpowerscriptsCommand {
                     this.flags.waittime,
                     outputdir,
                     this.flags.apextestsuite,
-                    this.flags.synchronous
+                    this.flags.synchronous,
                 );
             } else if (this.flags.testlevel === TestLevel.RunLocalTests.toString()) {
                 testOptions = new RunLocalTests(this.flags.waittime, outputdir, this.flags.synchronous);
@@ -146,17 +146,17 @@ export default class TriggerApexTest extends SfpowerscriptsCommand {
                     this.flags.waittime,
                     outputdir,
                     this.flags.specifiedtests,
-                    this.flags.synchronous
+                    this.flags.synchronous,
                 );
             } else {
-                throw new Error('Unimplemented Option, please check the option');
+                throw new Error("Unimplemented Option, please check the option");
             }
 
             if (
                 (this.flags.validateindividualclasscoverage || this.flags.validatepackagecoverage) &&
                 this.flags.testlevel !== TestLevel.RunAllTestsInPackage.toString()
             ) {
-                throw new Error('Code coverage validation is only available for test level RunAllTestsInPackage');
+                throw new Error("Code coverage validation is only available for test level RunAllTestsInPackage");
             } else {
                 coverageOptions = {
                     isPackageCoverageToBeValidated: this.flags.validatepackagecoverage,
@@ -170,17 +170,17 @@ export default class TriggerApexTest extends SfpowerscriptsCommand {
                 testOptions,
                 coverageOptions,
                 null,
-                null
+                null,
             );
             let result = await triggerApexTests.exec();
 
             if (!result.result) {
                 throw new Error(`Error: ${result.message}`);
             } else {
-                console.log(`\n ${result.message ? result.message : ''}`);
+                console.log(`\n ${result.message ? result.message : ""}`);
             }
         } catch (err) {
-            console.log('\n');
+            console.log("\n");
             console.error(err.message);
             process.exitCode = 1;
         }

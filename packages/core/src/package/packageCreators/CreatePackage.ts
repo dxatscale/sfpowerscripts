@@ -1,7 +1,7 @@
-import SFPLogger, { COLOR_HEADER, COLOR_KEY_MESSAGE, COLOR_WARNING, Logger, LoggerLevel } from '@dxatscale/sfp-logger';
-import SFPStatsSender from '../../stats/SFPStatsSender';
-import SfpPackage, { PackageType, SfpPackageParams } from '../SfpPackage';
-import { PackageCreationParams } from '../SfpPackageBuilder';
+import SFPLogger, { COLOR_HEADER, COLOR_KEY_MESSAGE, COLOR_WARNING, Logger, LoggerLevel } from "@dxatscale/sfp-logger";
+import SFPStatsSender from "../../stats/SFPStatsSender";
+import SfpPackage, { PackageType, SfpPackageParams } from "../SfpPackage";
+import { PackageCreationParams } from "../SfpPackageBuilder";
 
 export abstract class CreatePackage {
     private startTime: number;
@@ -11,7 +11,7 @@ export abstract class CreatePackage {
         protected sfpPackage: SfpPackage,
         protected packageCreationParams?: PackageCreationParams,
         protected logger?: Logger,
-        protected params?: SfpPackageParams
+        protected params?: SfpPackageParams,
     ) {
         //Initialize Params
         if (this.params == null) this.params = {};
@@ -55,23 +55,23 @@ export abstract class CreatePackage {
         };
 
         if (this.getTypeOfPackage() === PackageType.Source || this.getTypeOfPackage() === PackageType.Unlocked)
-            SFPStatsSender.logGauge('package.metadatacount', this.sfpPackage.metadataCount, {
+            SFPStatsSender.logGauge("package.metadatacount", this.sfpPackage.metadataCount, {
                 package: this.sfpPackage.package_name,
                 type: this.sfpPackage.package_type,
             });
 
-        SFPStatsSender.logCount('package.created', {
+        SFPStatsSender.logCount("package.created", {
             package: this.sfpPackage.package_name,
             type: this.sfpPackage.package_type,
             is_dependency_validated: String(this.sfpPackage.isDependencyValidated),
         });
 
-        SFPStatsSender.logElapsedTime('package.elapsed.time', this.sfpPackage.creation_details.creation_time, {
+        SFPStatsSender.logElapsedTime("package.elapsed.time", this.sfpPackage.creation_details.creation_time, {
             package: this.sfpPackage.package_name,
             type: this.sfpPackage.package_type,
             is_dependency_validated: String(this.sfpPackage.isDependencyValidated),
         });
-        SFPStatsSender.logElapsedTime('package.creation.elapsed_time', this.sfpPackage.creation_details.creation_time, {
+        SFPStatsSender.logElapsedTime("package.creation.elapsed_time", this.sfpPackage.creation_details.creation_time, {
             package: this.sfpPackage.package_name,
             type: this.sfpPackage.package_type,
             is_dependency_validated: String(this.sfpPackage.isDependencyValidated),
@@ -105,23 +105,23 @@ export abstract class CreatePackage {
     protected printEmptyArtifactWarning() {
         SFPLogger.log(
             `${COLOR_WARNING(
-                `---------------------WARNING! Empty aritfact encountered-------------------------------`
+                `---------------------WARNING! Empty aritfact encountered-------------------------------`,
             )}`,
             LoggerLevel.INFO,
-            this.logger
+            this.logger,
         );
         SFPLogger.log(
-            'Either this folder is empty or the application of .forceignore results in an empty folder',
+            "Either this folder is empty or the application of .forceignore results in an empty folder",
             LoggerLevel.INFO,
-            this.logger
+            this.logger,
         );
-        SFPLogger.log('Proceeding to create an empty artifact', LoggerLevel.INFO, this.logger);
+        SFPLogger.log("Proceeding to create an empty artifact", LoggerLevel.INFO, this.logger);
         SFPLogger.log(
             `${COLOR_WARNING(
-                `---------------------------------------------------------------------------------------`
+                `---------------------------------------------------------------------------------------`,
             )}`,
             LoggerLevel.INFO,
-            this.logger
+            this.logger,
         );
     }
 
@@ -130,28 +130,28 @@ export abstract class CreatePackage {
         SFPLogger.log(
             COLOR_HEADER(`package name: ${COLOR_KEY_MESSAGE(`${this.sfpPackage.packageName}`)}`),
             LoggerLevel.INFO,
-            this.logger
+            this.logger,
         );
         SFPLogger.log(
             COLOR_HEADER(`package type: ${COLOR_KEY_MESSAGE(`${this.getTypeOfPackage()}`)}`),
             LoggerLevel.INFO,
-            this.logger
+            this.logger,
         );
 
         SFPLogger.log(
             COLOR_HEADER(`package directory: ${COLOR_KEY_MESSAGE(`${this.sfpPackage.packageDescriptor.path}`)}`),
             LoggerLevel.INFO,
-            this.logger
+            this.logger,
         );
 
         this.printAdditionalPackageSpecificHeaders();
 
         SFPLogger.log(
             `${COLOR_HEADER(
-                `-------------------------------------------------------------------------------------------`
+                `-------------------------------------------------------------------------------------------`,
             )}`,
             LoggerLevel.INFO,
-            this.logger
+            this.logger,
         );
     }
 

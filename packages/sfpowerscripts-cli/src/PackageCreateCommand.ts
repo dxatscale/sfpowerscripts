@@ -1,18 +1,18 @@
-import ArtifactGenerator from '@dxatscale/sfpowerscripts.core/lib/artifacts/generators/ArtifactGenerator';
-import { COLOR_HEADER, COLOR_KEY_MESSAGE, ConsoleLogger } from '@dxatscale/sfp-logger';
-import PackageDiffImpl from '@dxatscale/sfpowerscripts.core/lib/package/diff/PackageDiffImpl';
-import { flags } from '@salesforce/command';
-import { Messages } from '@salesforce/core';
-import { EOL } from 'os';
-import SfpowerscriptsCommand from './SfpowerscriptsCommand';
-import GitIdentity from '@dxatscale/sfpowerscripts.core/lib/git/GitIdentity';
-import SfpPackage, { PackageType } from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
-import getFormattedTime from '@dxatscale/sfpowerscripts.core/lib/utils/GetFormattedTime';
-const fs = require('fs-extra');
-import Git from '@dxatscale/sfpowerscripts.core/lib/git/Git';
+import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/artifacts/generators/ArtifactGenerator";
+import { COLOR_HEADER, COLOR_KEY_MESSAGE, ConsoleLogger } from "@dxatscale/sfp-logger";
+import PackageDiffImpl from "@dxatscale/sfpowerscripts.core/lib/package/diff/PackageDiffImpl";
+import { flags } from "@salesforce/command";
+import { Messages } from "@salesforce/core";
+import { EOL } from "os";
+import SfpowerscriptsCommand from "./SfpowerscriptsCommand";
+import GitIdentity from "@dxatscale/sfpowerscripts.core/lib/git/GitIdentity";
+import SfpPackage, { PackageType } from "@dxatscale/sfpowerscripts.core/lib/package/SfpPackage";
+import getFormattedTime from "@dxatscale/sfpowerscripts.core/lib/utils/GetFormattedTime";
+const fs = require("fs-extra");
+import Git from "@dxatscale/sfpowerscripts.core/lib/git/Git";
 
 Messages.importMessagesDirectory(__dirname);
-const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'create-package');
+const messages = Messages.loadMessages("@dxatscale/sfpowerscripts", "create-package");
 
 export default abstract class PackageCreateCommand extends SfpowerscriptsCommand {
     protected static requiresUsername = false;
@@ -22,49 +22,49 @@ export default abstract class PackageCreateCommand extends SfpowerscriptsCommand
     protected static flagsConfig = {
         package: flags.string({
             required: true,
-            char: 'n',
-            description: messages.getMessage('packageFlagDescription'),
+            char: "n",
+            description: messages.getMessage("packageFlagDescription"),
         }),
         diffcheck: flags.boolean({
-            description: messages.getMessage('diffCheckFlagDescription'),
+            description: messages.getMessage("diffCheckFlagDescription"),
         }),
         gittag: flags.boolean({
-            description: messages.getMessage('gitTagFlagDescription'),
+            description: messages.getMessage("gitTagFlagDescription"),
         }),
         repourl: flags.string({
-            char: 'r',
-            description: messages.getMessage('repoUrlFlagDescription'),
+            char: "r",
+            description: messages.getMessage("repoUrlFlagDescription"),
         }),
         versionnumber: flags.string({
-            description: messages.getMessage('versionNumberFlagDescription'),
+            description: messages.getMessage("versionNumberFlagDescription"),
         }),
         artifactdir: flags.directory({
-            description: messages.getMessage('artifactDirectoryFlagDescription'),
-            default: 'artifacts',
+            description: messages.getMessage("artifactDirectoryFlagDescription"),
+            default: "artifacts",
         }),
         branch: flags.string({
-            description: messages.getMessage('branchFlagDescription'),
+            description: messages.getMessage("branchFlagDescription"),
         }),
         refname: flags.string({
-            description: messages.getMessage('refNameFlagDescription'),
+            description: messages.getMessage("refNameFlagDescription"),
         }),
         loglevel: flags.enum({
-            description: 'logging level for this command invocation',
-            default: 'info',
+            description: "logging level for this command invocation",
+            default: "info",
             required: false,
             options: [
-                'trace',
-                'debug',
-                'info',
-                'warn',
-                'error',
-                'fatal',
-                'TRACE',
-                'DEBUG',
-                'INFO',
-                'WARN',
-                'ERROR',
-                'FATAL',
+                "trace",
+                "debug",
+                "info",
+                "warn",
+                "error",
+                "fatal",
+                "TRACE",
+                "DEBUG",
+                "INFO",
+                "WARN",
+                "ERROR",
+                "FATAL",
             ],
         }),
     };
@@ -130,10 +130,12 @@ export default abstract class PackageCreateCommand extends SfpowerscriptsCommand
         this.printPackageDetails(sfpPackage);
 
         if (this.flags.gittag) {
-           
             let git = await Git.initiateRepo(new ConsoleLogger());
             let tagname = `${this.sfdxPackage}_v${sfpPackage.package_version_number}`;
-            await git.addAnnotatedTag(tagname, `${sfpPackage.packageName} sfpowerscripts package ${sfpPackage.package_version_number}`)
+            await git.addAnnotatedTag(
+                tagname,
+                `${sfpPackage.packageName} sfpowerscripts package ${sfpPackage.package_version_number}`,
+            );
 
             sfpPackage.tag = tagname;
         }
@@ -142,28 +144,28 @@ export default abstract class PackageCreateCommand extends SfpowerscriptsCommand
         let artifactFilepath: string = await ArtifactGenerator.generateArtifact(
             sfpPackage,
             process.cwd(),
-            this.artifactDirectory
+            this.artifactDirectory,
         );
 
         this.generateEnvironmentVariables(artifactFilepath, sfpPackage);
     }
 
     private generateEnvironmentVariables(artifactFilepath: string, sfpPackage: SfpPackage) {
-        let prefix = 'sfpowerscripts';
+        let prefix = "sfpowerscripts";
         if (this.refname != null) prefix = `${this.refname}_${prefix}`;
 
-        console.log('\nOutput variables:');
+        console.log("\nOutput variables:");
 
-        fs.writeFileSync('.env', `${prefix}_artifact_directory=${artifactFilepath}\n`, { flag: 'a' });
+        fs.writeFileSync(".env", `${prefix}_artifact_directory=${artifactFilepath}\n`, { flag: "a" });
         console.log(`${prefix}_artifact_directory=${artifactFilepath}`);
-        fs.writeFileSync('.env', `${prefix}_package_version_number=${sfpPackage.package_version_number}\n`, {
-            flag: 'a',
+        fs.writeFileSync(".env", `${prefix}_package_version_number=${sfpPackage.package_version_number}\n`, {
+            flag: "a",
         });
         console.log(`${prefix}_package_version_number=${sfpPackage.package_version_number}`);
 
         if (sfpPackage.package_version_id) {
-            fs.writeFileSync('.env', `${prefix}_package_version_id=${sfpPackage.package_version_id}\n`, {
-                flag: 'a',
+            fs.writeFileSync(".env", `${prefix}_package_version_id=${sfpPackage.package_version_id}\n`, {
+                flag: "a",
             });
             console.log(`${prefix}_package_version_id=${sfpPackage.package_version_id}`);
         }
@@ -173,14 +175,14 @@ export default abstract class PackageCreateCommand extends SfpowerscriptsCommand
         console.log(
             COLOR_HEADER(
                 `${EOL}${sfpPackage.packageName} package created in ${getFormattedTime(
-                    sfpPackage.creation_details.creation_time
-                )}`
-            )
+                    sfpPackage.creation_details.creation_time,
+                )}`,
+            ),
         );
         console.log(COLOR_HEADER(`-- Package Details:--`));
         console.log(
             COLOR_HEADER(`-- Package Version Number:        `),
-            COLOR_KEY_MESSAGE(sfpPackage.package_version_number)
+            COLOR_KEY_MESSAGE(sfpPackage.package_version_number),
         );
 
         if (sfpPackage.package_type !== PackageType.Data) {
@@ -188,45 +190,45 @@ export default abstract class PackageCreateCommand extends SfpowerscriptsCommand
                 if (sfpPackage.package_version_id)
                     console.log(
                         COLOR_HEADER(`-- Package Version Id:             `),
-                        COLOR_KEY_MESSAGE(sfpPackage.package_version_id)
+                        COLOR_KEY_MESSAGE(sfpPackage.package_version_id),
                     );
                 if (sfpPackage.test_coverage)
                     console.log(
                         COLOR_HEADER(`-- Package Test Coverage:          `),
-                        COLOR_KEY_MESSAGE(sfpPackage.test_coverage)
+                        COLOR_KEY_MESSAGE(sfpPackage.test_coverage),
                     );
                 if (sfpPackage.has_passed_coverage_check)
                     console.log(
                         COLOR_HEADER(`-- Package Coverage Check Passed:  `),
-                        COLOR_KEY_MESSAGE(sfpPackage.has_passed_coverage_check)
+                        COLOR_KEY_MESSAGE(sfpPackage.has_passed_coverage_check),
                     );
             }
 
             console.log(
                 COLOR_HEADER(`-- Apex In Package:             `),
-                COLOR_KEY_MESSAGE(sfpPackage.isApexFound ? 'Yes' : 'No')
+                COLOR_KEY_MESSAGE(sfpPackage.isApexFound ? "Yes" : "No"),
             );
             console.log(
                 COLOR_HEADER(`-- Profiles In Package:         `),
-                COLOR_KEY_MESSAGE(sfpPackage.isProfilesFound ? 'Yes' : 'No')
+                COLOR_KEY_MESSAGE(sfpPackage.isProfilesFound ? "Yes" : "No"),
             );
             console.log(COLOR_HEADER(`-- Metadata Count:         `), COLOR_KEY_MESSAGE(sfpPackage.metadataCount));
             if (sfpPackage.diffPackageMetadata) {
                 console.log(
                     COLOR_HEADER(`-- Source Version From:         `),
-                    COLOR_KEY_MESSAGE(sfpPackage.diffPackageMetadata.sourceVersionFrom)
+                    COLOR_KEY_MESSAGE(sfpPackage.diffPackageMetadata.sourceVersionFrom),
                 );
                 console.log(
                     COLOR_HEADER(`-- Source Version To:         `),
-                    COLOR_KEY_MESSAGE(sfpPackage.diffPackageMetadata.sourceVersionTo)
+                    COLOR_KEY_MESSAGE(sfpPackage.diffPackageMetadata.sourceVersionTo),
                 );
                 console.log(
                     COLOR_HEADER(`-- Metadata Count for Diff Package:         `),
-                    COLOR_KEY_MESSAGE(sfpPackage.diffPackageMetadata.metadataCount)
+                    COLOR_KEY_MESSAGE(sfpPackage.diffPackageMetadata.metadataCount),
                 );
                 console.log(
                     COLOR_HEADER(`-- Apex Test Class Invalidated:         `),
-                    COLOR_KEY_MESSAGE(sfpPackage.diffPackageMetadata.invalidatedTestClasses?.length)
+                    COLOR_KEY_MESSAGE(sfpPackage.diffPackageMetadata.invalidatedTestClasses?.length),
                 );
             }
         }

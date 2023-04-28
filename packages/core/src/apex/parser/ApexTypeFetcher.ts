@@ -1,8 +1,8 @@
-import * as fs from 'fs-extra';
-const path = require('path');
-const glob = require('glob');
+import * as fs from "fs-extra";
+const path = require("path");
+const glob = require("glob");
 
-import ApexTypeListener from './listeners/ApexTypeListener';
+import ApexTypeListener from "./listeners/ApexTypeListener";
 
 import {
     ApexLexer,
@@ -12,9 +12,9 @@ import {
     ThrowingErrorListener,
     CommonTokenStream,
     ParseTreeWalker,
-} from 'apex-parser';
-import SFPLogger, { LoggerLevel } from '@dxatscale/sfp-logger';
-import { ApexClasses } from '../../package/SfpPackage';
+} from "apex-parser";
+import SFPLogger, { LoggerLevel } from "@dxatscale/sfp-logger";
+import { ApexClasses } from "../../package/SfpPackage";
 
 /**
  * Get Apex type of cls files in a search directory.
@@ -42,9 +42,9 @@ export default class ApexTypeFetcher {
         }
 
         for (let clsFile of clsFiles) {
-            let clsPayload: string = fs.readFileSync(clsFile, 'utf8');
+            let clsPayload: string = fs.readFileSync(clsFile, "utf8");
             let fileDescriptor: FileDescriptor = {
-                name: path.basename(clsFile, '.cls'),
+                name: path.basename(clsFile, ".cls"),
                 filepath: clsFile,
             };
 
@@ -63,8 +63,8 @@ export default class ApexTypeFetcher {
                 SFPLogger.log(`Failed to parse ${clsFile} in ${this.searchDir}`, LoggerLevel.WARN);
                 SFPLogger.log(err.message, LoggerLevel.WARN);
 
-                fileDescriptor['error'] = err;
-                this.apexSortedByType['parseError'].push(fileDescriptor);
+                fileDescriptor["error"] = err;
+                this.apexSortedByType["parseError"].push(fileDescriptor);
 
                 continue;
             }
@@ -77,15 +77,15 @@ export default class ApexTypeFetcher {
             let apexType = apexTypeListener.getApexType();
 
             if (apexType.class) {
-                this.apexSortedByType['class'].push(fileDescriptor);
+                this.apexSortedByType["class"].push(fileDescriptor);
                 if (apexType.testClass) {
-                    this.apexSortedByType['testClass'].push(fileDescriptor);
+                    this.apexSortedByType["testClass"].push(fileDescriptor);
                 }
             } else if (apexType.interface) {
-                this.apexSortedByType['interface'].push(fileDescriptor);
+                this.apexSortedByType["interface"].push(fileDescriptor);
             } else {
-                fileDescriptor['error'] = { message: 'Unknown Apex Type' };
-                this.apexSortedByType['parseError'].push(fileDescriptor);
+                fileDescriptor["error"] = { message: "Unknown Apex Type" };
+                this.apexSortedByType["parseError"].push(fileDescriptor);
             }
         }
         return this.apexSortedByType;
@@ -101,13 +101,13 @@ export default class ApexTypeFetcher {
 
         if (packageClasses != null) {
             let testClassesInPackage: ApexClasses = this.apexSortedByType.testClass.map(
-                (fileDescriptor) => fileDescriptor.name
+                (fileDescriptor) => fileDescriptor.name,
             );
             if (testClassesInPackage != null && testClassesInPackage.length > 0)
                 packageClasses = packageClasses.filter((item) => !testClassesInPackage.includes(item));
 
             let interfacesInPackage: ApexClasses = this.apexSortedByType.testClass.map(
-                (fileDescriptor) => fileDescriptor.name
+                (fileDescriptor) => fileDescriptor.name,
             );
             if (interfacesInPackage != null && interfacesInPackage.length > 0)
                 packageClasses = packageClasses.filter((item) => !interfacesInPackage.includes(item));

@@ -1,29 +1,29 @@
-import ApexTypeFetcher from '../apex/parser/ApexTypeFetcher';
-import ProjectConfig from '../project/ProjectConfig';
-import SfpPackageContentGenerator from './generators/SfpPackageContentGenerator';
-import SourceToMDAPIConvertor from './packageFormatConvertors/SourceToMDAPIConvertor';
-import PackageManifest from './components/PackageManifest';
-import MetadataCount from './components/MetadataCount';
-import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
-import * as fs from 'fs-extra';
-import path from 'path';
-import { Artifact } from '../artifacts/ArtifactFetcher';
-import SfpPackage, { DiffPackageMetadata, PackageType, SfpPackageParams } from './SfpPackage';
-import PropertyFetcher from './propertyFetchers/PropertyFetcher';
-import AssignPermissionSetFetcher from './propertyFetchers/AssignPermissionSetFetcher';
-import DestructiveManifestPathFetcher from './propertyFetchers/DestructiveManifestPathFetcher';
-import ReconcilePropertyFetcher from './propertyFetchers/ReconcileProfilePropertyFetcher';
-import CreateUnlockedPackageImpl from './packageCreators/CreateUnlockedPackageImpl';
-import CreateSourcePackageImpl from './packageCreators/CreateSourcePackageImpl';
-import CreateDataPackageImpl from './packageCreators/CreateDataPackageImpl';
-import ImpactedApexTestClassFetcher from '../apextest/ImpactedApexTestClassFetcher';
-import * as rimraf from 'rimraf';
-import PackageToComponent from './components/PackageToComponent';
-import lodash = require('lodash');
-import { EOL } from 'os';
-import PackageVersionUpdater from './version/PackageVersionUpdater';
-import { AnalyzerRegistry } from './analyser/AnalyzerRegistry';
-import { ComponentSet } from '@salesforce/source-deploy-retrieve';
+import ApexTypeFetcher from "../apex/parser/ApexTypeFetcher";
+import ProjectConfig from "../project/ProjectConfig";
+import SfpPackageContentGenerator from "./generators/SfpPackageContentGenerator";
+import SourceToMDAPIConvertor from "./packageFormatConvertors/SourceToMDAPIConvertor";
+import PackageManifest from "./components/PackageManifest";
+import MetadataCount from "./components/MetadataCount";
+import SFPLogger, { Logger, LoggerLevel } from "@dxatscale/sfp-logger";
+import * as fs from "fs-extra";
+import path from "path";
+import { Artifact } from "../artifacts/ArtifactFetcher";
+import SfpPackage, { DiffPackageMetadata, PackageType, SfpPackageParams } from "./SfpPackage";
+import PropertyFetcher from "./propertyFetchers/PropertyFetcher";
+import AssignPermissionSetFetcher from "./propertyFetchers/AssignPermissionSetFetcher";
+import DestructiveManifestPathFetcher from "./propertyFetchers/DestructiveManifestPathFetcher";
+import ReconcilePropertyFetcher from "./propertyFetchers/ReconcileProfilePropertyFetcher";
+import CreateUnlockedPackageImpl from "./packageCreators/CreateUnlockedPackageImpl";
+import CreateSourcePackageImpl from "./packageCreators/CreateSourcePackageImpl";
+import CreateDataPackageImpl from "./packageCreators/CreateDataPackageImpl";
+import ImpactedApexTestClassFetcher from "../apextest/ImpactedApexTestClassFetcher";
+import * as rimraf from "rimraf";
+import PackageToComponent from "./components/PackageToComponent";
+import lodash = require("lodash");
+import { EOL } from "os";
+import PackageVersionUpdater from "./version/PackageVersionUpdater";
+import { AnalyzerRegistry } from "./analyser/AnalyzerRegistry";
+import { ComponentSet } from "@salesforce/source-deploy-retrieve";
 
 export default class SfpPackageBuilder {
     public static async buildPackageFromProjectDirectory(
@@ -32,7 +32,7 @@ export default class SfpPackageBuilder {
         sfdx_package: string,
         params?: SfpPackageParams,
         packageCreationParams?: PackageCreationParams,
-        projectConfig?: any
+        projectConfig?: any,
     ) {
         if (!projectConfig) {
             projectConfig = ProjectConfig.getSFDXProjectConfig(projectDirectory);
@@ -54,9 +54,9 @@ export default class SfpPackageBuilder {
         sfpPackage.apiVersion = sfpPackage.projectConfig.sourceApiVersion;
         sfpPackage.packageDescriptor = ProjectConfig.getPackageDescriptorFromConfig(
             sfdx_package,
-            sfpPackage.projectConfig
+            sfpPackage.projectConfig,
         );
-        sfpPackage.projectDirectory = projectDirectory?projectDirectory:'';
+        sfpPackage.projectDirectory = projectDirectory ? projectDirectory : "";
         sfpPackage.packageDirectory = sfpPackage.packageDescriptor.path;
         //Set Default Version Number
         sfpPackage.versionNumber = sfpPackage.packageDescriptor.versionNumber;
@@ -65,7 +65,7 @@ export default class SfpPackageBuilder {
         sfpPackage.sourceVersion = params?.sourceVersion;
         sfpPackage.branch = params?.branch;
         sfpPackage.repository_url = params?.repositoryUrl;
-        if (params?.configFilePath == null) sfpPackage.configFilePath = 'config/project-scratch-def.json';
+        if (params?.configFilePath == null) sfpPackage.configFilePath = "config/project-scratch-def.json";
         else sfpPackage.configFilePath = params?.configFilePath;
 
         for (const propertyFetcher of propertyFetchers) {
@@ -89,7 +89,7 @@ export default class SfpPackageBuilder {
             sfpPackage.configFilePath,
             params?.pathToReplacementForceIgnore,
             params?.revisionFrom,
-            params?.revisionTo
+            params?.revisionTo,
         );
 
         sfpPackage.resolvedPackageDirectory = path.join(sfpPackage.workingDirectory, sfpPackage.packageDescriptor.path);
@@ -100,7 +100,7 @@ export default class SfpPackageBuilder {
                 sfpPackage.workingDirectory,
                 sfpPackage.packageDescriptor.path,
                 ProjectConfig.getSFDXProjectConfig(sfpPackage.workingDirectory).sourceApiVersion,
-                logger
+                logger,
             );
             sfpPackage.mdapiDir = (await sourceToMdapiConvertor.convert()).packagePath;
             const packageManifest: PackageManifest = await PackageManifest.create(sfpPackage.mdapiDir);
@@ -110,14 +110,15 @@ export default class SfpPackageBuilder {
             sfpPackage.isApexFound = packageManifest.isApexInPackage();
             sfpPackage.isProfilesFound = packageManifest.isProfilesInPackage();
             sfpPackage.isPermissionSetGroupFound = packageManifest.isPermissionSetGroupsFoundInPackage();
-            sfpPackage.isPayLoadContainTypesSupportedByProfiles = packageManifest.isPayLoadContainTypesSupportedByProfiles();
+            sfpPackage.isPayLoadContainTypesSupportedByProfiles =
+                packageManifest.isPayLoadContainTypesSupportedByProfiles();
 
             let apexFetcher: ApexTypeFetcher = new ApexTypeFetcher(sfpPackage.mdapiDir);
             sfpPackage.apexClassesSortedByTypes = apexFetcher.getClassesClassifiedByType();
             sfpPackage.apexTestClassses = apexFetcher.getTestClasses();
             sfpPackage.metadataCount = MetadataCount.getMetadataCount(
                 sfpPackage.workingDirectory,
-                sfpPackage.packageDescriptor.path
+                sfpPackage.packageDescriptor.path,
             );
             sfpPackage.apexClassWithOutTestClasses = apexFetcher.getClassesOnlyExcludingTestsAndInterfaces();
 
@@ -125,13 +126,14 @@ export default class SfpPackageBuilder {
 
             //Load component Set
             let componentSet = ComponentSet.fromSource(
-                path.resolve(sfpPackage.workingDirectory, sfpPackage.projectDirectory, sfpPackage.packageDirectory)
+                path.resolve(sfpPackage.workingDirectory, sfpPackage.projectDirectory, sfpPackage.packageDirectory),
             );
 
             //Run through all analyzers
             let analyzers = AnalyzerRegistry.getAnalyzers();
             for (const analyzer of analyzers) {
-                if (analyzer.isEnabled(sfpPackage, logger)) sfpPackage = await analyzer.analyze(sfpPackage,componentSet, logger);
+                if (analyzer.isEnabled(sfpPackage, logger))
+                    sfpPackage = await analyzer.analyze(sfpPackage, componentSet, logger);
             }
 
             //Introspect Diff Package Created
@@ -139,8 +141,8 @@ export default class SfpPackageBuilder {
             try {
                 await this.introspectDiffPackageCreated(sfpPackage, params, logger);
             } catch (error) {
-                SFPLogger.log('Failed in diff compute with ' + JSON.stringify(error), LoggerLevel.INFO, logger);
-                let workingDirectory = path.join(sfpPackage.workingDirectory, 'diff');
+                SFPLogger.log("Failed in diff compute with " + JSON.stringify(error), LoggerLevel.INFO, logger);
+                let workingDirectory = path.join(sfpPackage.workingDirectory, "diff");
                 if (fs.existsSync(workingDirectory)) {
                     rimraf.sync(workingDirectory);
                 }
@@ -164,7 +166,7 @@ export default class SfpPackageBuilder {
                     sfpPackage,
                     packageCreationParams,
                     logger,
-                    params
+                    params,
                 );
                 break;
             case PackageType.Source:
@@ -173,7 +175,7 @@ export default class SfpPackageBuilder {
                     sfpPackage,
                     packageCreationParams,
                     logger,
-                    params
+                    params,
                 );
                 break;
             case PackageType.Data:
@@ -182,7 +184,7 @@ export default class SfpPackageBuilder {
                     sfpPackage,
                     packageCreationParams,
                     logger,
-                    params
+                    params,
                 );
                 break;
         }
@@ -198,7 +200,7 @@ export default class SfpPackageBuilder {
     private static handleVersionNumber(
         params: SfpPackageParams,
         sfpPackage: SfpPackage,
-        packageCreationParams: PackageCreationParams
+        packageCreationParams: PackageCreationParams,
     ) {
         if (params?.packageVersionNumber) {
             sfpPackage.versionNumber = params.packageVersionNumber;
@@ -207,7 +209,7 @@ export default class SfpPackageBuilder {
                 let versionUpdater: PackageVersionUpdater = new PackageVersionUpdater();
                 sfpPackage.versionNumber = versionUpdater.substituteBuildNumber(
                     sfpPackage,
-                    packageCreationParams.buildNumber
+                    packageCreationParams.buildNumber,
                 );
             }
         } else {
@@ -219,14 +221,14 @@ export default class SfpPackageBuilder {
     public static async buildPackageFromArtifact(artifact: Artifact, logger: Logger): Promise<SfpPackage> {
         //Read artifact metadata
         let sfpPackage = new SfpPackage();
-        Object.assign(sfpPackage, fs.readJSONSync(artifact.packageMetadataFilePath, { encoding: 'utf8' }));
+        Object.assign(sfpPackage, fs.readJSONSync(artifact.packageMetadataFilePath, { encoding: "utf8" }));
         sfpPackage.sourceDir = artifact.sourceDirectoryPath;
         sfpPackage.changelogFilePath = artifact.changelogFilePath;
 
         sfpPackage.projectConfig = ProjectConfig.getSFDXProjectConfig(artifact.sourceDirectoryPath);
         sfpPackage.packageDescriptor = ProjectConfig.getSFDXPackageDescriptor(
             artifact.sourceDirectoryPath,
-            sfpPackage.package_name
+            sfpPackage.package_name,
         );
         sfpPackage.projectDirectory = artifact.sourceDirectoryPath;
         sfpPackage.packageDirectory = sfpPackage.packageDescriptor.path;
@@ -238,22 +240,22 @@ export default class SfpPackageBuilder {
     private static async introspectDiffPackageCreated(
         sfpPackage: SfpPackage,
         packageParams: SfpPackageParams,
-        logger: Logger
+        logger: Logger,
     ): Promise<void> {
         //No base branch passed in, dont create diff
         if (!packageParams.revisionFrom) return;
 
-        let workingDirectory = path.join(sfpPackage.workingDirectory, 'diff');
+        let workingDirectory = path.join(sfpPackage.workingDirectory, "diff");
         if (fs.existsSync(workingDirectory)) {
             let changedComponents = new PackageToComponent(
                 sfpPackage.packageName,
-                path.join(workingDirectory, sfpPackage.packageDirectory)
+                path.join(workingDirectory, sfpPackage.packageDirectory),
             ).generateComponents();
 
             let impactedApexTestClassFetcher: ImpactedApexTestClassFetcher = new ImpactedApexTestClassFetcher(
                 sfpPackage,
                 changedComponents,
-                logger
+                logger,
             );
             let impactedTestClasses = await impactedApexTestClassFetcher.getImpactedTestClasses();
 
@@ -261,7 +263,7 @@ export default class SfpPackageBuilder {
                 workingDirectory,
                 sfpPackage.packageDescriptor.path,
                 ProjectConfig.getSFDXProjectConfig(workingDirectory).sourceApiVersion,
-                logger
+                logger,
             );
 
             let mdapiDirPath = (await sourceToMdapiConvertor.convert()).packagePath;
@@ -274,13 +276,14 @@ export default class SfpPackageBuilder {
             diffPackageInfo.isProfilesFound = packageManifest.isProfilesInPackage();
             diffPackageInfo.isPermissionSetFound = packageManifest.isPermissionSetsInPackage();
             diffPackageInfo.isPermissionSetGroupFound = packageManifest.isPermissionSetGroupsFoundInPackage();
-            diffPackageInfo.isPayLoadContainTypesSupportedByProfiles = packageManifest.isPayLoadContainTypesSupportedByProfiles();
+            diffPackageInfo.isPayLoadContainTypesSupportedByProfiles =
+                packageManifest.isPayLoadContainTypesSupportedByProfiles();
             diffPackageInfo.sourceVersionFrom = packageParams.revisionFrom;
             diffPackageInfo.sourceVersionTo = packageParams.revisionTo;
 
             diffPackageInfo.metadataCount = MetadataCount.getMetadataCount(
                 workingDirectory,
-                sfpPackage.packageDescriptor.path
+                sfpPackage.packageDescriptor.path,
             );
             sfpPackage.diffPackageMetadata = diffPackageInfo;
         }
@@ -301,7 +304,7 @@ export default class SfpPackageBuilder {
                     `Please consider adding test classes for the classes in the package ${EOL}` +
                     `-------------------------------------------------------------------------------------------------------------`,
                 LoggerLevel.INFO,
-                logger
+                logger,
             );
             return true;
         } else return false;
@@ -309,8 +312,8 @@ export default class SfpPackageBuilder {
 
     // Allow individual packages to use non optimized path
     private static isOptimizedDeploymentForSourcePackage(pkgDescriptor: any): boolean {
-        if (pkgDescriptor['isOptimizedDeployment'] == null) return true;
-        else return pkgDescriptor['isOptimizedDeployment'];
+        if (pkgDescriptor["isOptimizedDeployment"] == null) return true;
+        else return pkgDescriptor["isOptimizedDeployment"];
     }
 }
 

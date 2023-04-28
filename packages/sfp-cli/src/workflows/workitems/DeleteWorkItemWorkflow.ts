@@ -1,12 +1,12 @@
-import SFPLogger, { COLOR_KEY_VALUE } from '@dxatscale/sfp-logger/lib/SFPLogger';
-import inquirer = require('inquirer');
-import simpleGit, { SimpleGit } from 'simple-git';
-import { SfpProjectConfig } from '../../types/SfpProjectConfig';
-import { WorkItem } from '../../types/WorkItem';
-import DeleteOrgWorkflow from '../org/DeleteOrgWorkflow';
-import PickAWorkItemWorkflow from './PickAWorkItemWorkflow';
-import * as fs from 'fs-extra';
-import path = require('path');
+import SFPLogger, { COLOR_KEY_VALUE } from "@dxatscale/sfp-logger/lib/SFPLogger";
+import inquirer = require("inquirer");
+import simpleGit, { SimpleGit } from "simple-git";
+import { SfpProjectConfig } from "../../types/SfpProjectConfig";
+import { WorkItem } from "../../types/WorkItem";
+import DeleteOrgWorkflow from "../org/DeleteOrgWorkflow";
+import PickAWorkItemWorkflow from "./PickAWorkItemWorkflow";
+import * as fs from "fs-extra";
+import path = require("path");
 
 export default class DeleteWorkItemWorkflow {
     private workItem: WorkItem;
@@ -44,10 +44,10 @@ export default class DeleteWorkItemWorkflow {
 
     async confirmWorkItem() {
         let confirmation = await inquirer.prompt({
-            type: 'confirm',
-            name: 'result',
+            type: "confirm",
+            name: "result",
             message: `The work item associated with this branch is  ${COLOR_KEY_VALUE(
-                this.workItem.id
+                this.workItem.id,
             )}, Please confirm`,
             default: true,
         });
@@ -56,8 +56,8 @@ export default class DeleteWorkItemWorkflow {
 
     async confirmDeletion() {
         let confirmation = await inquirer.prompt({
-            type: 'confirm',
-            name: 'result',
+            type: "confirm",
+            name: "result",
             message: `This will delete the associated branch and is not recoverable, Proceed?`,
             default: true,
         });

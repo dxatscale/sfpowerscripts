@@ -1,10 +1,10 @@
-import SfpPackage, { PackageType } from '../SfpPackage';
-import SfpPackageBuilder from '../../package/SfpPackageBuilder';
-const tmp = require('tmp');
-import * as fs from 'fs-extra';
-const path = require('path');
-import { ComponentSet, MetadataConverter } from '@salesforce/source-deploy-retrieve';
-import { Logger } from '@dxatscale/sfp-logger';
+import SfpPackage, { PackageType } from "../SfpPackage";
+import SfpPackageBuilder from "../../package/SfpPackageBuilder";
+const tmp = require("tmp");
+import * as fs from "fs-extra";
+const path = require("path");
+import { ComponentSet, MetadataConverter } from "@salesforce/source-deploy-retrieve";
+import { Logger } from "@dxatscale/sfp-logger";
 
 export default class PackageMergeManager {
     public constructor(private sfpPackages: SfpPackage[], private logger?: Logger) {}
@@ -24,11 +24,11 @@ export default class PackageMergeManager {
         let mergedProjectDir = path.join(locationOfCopiedDirectory, `${this.makefolderid(5)}_merged`);
         mergeResult.mergedProjectDirectory = mergedProjectDir;
 
-        let mergedPackageDir = path.join(mergedProjectDir, 'force-app');
+        let mergedPackageDir = path.join(mergedProjectDir, "force-app");
         fs.mkdirpSync(mergedPackageDir);
 
         //Create sfdx project.json
-        fs.writeJSONSync(path.join(mergedProjectDir, 'sfdx-project.json'), this.getMergedProjectManifest(), {
+        fs.writeJSONSync(path.join(mergedProjectDir, "sfdx-project.json"), this.getMergedProjectManifest(), {
             spaces: 4,
         });
 
@@ -52,7 +52,7 @@ export default class PackageMergeManager {
                         process.cwd(),
                         sfpPackage.projectDirectory,
                         sfpPackage.packageDirectory,
-                        targetOrAlias ? targetOrAlias : 'default'
+                        targetOrAlias ? targetOrAlias : "default",
                     );
                     if (fs.existsSync(aliasFolder)) {
                         componentSet = ComponentSet.fromSource(aliasFolder);
@@ -61,24 +61,24 @@ export default class PackageMergeManager {
                     }
                 } else {
                     componentSet = ComponentSet.fromSource(
-                        path.join(process.cwd(), sfpPackage.projectDirectory, sfpPackage.packageDirectory)
+                        path.join(process.cwd(), sfpPackage.projectDirectory, sfpPackage.packageDirectory),
                     );
                 }
 
                 fs.copyFileSync(
-                    path.join(sfpPackage.projectDirectory, 'forceignores', '.buildignore'),
-                    path.join(mergedProjectDir, '.forceignore')
+                    path.join(sfpPackage.projectDirectory, "forceignores", ".buildignore"),
+                    path.join(mergedProjectDir, ".forceignore"),
                 );
-                console.log('copied file');
+                console.log("copied file");
 
                 //Merge
-                let results = await converter.convert(componentSet, 'source', {
-                    type: 'merge',
+                let results = await converter.convert(componentSet, "source", {
+                    type: "merge",
                     mergeWith: ComponentSet.fromSource(mergedPackageDir).getSourceComponents(),
                     defaultDirectory: mergedPackageDir,
 
                     forceIgnoredPaths: new Set([
-                        path.join(process.cwd(), sfpPackage.projectDirectory, 'forceignores', '.buildignore'),
+                        path.join(process.cwd(), sfpPackage.projectDirectory, "forceignores", ".buildignore"),
                     ]),
                 });
 
@@ -96,13 +96,13 @@ export default class PackageMergeManager {
             let mergedSfPPackage = await SfpPackageBuilder.buildPackageFromProjectDirectory(
                 this.logger,
                 mergeResult.mergedProjectDirectory,
-                'merged',
+                "merged",
                 {
-                    branch: 'temp',
-                    packageVersionNumber: '1.0.0.0',
-                    sourceVersion: '00000000',
+                    branch: "temp",
+                    packageVersionNumber: "1.0.0.0",
+                    sourceVersion: "00000000",
                 },
-                null
+                null,
             );
             mergeResult.mergedPackage = mergedSfPPackage;
         }
@@ -116,7 +116,7 @@ export default class PackageMergeManager {
     }
 
     private dedupeXmlFileSuffix(xmlFile: string): string {
-        let deduped = xmlFile.replace(/-meta\.xml/, '');
+        let deduped = xmlFile.replace(/-meta\.xml/, "");
         fs.renameSync(xmlFile, deduped);
 
         return deduped;
@@ -126,22 +126,22 @@ export default class PackageMergeManager {
         let projectManifest = {
             packageDirectories: [
                 {
-                    path: 'force-app',
-                    package: 'merged',
-                    versionNumber: '2.0.0.0',
+                    path: "force-app",
+                    package: "merged",
+                    versionNumber: "2.0.0.0",
                     default: true,
                 },
             ],
-            namespace: '',
-            sourceApiVersion: '53.0',
+            namespace: "",
+            sourceApiVersion: "53.0",
         };
         return projectManifest;
     }
 
     private makefolderid(length): string {
-        var result = '';
+        var result = "";
         var characters =
-            'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
         var charactersLength = characters.length;
         for (var i = 0; i < length; i++) {
             result += characters.charAt(Math.floor(Math.random() * charactersLength));

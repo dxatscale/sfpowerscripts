@@ -1,4 +1,4 @@
-import Component from './Component';
+import Component from "./Component";
 
 /**
  * Used by sfdc-soup API calls

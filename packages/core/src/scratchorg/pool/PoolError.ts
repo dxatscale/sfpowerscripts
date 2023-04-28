@@ -6,8 +6,8 @@ export interface PoolError {
 }
 
 export enum PoolErrorCodes {
-    Max_Capacity = 'MaxCapacity',
-    No_Capacity = 'NoCapacity',
-    PrerequisiteMissing = 'PrerequisitesMissing',
-    UnableToProvisionAny = 'UnableToProvisionAny',
+    Max_Capacity = "MaxCapacity",
+    No_Capacity = "NoCapacity",
+    PrerequisiteMissing = "PrerequisitesMissing",
+    UnableToProvisionAny = "UnableToProvisionAny",
 }

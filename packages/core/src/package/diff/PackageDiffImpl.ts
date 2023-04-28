@@ -1,18 +1,18 @@
-const fs = require('fs');
-const path = require('path');
-import Git from '../../git/Git';
-import IgnoreFiles from '../../ignore/IgnoreFiles';
-import SFPLogger, { COLOR_ERROR, COLOR_KEY_MESSAGE, Logger, LoggerLevel } from '@dxatscale/sfp-logger';
-import ProjectConfig from '../../project/ProjectConfig';
-import GitTags from '../../git/GitTags';
-import lodash = require('lodash');
-import { EOL } from 'os';
-import { PackageType } from '../SfpPackage';
+const fs = require("fs");
+const path = require("path");
+import Git from "../../git/Git";
+import IgnoreFiles from "../../ignore/IgnoreFiles";
+import SFPLogger, { COLOR_ERROR, COLOR_KEY_MESSAGE, Logger, LoggerLevel } from "@dxatscale/sfp-logger";
+import ProjectConfig from "../../project/ProjectConfig";
+import GitTags from "../../git/GitTags";
+import lodash = require("lodash");
+import { EOL } from "os";
+import { PackageType } from "../SfpPackage";
 
 export class PackageDiffOptions {
     skipPackageDescriptorChange?: boolean = false;
     //If not set, utlize latest git tags
-    useLatestGitTags?:boolean=true;
+    useLatestGitTags?: boolean = true;
     packagesMappedToLastKnownCommitId?: { [p: string]: string };
     pathToReplacementForceIgnore?: string;
 }
@@ -21,12 +21,12 @@ export default class PackageDiffImpl {
     public constructor(
         private logger: Logger,
         private sfdx_package: string,
-        private project_directory: string|null,
-        private diffOptions?: PackageDiffOptions
+        private project_directory: string | null,
+        private diffOptions?: PackageDiffOptions,
     ) {}
 
     public async exec(): Promise<{ isToBeBuilt: boolean; reason: string; tag?: string }> {
-        let git: Git = await Git.initiateRepo(this.logger,this.project_directory);
+        let git: Git = await Git.initiateRepo(this.logger, this.project_directory);
 
         let projectConfig = ProjectConfig.getSFDXProjectConfig(this.project_directory);
         let pkgDescriptor = ProjectConfig.getPackageDescriptorFromConfig(this.sfdx_package, projectConfig);
@@ -36,7 +36,7 @@ export default class PackageDiffImpl {
                 `${EOL}Checking last known tags for ${this.sfdx_package} to determine whether package is to be built...`,
             ),
             LoggerLevel.TRACE,
-            this.logger
+            this.logger,
         );
 
         let tag: string;
@@ -47,18 +47,30 @@ export default class PackageDiffImpl {
         }
 
         if (tag) {
-            SFPLogger.log(COLOR_KEY_MESSAGE(`\nUtilizing tag ${tag} for ${this.sfdx_package}`),LoggerLevel.TRACE,this.logger);
+            SFPLogger.log(
+                COLOR_KEY_MESSAGE(`\nUtilizing tag ${tag} for ${this.sfdx_package}`),
+                LoggerLevel.TRACE,
+                this.logger,
+            );
 
             // Get the list of modified files between the tag and HEAD refs
             let modified_files: string[];
             try {
                 modified_files = await git.diff([`${tag}`, `HEAD`, `--no-renames`, `--name-only`]);
             } catch (error) {
-                SFPLogger.log(COLOR_ERROR(`Unable to compute diff, The head of the branch is not reachable from the commit id ${tag}`));
-                SFPLogger.log(COLOR_ERROR(`Check your current branch (in case of build) or the scratch org in case of validate command`));
+                SFPLogger.log(
+                    COLOR_ERROR(
+                        `Unable to compute diff, The head of the branch is not reachable from the commit id ${tag}`,
+                    ),
+                );
+                SFPLogger.log(
+                    COLOR_ERROR(
+                        `Check your current branch (in case of build) or the scratch org in case of validate command`,
+                    ),
+                );
                 SFPLogger.log(COLOR_ERROR(`Actual error received:`));
                 SFPLogger.log(COLOR_ERROR(error));
-                throw new Error(`Failed to compute git diff for package ${this.sfdx_package} against commit id ${tag}`)
+                throw new Error(`Failed to compute git diff for package ${this.sfdx_package} against commit id ${tag}`);
             }
 
             let packageType: string = ProjectConfig.getPackageType(projectConfig, this.sfdx_package);
@@ -68,7 +80,7 @@ export default class PackageDiffImpl {
             SFPLogger.log(
                 `Checking for changes in source directory ${path.normalize(pkgDescriptor.path)}`,
                 LoggerLevel.TRACE,
-                this.logger
+                this.logger,
             );
 
             // Check whether the package has been modified
@@ -82,7 +94,7 @@ export default class PackageDiffImpl {
             SFPLogger.log(
                 `Checking for changes to package descriptor in sfdx-project.json`,
                 LoggerLevel.TRACE,
-                this.logger
+                this.logger,
             );
             let isPackageDescriptorChanged = await this.isPackageDescriptorChanged(git, tag, pkgDescriptor);
             if (isPackageDescriptorChanged) {
@@ -94,7 +106,7 @@ export default class PackageDiffImpl {
             SFPLogger.log(
                 `Tag missing for ${this.sfdx_package}...marking package for build anyways`,
                 LoggerLevel.TRACE,
-                this.logger
+                this.logger,
             );
             return { isToBeBuilt: true, reason: `Previous version not found` };
         }
@@ -102,9 +114,10 @@ export default class PackageDiffImpl {
 
     private applyForceIgnoreToModifiedFiles(modified_files: string[]) {
         let forceignorePath: string;
-        if (this.diffOptions?.pathToReplacementForceIgnore) forceignorePath = this.diffOptions?.pathToReplacementForceIgnore;
-        else if (this.project_directory != null) forceignorePath = path.join(this.project_directory, '.forceignore');
-        else forceignorePath = '.forceignore';
+        if (this.diffOptions?.pathToReplacementForceIgnore)
+            forceignorePath = this.diffOptions?.pathToReplacementForceIgnore;
+        else if (this.project_directory != null) forceignorePath = path.join(this.project_directory, ".forceignore");
+        else forceignorePath = ".forceignore";
 
         let ignoreFiles: IgnoreFiles = new IgnoreFiles(fs.readFileSync(forceignorePath).toString());
 
@@ -118,11 +131,11 @@ export default class PackageDiffImpl {
         const gitTags: GitTags = new GitTags(git, sfdx_package);
         let tags: string[] = await gitTags.listTagsOnBranch();
 
-        SFPLogger.log('Analysing tags:', LoggerLevel.DEBUG);
+        SFPLogger.log("Analysing tags:", LoggerLevel.DEBUG);
         if (tags.length > 10) {
-            SFPLogger.log(tags.slice(-10).toString().replace(/,/g, '\n'), LoggerLevel.TRACE,this.logger);
+            SFPLogger.log(tags.slice(-10).toString().replace(/,/g, "\n"), LoggerLevel.TRACE, this.logger);
         } else {
-            SFPLogger.log(tags.toString().replace(/,/g, '\n'), LoggerLevel.TRACE,this.logger);
+            SFPLogger.log(tags.toString().replace(/,/g, "\n"), LoggerLevel.TRACE, this.logger);
         }
 
         return tags.pop();
@@ -133,7 +146,7 @@ export default class PackageDiffImpl {
         let projectConfig = JSON.parse(projectConfigJson);
 
         let packageDescriptorFromLatestTag: string;
-        for (let dir of projectConfig['packageDirectories']) {
+        for (let dir of projectConfig["packageDirectories"]) {
             if (this.sfdx_package === dir.package) {
                 packageDescriptorFromLatestTag = dir;
             }

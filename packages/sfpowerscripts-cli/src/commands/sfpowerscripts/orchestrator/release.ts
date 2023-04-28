@@ -1,11 +1,11 @@
-import { flags } from '@salesforce/command';
-import SfpowerscriptsCommand from '../../../SfpowerscriptsCommand';
-import { Messages } from '@salesforce/core';
-import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender';
-import ReleaseImpl, { ReleaseProps, ReleaseResult } from '../../../impl/release/ReleaseImpl';
-import ReleaseDefinition from '../../../impl/release/ReleaseDefinition';
-import ReleaseError from '../../../errors/ReleaseError';
-import path = require('path');
+import { flags } from "@salesforce/command";
+import SfpowerscriptsCommand from "../../../SfpowerscriptsCommand";
+import { Messages } from "@salesforce/core";
+import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender";
+import ReleaseImpl, { ReleaseProps, ReleaseResult } from "../../../impl/release/ReleaseImpl";
+import ReleaseDefinition from "../../../impl/release/ReleaseDefinition";
+import ReleaseError from "../../../errors/ReleaseError";
+import path = require("path");
 import SFPLogger, {
     COLOR_ERROR,
     COLOR_HEADER,
@@ -14,14 +14,14 @@ import SFPLogger, {
     COLOR_WARNING,
     COLOR_KEY_MESSAGE,
     ConsoleLogger,
-} from '@dxatscale/sfp-logger';
-import ReleaseDefinitionSchema from '../../../impl/release/ReleaseDefinitionSchema';
+} from "@dxatscale/sfp-logger";
+import ReleaseDefinitionSchema from "../../../impl/release/ReleaseDefinitionSchema";
 
 Messages.importMessagesDirectory(__dirname);
-const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'release');
+const messages = Messages.loadMessages("@dxatscale/sfpowerscripts", "release");
 
 export default class Release extends SfpowerscriptsCommand {
-    public static description = messages.getMessage('commandDescription');
+    public static description = messages.getMessage("commandDescription");
 
     public static examples = [
         `sfdx sfpowerscripts:orchestrator:release -p path/to/releasedefinition.yml -u myorg --npm --scope myscope --generatechangelog`,
@@ -33,96 +33,96 @@ export default class Release extends SfpowerscriptsCommand {
 
     protected static flagsConfig = {
         releasedefinition: flags.array({
-            char: 'p',
-            description: messages.getMessage('releaseDefinitionFlagDescription'),
+            char: "p",
+            description: messages.getMessage("releaseDefinitionFlagDescription"),
         }),
         targetorg: flags.string({
-            char: 'u',
-            description: messages.getMessage('targetOrgFlagDescription'),
-            default: 'scratchorg',
+            char: "u",
+            description: messages.getMessage("targetOrgFlagDescription"),
+            default: "scratchorg",
             required: true,
         }),
         scriptpath: flags.filepath({
-            char: 'f',
-            description: messages.getMessage('scriptPathFlagDescription'),
+            char: "f",
+            description: messages.getMessage("scriptPathFlagDescription"),
         }),
         npm: flags.boolean({
-            description: messages.getMessage('npmFlagDescription'),
-            exclusive: ['scriptpath'],
+            description: messages.getMessage("npmFlagDescription"),
+            exclusive: ["scriptpath"],
         }),
         scope: flags.string({
-            description: messages.getMessage('scopeFlagDescription'),
-            dependsOn: ['npm'],
-            parse: async (scope) => scope.replace(/@/g, '').toLowerCase(),
+            description: messages.getMessage("scopeFlagDescription"),
+            dependsOn: ["npm"],
+            parse: async (scope) => scope.replace(/@/g, "").toLowerCase(),
         }),
         npmrcpath: flags.filepath({
-            description: messages.getMessage('npmrcPathFlagDescription'),
-            dependsOn: ['npm'],
+            description: messages.getMessage("npmrcPathFlagDescription"),
+            dependsOn: ["npm"],
             required: false,
         }),
         logsgroupsymbol: flags.array({
-            char: 'g',
-            description: messages.getMessage('logsGroupSymbolFlagDescription'),
+            char: "g",
+            description: messages.getMessage("logsGroupSymbolFlagDescription"),
         }),
         tag: flags.string({
-            char: 't',
-            description: messages.getMessage('tagFlagDescription'),
+            char: "t",
+            description: messages.getMessage("tagFlagDescription"),
         }),
         dryrun: flags.boolean({
-            description: messages.getMessage('dryRunFlagDescription'),
+            description: messages.getMessage("dryRunFlagDescription"),
             default: false,
             hidden: true,
         }),
         waittime: flags.number({
-            description: messages.getMessage('waitTimeFlagDescription'),
+            description: messages.getMessage("waitTimeFlagDescription"),
             default: 120,
         }),
         keys: flags.string({
             required: false,
-            description: messages.getMessage('keysFlagDescription'),
+            description: messages.getMessage("keysFlagDescription"),
         }),
         generatechangelog: flags.boolean({
             default: false,
-            description: messages.getMessage('generateChangelogFlagDescription'),
+            description: messages.getMessage("generateChangelogFlagDescription"),
         }),
         directory: flags.string({
-            char: 'd',
-            description: messages.getMessage('directoryFlagDescription'),
+            char: "d",
+            description: messages.getMessage("directoryFlagDescription"),
         }),
         branchname: flags.string({
-            dependsOn: ['generatechangelog'],
-            char: 'b',
-            description: messages.getMessage('branchNameFlagDescription'),
+            dependsOn: ["generatechangelog"],
+            char: "b",
+            description: messages.getMessage("branchNameFlagDescription"),
         }),
         allowunpromotedpackages: flags.boolean({
-            description: messages.getMessage('allowUnpromotedPackagesFlagDescription'),
+            description: messages.getMessage("allowUnpromotedPackagesFlagDescription"),
             hidden: true,
-            deprecated: { 
-                message: '--allowunpromotedpackages is deprecated, All packages are allowed',
-                messageOverride: '--allowunpromotedpackages is deprecated, All packages are allowed'
-             },
+            deprecated: {
+                message: "--allowunpromotedpackages is deprecated, All packages are allowed",
+                messageOverride: "--allowunpromotedpackages is deprecated, All packages are allowed",
+            },
         }),
         devhubalias: flags.string({
-            char: 'v',
-            description: messages.getMessage('devhubAliasFlagDescription'),
+            char: "v",
+            description: messages.getMessage("devhubAliasFlagDescription"),
         }),
         loglevel: flags.enum({
-            description: 'logging level for this command invocation',
-            default: 'info',
+            description: "logging level for this command invocation",
+            default: "info",
             required: false,
             options: [
-                'trace',
-                'debug',
-                'info',
-                'warn',
-                'error',
-                'fatal',
-                'TRACE',
-                'DEBUG',
-                'INFO',
-                'WARN',
-                'ERROR',
-                'FATAL',
+                "trace",
+                "debug",
+                "info",
+                "warn",
+                "error",
+                "fatal",
+                "TRACE",
+                "DEBUG",
+                "INFO",
+                "WARN",
+                "ERROR",
+                "FATAL",
             ],
         }),
     };
@@ -135,7 +135,7 @@ export default class Release extends SfpowerscriptsCommand {
         };
 
         if (this.flags.tag != null) {
-            tags['tag'] = this.flags.tag;
+            tags["tag"] = this.flags.tag;
         }
 
         let executionStartTime = Date.now();
@@ -143,32 +143,32 @@ export default class Release extends SfpowerscriptsCommand {
         SFPLogger.log(COLOR_HEADER(`command: ${COLOR_KEY_MESSAGE(`release`)}`));
         SFPLogger.log(COLOR_HEADER(`Target Org: ${this.flags.targetorg}`));
         SFPLogger.log(COLOR_HEADER(`Release Definitions: ${this.flags.releasedefinition}`));
-        SFPLogger.log(COLOR_HEADER(`Artifact Directory: ${path.resolve('artifacts')}`));
+        SFPLogger.log(COLOR_HEADER(`Artifact Directory: ${path.resolve("artifacts")}`));
 
         SFPLogger.log(
-            COLOR_HEADER(`-------------------------------------------------------------------------------------------`)
+            COLOR_HEADER(`-------------------------------------------------------------------------------------------`),
         );
 
         let releaseDefinitions: ReleaseDefinitionSchema[] = [];
         for (const pathToReleaseDefintion of this.flags.releasedefinition) {
-            let releaseDefinition = (await ReleaseDefinition.loadReleaseDefinition(pathToReleaseDefintion)).releaseDefinition;
+            let releaseDefinition = (await ReleaseDefinition.loadReleaseDefinition(pathToReleaseDefintion))
+                .releaseDefinition;
 
             //Support Legacy by taking the existing single workItemFilter and pushing it to the new model
-            if(releaseDefinition.changelog?.workItemFilter)
-            {
+            if (releaseDefinition.changelog?.workItemFilter) {
                 releaseDefinition.changelog.workItemFilters = new Array<string>();
                 releaseDefinition.changelog.workItemFilters.push(releaseDefinition.changelog?.workItemFilter);
             }
 
             if (this.flags.isGenerateChangelog && !releaseDefinition.changelog)
-                throw new Error('changelog parameters must be specified in release definition to generate changelog');
+                throw new Error("changelog parameters must be specified in release definition to generate changelog");
 
             if (
                 releaseDefinition.promotePackagesBeforeDeploymentToOrg &&
                 this.flags.targetorg == releaseDefinition.promotePackagesBeforeDeploymentToOrg &&
                 !this.flags.devhubalias
             )
-                throw new Error('DevHub is mandatory when promote is used within release defintion');
+                throw new Error("DevHub is mandatory when promote is used within release defintion");
 
             releaseDefinitions.push(releaseDefinition);
         }
@@ -190,20 +190,20 @@ export default class Release extends SfpowerscriptsCommand {
                 isGenerateChangelog: this.flags.generatechangelog,
                 devhubUserName: this.flags.devhubalias,
                 branch: this.flags.branchname,
-                directory:this.flags.directory,
+                directory: this.flags.directory,
             };
 
-            let releaseImpl: ReleaseImpl = new ReleaseImpl(props,new ConsoleLogger());
+            let releaseImpl: ReleaseImpl = new ReleaseImpl(props, new ConsoleLogger());
 
             releaseResult = await releaseImpl.exec();
 
-            SFPStatsSender.logCount('release.succeeded', tags);
+            SFPStatsSender.logCount("release.succeeded", tags);
         } catch (err) {
             if (err instanceof ReleaseError) {
                 releaseResult = err.data;
             } else SFPLogger.log(err.message);
 
-            SFPStatsSender.logCount('release.failed', tags);
+            SFPStatsSender.logCount("release.failed", tags);
 
             // Fail the task when an error occurs
             process.exitCode = 1;
@@ -218,9 +218,9 @@ export default class Release extends SfpowerscriptsCommand {
     }
 
     private sendMetrics(releaseResult: ReleaseResult, tags: any, totalElapsedTime: number) {
-        SFPStatsSender.logCount('release.scheduled', tags);
+        SFPStatsSender.logCount("release.scheduled", tags);
 
-        SFPStatsSender.logGauge('release.duration', totalElapsedTime, tags);
+        SFPStatsSender.logGauge("release.duration", totalElapsedTime, tags);
 
         let packagesScheduled = 0;
         let packagesSucceeded = 0;
@@ -237,19 +237,19 @@ export default class Release extends SfpowerscriptsCommand {
             packagesFailed += deploymentResults.result.failed.length;
         }
 
-        SFPStatsSender.logGauge('release.packages.scheduled', packagesScheduled, tags);
-        SFPStatsSender.logGauge('release.packages.succeeded', packagesSucceeded, tags);
-        SFPStatsSender.logGauge('release.packages.failed', packagesFailed, tags);
+        SFPStatsSender.logGauge("release.packages.scheduled", packagesScheduled, tags);
+        SFPStatsSender.logGauge("release.packages.succeeded", packagesSucceeded, tags);
+        SFPStatsSender.logGauge("release.packages.failed", packagesFailed, tags);
     }
 
     private printReleaseSummary(releaseResult: ReleaseResult, totalElapsedTime: number): void {
         if (this.flags.logsgroupsymbol?.[0])
-            SFPLogger.log(COLOR_HEADER(this.flags.logsgroupsymbol[0], 'Release Summary'));
+            SFPLogger.log(COLOR_HEADER(this.flags.logsgroupsymbol[0], "Release Summary"));
 
         SFPLogger.log(
             COLOR_HEADER(
-                `----------------------------------------------------------------------------------------------------`
-            )
+                `----------------------------------------------------------------------------------------------------`,
+            ),
         );
         if (releaseResult.installDependenciesResult) {
             SFPLogger.log(COLOR_HEADER(`\nPackage Dependencies`));
@@ -270,21 +270,20 @@ export default class Release extends SfpowerscriptsCommand {
             SFPLogger.log(
                 COLOR_ERROR(
                     `\nPackages Failed to Deploy`,
-                    failedDeployment.result.failed.map((packageInfo) => packageInfo.sfpPackage.packageName)
-                )
+                    failedDeployment.result.failed.map((packageInfo) => packageInfo.sfpPackage.packageName),
+                ),
             );
         }
 
         SFPLogger.log(COLOR_TIME(`\nElapsed Time: ${new Date(totalElapsedTime).toISOString().substr(11, 8)}`));
         SFPLogger.log(
             COLOR_HEADER(
-                `----------------------------------------------------------------------------------------------------`
-            )
+                `----------------------------------------------------------------------------------------------------`,
+            ),
         );
     }
 
     protected validateFlags() {
-        if (this.flags.npm && !this.flags.scope) throw new Error('--scope parameter is required for NPM');
-
+        if (this.flags.npm && !this.flags.scope) throw new Error("--scope parameter is required for NPM");
     }
 }

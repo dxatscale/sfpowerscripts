@@ -1,6 +1,5 @@
 import { ExecOptions } from "child_process";
 
-
 const MAX_BUFFER_DEFAULT: number = 1024 * 1024 * 5; // 5MB
 
 export default function defaultProcessOptions(): ExecOptions {

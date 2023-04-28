@@ -1,4 +1,4 @@
-import { AdjacentList } from './DependencyHelper';
+import { AdjacentList } from "./DependencyHelper";
 
 export default class BatchingTopoSort {
     public sort(dag: AdjacentList) {
@@ -20,12 +20,12 @@ export default class BatchingTopoSort {
             }
 
             if (this.getNonRoots(indegrees).length) {
-                throw Error('Cycle(s) detected; toposort only works on acyclic graphs');
+                throw Error("Cycle(s) detected; toposort only works on acyclic graphs");
             }
 
             return sorted;
         } catch (error) {
-            throw Error('Missing package in adjacency list or cycles detected' + error);
+            throw Error("Missing package in adjacency list or cycles detected" + error);
         }
     }
 

@@ -1,4 +1,4 @@
-import { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
+import { Logger, LoggerLevel } from "@dxatscale/sfp-logger";
 
 export default class Package2VersionInstaller {
     public constructor(
@@ -13,14 +13,10 @@ export default class Package2VersionInstaller {
         private securityType?: string,
         private upgradeType?: string,
         private apiVersion?: string,
-        private apexCompile: string = 'package'
+        private apexCompile: string = "package",
     ) {}
 
     public setInstallationKey(installationKey: string) {
         this.installationkey = installationKey;
     }
-
-
-    
-
 }

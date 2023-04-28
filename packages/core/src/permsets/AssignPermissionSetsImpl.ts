@@ -1,16 +1,16 @@
-import { Connection } from '@salesforce/core';
-import child_process = require('child_process');
-import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
-import PermissionSetFetcher from './PermissionSetFetcher';
-import { ZERO_BORDER_TABLE } from '../display/TableConstants';
-const Table = require('cli-table');
+import { Connection } from "@salesforce/core";
+import child_process = require("child_process");
+import SFPLogger, { Logger, LoggerLevel } from "@dxatscale/sfp-logger";
+import PermissionSetFetcher from "./PermissionSetFetcher";
+import { ZERO_BORDER_TABLE } from "../display/TableConstants";
+const Table = require("cli-table");
 
 export default class AssignPermissionSetsImpl {
     constructor(
         private conn: Connection,
         private permSets: string[],
         private project_directory: string,
-        private packageLogger: Logger
+        private packageLogger: Logger,
     ) {}
 
     public async exec(): Promise<{
@@ -51,9 +51,9 @@ export default class AssignPermissionSetsImpl {
                     `sfdx force:user:permset:assign -n ${permSet} -u ${this.conn.getUsername()} --json`,
                     {
                         cwd: this.project_directory,
-                        encoding: 'utf8',
-                        stdio: ['pipe', 'pipe', 'inherit'],
-                    }
+                        encoding: "utf8",
+                        stdio: ["pipe", "pipe", "inherit"],
+                    },
                 );
 
                 let permsetAssignment = JSON.parse(permsetAssignmentJson);
@@ -66,12 +66,12 @@ export default class AssignPermissionSetsImpl {
         }
 
         if (successfullAssignments.length > 0) {
-            SFPLogger.log('Successful PermSet Assignments:', LoggerLevel.INFO, this.packageLogger);
+            SFPLogger.log("Successful PermSet Assignments:", LoggerLevel.INFO, this.packageLogger);
             this.printPermsetAssignments(successfullAssignments);
         }
 
         if (failedAssignments.length > 0) {
-            SFPLogger.log('Failed PermSet Assignments', LoggerLevel.INFO, this.packageLogger);
+            SFPLogger.log("Failed PermSet Assignments", LoggerLevel.INFO, this.packageLogger);
             this.printPermsetAssignments(failedAssignments);
         }
 
@@ -80,8 +80,8 @@ export default class AssignPermissionSetsImpl {
 
     private printPermsetAssignments(assignments: { username: string; permset: string }[]) {
         let table = new Table({
-            head: ['Username', 'Permission Set Assignment'],
-            chars: ZERO_BORDER_TABLE
+            head: ["Username", "Permission Set Assignment"],
+            chars: ZERO_BORDER_TABLE,
         });
 
         assignments.forEach((assignment) => {

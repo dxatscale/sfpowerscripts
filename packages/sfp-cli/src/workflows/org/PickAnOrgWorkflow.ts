@@ -1,8 +1,8 @@
-import OrgList from '../../impl/sfdxwrappers/OrgList';
-import { isEmpty } from 'lodash';
-import inquirer = require('inquirer');
-import cli from 'cli-ux';
-import { convertAliasToUsername } from '@dxatscale/sfpowerscripts.core/lib/utils/AliasList';
+import OrgList from "../../impl/sfdxwrappers/OrgList";
+import { isEmpty } from "lodash";
+import inquirer = require("inquirer");
+import cli from "cli-ux";
+import { convertAliasToUsername } from "@dxatscale/sfpowerscripts.core/lib/utils/AliasList";
 
 export default class PickAnOrgWorkflow {
     private orgList: any;
@@ -27,7 +27,7 @@ export default class PickAnOrgWorkflow {
             });
             return devhubUserList;
         } else {
-            throw new Error('Unable to find any devhubs');
+            throw new Error("Unable to find any devhubs");
         }
     }
 
@@ -53,7 +53,7 @@ export default class PickAnOrgWorkflow {
 
             return devOrgList;
         } else {
-            throw new Error('Unable to find any dev orgs');
+            throw new Error("Unable to find any dev orgs");
         }
     }
 
@@ -88,13 +88,13 @@ export default class PickAnOrgWorkflow {
 
         let devHubOrgUserNameList = this.getListOfAuthenticatedLocalDevHubs();
         let defaultChoiceIndex = devHubOrgUserNameList.findIndex(
-            (element) => element.alias == this.defaultOrg?.alias || element.value == this.defaultOrg?.username
+            (element) => element.alias == this.defaultOrg?.alias || element.value == this.defaultOrg?.username,
         );
         const devhub = await inquirer.prompt([
             {
-                type: 'list',
-                name: 'username',
-                message: 'Pick a DevHub',
+                type: "list",
+                name: "username",
+                message: "Pick a DevHub",
                 choices: devHubOrgUserNameList,
                 default: defaultChoiceIndex,
             },
@@ -112,14 +112,14 @@ export default class PickAnOrgWorkflow {
 
         let devOrgList = this.getListOfDevOrgs();
         let defaultChoiceIndex = devOrgList.findIndex(
-            (element) => element.alias == this.defaultOrg?.alias || element.value == this.defaultOrg?.username
+            (element) => element.alias == this.defaultOrg?.alias || element.value == this.defaultOrg?.username,
         );
 
         const devOrg = await inquirer.prompt([
             {
-                type: 'list',
-                name: 'username',
-                message: 'Pick a Dev Org',
+                type: "list",
+                name: "username",
+                message: "Pick a Dev Org",
                 choices: devOrgList,
                 default: defaultChoiceIndex,
             },
@@ -135,9 +135,9 @@ export default class PickAnOrgWorkflow {
 
         const devOrg = await inquirer.prompt([
             {
-                type: 'list',
-                name: 'username',
-                message: 'Pick a  Org',
+                type: "list",
+                name: "username",
+                message: "Pick a  Org",
                 choices: allOrgList,
             },
         ]);

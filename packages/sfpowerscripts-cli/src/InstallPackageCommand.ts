@@ -1,15 +1,15 @@
-import SfpowerscriptsCommand from './SfpowerscriptsCommand';
-import { Messages } from '@salesforce/core';
-import { flags } from '@salesforce/command';
-import ArtifactFetcher, { Artifact } from '@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFetcher';
-import * as rimraf from 'rimraf';
-import SfpPackage from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
-import { ConsoleLogger } from '@dxatscale/sfp-logger';
-import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder';
-import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
+import SfpowerscriptsCommand from "./SfpowerscriptsCommand";
+import { Messages } from "@salesforce/core";
+import { flags } from "@salesforce/command";
+import ArtifactFetcher, { Artifact } from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFetcher";
+import * as rimraf from "rimraf";
+import SfpPackage from "@dxatscale/sfpowerscripts.core/lib/package/SfpPackage";
+import { ConsoleLogger } from "@dxatscale/sfp-logger";
+import SfpPackageBuilder from "@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder";
+import SFPOrg from "@dxatscale/sfpowerscripts.core/lib/org/SFPOrg";
 
 Messages.importMessagesDirectory(__dirname);
-const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'install_package_command');
+const messages = Messages.loadMessages("@dxatscale/sfpowerscripts", "install_package_command");
 
 /**
  * Base class providing common functionality for package installation
@@ -24,22 +24,22 @@ export default abstract class InstallPackageCommand extends SfpowerscriptsComman
      */
     protected static flagsConfig = {
         package: flags.string({
-            char: 'n',
-            description: messages.getMessage('packageFlagDescription'),
+            char: "n",
+            description: messages.getMessage("packageFlagDescription"),
             required: true,
         }),
         targetorg: flags.string({
-            char: 'u',
-            description: messages.getMessage('targetOrgFlagDescription'),
+            char: "u",
+            description: messages.getMessage("targetOrgFlagDescription"),
             required: true,
         }),
         artifactdir: flags.directory({
-            description: messages.getMessage('artifactDirectoryFlagDescription'),
-            default: 'artifacts',
+            description: messages.getMessage("artifactDirectoryFlagDescription"),
+            default: "artifacts",
         }),
         skiponmissingartifact: flags.boolean({
-            char: 's',
-            description: messages.getMessage('skipOnMissingArtifactFlagDescription'),
+            char: "s",
+            description: messages.getMessage("skipOnMissingArtifactFlagDescription"),
         }),
     };
 
@@ -71,11 +71,11 @@ export default abstract class InstallPackageCommand extends SfpowerscriptsComman
         if (artifacts.length === 0) {
             if (!this.flags.skiponmissingartifact) {
                 throw new Error(
-                    `${this.flags.package} artifact not found at ${this.flags.artifactdir}...Please check the inputs`
+                    `${this.flags.package} artifact not found at ${this.flags.artifactdir}...Please check the inputs`,
                 );
             } else if (this.flags.skiponmissingartifact) {
                 console.log(
-                    `Skipping task as artifact is missing, and 'SkipOnMissingArtifact' ${this.flags.skiponmissingartifact}`
+                    `Skipping task as artifact is missing, and 'SkipOnMissingArtifact' ${this.flags.skiponmissingartifact}`,
                 );
                 process.exit(0);
             }
@@ -84,7 +84,7 @@ export default abstract class InstallPackageCommand extends SfpowerscriptsComman
         this.sfpPackage = await SfpPackageBuilder.buildPackageFromArtifact(this.artifact, new ConsoleLogger());
 
         //Create SfP Org
-        this.sfpOrg = await SFPOrg.create({aliasOrUsername:this.flags.targetorg});
+        this.sfpOrg = await SFPOrg.create({ aliasOrUsername: this.flags.targetorg });
     }
 
     /**
@@ -93,6 +93,6 @@ export default abstract class InstallPackageCommand extends SfpowerscriptsComman
      */
     private postInstall(): void {
         // Delete temp directory containing unzipped artifacts
-        rimraf.sync('.sfpowerscripts/unzippedArtifacts');
+        rimraf.sync(".sfpowerscripts/unzippedArtifacts");
     }
 }

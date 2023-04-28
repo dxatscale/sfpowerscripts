@@ -1,31 +1,31 @@
-import AnalyzeWithPMDImpl from '@dxatscale/sfpowerscripts.core/lib/sfpowerkitwrappers/AnalyzeWithPMDImpl';
-import xml2js = require('xml2js');
-const fs = require('fs-extra');
-const path = require('path');
-const Table = require('cli-table');
-import SFPLogger, { LoggerLevel, COLOR_SUCCESS } from '@dxatscale/sfp-logger/lib/SFPLogger';
-import lodash = require('lodash');
+import AnalyzeWithPMDImpl from "@dxatscale/sfpowerscripts.core/lib/sfpowerkitwrappers/AnalyzeWithPMDImpl";
+import xml2js = require("xml2js");
+const fs = require("fs-extra");
+const path = require("path");
+const Table = require("cli-table");
+import SFPLogger, { LoggerLevel, COLOR_SUCCESS } from "@dxatscale/sfp-logger/lib/SFPLogger";
+import lodash = require("lodash");
 
 export default class AnalyzeWithPMD {
     constructor(
         private sourceDirectories: string[],
-        private ruleset: 'sfpowerkit' | 'Custom',
+        private ruleset: "sfpowerkit" | "Custom",
         private rulesetPath: string,
         private threshold: number,
-        private version: string
+        private version: string,
     ) {
-        if (this.threshold < 1 || this.threshold > 5) throw new Error('Threshold level must be between 1 and 5');
+        if (this.threshold < 1 || this.threshold > 5) throw new Error("Threshold level must be between 1 and 5");
     }
 
     async exec() {
         // Setup Logging Directory
-        fs.mkdirpSync('.sfdx/sfp');
+        fs.mkdirpSync(".sfdx/sfp");
 
         const sourceDirectories: string[] = this.sourceDirectories;
         const ruleset: string = this.ruleset;
 
-        let rulesetPath = '';
-        if (ruleset == 'Custom') {
+        let rulesetPath = "";
+        if (ruleset == "Custom") {
             let rulesetPath = this.rulesetPath;
             SFPLogger.log(rulesetPath, LoggerLevel.DEBUG);
         }
@@ -61,15 +61,15 @@ export default class AnalyzeWithPMD {
         };
 
         for (const dir of sourceDirectories) {
-            let artifactFilePath = path.join('.sfdx/sfp', 'sf-pmd-output.xml');
+            let artifactFilePath = path.join(".sfdx/sfp", "sf-pmd-output.xml");
             // generate pmd output in XML format, for parsing
-            let pmdImpl = new AnalyzeWithPMDImpl(dir, rulesetPath, 'xml', artifactFilePath, version);
+            let pmdImpl = new AnalyzeWithPMDImpl(dir, rulesetPath, "xml", artifactFilePath, version);
             await pmdImpl.exec(false);
 
             if (fs.existsSync(artifactFilePath)) {
                 this.parsePmdXmlOutputFile(artifactFilePath, pmdReport);
             } else {
-                throw new Error('Failed to generate PMD output');
+                throw new Error("Failed to generate PMD output");
             }
         }
 
@@ -91,21 +91,21 @@ export default class AnalyzeWithPMD {
         // }
 
         if (threshold === 1) {
-            if (pmdReport.summary.priority['1'].nViolations > 0)
+            if (pmdReport.summary.priority["1"].nViolations > 0)
                 throw new Error(
-                    `Build failed due to ${pmdReport.summary.priority['1'].nViolations} critical violations found`
+                    `Build failed due to ${pmdReport.summary.priority["1"].nViolations} critical violations found`,
                 );
         } else {
             for (let i = 1; i <= threshold; i++) {
                 if (pmdReport.summary.priority[i].nViolations > 0) {
                     throw new Error(
-                        `Build failed due to violations with a priority less than or equal to the threshold ${threshold}`
+                        `Build failed due to violations with a priority less than or equal to the threshold ${threshold}`,
                     );
                 }
             }
         }
 
-        SFPLogger.log(COLOR_SUCCESS('Build succeeded. No violations found.'), LoggerLevel.INFO);
+        SFPLogger.log(COLOR_SUCCESS("Build succeeded. No violations found."), LoggerLevel.INFO);
     }
 
     /**
@@ -114,7 +114,7 @@ export default class AnalyzeWithPMD {
      * @returns
      */
     private parsePmdXmlOutputFile(xmlFile: string, pmdReport: PmdReport): void {
-        let xml: string = fs.readFileSync(xmlFile, 'utf-8');
+        let xml: string = fs.readFileSync(xmlFile, "utf-8");
         xml2js.parseString(xml, (err, result) => {
             if (lodash.isEmpty(result)) {
                 throw new Error(`Empty PMD XML output ${xmlFile}`);
@@ -176,7 +176,7 @@ export default class AnalyzeWithPMD {
 
     private printViolationsOfThreshold(recordsWithViolationOfThreshold: Record[]): void {
         let table = new Table({
-            head: ['File', 'Priority', 'Line Number', 'Rule', 'Description'],
+            head: ["File", "Priority", "Line Number", "Rule", "Description"],
         });
 
         recordsWithViolationOfThreshold.forEach((record) => {

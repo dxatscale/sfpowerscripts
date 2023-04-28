@@ -1,26 +1,26 @@
-import { jest, expect } from '@jest/globals';
-const fs = require('fs');
-import { ConsoleLogger } from '@dxatscale/sfp-logger';
-import PackageDiffImpl, { PackageDiffOptions } from '../../src/package/diff/PackageDiffImpl';
-import ProjectConfig from '../../src/project/ProjectConfig';
+import { jest, expect } from "@jest/globals";
+const fs = require("fs");
+import { ConsoleLogger } from "@dxatscale/sfp-logger";
+import PackageDiffImpl, { PackageDiffOptions } from "../../src/package/diff/PackageDiffImpl";
+import ProjectConfig from "../../src/project/ProjectConfig";
 
 let gitTags: string[] = [];
 let gitDiff: string[] = [];
-let gitShow: string = '';
+let gitShow: string = "";
 
-jest.mock('../../src/git/Git', () => {
+jest.mock("../../src/git/Git", () => {
     class Git {
         diff = jest.fn().mockReturnValue(gitDiff);
         show = jest.fn().mockReturnValue(gitShow);
-        static async initiateRepo(){
-          return new Git();
+        static async initiateRepo() {
+            return new Git();
         }
     }
 
     return Git;
 });
 
-jest.mock('../../src/git/GitTags', () => {
+jest.mock("../../src/git/GitTags", () => {
     class GitTags {
         async listTagsOnBranch(): Promise<string[]> {
             return gitTags;
@@ -31,7 +31,7 @@ jest.mock('../../src/git/GitTags', () => {
 });
 
 let ignoreFilterResult: string[] = [];
-jest.mock('../../src/ignore/IgnoreFiles', () => {
+jest.mock("../../src/ignore/IgnoreFiles", () => {
     class IgnoreFiles {
         filter = jest.fn().mockReturnValue(ignoreFilterResult);
     }
@@ -39,29 +39,25 @@ jest.mock('../../src/ignore/IgnoreFiles', () => {
     return IgnoreFiles;
 });
 
-describe('Determines whether a given package has changed', () => {
+describe("Determines whether a given package has changed", () => {
     beforeEach(() => {
-        const projectConfigMock = jest.spyOn(ProjectConfig, 'getSFDXProjectConfig');
+        const projectConfigMock = jest.spyOn(ProjectConfig, "getSFDXProjectConfig");
         projectConfigMock.mockImplementation(() => {
             return JSON.parse(packageConfigJson);
         });
 
-        const fsMock = jest.spyOn(fs, 'readFileSync');
+        const fsMock = jest.spyOn(fs, "readFileSync");
         fsMock.mockImplementation(() => {
-            return '**README.md';
+            return "**README.md";
         });
     });
 
-    it('should throw error if package does not exist', () => {
-        let packageDiffImpl: PackageDiffImpl = new PackageDiffImpl(
-            new ConsoleLogger(),
-            'UNKNOWN-PACKAGE',
-            null,
-        );
+    it("should throw error if package does not exist", () => {
+        let packageDiffImpl: PackageDiffImpl = new PackageDiffImpl(new ConsoleLogger(), "UNKNOWN-PACKAGE", null);
         expect(() => packageDiffImpl.exec()).rejects.toThrowError();
     });
 
-    it('should return true if package metadata has changed', async () => {
+    it("should return true if package metadata has changed", async () => {
         gitTags = coreTags;
         gitDiff = [`packages/domains/core/X/Y/Z/A-meta.xml`];
         // No change in package config
@@ -70,41 +66,43 @@ describe('Determines whether a given package has changed', () => {
         // Assume passthrough filter for ignore
         ignoreFilterResult = gitDiff;
 
-        let packageDiffImpl: PackageDiffImpl = new PackageDiffImpl(new ConsoleLogger(), 'core', null);
+        let packageDiffImpl: PackageDiffImpl = new PackageDiffImpl(new ConsoleLogger(), "core", null);
         let result = await packageDiffImpl.exec();
         expect(result.isToBeBuilt).toEqual(true);
         expect(result.reason).toEqual(`Found change(s) in package`);
     });
 
-    it('should return true if package descriptor has changed', async () => {
+    it("should return true if package descriptor has changed", async () => {
         gitTags = coreTags;
-        gitDiff = ['sfdx-project.json'];
+        gitDiff = ["sfdx-project.json"];
         gitShow = packageDescriptorChange;
 
         // Assume passthrough filter for ignore
         ignoreFilterResult = gitDiff;
 
-        let packageDiffImpl: PackageDiffImpl = new PackageDiffImpl(new ConsoleLogger(), 'core', null);
+        let packageDiffImpl: PackageDiffImpl = new PackageDiffImpl(new ConsoleLogger(), "core", null);
         let result = await packageDiffImpl.exec();
         expect(result.isToBeBuilt).toEqual(true);
         expect(result.reason).toEqual(`Package Descriptor Changed`);
     });
 
-    it('should return false even if package descriptor has changed when asked to ignore ', async () => {
-      gitTags = coreTags;
-      gitDiff = ['sfdx-project.json'];
-      gitShow = packageDescriptorChange;
+    it("should return false even if package descriptor has changed when asked to ignore ", async () => {
+        gitTags = coreTags;
+        gitDiff = ["sfdx-project.json"];
+        gitShow = packageDescriptorChange;
 
-      // Assume passthrough filter for ignore
-      ignoreFilterResult = gitDiff;
+        // Assume passthrough filter for ignore
+        ignoreFilterResult = gitDiff;
 
-      let packageDiffImpl: PackageDiffImpl = new PackageDiffImpl(new ConsoleLogger(), 'core', null,{skipPackageDescriptorChange:true});
-      let result = await packageDiffImpl.exec();
-      expect(result.isToBeBuilt).toEqual(false);
-  });
+        let packageDiffImpl: PackageDiffImpl = new PackageDiffImpl(new ConsoleLogger(), "core", null, {
+            skipPackageDescriptorChange: true,
+        });
+        let result = await packageDiffImpl.exec();
+        expect(result.isToBeBuilt).toEqual(false);
+    });
 
-    it('should return false if only config file has changed', async () => {
-        gitDiff = ['config/project-scratch-def.json'];
+    it("should return false if only config file has changed", async () => {
+        gitDiff = ["config/project-scratch-def.json"];
 
         // No change in package config
         gitShow = packageConfigJson;
@@ -113,31 +111,36 @@ describe('Determines whether a given package has changed', () => {
         ignoreFilterResult = gitDiff;
 
         gitTags = coreTags;
-        let packageDiffImpl: PackageDiffImpl = new PackageDiffImpl(new ConsoleLogger(), 'core', null);
+        let packageDiffImpl: PackageDiffImpl = new PackageDiffImpl(new ConsoleLogger(), "core", null);
         let result = await packageDiffImpl.exec();
         expect(result.isToBeBuilt).toEqual(false);
         expect(result.reason).toEqual(`No changes found`);
     });
 
-    it('should return true if package does not have any tags', async () => {
+    it("should return true if package does not have any tags", async () => {
         gitTags = [];
 
-        let packageDiffImpl: PackageDiffImpl = new PackageDiffImpl(new ConsoleLogger(), 'core', null);
+        let packageDiffImpl: PackageDiffImpl = new PackageDiffImpl(new ConsoleLogger(), "core", null);
         let result = await packageDiffImpl.exec();
         expect(result.isToBeBuilt).toEqual(true);
         expect(result.reason).toEqual(`Previous version not found`);
     });
 
-    it('should return true if packageToCommits is an empty object', async () => {
+    it("should return true if packageToCommits is an empty object", async () => {
         let packageDiffOptions = new PackageDiffOptions();
-        packageDiffOptions.packagesMappedToLastKnownCommitId={};
-        let packageDiffImpl: PackageDiffImpl = new PackageDiffImpl(new ConsoleLogger(), 'core', null,packageDiffOptions);
+        packageDiffOptions.packagesMappedToLastKnownCommitId = {};
+        let packageDiffImpl: PackageDiffImpl = new PackageDiffImpl(
+            new ConsoleLogger(),
+            "core",
+            null,
+            packageDiffOptions,
+        );
         let result = await packageDiffImpl.exec();
         expect(result.isToBeBuilt).toEqual(true);
         expect(result.reason).toEqual(`Previous version not found`);
     });
 
-    it('should return false if package metadata and package config has not changed', async () => {
+    it("should return false if package metadata and package config has not changed", async () => {
         gitTags = coreTags;
         gitDiff = [`packages/access-mgmt/X/Y/Z/A-meta.xml`, `packages/bi/X/Y/Z/B-meta.xml`];
         // No change in package config
@@ -146,7 +149,7 @@ describe('Determines whether a given package has changed', () => {
         // Assume passthrough filter for ignore
         ignoreFilterResult = gitDiff;
 
-        let packageDiffImpl: PackageDiffImpl = new PackageDiffImpl(new ConsoleLogger(), 'core', null);
+        let packageDiffImpl: PackageDiffImpl = new PackageDiffImpl(new ConsoleLogger(), "core", null);
         let result = await packageDiffImpl.exec();
         expect(result.isToBeBuilt).toEqual(false);
         expect(result.reason).toEqual(`No changes found`);

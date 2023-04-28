@@ -1,12 +1,12 @@
-import Component from './Component';
-import DependencyViolation from './DependencyViolation';
-import { ComponentSet, registry } from '@salesforce/source-deploy-retrieve';
-import PackageManifest from '../package/components/PackageManifest';
-import ProjectConfig from '../project/ProjectConfig';
-import * as fs from 'fs-extra';
-import DependencyFetcher from './DependencyFetcher';
-import SFPOrg from '../org/SFPOrg';
-import { PackageType } from '../package/SfpPackage';
+import Component from "./Component";
+import DependencyViolation from "./DependencyViolation";
+import { ComponentSet, registry } from "@salesforce/source-deploy-retrieve";
+import PackageManifest from "../package/components/PackageManifest";
+import ProjectConfig from "../project/ProjectConfig";
+import * as fs from "fs-extra";
+import DependencyFetcher from "./DependencyFetcher";
+import SFPOrg from "../org/SFPOrg";
+import { PackageType } from "../package/SfpPackage";
 
 const REGISTRY_SUPPORTED_TYPES = Object.values(registry.types).map((type) => type.name);
 
@@ -23,12 +23,12 @@ export default class DependencyAnalysis {
 
         const componentsWithDependencies = await new DependencyFetcher(
             this.org.getConnection(),
-            this.components
+            this.components,
         ).fetch();
         for (const component of componentsWithDependencies) {
             component.dependencies = component.dependencies.filter((dependency) => {
                 const isComponentInManagedPackage = managedPackageNamespaces.find(
-                    (namespace) => namespace === dependency.namespace
+                    (namespace) => namespace === dependency.namespace,
                 )
                     ? true
                     : false;
@@ -63,7 +63,7 @@ export default class DependencyAnalysis {
                         const isDependencyDefined = projectConfig.packageDirectories[
                             component.indexOfPackage
                         ].dependencies?.find((dependency) => {
-                            const packageName: string = dependency.package.split('@')[0];
+                            const packageName: string = dependency.package.split("@")[0];
                             return packageName === cmp.package;
                         })
                             ? true
@@ -100,12 +100,12 @@ export default class DependencyAnalysis {
             };
         });
 
-        const packageManifest = PackageManifest.createFromScratch(cmps, '50.0');
+        const packageManifest = PackageManifest.createFromScratch(cmps, "50.0");
 
         fs.writeFileSync(`.sfpowerscripts/package.xml`, packageManifest.manifestXml);
 
         const componentSet: ComponentSet = await ComponentSet.fromManifest({
-            manifestPath: '.sfpowerscripts/package.xml',
+            manifestPath: ".sfpowerscripts/package.xml",
             resolveSourcePaths: projectConfig.packageDirectories.map((pkg) => pkg.path),
         });
 
@@ -118,7 +118,7 @@ export default class DependencyAnalysis {
             cmp.files = componentFilenames;
 
             const indexOfPackage = projectConfig.packageDirectories.findIndex((pkg) =>
-                componentFilenames.find((file) => file.includes(pkg.path))
+                componentFilenames.find((file) => file.includes(pkg.path)),
             );
 
             cmp.indexOfPackage = indexOfPackage;

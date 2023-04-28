@@ -1,19 +1,17 @@
-import ArtifactFetcher, { Artifact } from '@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFetcher';
-import { ReleaseChangelog } from './ReleaseChangelog';
-import ChangelogMarkdownGenerator from './ChangelogMarkdownGenerator';
-import ReleaseChangelogUpdater from './ReleaseChangelogUpdater';
-import * as fs from 'fs-extra';
-import path = require('path');
-import { marked } from 'marked';
-const TerminalRenderer = require('marked-terminal');
-const retry = require('async-retry');
-import { GitError } from 'simple-git';
-import SfpPackage from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
-import SFPLogger, { LoggerLevel, ConsoleLogger, Logger } from '@dxatscale/sfp-logger';
-import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder';
-import Git from '@dxatscale/sfpowerscripts.core/lib/git/Git';
-
-
+import ArtifactFetcher, { Artifact } from "@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFetcher";
+import { ReleaseChangelog } from "./ReleaseChangelog";
+import ChangelogMarkdownGenerator from "./ChangelogMarkdownGenerator";
+import ReleaseChangelogUpdater from "./ReleaseChangelogUpdater";
+import * as fs from "fs-extra";
+import path = require("path");
+import { marked } from "marked";
+const TerminalRenderer = require("marked-terminal");
+const retry = require("async-retry");
+import { GitError } from "simple-git";
+import SfpPackage from "@dxatscale/sfpowerscripts.core/lib/package/SfpPackage";
+import SFPLogger, { LoggerLevel, ConsoleLogger, Logger } from "@dxatscale/sfp-logger";
+import SfpPackageBuilder from "@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder";
+import Git from "@dxatscale/sfpowerscripts.core/lib/git/Git";
 
 marked.setOptions({
     // Define custom renderer
@@ -22,19 +20,19 @@ marked.setOptions({
 
 export default class ChangelogImpl {
     constructor(
-        private logger:Logger,
+        private logger: Logger,
         private artifactDir: string,
         private releaseName: string,
         private workItemFilters: string[],
         private limit: number,
         private workItemUrl: string,
         private showAllArtifacts: boolean,
-        private directory:string,
+        private directory: string,
         private forcePush: boolean,
         private branch: string,
-        private nopush:boolean,
+        private nopush: boolean,
         private isDryRun: boolean,
-        private org?: string
+        private org?: string,
     ) {
         this.org = org?.toLowerCase();
     }
@@ -46,12 +44,12 @@ export default class ChangelogImpl {
                     return await this.execHandler();
                 } catch (err) {
                     if (err instanceof GitError) {
-                        if (!err.message.includes('failed to push some refs')) {
+                        if (!err.message.includes("failed to push some refs")) {
                             // Do not retry for Git errors that are not related to push
                             bail(err);
                         } else {
-                            SFPLogger.log('Failed to push changelog',LoggerLevel.WARN,this.logger);
-                            SFPLogger.log(`Retrying...(${retryNum})`,LoggerLevel.WARN,this.logger);
+                            SFPLogger.log("Failed to push changelog", LoggerLevel.WARN, this.logger);
+                            SFPLogger.log(`Retrying...(${retryNum})`, LoggerLevel.WARN, this.logger);
                             throw err;
                         }
                     } else {
@@ -64,13 +62,12 @@ export default class ChangelogImpl {
                 retries: 10,
                 minTimeout: 5,
                 randomize: true,
-            }
+            },
         );
     }
 
     private async execHandler() {
-
-        let git:Git;
+        let git: Git;
         try {
             let artifactFilePaths: Artifact[] = ArtifactFetcher.fetchArtifacts(this.artifactDir);
 
@@ -84,7 +81,7 @@ export default class ChangelogImpl {
             for (let artifactFilepath of artifactFilePaths) {
                 let sfpPackage: SfpPackage = await SfpPackageBuilder.buildPackageFromArtifact(
                     artifactFilepath,
-                    new ConsoleLogger()
+                    new ConsoleLogger(),
                 );
 
                 artifactsToSfpPackage[sfpPackage.packageName] = sfpPackage;
@@ -96,25 +93,25 @@ export default class ChangelogImpl {
                     } else {
                         console.log(`${sfpPackage.packageName} artifact is missing branch information`);
                         console.log(
-                            `This will cause an error in the future. Re-create the artifact using the latest version of sfpowerscripts to maintain compatibility.`
+                            `This will cause an error in the future. Re-create the artifact using the latest version of sfpowerscripts to maintain compatibility.`,
                         );
                     }
-                } 
+                }
             }
 
-            if (!artifactSourceBranch) throw new Error('Atleast one artifact must carry branch information');
+            if (!artifactSourceBranch) throw new Error("Atleast one artifact must carry branch information");
 
-           
-            
             //duplicate repo
-            let git=await Git.initiateRepoAtTempLocation(this.logger,null,this.branch);
-            SFPLogger.log(`Checking out branch ${this.branch}`,LoggerLevel.INFO,this.logger);
+            let git = await Git.initiateRepoAtTempLocation(this.logger, null, this.branch);
+            SFPLogger.log(`Checking out branch ${this.branch}`, LoggerLevel.INFO, this.logger);
 
             let pathToChangelogDirectory = this.createDirectory(this.directory, git.getRepositoryPath());
 
             let releaseChangelog: ReleaseChangelog;
             if (fs.existsSync(path.join(pathToChangelogDirectory, `releasechangelog.json`))) {
-                releaseChangelog = JSON.parse(fs.readFileSync(path.join(pathToChangelogDirectory, `releasechangelog.json`), 'utf8'));
+                releaseChangelog = JSON.parse(
+                    fs.readFileSync(path.join(pathToChangelogDirectory, `releasechangelog.json`), "utf8"),
+                );
             } else {
                 releaseChangelog = {
                     orgs: [],
@@ -122,7 +119,7 @@ export default class ChangelogImpl {
                 };
             }
 
-            SFPLogger.log('Generating changelog...',LoggerLevel.INFO,this.logger);
+            SFPLogger.log("Generating changelog...", LoggerLevel.INFO, this.logger);
 
             releaseChangelog = new ReleaseChangelogUpdater(
                 releaseChangelog,
@@ -130,46 +127,44 @@ export default class ChangelogImpl {
                 artifactsToSfpPackage,
                 packagesToChangelogFilePaths,
                 this.workItemFilters,
-                this.org
+                this.org,
             ).update();
 
             // Preview changelog in console
             SFPLogger.log(
                 marked(new ChangelogMarkdownGenerator(releaseChangelog, this.workItemUrl, 1, false).generate()),
                 LoggerLevel.INFO,
-                this.logger
+                this.logger,
             );
 
             fs.writeFileSync(
                 path.join(pathToChangelogDirectory, `releasechangelog.json`),
-                JSON.stringify(releaseChangelog, null, 4)
+                JSON.stringify(releaseChangelog, null, 4),
             );
 
             let payload: string = new ChangelogMarkdownGenerator(
                 releaseChangelog,
                 this.workItemUrl,
                 this.limit,
-                this.showAllArtifacts
+                this.showAllArtifacts,
             ).generate();
 
             fs.writeFileSync(path.join(pathToChangelogDirectory, `Release-Changelog.md`), payload);
 
-            if (!this.isDryRun)
-            { 
-                await git.commitFile([path.join(pathToChangelogDirectory, `releasechangelog.json`),path.join(pathToChangelogDirectory, `Release-Changelog.md`)]);
-                if(!this.nopush)
-                  await git.pushToRemote(this.branch,this.forcePush)
+            if (!this.isDryRun) {
+                await git.commitFile([
+                    path.join(pathToChangelogDirectory, `releasechangelog.json`),
+                    path.join(pathToChangelogDirectory, `Release-Changelog.md`),
+                ]);
+                if (!this.nopush) await git.pushToRemote(this.branch, this.forcePush);
             }
 
-            SFPLogger.log(`Successfully generated changelog`,LoggerLevel.INFO,this.logger);
+            SFPLogger.log(`Successfully generated changelog`, LoggerLevel.INFO, this.logger);
             return releaseChangelog;
         } finally {
-           if(git)
-             git.deleteTempoRepoIfAny();
+            if (git) git.deleteTempoRepoIfAny();
         }
     }
-
-    
 
     private createDirectory(directory: string, repoDir: string): string {
         if (this.directory) {
@@ -180,6 +175,4 @@ export default class ChangelogImpl {
         }
         return repoDir;
     }
-
-
 }

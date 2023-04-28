@@ -1,5 +1,5 @@
-import { Logger } from '@dxatscale/sfp-logger';
-import SfpPackage from '../SfpPackage';
+import { Logger } from "@dxatscale/sfp-logger";
+import SfpPackage from "../SfpPackage";
 
 export default interface PropertyFetcher {
     /**

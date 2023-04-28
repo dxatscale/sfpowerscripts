@@ -1,10 +1,10 @@
-import SFPLogger, { COLOR_WARNING, Logger } from '@dxatscale/sfp-logger';
-import IndividualClassCoverage from '../../apex/coverage/IndividualClassCoverage';
-import SfpPackage, { PackageType } from '../SfpPackage';
-import { Connection } from '@salesforce/core';
-import ApexClassFetcher from '../../apex/ApexClassFetcher';
-import ApexCodeCoverageAggregateFetcher from '../../apex/coverage/ApexCodeCoverageAggregateFetcher';
-import ApexTriggerFetcher from '../../apex/ApexTriggerFetcher';
+import SFPLogger, { COLOR_WARNING, Logger } from "@dxatscale/sfp-logger";
+import IndividualClassCoverage from "../../apex/coverage/IndividualClassCoverage";
+import SfpPackage, { PackageType } from "../SfpPackage";
+import { Connection } from "@salesforce/core";
+import ApexClassFetcher from "../../apex/ApexClassFetcher";
+import ApexCodeCoverageAggregateFetcher from "../../apex/coverage/ApexCodeCoverageAggregateFetcher";
+import ApexTriggerFetcher from "../../apex/ApexTriggerFetcher";
 
 export default class PackageTestCoverage {
     private individualClassCoverage: IndividualClassCoverage;
@@ -14,7 +14,7 @@ export default class PackageTestCoverage {
         private pkg: SfpPackage,
         private codeCoverage: any,
         private logger: Logger,
-        private readonly conn: Connection
+        private readonly conn: Connection,
     ) {
         this.individualClassCoverage = new IndividualClassCoverage(this.codeCoverage, this.logger);
     }
@@ -26,7 +26,7 @@ export default class PackageTestCoverage {
         let filteredCodeCoverage = this.filterCodeCoverageToPackageClassesAndTriggers(
             this.codeCoverage,
             packageClasses,
-            triggers
+            triggers,
         );
 
         let totalLines: number = 0;
@@ -58,7 +58,7 @@ export default class PackageTestCoverage {
 
         if (listOfApexClassOrTriggerId.length > 0) {
             let recordsOfApexCodeCoverageAggregate = await new ApexCodeCoverageAggregateFetcher(
-                this.conn
+                this.conn,
             ).fetchACCAById(listOfApexClassOrTriggerId);
 
             if (recordsOfApexCodeCoverageAggregate.length > 0) {
@@ -75,9 +75,7 @@ export default class PackageTestCoverage {
         return testCoverage;
     }
 
-    public async validateTestCoverage(
-        coverageThreshold?: number
-    ): Promise<{
+    public async validateTestCoverage(coverageThreshold?: number): Promise<{
         result: boolean;
         message?: string;
         packageTestCoverage: number;
@@ -91,12 +89,10 @@ export default class PackageTestCoverage {
         let classesCovered = this.getIndividualClassCoverageByPackage(this.codeCoverage);
 
         if (coverageThreshold == undefined || coverageThreshold < 75) {
-            SFPLogger.log('Setting minimum coverage percentage to 75%.');
+            SFPLogger.log("Setting minimum coverage percentage to 75%.");
             coverageThreshold = 75;
         }
 
-        
-      
         if (this.pkg.packageType === PackageType.Unlocked) {
             if (this.packageTestCoverage < coverageThreshold) {
                 // Coverage inadequate, set result to false
@@ -105,7 +101,7 @@ export default class PackageTestCoverage {
                     packageTestCoverage: this.packageTestCoverage,
                     classesCovered: classesCovered,
                     message: `${COLOR_WARNING(
-                        `The package has an overall coverage of ${this.packageTestCoverage}%, which does not meet the required overall coverage of ${coverageThreshold}%`
+                        `The package has an overall coverage of ${this.packageTestCoverage}%, which does not meet the required overall coverage of ${coverageThreshold}%`,
                     )}`,
                 };
             } else {
@@ -121,7 +117,7 @@ export default class PackageTestCoverage {
 
             let individualClassValidationResults = this.individualClassCoverage.validateIndividualClassCoverage(
                 this.getIndividualClassCoverageByPackage(this.codeCoverage),
-                coverageThreshold
+                coverageThreshold,
             );
 
             if (individualClassValidationResults.result) {
@@ -142,7 +138,7 @@ export default class PackageTestCoverage {
                 };
             }
         } else {
-            throw new Error('Unhandled package type');
+            throw new Error("Unhandled package type");
         }
     }
 
@@ -158,21 +154,21 @@ export default class PackageTestCoverage {
         codeCoverageReport = this.filterCodeCoverageToPackageClassesAndTriggers(
             codeCoverageReport,
             packageClasses,
-            triggers
+            triggers,
         );
 
         for (let classCoverage of codeCoverageReport) {
-            if (classCoverage['coveredPercent'] !== null) {
+            if (classCoverage["coveredPercent"] !== null) {
                 individualClassCoverage.push({
-                    name: classCoverage['name'],
-                    coveredPercent: classCoverage['coveredPercent'],
+                    name: classCoverage["name"],
+                    coveredPercent: classCoverage["coveredPercent"],
                 });
             }
         }
 
         let namesOfClassesWithoutTest: string[] = this.getClassesNotTouchedByTestClass(
             packageClasses,
-            codeCoverageReport
+            codeCoverageReport,
         );
 
         if (namesOfClassesWithoutTest.length > 0) {
@@ -212,7 +208,7 @@ export default class PackageTestCoverage {
         if (triggers != null) {
             return triggers.filter((trigger) => {
                 for (let classCoverage of codeCoverageReport) {
-                    if (classCoverage['name'] === trigger) {
+                    if (classCoverage["name"] === trigger) {
                         // Filter out triggers if accounted for in coverage json
                         return false;
                     }
@@ -233,7 +229,7 @@ export default class PackageTestCoverage {
         if (packageClasses != null) {
             return packageClasses.filter((packageClass) => {
                 for (let classCoverage of codeCoverageReport) {
-                    if (classCoverage['name'] === packageClass) {
+                    if (classCoverage["name"] === packageClass) {
                         // Filter out package class if accounted for in coverage json
                         return false;
                     }
@@ -253,13 +249,13 @@ export default class PackageTestCoverage {
         let filteredCodeCoverage = codeCoverage.filter((classCoverage) => {
             if (packageClasses != null) {
                 for (let packageClass of packageClasses) {
-                    if (packageClass === classCoverage['name']) return true;
+                    if (packageClass === classCoverage["name"]) return true;
                 }
             }
 
             if (triggers != null) {
                 for (let trigger of triggers) {
-                    if (trigger === classCoverage['name']) {
+                    if (trigger === classCoverage["name"]) {
                         return true;
                     }
                 }

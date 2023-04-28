@@ -1,15 +1,15 @@
-import { jest, expect } from '@jest/globals';
-import FHTAnalyser from '../../../src/package/analyser/FHTAnalyzer';
-import SfpPackage, { PackageType } from '../../../src/package/SfpPackage';
-const fs = require('fs-extra');
-import { ComponentSet, SourceComponent, registry, VirtualDirectory } from '@salesforce/source-deploy-retrieve';
-import { VoidLogger } from '@dxatscale/sfp-logger';
+import { jest, expect } from "@jest/globals";
+import FHTAnalyser from "../../../src/package/analyser/FHTAnalyzer";
+import SfpPackage, { PackageType } from "../../../src/package/SfpPackage";
+const fs = require("fs-extra");
+import { ComponentSet, SourceComponent, registry, VirtualDirectory } from "@salesforce/source-deploy-retrieve";
+import { VoidLogger } from "@dxatscale/sfp-logger";
 
 let isYamlFileFound: boolean = true;
 
-describe('FHT Analyzer', () => {
+describe("FHT Analyzer", () => {
     beforeEach(() => {
-        const fsReadMock = jest.spyOn(fs, 'readFileSync');
+        const fsReadMock = jest.spyOn(fs, "readFileSync");
         fsReadMock.mockImplementationOnce(() => {
             return `
              Account:
@@ -20,124 +20,122 @@ describe('FHT Analyzer', () => {
                  - Phone
           `;
         });
-        const fsExistSyncMock = jest.spyOn(fs, 'existsSync');
+        const fsExistSyncMock = jest.spyOn(fs, "existsSync");
         fsExistSyncMock.mockImplementationOnce(() => {
             return isYamlFileFound;
         });
     });
 
-    it('Should not be enabled for data packages', async () => {
+    it("Should not be enabled for data packages", async () => {
         let fhtAnalyzer = new FHTAnalyser();
         let sfpPackage: SfpPackage = {
             projectDirectory: process.cwd(),
-            workingDirectory: 'force-app',
-            mdapiDir: '',
-            destructiveChangesPath: '',
-            resolvedPackageDirectory: '',
-            version: '',
-            packageName: '',
-            versionNumber: '',
+            workingDirectory: "force-app",
+            mdapiDir: "",
+            destructiveChangesPath: "",
+            resolvedPackageDirectory: "",
+            version: "",
+            packageName: "",
+            versionNumber: "",
             packageType: PackageType.Data,
-            package_name: '',
+            package_name: "",
             toJSON: function (): any {
-                return '';
+                return "";
             },
         };
-        expect(await fhtAnalyzer.isEnabled(sfpPackage,new VoidLogger())).toBe(false);
+        expect(await fhtAnalyzer.isEnabled(sfpPackage, new VoidLogger())).toBe(false);
     });
 
-    it('Should be enabled for source packages by default', async () => {
+    it("Should be enabled for source packages by default", async () => {
         let fhtAnalyzer = new FHTAnalyser();
         let sfpPackage: SfpPackage = {
-            projectDirectory: '',
+            projectDirectory: "",
             workingDirectory: process.cwd(),
-            mdapiDir: '',
-            destructiveChangesPath: '',
-            resolvedPackageDirectory: '',
-            version: '',
-            packageName: '',
-            versionNumber: '',
+            mdapiDir: "",
+            destructiveChangesPath: "",
+            resolvedPackageDirectory: "",
+            version: "",
+            packageName: "",
+            versionNumber: "",
             packageType: PackageType.Source,
-            package_name: '',
+            package_name: "",
             toJSON: function (): any {
-                return '';
+                return "";
             },
         };
-        expect(await fhtAnalyzer.isEnabled(sfpPackage,new VoidLogger())).toBe(true);
+        expect(await fhtAnalyzer.isEnabled(sfpPackage, new VoidLogger())).toBe(true);
     });
 
-    it('Should be enabled for unlocked packages by default', async () => {
+    it("Should be enabled for unlocked packages by default", async () => {
         let fhtAnalyzer = new FHTAnalyser();
         let sfpPackage: SfpPackage = {
             projectDirectory: process.cwd(),
-            workingDirectory: 'force-app',
-            mdapiDir: '',
-            destructiveChangesPath: '',
-            resolvedPackageDirectory: '',
-            version: '',
-            packageName: '',
-            versionNumber: '',
+            workingDirectory: "force-app",
+            mdapiDir: "",
+            destructiveChangesPath: "",
+            resolvedPackageDirectory: "",
+            version: "",
+            packageName: "",
+            versionNumber: "",
             packageType: PackageType.Unlocked,
-            package_name: '',
+            package_name: "",
             toJSON: function (): any {
-                return '';
+                return "";
             },
         };
-        expect(await fhtAnalyzer.isEnabled(sfpPackage,new VoidLogger())).toBe(true);
+        expect(await fhtAnalyzer.isEnabled(sfpPackage, new VoidLogger())).toBe(true);
     });
 
-    it(' When a yaml is provided and no additional fields, a sfpPackage with additional properties should be created', async () => {
-        
-       isYamlFileFound = true;
+    it(" When a yaml is provided and no additional fields, a sfpPackage with additional properties should be created", async () => {
+        isYamlFileFound = true;
 
         const set = new ComponentSet();
-        set.add({ fullName: 'MyClass', type: 'ApexClass' });
-        set.add({ fullName: 'MyLayout', type: 'Layout' });
+        set.add({ fullName: "MyClass", type: "ApexClass" });
+        set.add({ fullName: "MyLayout", type: "Layout" });
 
-        const componentSetMock = jest.spyOn(ComponentSet, 'fromSource');
+        const componentSetMock = jest.spyOn(ComponentSet, "fromSource");
         componentSetMock.mockImplementationOnce(() => {
             return set;
         });
 
         let fhtAnalyzer = new FHTAnalyser();
         let sfpPackage: SfpPackage = {
-            projectDirectory: '',
-            packageDirectory: 'force-app',
+            projectDirectory: "",
+            packageDirectory: "force-app",
             workingDirectory: process.cwd(),
-            mdapiDir: '',
-            destructiveChangesPath: '',
-            resolvedPackageDirectory: '',
-            version: '',
-            packageName: '',
-            versionNumber: '',
+            mdapiDir: "",
+            destructiveChangesPath: "",
+            resolvedPackageDirectory: "",
+            version: "",
+            packageName: "",
+            versionNumber: "",
             packageType: PackageType.Unlocked,
-            package_name: '',
+            package_name: "",
             toJSON: function (): any {
-                return '';
+                return "";
             },
         };
-        sfpPackage = await fhtAnalyzer.analyze(sfpPackage,set,new VoidLogger());
-        expect(sfpPackage['isFHTFieldFound']).toBe(true);
-        expect(sfpPackage['fhtFields']).toBeDefined();
-        let fhtFields = sfpPackage['fhtFields'];
-        expect(fhtFields.Account).toStrictEqual(['Name', 'Phone']);
-        expect(fhtFields.Contact).toStrictEqual(['Name', 'Phone']);
+        sfpPackage = await fhtAnalyzer.analyze(sfpPackage, set, new VoidLogger());
+        expect(sfpPackage["isFHTFieldFound"]).toBe(true);
+        expect(sfpPackage["fhtFields"]).toBeDefined();
+        let fhtFields = sfpPackage["fhtFields"];
+        expect(fhtFields.Account).toStrictEqual(["Name", "Phone"]);
+        expect(fhtFields.Contact).toStrictEqual(["Name", "Phone"]);
     });
 
-    it(' When a yaml is provided, package has no history enabled fields, a sfpPackage with combined additional properties should be created', async () => {
-       
-       isYamlFileFound = true;
+    it(" When a yaml is provided, package has no history enabled fields, a sfpPackage with combined additional properties should be created", async () => {
+        isYamlFileFound = true;
 
         const set = new ComponentSet();
-        set.add({ fullName: 'MyClass', type: 'ApexClass' });
-        set.add({ fullName: 'MyLayout', type: 'Layout' });
+        set.add({ fullName: "MyClass", type: "ApexClass" });
+        set.add({ fullName: "MyLayout", type: "Layout" });
 
         const virtualFs: VirtualDirectory[] = [
             {
-                dirPath: '/main/default/object/Test__c/fields',
+                dirPath: "/main/default/object/Test__c/fields",
                 children: [
                     {
-                        name: 'AccountManager__c.field-meta.xml',
+                        name: "AccountManager__c.field-meta.xml",
                         data: Buffer.from(`<?xml version="1.0" encoding="UTF-8"?>
                 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
                     <fullName>AccountManager__c</fullName>
@@ -157,66 +155,64 @@ describe('FHT Analyzer', () => {
         ];
         const customField = SourceComponent.createVirtualComponent(
             {
-                name: 'AccountManager__c',
+                name: "AccountManager__c",
                 type: registry.types.customobject.children.types.customfield,
-                xml: '/main/default/object/Test__c/fields/AccountManager__c.field-meta.xml',
+                xml: "/main/default/object/Test__c/fields/AccountManager__c.field-meta.xml",
                 parent: SourceComponent.createVirtualComponent({
-                    name: 'Test__c',
+                    name: "Test__c",
                     type: registry.types.customobject,
-                    xml: '/main/default/object/Test__c.object-meta.xml',
+                    xml: "/main/default/object/Test__c.object-meta.xml",
                 }),
             },
-            virtualFs
+            virtualFs,
         );
 
         set.add(customField);
 
-        const componentSetMock = jest.spyOn(ComponentSet, 'fromSource');
+        const componentSetMock = jest.spyOn(ComponentSet, "fromSource");
         componentSetMock.mockImplementationOnce(() => {
             return set;
         });
 
         let fhtAnalyzer = new FHTAnalyser();
         let sfpPackage: SfpPackage = {
-            projectDirectory: '',
-            packageDirectory: 'force-app',
+            projectDirectory: "",
+            packageDirectory: "force-app",
             workingDirectory: process.cwd(),
-            mdapiDir: '',
-            destructiveChangesPath: '',
-            resolvedPackageDirectory: '',
-            version: '',
-            packageName: '',
-            versionNumber: '',
+            mdapiDir: "",
+            destructiveChangesPath: "",
+            resolvedPackageDirectory: "",
+            version: "",
+            packageName: "",
+            versionNumber: "",
             packageType: PackageType.Unlocked,
-            package_name: '',
+            package_name: "",
             toJSON: function (): any {
-                return '';
+                return "";
             },
         };
-        sfpPackage = await fhtAnalyzer.analyze(sfpPackage,set,new VoidLogger());
-        expect(sfpPackage['isFHTFieldFound']).toBe(true);
-        expect(sfpPackage['fhtFields']).toBeDefined();
-        let fhtFields = sfpPackage['fhtFields'];
-        expect(fhtFields.Account).toStrictEqual(['Name', 'Phone']);
-        expect(fhtFields.Contact).toStrictEqual(['Name', 'Phone']);
-        expect(fhtFields.Test__c).toStrictEqual(['AccountManager__c']);
+        sfpPackage = await fhtAnalyzer.analyze(sfpPackage, set, new VoidLogger());
+        expect(sfpPackage["isFHTFieldFound"]).toBe(true);
+        expect(sfpPackage["fhtFields"]).toBeDefined();
+        let fhtFields = sfpPackage["fhtFields"];
+        expect(fhtFields.Account).toStrictEqual(["Name", "Phone"]);
+        expect(fhtFields.Contact).toStrictEqual(["Name", "Phone"]);
+        expect(fhtFields.Test__c).toStrictEqual(["AccountManager__c"]);
     });
 
-    it(' When a yaml is provided, package has no history enabled fields, a sfpPackage with combined additional properties should be created', async () => {
-        
-      
-       isYamlFileFound = true;
+    it(" When a yaml is provided, package has no history enabled fields, a sfpPackage with combined additional properties should be created", async () => {
+        isYamlFileFound = true;
 
         const set = new ComponentSet();
-        set.add({ fullName: 'MyClass', type: 'ApexClass' });
-        set.add({ fullName: 'MyLayout', type: 'Layout' });
+        set.add({ fullName: "MyClass", type: "ApexClass" });
+        set.add({ fullName: "MyLayout", type: "Layout" });
 
         const virtualFs: VirtualDirectory[] = [
             {
-                dirPath: '/main/default/object/Test__c/fields',
+                dirPath: "/main/default/object/Test__c/fields",
                 children: [
                     {
-                        name: 'AccountManager__c.field-meta.xml',
+                        name: "AccountManager__c.field-meta.xml",
                         data: Buffer.from(`<?xml version="1.0" encoding="UTF-8"?>
               <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
                   <fullName>AccountManager__c</fullName>
@@ -236,66 +232,64 @@ describe('FHT Analyzer', () => {
         ];
         const customField = SourceComponent.createVirtualComponent(
             {
-                name: 'AccountManager__c',
+                name: "AccountManager__c",
                 type: registry.types.customobject.children.types.customfield,
-                xml: '/main/default/object/Test__c/fields/AccountManager__c.field-meta.xml',
+                xml: "/main/default/object/Test__c/fields/AccountManager__c.field-meta.xml",
                 parent: SourceComponent.createVirtualComponent({
-                    name: 'Test__c',
+                    name: "Test__c",
                     type: registry.types.customobject,
-                    xml: '/main/default/object/Test__c.object-meta.xml',
+                    xml: "/main/default/object/Test__c.object-meta.xml",
                 }),
             },
-            virtualFs
+            virtualFs,
         );
 
         set.add(customField);
 
-        const componentSetMock = jest.spyOn(ComponentSet, 'fromSource');
+        const componentSetMock = jest.spyOn(ComponentSet, "fromSource");
         componentSetMock.mockImplementationOnce(() => {
             return set;
         });
 
         let fhtAnalyzer = new FHTAnalyser();
         let sfpPackage: SfpPackage = {
-            projectDirectory: '',
-            packageDirectory: 'force-app',
+            projectDirectory: "",
+            packageDirectory: "force-app",
             workingDirectory: process.cwd(),
-            mdapiDir: '',
-            destructiveChangesPath: '',
-            resolvedPackageDirectory: '',
-            version: '',
-            packageName: '',
-            versionNumber: '',
+            mdapiDir: "",
+            destructiveChangesPath: "",
+            resolvedPackageDirectory: "",
+            version: "",
+            packageName: "",
+            versionNumber: "",
             packageType: PackageType.Unlocked,
-            package_name: '',
+            package_name: "",
             toJSON: function (): any {
-                return '';
+                return "";
             },
         };
-        sfpPackage = await fhtAnalyzer.analyze(sfpPackage,set,new VoidLogger());
-        expect(sfpPackage['isFHTFieldFound']).toBe(true);
-        expect(sfpPackage['fhtFields']).toBeDefined();
-        let fhtFields = sfpPackage['fhtFields'];
-        expect(fhtFields.Account).toStrictEqual(['Name', 'Phone']);
-        expect(fhtFields.Contact).toStrictEqual(['Name', 'Phone']);
-        expect(fhtFields).not.toHaveProperty('Test__c');
+        sfpPackage = await fhtAnalyzer.analyze(sfpPackage, set, new VoidLogger());
+        expect(sfpPackage["isFHTFieldFound"]).toBe(true);
+        expect(sfpPackage["fhtFields"]).toBeDefined();
+        let fhtFields = sfpPackage["fhtFields"];
+        expect(fhtFields.Account).toStrictEqual(["Name", "Phone"]);
+        expect(fhtFields.Contact).toStrictEqual(["Name", "Phone"]);
+        expect(fhtFields).not.toHaveProperty("Test__c");
     });
 
-    it(' When no yaml is provided, package has history enabled fields, a sfpPackage with combined additional properties should be created', async () => {
-        
-      
+    it(" When no yaml is provided, package has history enabled fields, a sfpPackage with combined additional properties should be created", async () => {
         isYamlFileFound = false;
 
         const set = new ComponentSet();
-        set.add({ fullName: 'MyClass', type: 'ApexClass' });
-        set.add({ fullName: 'MyLayout', type: 'Layout' });
+        set.add({ fullName: "MyClass", type: "ApexClass" });
+        set.add({ fullName: "MyLayout", type: "Layout" });
 
         const virtualFs: VirtualDirectory[] = [
             {
-                dirPath: '/main/default/object/Test__c/fields',
+                dirPath: "/main/default/object/Test__c/fields",
                 children: [
                     {
-                        name: 'AccountManager__c.field-meta.xml',
+                        name: "AccountManager__c.field-meta.xml",
                         data: Buffer.from(`<?xml version="1.0" encoding="UTF-8"?>
             <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
                 <fullName>AccountManager__c</fullName>
@@ -315,46 +309,46 @@ describe('FHT Analyzer', () => {
         ];
         const customField = SourceComponent.createVirtualComponent(
             {
-                name: 'AccountManager__c',
+                name: "AccountManager__c",
                 type: registry.types.customobject.children.types.customfield,
-                xml: '/main/default/object/Test__c/fields/AccountManager__c.field-meta.xml',
+                xml: "/main/default/object/Test__c/fields/AccountManager__c.field-meta.xml",
                 parent: SourceComponent.createVirtualComponent({
-                    name: 'Test__c',
+                    name: "Test__c",
                     type: registry.types.customobject,
-                    xml: '/main/default/object/Test__c.object-meta.xml',
+                    xml: "/main/default/object/Test__c.object-meta.xml",
                 }),
             },
-            virtualFs
+            virtualFs,
         );
 
         set.add(customField);
 
-        const componentSetMock = jest.spyOn(ComponentSet, 'fromSource');
+        const componentSetMock = jest.spyOn(ComponentSet, "fromSource");
         componentSetMock.mockImplementationOnce(() => {
             return set;
         });
 
         let fhtAnalyzer = new FHTAnalyser();
         let sfpPackage: SfpPackage = {
-            projectDirectory: '',
-            packageDirectory: 'force-app',
+            projectDirectory: "",
+            packageDirectory: "force-app",
             workingDirectory: process.cwd(),
-            mdapiDir: '',
-            destructiveChangesPath: '',
-            resolvedPackageDirectory: '',
-            version: '',
-            packageName: '',
-            versionNumber: '',
+            mdapiDir: "",
+            destructiveChangesPath: "",
+            resolvedPackageDirectory: "",
+            version: "",
+            packageName: "",
+            versionNumber: "",
             packageType: PackageType.Unlocked,
-            package_name: '',
+            package_name: "",
             toJSON: function (): any {
-                return '';
+                return "";
             },
         };
-        sfpPackage = await fhtAnalyzer.analyze(sfpPackage,set,new VoidLogger());
-        expect(sfpPackage['isFHTFieldFound']).toBe(true);
-        expect(sfpPackage['fhtFields']).toBeDefined();
-        let fhtFields = sfpPackage['fhtFields'];
-        expect(fhtFields.Test__c).toStrictEqual(['AccountManager__c']);
+        sfpPackage = await fhtAnalyzer.analyze(sfpPackage, set, new VoidLogger());
+        expect(sfpPackage["isFHTFieldFound"]).toBe(true);
+        expect(sfpPackage["fhtFields"]).toBeDefined();
+        let fhtFields = sfpPackage["fhtFields"];
+        expect(fhtFields.Test__c).toStrictEqual(["AccountManager__c"]);
     });
 });

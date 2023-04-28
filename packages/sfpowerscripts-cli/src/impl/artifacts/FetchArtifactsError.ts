@@ -1,7 +1,5 @@
-
-import SfpowerscriptsError from '../../errors/SfpowerscriptsError';
-import { ArtifactVersion } from './FetchImpl';
-
+import SfpowerscriptsError from "../../errors/SfpowerscriptsError";
+import { ArtifactVersion } from "./FetchImpl";
 
 export default class FetchArtifactsError extends SfpowerscriptsError {
     /**
@@ -17,7 +15,7 @@ export default class FetchArtifactsError extends SfpowerscriptsError {
      */
     readonly cause: Error;
 
-    constructor(message: string, data: { success:ArtifactVersion[]; failed: ArtifactVersion[] }, cause: Error) {
+    constructor(message: string, data: { success: ArtifactVersion[]; failed: ArtifactVersion[] }, cause: Error) {
         super(message);
 
         this.data = data;

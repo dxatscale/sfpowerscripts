@@ -1,9 +1,8 @@
-import { ComponentSet } from '@salesforce/source-deploy-retrieve';
-import Component from '../../dependency/Component';
-
+import { ComponentSet } from "@salesforce/source-deploy-retrieve";
+import Component from "../../dependency/Component";
 
 export default class PackageToComponent {
-    public constructor(private packageName:string,private packageDirectory:string) {}
+    public constructor(private packageName: string, private packageDirectory: string) {}
 
     public generateComponents() {
         const components: Component[] = [];
@@ -23,6 +22,6 @@ export default class PackageToComponent {
             components.push(component);
         }
 
-       return components;
+        return components;
     }
 }

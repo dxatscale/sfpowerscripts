@@ -1,7 +1,7 @@
-const glob = require('glob');
-const fs = require('fs-extra');
-import path from 'path';
-import xml2json from '../utils/xml2json';
+const glob = require("glob");
+const fs = require("fs-extra");
+import path from "path";
+import xml2json from "../utils/xml2json";
 
 export default class ApexTestSuite {
     public constructor(private sourceDir: string, private suiteName: string) {}

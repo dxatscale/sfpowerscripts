@@ -1,10 +1,10 @@
-import Command from '@oclif/command';
-import { OutputArgs, OutputFlags } from '@oclif/parser';
-import SFPlogger, { COLOR_HEADER } from '@dxatscale/sfp-logger/lib/SFPLogger';
-import path = require('path');
-import { SfpProjectConfig } from './types/SfpProjectConfig';
-import * as fs from 'fs-extra';
-const pjson = require('../package.json');
+import Command from "@oclif/command";
+import { OutputArgs, OutputFlags } from "@oclif/parser";
+import SFPlogger, { COLOR_HEADER } from "@dxatscale/sfp-logger/lib/SFPLogger";
+import path = require("path");
+import { SfpProjectConfig } from "./types/SfpProjectConfig";
+import * as fs from "fs-extra";
+const pjson = require("../package.json");
 
 export default abstract class SfpCommand extends Command {
     // The parsed flags for easy reference by this command; assigned in init
@@ -24,11 +24,11 @@ export default abstract class SfpCommand extends Command {
 
     public async run<T>(): Promise<T> {
         await this.init();
-        if (this.args.caller !== 'inner') {
+        if (this.args.caller !== "inner") {
             SFPlogger.log(
                 COLOR_HEADER(
-                    `sfp cli -- The DX@Scale Dev CLI -Version:${this.config.version} -Release:${pjson.release}`
-                )
+                    `sfp cli -- The DX@Scale Dev CLI -Version:${this.config.version} -Release:${pjson.release}`,
+                ),
             );
         }
 

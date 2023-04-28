@@ -76,6 +76,10 @@ To debug and test plugin
  sfdx plugins:link
 ```
 
+The project utilizes [rome](https://docs.rome.tools/guides/getting-started/) for formatting,
+Please follow the instruction [here](https://docs.rome.tools/formatter/) to format your code.
+
+
 #### Maintainers
 
 List of Maintainers are available in the [link](https://docs.dxatscale.io/about-us)

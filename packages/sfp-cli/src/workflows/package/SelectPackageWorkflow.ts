@@ -1,8 +1,8 @@
-import inquirer = require('inquirer');
-inquirer.registerPrompt('autocomplete', require('inquirer-autocomplete-prompt'));
-const fuzzy = require('fuzzy');
-import PackageDiffImpl from '@dxatscale/sfpowerscripts.core/lib/package/diff/PackageDiffImpl';
-import SFPLogger, { ConsoleLogger, LoggerLevel } from '@dxatscale/sfp-logger/lib/SFPLogger';
+import inquirer = require("inquirer");
+inquirer.registerPrompt("autocomplete", require("inquirer-autocomplete-prompt"));
+const fuzzy = require("fuzzy");
+import PackageDiffImpl from "@dxatscale/sfpowerscripts.core/lib/package/diff/PackageDiffImpl";
+import SFPLogger, { ConsoleLogger, LoggerLevel } from "@dxatscale/sfp-logger/lib/SFPLogger";
 
 export default class SelectPackageWorkflow {
     constructor(private readonly projectConfig) {}
@@ -14,9 +14,9 @@ export default class SelectPackageWorkflow {
     public async pickAnExistingPackage() {
         let existingPackage = await inquirer.prompt([
             {
-                type: 'autocomplete',
-                name: 'name',
-                message: 'Search for package',
+                type: "autocomplete",
+                name: "name",
+                message: "Search for package",
                 source: (answers, input) => {
                     let packages = this.getNameOfPackages();
 
@@ -64,9 +64,9 @@ export default class SelectPackageWorkflow {
 
         const chosenPackages = await inquirer.prompt([
             {
-                type: 'checkbox',
-                name: 'packages',
-                message: 'Select packages',
+                type: "checkbox",
+                name: "packages",
+                message: "Select packages",
                 choices: choices,
                 default: defaultChoices,
                 loop: false,
@@ -96,7 +96,7 @@ export default class SelectPackageWorkflow {
     private getNameOfPackages(): string[] {
         let nameOfPackages: string[] = [];
         this.projectConfig.packageDirectories.forEach((pkg) => {
-            nameOfPackages.push(pkg['package']);
+            nameOfPackages.push(pkg["package"]);
         });
         return nameOfPackages;
     }

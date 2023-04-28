@@ -1,10 +1,10 @@
-import ProjectConfig from '../../project/ProjectConfig';
-import * as rimraf from 'rimraf';
-import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
-import { mkdirpSync } from 'fs-extra';
-import * as fs from 'fs-extra';
-import PackageComponentDiff from '../diff/PackageComponentDiff';
-let path = require('path');
+import ProjectConfig from "../../project/ProjectConfig";
+import * as rimraf from "rimraf";
+import SFPLogger, { Logger, LoggerLevel } from "@dxatscale/sfp-logger";
+import { mkdirpSync } from "fs-extra";
+import * as fs from "fs-extra";
+import PackageComponentDiff from "../diff/PackageComponentDiff";
+let path = require("path");
 
 export default class SfpPackageContentGenerator {
     public static isPreDeploymentScriptAvailable: boolean = false;
@@ -16,12 +16,12 @@ export default class SfpPackageContentGenerator {
         projectConfig: any,
         sfdx_package: string,
         packageDirectory: string,
-        versionNumber:string,
+        versionNumber: string,
         destructiveManifestFilePath?: string,
         configFilePath?: string,
         pathToReplacementForceIgnore?: string,
         revisionFrom?: string,
-        revisionTo?: string
+        revisionTo?: string,
     ): Promise<string> {
         let artifactDirectory: string = `.sfpowerscripts/${this.makefolderid(5)}_source`,
             rootDirectory: string;
@@ -29,10 +29,10 @@ export default class SfpPackageContentGenerator {
         if (projectDirectory) {
             rootDirectory = projectDirectory;
         } else {
-            rootDirectory = '';
+            rootDirectory = "";
         }
 
-        if (packageDirectory == null) packageDirectory = '';
+        if (packageDirectory == null) packageDirectory = "";
 
         mkdirpSync(artifactDirectory);
 
@@ -60,9 +60,9 @@ export default class SfpPackageContentGenerator {
                     sfdx_package,
                     revisionFrom,
                     revisionTo,
-                    true
+                    true,
                 );
-                await packageComponentDiffer.build(path.join(artifactDirectory, 'diff'));
+                await packageComponentDiffer.build(path.join(artifactDirectory, "diff"));
             } catch (error) {
                 SFPLogger.log(`Unable to compute diff due to ${error}`, LoggerLevel.TRACE, logger);
             }
@@ -76,7 +76,7 @@ export default class SfpPackageContentGenerator {
                 destructiveManifestFilePath,
                 artifactDirectory,
                 rootDirectory,
-                logger
+                logger,
             );
         }
 
@@ -88,7 +88,7 @@ export default class SfpPackageContentGenerator {
             sfdx_package,
             projectConfig,
             rootDirectory,
-            artifactDirectory
+            artifactDirectory,
         );
 
         SfpPackageContentGenerator.createPackageManifests(
@@ -96,7 +96,7 @@ export default class SfpPackageContentGenerator {
             rootDirectory,
             projectConfig,
             sfdx_package,
-            versionNumber
+            versionNumber,
         );
 
         fs.copySync(path.join(rootDirectory, packageDirectory), path.join(artifactDirectory, packageDirectory));
@@ -108,7 +108,7 @@ export default class SfpPackageContentGenerator {
         sfdx_package: string,
         projectConfig: any,
         rootDirectory: string,
-        artifactDirectory: string
+        artifactDirectory: string,
     ) {
         const packageDescriptor = ProjectConfig.getPackageDescriptorFromConfig(sfdx_package, projectConfig);
         if (packageDescriptor.unpackagedMetadata?.path) {
@@ -127,37 +127,37 @@ export default class SfpPackageContentGenerator {
         projectDirectory: string,
         projectConfig: any,
         sfdx_package: string,
-        versionNumber:string
+        versionNumber: string,
     ) {
         // Create pruned package manifest in source directory
         let cleanedUpProjectManifest = ProjectConfig.cleanupMPDFromProjectConfig(projectConfig, sfdx_package);
 
-        //Ensure version numbers are used from 
-        cleanedUpProjectManifest.packageDirectories[0].versionNumber=versionNumber
+        //Ensure version numbers are used from
+        cleanedUpProjectManifest.packageDirectories[0].versionNumber = versionNumber;
 
         //Handle unpackaged metadata
-        if (fs.existsSync(path.join(artifactDirectory, 'unpackagedMetadata'))) {
-            cleanedUpProjectManifest.packageDirectories[0].unpackagedMetadata.path = path.join('unpackagedMetadata');
-            cleanedUpProjectManifest.packageDirectories.push({ path: path.join('unpackagedMetadata'), default: false });
+        if (fs.existsSync(path.join(artifactDirectory, "unpackagedMetadata"))) {
+            cleanedUpProjectManifest.packageDirectories[0].unpackagedMetadata.path = path.join("unpackagedMetadata");
+            cleanedUpProjectManifest.packageDirectories.push({ path: path.join("unpackagedMetadata"), default: false });
         }
 
         //Setup preDeployment Script Path
-        if (fs.existsSync(path.join(artifactDirectory, 'scripts', `preDeployment`)))
-            cleanedUpProjectManifest.packageDirectories[0].preDeploymentScript = path.join('scripts', `preDeployment`);
+        if (fs.existsSync(path.join(artifactDirectory, "scripts", `preDeployment`)))
+            cleanedUpProjectManifest.packageDirectories[0].preDeploymentScript = path.join("scripts", `preDeployment`);
 
         //Setup postDeployment Script Path
-        if (fs.existsSync(path.join(artifactDirectory, 'scripts', `postDeployment`)))
+        if (fs.existsSync(path.join(artifactDirectory, "scripts", `postDeployment`)))
             cleanedUpProjectManifest.packageDirectories[0].postDeploymentScript = path.join(
-                'scripts',
-                `postDeployment`
+                "scripts",
+                `postDeployment`,
             );
 
-        fs.writeFileSync(path.join(artifactDirectory, 'sfdx-project.json'), JSON.stringify(cleanedUpProjectManifest));
+        fs.writeFileSync(path.join(artifactDirectory, "sfdx-project.json"), JSON.stringify(cleanedUpProjectManifest));
 
         // Copy original package manifest
         let manifestsDir: string = path.join(artifactDirectory, `manifests`);
         mkdirpSync(manifestsDir);
-        fs.copySync(path.join(projectDirectory, 'sfdx-project.json'), path.join(manifestsDir, 'sfdx-project.json.ori'));
+        fs.copySync(path.join(projectDirectory, "sfdx-project.json"), path.join(manifestsDir, "sfdx-project.json.ori"));
     }
 
     /**
@@ -176,7 +176,7 @@ export default class SfpPackageContentGenerator {
             if (projectDirectory)
                 packageDescriptor.preDeploymentScript = path.join(
                     projectDirectory,
-                    packageDescriptor.preDeploymentScript
+                    packageDescriptor.preDeploymentScript,
                 );
 
             if (fs.existsSync(packageDescriptor.preDeploymentScript)) {
@@ -190,7 +190,7 @@ export default class SfpPackageContentGenerator {
             if (projectDirectory)
                 packageDescriptor.postDeploymentScript = path.join(
                     projectDirectory,
-                    packageDescriptor.postDeploymentScript
+                    packageDescriptor.postDeploymentScript,
                 );
 
             if (fs.existsSync(packageDescriptor.postDeploymentScript)) {
@@ -218,31 +218,31 @@ export default class SfpPackageContentGenerator {
         //So it has to be build from the root of the unzipped directory
         //and whatever mentioned in .json is already translated
 
-        let rootForceIgnore: string = path.join(projectDirectory, '.forceignore');
+        let rootForceIgnore: string = path.join(projectDirectory, ".forceignore");
         let copyForceIgnoreForStage = (stage) => {
             if (ignoreFiles?.[stage]) {
                 if (fs.existsSync(path.join(projectDirectory, ignoreFiles[stage]))) {
                     fs.copySync(
                         path.join(projectDirectory, ignoreFiles[stage]),
-                        path.join(forceIgnoresDir, '.' + stage + 'ignore')
+                        path.join(forceIgnoresDir, "." + stage + "ignore"),
                     );
-                } else if (fs.existsSync(path.join(projectDirectory, 'forceignores', '.' + stage + 'ignore'))) {
+                } else if (fs.existsSync(path.join(projectDirectory, "forceignores", "." + stage + "ignore"))) {
                     fs.copySync(
-                        path.join(projectDirectory, 'forceignores', '.' + stage + 'ignore'),
-                        path.join(forceIgnoresDir, '.' + stage + 'ignore')
+                        path.join(projectDirectory, "forceignores", "." + stage + "ignore"),
+                        path.join(forceIgnoresDir, "." + stage + "ignore"),
                     );
                 } else throw new Error(`${ignoreFiles[stage]} does not exist`);
-            } else fs.copySync(rootForceIgnore, path.join(forceIgnoresDir, '.' + stage + 'ignore'));
+            } else fs.copySync(rootForceIgnore, path.join(forceIgnoresDir, "." + stage + "ignore"));
 
             //append additional entry to force ignore file
             //TODO: Revisit the location
-            fs.appendFileSync(  path.join(forceIgnoresDir, '.' + stage + 'ignore'),"\n**/postDeploy");
+            fs.appendFileSync(path.join(forceIgnoresDir, "." + stage + "ignore"), "\n**/postDeploy");
         };
 
-        let stages: string[] = ['prepare', 'validate', 'quickbuild', 'build'];
+        let stages: string[] = ["prepare", "validate", "quickbuild", "build"];
         stages.forEach((stage) => copyForceIgnoreForStage(stage));
 
-        fs.copySync(rootForceIgnore, path.join(artifactDirectory, '.forceignore'));
+        fs.copySync(rootForceIgnore, path.join(artifactDirectory, ".forceignore"));
     }
 
     /**
@@ -253,16 +253,16 @@ export default class SfpPackageContentGenerator {
     private static replaceRootForceIgnore(
         artifactDirectory: string,
         pathToReplacementForceIgnore: string,
-        logger: Logger
+        logger: Logger,
     ): void {
         if (fs.existsSync(pathToReplacementForceIgnore)) {
-            fs.copySync(pathToReplacementForceIgnore, path.join(artifactDirectory, '.forceignore'));
+            fs.copySync(pathToReplacementForceIgnore, path.join(artifactDirectory, ".forceignore"));
         } else {
             SFPLogger.log(`${pathToReplacementForceIgnore} does not exist`, LoggerLevel.INFO, logger);
             SFPLogger.log(
-                'Package creation will continue using the unchanged forceignore in the root directory',
+                "Package creation will continue using the unchanged forceignore in the root directory",
                 LoggerLevel.INFO,
-                logger
+                logger,
             );
         }
     }
@@ -271,20 +271,20 @@ export default class SfpPackageContentGenerator {
         destructiveManifestFilePath: string,
         artifactDirectory: string,
         projectDirectory: any,
-        logger: Logger
+        logger: Logger,
     ) {
         if (fs.existsSync(destructiveManifestFilePath)) {
             try {
-                fs.mkdirsSync(path.join(artifactDirectory, 'destructive'));
+                fs.mkdirsSync(path.join(artifactDirectory, "destructive"));
                 fs.copySync(
                     path.join(projectDirectory, destructiveManifestFilePath),
-                    path.join(artifactDirectory, 'destructive', 'destructiveChanges.xml')
+                    path.join(artifactDirectory, "destructive", "destructiveChanges.xml"),
                 );
             } catch (error) {
                 SFPLogger.log(
-                    'Unable to read/parse destructive manifest, Please check your artifacts, Will result in an error while deploying',
+                    "Unable to read/parse destructive manifest, Please check your artifacts, Will result in an error while deploying",
                     LoggerLevel.WARN,
-                    logger
+                    logger,
                 );
             }
         }
@@ -294,25 +294,25 @@ export default class SfpPackageContentGenerator {
         configFilePath: string,
         artifactDirectory: string,
         projectDirectory: any,
-        logger: Logger
+        logger: Logger,
     ) {
         if (fs.existsSync(configFilePath)) {
             try {
-                fs.mkdirsSync(path.join(artifactDirectory, 'config'));
+                fs.mkdirsSync(path.join(artifactDirectory, "config"));
                 fs.copySync(
                     path.join(projectDirectory, configFilePath),
-                    path.join(artifactDirectory, 'config', 'project-scratch-def.json')
+                    path.join(artifactDirectory, "config", "project-scratch-def.json"),
                 );
             } catch (error) {
                 SFPLogger.log(error, LoggerLevel.TRACE, logger);
-                SFPLogger.log('Utilizing default config file path', LoggerLevel.TRACE, logger);
+                SFPLogger.log("Utilizing default config file path", LoggerLevel.TRACE, logger);
             }
         }
     }
 
     private static makefolderid(length): string {
-        var result = '';
-        var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        var result = "";
+        var characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
         var charactersLength = characters.length;
         for (var i = 0; i < length; i++) {
             result += characters.charAt(Math.floor(Math.random() * charactersLength));

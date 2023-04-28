@@ -1,24 +1,24 @@
-import SFPLogger, { COLOR_ERROR } from '@dxatscale/sfp-logger/lib/SFPLogger';
-import { flags } from '@oclif/command';
-import inquirer = require('inquirer');
-import simpleGit, { SimpleGit } from 'simple-git';
-import OrgOpen from '../impl/sfdxwrappers/OrgOpen';
-import CreateAnOrgWorkflow from '../workflows/org/CreateAnOrgWorkflow';
-import PickAnOrgWorkflow from '../workflows/org/PickAnOrgWorkflow';
-import CommandsWithInitCheck from '../sharedCommandBase/CommandsWithInitCheck';
-import { WorkItem } from '../types/WorkItem';
-import NewWorkItemWorkflow from '../workflows/workitems/NewWorkItemWorkflow';
-import * as fs from 'fs-extra';
-import path = require('path');
-import DeleteOrgWorkflow from '../workflows/org/DeleteOrgWorkflow';
+import SFPLogger, { COLOR_ERROR } from "@dxatscale/sfp-logger/lib/SFPLogger";
+import { flags } from "@oclif/command";
+import inquirer = require("inquirer");
+import simpleGit, { SimpleGit } from "simple-git";
+import OrgOpen from "../impl/sfdxwrappers/OrgOpen";
+import CreateAnOrgWorkflow from "../workflows/org/CreateAnOrgWorkflow";
+import PickAnOrgWorkflow from "../workflows/org/PickAnOrgWorkflow";
+import CommandsWithInitCheck from "../sharedCommandBase/CommandsWithInitCheck";
+import { WorkItem } from "../types/WorkItem";
+import NewWorkItemWorkflow from "../workflows/workitems/NewWorkItemWorkflow";
+import * as fs from "fs-extra";
+import path = require("path");
+import DeleteOrgWorkflow from "../workflows/org/DeleteOrgWorkflow";
 
 export default class Org extends CommandsWithInitCheck {
-    static description = 'guided workflows to help with developer orgs';
+    static description = "guided workflows to help with developer orgs";
     private workItem: WorkItem;
     private workItemId: string;
 
     static flags = {
-        help: flags.help({ char: 'h' }),
+        help: flags.help({ char: "h" }),
     };
 
     protected async executeCommand(): Promise<any> {
@@ -35,7 +35,7 @@ export default class Org extends CommandsWithInitCheck {
                 SFPLogger.log(COLOR_ERROR(`  No work item or org associated with the branch. Create a work item`));
                 let newWorkItemWorkflow: NewWorkItemWorkflow = new NewWorkItemWorkflow(
                     this.sfpProjectConfig,
-                    this.config.configDir
+                    this.config.configDir,
                 );
                 await newWorkItemWorkflow.execute();
             } else await this.openAssociatedOrg(this.workItem.defaultDevOrg);
@@ -54,7 +54,7 @@ export default class Org extends CommandsWithInitCheck {
             let command = new OrgOpen(username);
             await command.exec(false);
         } catch (error) {
-            SFPLogger.log(COLOR_ERROR('  Associated org with this branch/workItem is missing'));
+            SFPLogger.log(COLOR_ERROR("  Associated org with this branch/workItem is missing"));
             await this.associateANewDevOrg();
         }
     }
@@ -80,9 +80,9 @@ export default class Org extends CommandsWithInitCheck {
     private async promptForAssociation(): Promise<boolean> {
         const associatePrompt = await inquirer.prompt([
             {
-                type: 'confirm',
-                name: 'isAssociate',
-                message: 'Do you need to associate this dev environment with workItem?',
+                type: "confirm",
+                name: "isAssociate",
+                message: "Do you need to associate this dev environment with workItem?",
                 default: false,
             },
         ]);
@@ -99,17 +99,17 @@ export default class Org extends CommandsWithInitCheck {
     private async promptForOrgCommandSelection(): Promise<OrgCommand> {
         const orgType = await inquirer.prompt([
             {
-                type: 'list',
-                name: 'type',
-                message: 'Select an operation',
+                type: "list",
+                name: "type",
+                message: "Select an operation",
                 choices: [
-                    { name: 'Open associated org', value: OrgCommand.OPEN_ORG_WORKITEM },
+                    { name: "Open associated org", value: OrgCommand.OPEN_ORG_WORKITEM },
                     {
-                        name: 'Open any authenticated org',
+                        name: "Open any authenticated org",
                         value: OrgCommand.OPEN_ANY_ORG,
                     },
-                    { name: 'Create an org', value: OrgCommand.CREATE_AN_ORG },
-                    { name: 'Delete an org', value: OrgCommand.DELETE_AN_ORG },
+                    { name: "Create an org", value: OrgCommand.CREATE_AN_ORG },
+                    { name: "Delete an org", value: OrgCommand.DELETE_AN_ORG },
                 ],
             },
         ]);

@@ -1,5 +1,5 @@
-import { Connection } from '@salesforce/core';
-const retry = require('async-retry');
+import { Connection } from "@salesforce/core";
+const retry = require("async-retry");
 
 export default class LimitsFetcher {
     constructor(private conn: Connection) {}
@@ -14,7 +14,7 @@ export default class LimitsFetcher {
                     [p: string]: { Max: number; Remaining: number };
                 }>(endpoint);
             },
-            { retries: 3, minTimeout: 2000 }
+            { retries: 3, minTimeout: 2000 },
         );
 
         Object.keys(result).forEach((limitName) => {

@@ -1,4 +1,4 @@
-import { Changelog, Commit } from '@dxatscale/sfpowerscripts.core/lib/changelog/interfaces/GenericChangelogInterfaces';
+import { Changelog, Commit } from "@dxatscale/sfpowerscripts.core/lib/changelog/interfaces/GenericChangelogInterfaces";
 
 export class ReleaseChangelog {
     releases: Release[];
@@ -31,7 +31,7 @@ export class ReleaseId {
     names: string[];
     buildNumber: number;
     hashId: string;
-    date?:string;
+    date?: string;
 }
 
 export interface Release extends ReleaseId {

@@ -1,20 +1,20 @@
-import ProjectConfig from '../../project/ProjectConfig';
-import SFPLogger, { LoggerLevel, Logger, COLOR_KEY_MESSAGE } from '@dxatscale/sfp-logger';
-import * as fs from 'fs-extra';
-import { delay } from '../../utils/Delay';
-import SfpPackage, { PackageType, SfpPackageParams } from '../SfpPackage';
-import { CreatePackage } from './CreatePackage';
-import PackageEmptyChecker from '../validators/PackageEmptyChecker';
-import PackageVersionCoverage from '../coverage/PackageVersionCoverage';
-import { Connection, SfProject } from '@salesforce/core';
-import SFPStatsSender from '../../stats/SFPStatsSender';
-import { EOL } from 'os';
-import SFPOrg, { PackageTypeInfo } from '../../org/SFPOrg';
-import { PackageCreationParams } from '../SfpPackageBuilder';
-import { PackageVersion, PackageVersionCreateRequestResult } from '@salesforce/packaging';
-import { Duration } from '@salesforce/kit';
-import PackageDependencyDisplayer from '../../display/PackageDependencyDisplayer';
-const path = require('path');
+import ProjectConfig from "../../project/ProjectConfig";
+import SFPLogger, { LoggerLevel, Logger, COLOR_KEY_MESSAGE } from "@dxatscale/sfp-logger";
+import * as fs from "fs-extra";
+import { delay } from "../../utils/Delay";
+import SfpPackage, { PackageType, SfpPackageParams } from "../SfpPackage";
+import { CreatePackage } from "./CreatePackage";
+import PackageEmptyChecker from "../validators/PackageEmptyChecker";
+import PackageVersionCoverage from "../coverage/PackageVersionCoverage";
+import { Connection, SfProject } from "@salesforce/core";
+import SFPStatsSender from "../../stats/SFPStatsSender";
+import { EOL } from "os";
+import SFPOrg, { PackageTypeInfo } from "../../org/SFPOrg";
+import { PackageCreationParams } from "../SfpPackageBuilder";
+import { PackageVersion, PackageVersionCreateRequestResult } from "@salesforce/packaging";
+import { Duration } from "@salesforce/kit";
+import PackageDependencyDisplayer from "../../display/PackageDependencyDisplayer";
+const path = require("path");
 
 export default class CreateUnlockedPackageImpl extends CreatePackage {
     private static packageTypeInfos: PackageTypeInfo[];
@@ -28,7 +28,7 @@ export default class CreateUnlockedPackageImpl extends CreatePackage {
         protected sfpPackage: SfpPackage,
         protected packageCreationParams: PackageCreationParams,
         protected logger?: Logger,
-        protected params?: SfpPackageParams
+        protected params?: SfpPackageParams,
     ) {
         super(projectDirectory, sfpPackage, packageCreationParams, logger, params);
     }
@@ -48,27 +48,27 @@ export default class CreateUnlockedPackageImpl extends CreatePackage {
         this.workingDirectory = sfpPackage.workingDirectory;
 
         //Get the one in working directory, this is always hardcoded to match
-        this.params.configFilePath = path.join('config', 'project-scratch-def.json');
+        this.params.configFilePath = path.join("config", "project-scratch-def.json");
 
         //Get Type of Package
-        SFPLogger.log('Fetching Package Type Info from DevHub', LoggerLevel.INFO, this.logger);
+        SFPLogger.log("Fetching Package Type Info from DevHub", LoggerLevel.INFO, this.logger);
         let packageTypeInfos = await this.getPackageTypeInfos();
         let packageTypeInfo = packageTypeInfos.find((pkg) => pkg.Id == packageId);
         if (packageTypeInfo == null) {
             SFPLogger.log(
-                'Unable to find a package info for this particular package, Are you sure you created this package?',
+                "Unable to find a package info for this particular package, Are you sure you created this package?",
                 LoggerLevel.WARN,
-                this.logger
+                this.logger,
             );
-            throw new Error('Unable to fetch Package Info');
+            throw new Error("Unable to fetch Package Info");
         }
 
-        if (packageTypeInfo.IsOrgDependent == 'Yes') this.isOrgDependentPackage = true;
+        if (packageTypeInfo.IsOrgDependent == "Yes") this.isOrgDependentPackage = true;
 
         SFPLogger.log(`Package ${packageTypeInfo.Name}`, LoggerLevel.INFO, this.logger);
         SFPLogger.log(`IsOrgDependent ${packageTypeInfo.IsOrgDependent}`, LoggerLevel.INFO, this.logger);
         SFPLogger.log(`Package Id ${packageTypeInfo.Id}`, LoggerLevel.INFO, this.logger);
-        SFPLogger.log('-------------------------', LoggerLevel.INFO, this.logger);
+        SFPLogger.log("-------------------------", LoggerLevel.INFO, this.logger);
 
         //cleanup sfpowerscripts constructs in working directory
         this.deleteSFPowerscriptsAdditionsToProjectConfig(this.workingDirectory);
@@ -76,21 +76,24 @@ export default class CreateUnlockedPackageImpl extends CreatePackage {
         //Resolve the package dependencies
         if (this.isOrgDependentPackage) {
             // Store original dependencies to artifact
-            sfpPackage.dependencies = sfpPackage.packageDescriptor['dependencies'];
+            sfpPackage.dependencies = sfpPackage.packageDescriptor["dependencies"];
         } else if (!this.isOrgDependentPackage && !this.packageCreationParams.isSkipValidation) {
             sfpPackage.packageDescriptor = ProjectConfig.getSFDXPackageDescriptor(
                 this.workingDirectory,
-                this.sfpPackage.packageName
+                this.sfpPackage.packageName,
             );
             //Store the resolved dependencies
-            sfpPackage.dependencies = sfpPackage.packageDescriptor['dependencies'];
+            sfpPackage.dependencies = sfpPackage.packageDescriptor["dependencies"];
         } else {
-            sfpPackage.dependencies = sfpPackage.packageDescriptor['dependencies'];
+            sfpPackage.dependencies = sfpPackage.packageDescriptor["dependencies"];
         }
 
         //Print Dependencies
-        PackageDependencyDisplayer.printPackageDependencies(sfpPackage.dependencies,sfpPackage.projectConfig, this.logger);
-
+        PackageDependencyDisplayer.printPackageDependencies(
+            sfpPackage.dependencies,
+            sfpPackage.projectConfig,
+            this.logger,
+        );
     }
 
     async createPackage(sfpPackage: SfpPackage) {
@@ -101,8 +104,8 @@ export default class CreateUnlockedPackageImpl extends CreatePackage {
         // it keeps on searching for the unpackage in the root folder
         // so fix up the path manually
         let targetPackageDir = sfProject.getPackageDirectories()[0];
-        if (targetPackageDir['unpackagedMetadata'])
-            targetPackageDir['unpackagedMetadata'] = { path: path.join(this.workingDirectory, 'unpackagedMetadata') };
+        if (targetPackageDir["unpackagedMetadata"])
+            targetPackageDir["unpackagedMetadata"] = { path: path.join(this.workingDirectory, "unpackagedMetadata") };
 
         let result = await PackageVersion.create(
             {
@@ -119,7 +122,7 @@ export default class CreateUnlockedPackageImpl extends CreatePackage {
                 definitionfile: path.join(this.workingDirectory, this.params.configFilePath),
                 packageId: this.sfpPackage.packageName,
             },
-            { timeout: Duration.minutes(0), frequency: Duration.seconds(30) }
+            { timeout: Duration.minutes(0), frequency: Duration.seconds(30) },
         );
 
         SFPLogger.log(`Package creation for ${this.sfpPackage.packageName} Initiated`, LoggerLevel.INFO, this.logger);
@@ -129,22 +132,22 @@ export default class CreateUnlockedPackageImpl extends CreatePackage {
             await delay(30000); //Poll every 30 seconds
             currentPackageCreationStatus = await PackageVersion.getCreateStatus(
                 result.Id,
-                this.devhubOrg.getConnection()
+                this.devhubOrg.getConnection(),
             );
 
             //Too Verbose when reading errors.. use only for debug
             SFPLogger.log(
                 `Status: ${COLOR_KEY_MESSAGE(currentPackageCreationStatus.Status)}, Next Status check in 30 seconds`,
                 LoggerLevel.DEBUG,
-                this.logger
+                this.logger,
             );
             if (currentPackageCreationStatus.Status === `Success`) {
                 break;
-            } else if (currentPackageCreationStatus.Status === 'Error') {
-                let errorMessage = '<empty>';
+            } else if (currentPackageCreationStatus.Status === "Error") {
+                let errorMessage = "<empty>";
                 const errors = currentPackageCreationStatus?.Error;
                 if (errors?.length) {
-                    errorMessage = 'Creation errors: ';
+                    errorMessage = "Creation errors: ";
                     for (let i = 0; i < errors.length; i++) {
                         errorMessage += `\n${i + 1}) ${errors[i]}`;
                     }
@@ -163,28 +166,28 @@ export default class CreateUnlockedPackageImpl extends CreatePackage {
             throw new Error(
                 `The build for ${this.sfpPackage.packageName} was not completed in the wait time ${this.packageCreationParams.waitTime} provided.${EOL}
          You might want to increase the wait time or better check the dependencies or convert to different package type ${EOL}
-         Read more about it here https://docs.dxatscale.io/development-practices/types-of-packaging/unlocked-packages#build-options-with-unlocked-packages`
+         Read more about it here https://docs.dxatscale.io/development-practices/types-of-packaging/unlocked-packages#build-options-with-unlocked-packages`,
             );
         }
 
         //Break if coverage is low
         if (this.packageCreationParams.isCoverageEnabled && !this.isOrgDependentPackage) {
             if (!sfpPackage.has_passed_coverage_check)
-                throw new Error('This package has not meet the minimum coverage requirement of 75%');
+                throw new Error("This package has not meet the minimum coverage requirement of 75%");
         }
     }
 
     postCreatePackage(sfpPackage: SfpPackage) {
         //copy the original config back as existing one would have cleaned up
         fs.copyFileSync(
-            path.join(this.workingDirectory, 'sfdx-project-bak.json'),
-            path.join(this.workingDirectory, 'sfdx-project.json')
+            path.join(this.workingDirectory, "sfdx-project-bak.json"),
+            path.join(this.workingDirectory, "sfdx-project.json"),
         );
-        fs.unlinkSync(path.join(this.workingDirectory, 'sfdx-project-bak.json'));
+        fs.unlinkSync(path.join(this.workingDirectory, "sfdx-project-bak.json"));
         if (sfpPackage.isDependencyValidated) {
-            SFPStatsSender.logGauge('package.testcoverage', sfpPackage.test_coverage, {
+            SFPStatsSender.logGauge("package.testcoverage", sfpPackage.test_coverage, {
                 package: sfpPackage.package_name,
-                from: 'createpackage',
+                from: "createpackage",
             });
         }
     }
@@ -199,30 +202,30 @@ export default class CreateUnlockedPackageImpl extends CreatePackage {
         let projectManifestFromWorkingDirectory = ProjectConfig.getSFDXProjectConfig(workingDirectory);
         let packageDescriptorInWorkingDirectory = ProjectConfig.getPackageDescriptorFromConfig(
             this.sfpPackage.packageName,
-            projectManifestFromWorkingDirectory
+            projectManifestFromWorkingDirectory,
         );
 
-        fs.writeJsonSync(path.join(workingDirectory, 'sfdx-project-bak.json'), projectManifestFromWorkingDirectory);
+        fs.writeJsonSync(path.join(workingDirectory, "sfdx-project-bak.json"), projectManifestFromWorkingDirectory);
 
         //Cleanup sfpowerscripts constructs
-        if (this.isOrgDependentPackage) delete packageDescriptorInWorkingDirectory['dependencies'];
+        if (this.isOrgDependentPackage) delete packageDescriptorInWorkingDirectory["dependencies"];
 
-        delete packageDescriptorInWorkingDirectory['type'];
-        delete packageDescriptorInWorkingDirectory['assignPermSetsPreDeployment'];
-        delete packageDescriptorInWorkingDirectory['assignPermSetsPostDeployment'];
-        delete packageDescriptorInWorkingDirectory['skipDeployOnOrgs'];
-        delete packageDescriptorInWorkingDirectory['skipTesting'];
-        delete packageDescriptorInWorkingDirectory['skipCoverageValidation'];
-        delete packageDescriptorInWorkingDirectory['ignoreOnStages'];
-        delete packageDescriptorInWorkingDirectory['ignoreDeploymentErrors'];
-        delete packageDescriptorInWorkingDirectory['preDeploymentScript'];
-        delete packageDescriptorInWorkingDirectory['postDeploymentScript'];
-        delete packageDescriptorInWorkingDirectory['aliasfy'];
-        delete packageDescriptorInWorkingDirectory['checkpointForPrepare'];
-        delete packageDescriptorInWorkingDirectory['testSynchronous'];
-        delete packageDescriptorInWorkingDirectory['tags'];
+        delete packageDescriptorInWorkingDirectory["type"];
+        delete packageDescriptorInWorkingDirectory["assignPermSetsPreDeployment"];
+        delete packageDescriptorInWorkingDirectory["assignPermSetsPostDeployment"];
+        delete packageDescriptorInWorkingDirectory["skipDeployOnOrgs"];
+        delete packageDescriptorInWorkingDirectory["skipTesting"];
+        delete packageDescriptorInWorkingDirectory["skipCoverageValidation"];
+        delete packageDescriptorInWorkingDirectory["ignoreOnStages"];
+        delete packageDescriptorInWorkingDirectory["ignoreDeploymentErrors"];
+        delete packageDescriptorInWorkingDirectory["preDeploymentScript"];
+        delete packageDescriptorInWorkingDirectory["postDeploymentScript"];
+        delete packageDescriptorInWorkingDirectory["aliasfy"];
+        delete packageDescriptorInWorkingDirectory["checkpointForPrepare"];
+        delete packageDescriptorInWorkingDirectory["testSynchronous"];
+        delete packageDescriptorInWorkingDirectory["tags"];
 
-        fs.writeJsonSync(path.join(workingDirectory, 'sfdx-project.json'), projectManifestFromWorkingDirectory);
+        fs.writeJsonSync(path.join(workingDirectory, "sfdx-project.json"), projectManifestFromWorkingDirectory);
     }
 
     private async getPackageInfo(sfpPackage: SfpPackage) {
@@ -231,7 +234,7 @@ export default class CreateUnlockedPackageImpl extends CreatePackage {
         while (count < 10) {
             count++;
             try {
-                SFPLogger.log('Fetching Version Number and Coverage details', LoggerLevel.INFO, this.logger);
+                SFPLogger.log("Fetching Version Number and Coverage details", LoggerLevel.INFO, this.logger);
 
                 let pkgInfoResult = await packageVersionCoverage.getCoverage(sfpPackage.package_version_id);
 
@@ -244,9 +247,9 @@ export default class CreateUnlockedPackageImpl extends CreatePackage {
                 SFPLogger.log(
                     `Unable to fetch package version info due to ${error.message}`,
                     LoggerLevel.INFO,
-                    this.logger
+                    this.logger,
                 );
-                SFPLogger.log('Retrying...', LoggerLevel.INFO, this.logger);
+                SFPLogger.log("Retrying...", LoggerLevel.INFO, this.logger);
                 await delay(2000);
                 continue;
             }

@@ -1,10 +1,10 @@
-import { Org } from '@salesforce/core';
-import { PoolConfig } from './PoolConfig';
-import ScratchOrg from '../ScratchOrg';
-import { Result } from 'neverthrow';
-import * as fs from 'fs-extra';
-import { EOL } from 'os';
-import SFPLogger, { LoggerLevel } from '@dxatscale/sfp-logger';
+import { Org } from "@salesforce/core";
+import { PoolConfig } from "./PoolConfig";
+import ScratchOrg from "../ScratchOrg";
+import { Result } from "neverthrow";
+import * as fs from "fs-extra";
+import { EOL } from "os";
+import SFPLogger, { LoggerLevel } from "@dxatscale/sfp-logger";
 
 export default abstract class PoolJobExecutor {
     protected logToFilePath: string;
@@ -14,7 +14,7 @@ export default abstract class PoolJobExecutor {
     async execute(
         scratchOrg: ScratchOrg,
         hubOrg: Org,
-        logLevel: LoggerLevel
+        logLevel: LoggerLevel,
     ): Promise<Result<ScriptExecutionResult, JobError>> {
         this.logToFilePath = `.sfpowerscripts/prepare_logs/${scratchOrg.alias}.log`;
         //Create file logger
@@ -27,7 +27,7 @@ export default abstract class PoolJobExecutor {
         scratchOrg: ScratchOrg,
         hubOrg: Org,
         logToFilePath: string,
-        logLevel: LoggerLevel
+        logLevel: LoggerLevel,
     ): Promise<Result<ScriptExecutionResult, JobError>>;
 }
 

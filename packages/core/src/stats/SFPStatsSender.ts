@@ -1,11 +1,11 @@
-import StatsDClient, { ClientOptions, StatsD } from 'hot-shots';
-import * as fs from 'fs-extra';
-import { EOL } from 'os';
-import { NativeMetricSender } from './NativeMetricSender';
-import { DataDogMetricsSender } from './nativeMetricSenderImpl/DataDogMetricSender';
-import { Logger } from '@dxatscale/sfp-logger';
-import { NewRelicMetricSender } from './nativeMetricSenderImpl/NewRelicMetricSender';
-import { SplunkMetricSender } from './nativeMetricSenderImpl/SplunkMetricSender';
+import StatsDClient, { ClientOptions, StatsD } from "hot-shots";
+import * as fs from "fs-extra";
+import { EOL } from "os";
+import { NativeMetricSender } from "./NativeMetricSender";
+import { DataDogMetricsSender } from "./nativeMetricSenderImpl/DataDogMetricSender";
+import { Logger } from "@dxatscale/sfp-logger";
+import { NewRelicMetricSender } from "./nativeMetricSenderImpl/NewRelicMetricSender";
+import { SplunkMetricSender } from "./nativeMetricSenderImpl/SplunkMetricSender";
 
 export default class SFPStatsSender {
     private static client: StatsD;
@@ -16,40 +16,40 @@ export default class SFPStatsSender {
         let options: ClientOptions = {
             host: host,
             port: port == null ? 8125 : Number(port),
-            protocol: protocol == 'tcp' ? 'tcp' : 'udp',
-            prefix: 'sfpowerscripts.',
+            protocol: protocol == "tcp" ? "tcp" : "udp",
+            prefix: "sfpowerscripts.",
         };
         SFPStatsSender.client = new StatsDClient(options);
     }
 
     static initializeNativeMetrics(type: string, apiHost: string, apiKey: string, logger?: Logger) {
         switch (type) {
-            case 'DataDog':
+            case "DataDog":
                 this.nativeMetricsSender = new DataDogMetricsSender(logger);
                 this.nativeMetricsSender.initialize(apiHost, apiKey);
                 break;
 
-            case 'NewRelic':
+            case "NewRelic":
                 this.nativeMetricsSender = new NewRelicMetricSender(logger);
                 this.nativeMetricsSender.initialize(apiHost, apiKey);
                 break;
-                
-            case 'Splunk':
+
+            case "Splunk":
                 this.nativeMetricsSender = new SplunkMetricSender(logger);
                 this.nativeMetricsSender.initialize(apiHost, apiKey);
                 break;
 
             default:
-                throw new Error('Invalid Metric Type');
+                throw new Error("Invalid Metric Type");
         }
     }
 
     static initializeLogBasedMetrics() {
         try {
-            fs.mkdirpSync('.sfpowerscripts/logs');
+            fs.mkdirpSync(".sfpowerscripts/logs");
             SFPStatsSender.metricsLogger = `.sfpowerscripts/logs/metrics.log`;
         } catch (error) {
-            console.log('Unable to initiate Log based metrics', error);
+            console.log("Unable to initiate Log based metrics", error);
         }
     }
 
@@ -108,7 +108,7 @@ export default class SFPStatsSender {
 
     static logMetrics(key: any, logger?: any) {
         if (logger) {
-            fs.appendFileSync(logger, `${JSON.stringify(key)}${EOL}`, 'utf8');
+            fs.appendFileSync(logger, `${JSON.stringify(key)}${EOL}`, "utf8");
         }
     }
 }

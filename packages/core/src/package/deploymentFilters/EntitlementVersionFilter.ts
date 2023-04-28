@@ -1,18 +1,17 @@
-import { ComponentSet, registry } from '@salesforce/source-deploy-retrieve';
-import SFPOrg from '../../org/SFPOrg';
-import QueryHelper from '../../queryHelper/QueryHelper';
-import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
-import { DeploymentFilter } from './DeploymentFilter';
-import * as fs from 'fs-extra';
-import SettingsFetcher from '../../metadata/SettingsFetcher';
-import { PackageType } from '../SfpPackage';
-const { XMLBuilder } = require('fast-xml-parser');
+import { ComponentSet, registry } from "@salesforce/source-deploy-retrieve";
+import SFPOrg from "../../org/SFPOrg";
+import QueryHelper from "../../queryHelper/QueryHelper";
+import SFPLogger, { Logger, LoggerLevel } from "@dxatscale/sfp-logger";
+import { DeploymentFilter } from "./DeploymentFilter";
+import * as fs from "fs-extra";
+import SettingsFetcher from "../../metadata/SettingsFetcher";
+import { PackageType } from "../SfpPackage";
+const { XMLBuilder } = require("fast-xml-parser");
 
 const EXISTING_SLAPPROCESS_QUERY = `SELECT Name, NameNorm,VersionNumber, VersionMaster FROM SlaProcess ORDER BY VersionNumber DESC`;
 const EXISTING_SLAPPROCESS_QUERY_NO_VERSIONING = `SELECT Name, NameNorm FROM SlaProcess`;
 
 export default class EntitlementVersionFilter implements DeploymentFilter {
-  
     public async apply(org: SFPOrg, componentSet: ComponentSet, logger: Logger): Promise<ComponentSet> {
         //Only do if entitlment exits in the package
         let sourceComponents = componentSet.getSourceComponents().toArray();
@@ -48,21 +47,21 @@ export default class EntitlementVersionFilter implements DeploymentFilter {
                     let slaProcessLocal = sourceComponent.parseXmlSync();
 
                     let slaProcessMatchedByName: SlaProcess = slaProcessesInOrg.find(
-                        (element: SlaProcess) => element.Name == slaProcessLocal['EntitlementProcess']['name']
+                        (element: SlaProcess) => element.Name == slaProcessLocal["EntitlementProcess"]["name"],
                     );
 
                     if (
                         slaProcessMatchedByName &&
                         entitlementSettings.enableEntitlementVersioning &&
-                        slaProcessLocal['EntitlementProcess']['versionNumber'] > slaProcessMatchedByName.VersionNumber
+                        slaProcessLocal["EntitlementProcess"]["versionNumber"] > slaProcessMatchedByName.VersionNumber
                     ) {
                         //This is a deployment candidate
                         //Modify versionMaster tag to match in the org
-                        slaProcessLocal['EntitlementProcess']['versionMaster'] = slaProcessMatchedByName.VersionMaster;
+                        slaProcessLocal["EntitlementProcess"]["versionMaster"] = slaProcessMatchedByName.VersionMaster;
                         let builder = new XMLBuilder({
                             format: true,
                             ignoreAttributes: false,
-                            attributeNamePrefix: '@_',
+                            attributeNamePrefix: "@_",
                         });
                         let xmlContent = builder.build(slaProcessLocal);
                         fs.writeFileSync(sourceComponent.xml, xmlContent);
@@ -71,7 +70,7 @@ export default class EntitlementVersionFilter implements DeploymentFilter {
                         SFPLogger.log(
                             `Skipping EntitlementProcess ${sourceComponent.name} as this version is already deployed`,
                             LoggerLevel.INFO,
-                            logger
+                            logger,
                         );
                     } else {
                         //Doesnt exist, deploy
@@ -96,10 +95,6 @@ export default class EntitlementVersionFilter implements DeploymentFilter {
         if (projectConfig?.plugins?.sfpowerscripts?.disableEntitlementFilter) return false;
         else return true;
     }
-
-    
-
-   
 }
 
 interface SlaProcess {

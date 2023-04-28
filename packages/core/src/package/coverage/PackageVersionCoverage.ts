@@ -1,6 +1,6 @@
-import { Connection } from '@salesforce/core';
-import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
-import Package2VersionFetcher from '../version/Package2VersionFetcher';
+import { Connection } from "@salesforce/core";
+import SFPLogger, { Logger, LoggerLevel } from "@dxatscale/sfp-logger";
+import Package2VersionFetcher from "../version/Package2VersionFetcher";
 
 export default class PackageVersionCoverage {
     public constructor(private connection: Connection, private logger: Logger) {}
@@ -12,7 +12,9 @@ export default class PackageVersionCoverage {
         if (package2Version) {
             var packageCoverage = <PackageCoverage>{};
             packageCoverage.HasPassedCodeCoverageCheck = package2Version.HasPassedCodeCoverageCheck;
-            packageCoverage.coverage = package2Version.CodeCoverage ? package2Version.CodeCoverage.apexCodeCoveragePercentage : 0;
+            packageCoverage.coverage = package2Version.CodeCoverage
+                ? package2Version.CodeCoverage.apexCodeCoveragePercentage
+                : 0;
             packageCoverage.packageId = package2Version.Package2Id;
             packageCoverage.packageName = package2Version.Package2.Name;
             packageCoverage.packageVersionId = package2Version.SubscriberPackageVersionId;
@@ -21,7 +23,7 @@ export default class PackageVersionCoverage {
             SFPLogger.log(
                 `Successfully Retrieved the Apex Test Coverage of the package version`,
                 LoggerLevel.INFO,
-                this.logger
+                this.logger,
             );
         } else {
             throw new Error(`Package version doesnot exist, Please check the version details`);

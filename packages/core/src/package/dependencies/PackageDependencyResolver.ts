@@ -1,8 +1,8 @@
-import { Connection } from '@salesforce/core';
-import lodash = require('lodash');
-import Git from '../../git/Git';
-import GitTags from '../../git/GitTags';
-import Package2VersionFetcher, { Package2Version } from '../version/Package2VersionFetcher';
+import { Connection } from "@salesforce/core";
+import lodash = require("lodash");
+import Git from "../../git/Git";
+import GitTags from "../../git/GitTags";
+import Package2VersionFetcher, { Package2Version } from "../version/Package2VersionFetcher";
 
 /**
  * Resolves package dependency versions to their exact versions
@@ -15,7 +15,7 @@ export default class PackageDependencyResolver {
         private projectConfig,
         private packagesToBeSkipped?: string[],
         private packagesToBeResolved?: string[],
-        private resolveExternalDepenciesOnly?: boolean
+        private resolveExternalDepenciesOnly?: boolean,
     ) {
         // prevent mutation of original config
         this.projectConfig = lodash.cloneDeep(this.projectConfig);
@@ -43,12 +43,16 @@ export default class PackageDependencyResolver {
             if (packageDirectory.dependencies && Array.isArray(packageDirectory.dependencies)) {
                 for (let i = 0; i < packageDirectory.dependencies.length; i++) {
                     let dependency = packageDirectory.dependencies[i];
-                    if (this.projectConfig.packageAliases[dependency.package] === undefined && !this.isSubscriberPackageVersionId(dependency.package)) {
-                        
+                    if (
+                        this.projectConfig.packageAliases[dependency.package] === undefined &&
+                        !this.isSubscriberPackageVersionId(dependency.package)
+                    ) {
                         throw new Error(`Can't find package id for dependency: ` + dependency.package);
                     }
 
-                    let packageVersionId = this.isSubscriberPackageVersionId(dependency.package)?dependency.package:this.projectConfig.packageAliases[dependency.package]
+                    let packageVersionId = this.isSubscriberPackageVersionId(dependency.package)
+                        ? dependency.package
+                        : this.projectConfig.packageAliases[dependency.package];
 
                     if (this.isSubscriberPackageVersionId(packageVersionId)) {
                         // Already resolved
@@ -63,7 +67,7 @@ export default class PackageDependencyResolver {
                     const package2VersionForDependency = await this.getPackage2VersionForDependency(
                         this.conn,
                         dependency,
-                        packageVersionId
+                        packageVersionId,
                     );
 
                     if (package2VersionForDependency == null) {
@@ -87,9 +91,8 @@ export default class PackageDependencyResolver {
     private async getPackage2VersionForDependency(
         conn: Connection,
         dependency: { package: string; versionNumber: string },
-        packageVersionId: string
+        packageVersionId: string,
     ): Promise<Package2Version> {
-
         //Dont hit api's if its only for external dependencies
         if (this.projectConfig.packageDirectories.find((dir) => dir.package === dependency.package)) {
             if (this.resolveExternalDepenciesOnly) return null;
@@ -98,38 +101,24 @@ export default class PackageDependencyResolver {
         let package2Version: Package2Version;
 
         let versionNumber: string = dependency.versionNumber;
-        let vers: string[] = versionNumber.split('.');
-        if (vers.length === 4 && vers[3] === 'LATEST') {
+        let vers: string[] = versionNumber.split(".");
+        if (vers.length === 4 && vers[3] === "LATEST") {
             versionNumber = `${vers[0]}.${vers[1]}.${vers[2]}`;
         }
 
         let package2Versions: Package2Version[];
         if (this.package2VersionCache.has(packageVersionId, versionNumber)) {
-            package2Versions = this.package2VersionCache.get(
-                packageVersionId,
-                versionNumber
-            );
+            package2Versions = this.package2VersionCache.get(packageVersionId, versionNumber);
         } else {
             const package2VersionFetcher = new Package2VersionFetcher(conn);
-            const records = await package2VersionFetcher.fetchByPackage2Id(
-                packageVersionId,
-                versionNumber,
-                true
-            );
-            this.package2VersionCache.set(
-                packageVersionId,
-                versionNumber,
-                records
-            );
-            package2Versions = this.package2VersionCache.get(
-                packageVersionId,
-                versionNumber
-            );
+            const records = await package2VersionFetcher.fetchByPackage2Id(packageVersionId, versionNumber, true);
+            this.package2VersionCache.set(packageVersionId, versionNumber, records);
+            package2Versions = this.package2VersionCache.get(packageVersionId, versionNumber);
         }
 
         if (package2Versions.length === 0) {
             throw new Error(
-                `Failed to find any validated Package2 versions for the dependency ${dependency.package} with version ${dependency.versionNumber}`
+                `Failed to find any validated Package2 versions for the dependency ${dependency.package} with version ${dependency.versionNumber}`,
             );
         }
 
@@ -151,7 +140,7 @@ export default class PackageDependencyResolver {
      */
     private async getPackage2VersionFromCurrentBranch(
         package2Versions: Package2Version[],
-        dependency: { package: string; versionNumber: string }
+        dependency: { package: string; versionNumber: string },
     ) {
         let package2VersionOnCurrentBranch: Package2Version;
 
@@ -172,7 +161,7 @@ export default class PackageDependencyResolver {
 
         if (!package2VersionOnCurrentBranch) {
             throw new Error(
-                `Failed to find validated Package2 version for dependency ${dependency.package} with version ${dependency.versionNumber} created from the current branch`
+                `Failed to find validated Package2 version for dependency ${dependency.package} with version ${dependency.versionNumber} created from the current branch`,
             );
         }
 
@@ -180,7 +169,7 @@ export default class PackageDependencyResolver {
     }
 
     private isSubscriberPackageVersionId(packageAlias: string): boolean {
-        const subscriberPackageVersionIdPrefix = '04t';
+        const subscriberPackageVersionIdPrefix = "04t";
         return packageAlias.startsWith(subscriberPackageVersionIdPrefix);
     }
 }
@@ -210,7 +199,7 @@ class Package2VersionCache {
     set(
         packageId: string,
         versionNumber: string,
-        package2Versions: Package2Version[]
+        package2Versions: Package2Version[],
     ): { [p: string]: Package2Version[] } {
         const key = `${packageId}-${versionNumber}`;
         this.cache[key] = package2Versions;

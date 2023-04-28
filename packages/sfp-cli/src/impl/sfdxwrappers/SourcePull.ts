@@ -1,4 +1,4 @@
-import { SFDXCommand } from '@dxatscale/sfdx-process-wrapper/lib/SFDXCommand';
+import { SFDXCommand } from "@dxatscale/sfdx-process-wrapper/lib/SFDXCommand";
 
 export default class SourcePull extends SFDXCommand {
     public constructor(private targetOrg: string, private isForce: boolean) {
@@ -6,11 +6,11 @@ export default class SourcePull extends SFDXCommand {
     }
 
     getSFDXCommand(): string {
-        return 'sfdx force:source:pull';
+        return "sfdx force:source:pull";
     }
 
     getCommandName(): string {
-        return 'SourcePull';
+        return "SourcePull";
     }
 
     getGeneratedParams(): string {

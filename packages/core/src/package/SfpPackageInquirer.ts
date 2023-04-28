@@ -1,9 +1,9 @@
-import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
-import * as fs from 'fs-extra';
-import path = require('path');
-import lodash = require('lodash');
-import { URL } from 'url';
-import SfpPackage from './SfpPackage';
+import SFPLogger, { Logger, LoggerLevel } from "@dxatscale/sfp-logger";
+import * as fs from "fs-extra";
+import path = require("path");
+import lodash = require("lodash");
+import { URL } from "url";
+import SfpPackage from "./SfpPackage";
 
 /**
  * Methods for getting information about artifacts
@@ -31,7 +31,7 @@ export default class SfpPackageInquirer {
 
             this._prunedLatestPackageManifestFromArtifacts = this.pruneLatestPackageManifest(
                 latestPackageManifest.latestPackageManifest,
-                this.sfpPackages
+                this.sfpPackages,
             );
         }
         return this._latestPackageManifestFromArtifacts;
@@ -41,9 +41,7 @@ export default class SfpPackageInquirer {
      * Gets latest package manifest from artifacts
      * Returns null if unable to find latest package manifest
      */
-    private getLatestPackageManifestFromArtifacts(
-        sfpPackages: SfpPackage[]
-    ): {
+    private getLatestPackageManifestFromArtifacts(sfpPackages: SfpPackage[]): {
         latestPackageManifest: any;
         pathToLatestPackageManifest: string;
     } {
@@ -60,9 +58,9 @@ export default class SfpPackageInquirer {
             ) {
                 latestSfpPackage = sfpPackage;
 
-                let pathToPackageManifest = path.join(sfpPackage.sourceDir, 'manifests', 'sfdx-project.json.ori');
+                let pathToPackageManifest = path.join(sfpPackage.sourceDir, "manifests", "sfdx-project.json.ori");
                 if (fs.existsSync(pathToPackageManifest)) {
-                    latestPackageManifest = JSON.parse(fs.readFileSync(pathToPackageManifest, 'utf8'));
+                    latestPackageManifest = JSON.parse(fs.readFileSync(pathToPackageManifest, "utf8"));
 
                     pathToLatestPackageManifest = pathToPackageManifest;
                 }
@@ -73,7 +71,7 @@ export default class SfpPackageInquirer {
             SFPLogger.log(
                 `Found latest package manifest in ${latestSfpPackage.packageName} artifact`,
                 LoggerLevel.INFO,
-                this.packageLogger
+                this.packageLogger,
             );
 
             return { latestPackageManifest, pathToLatestPackageManifest };
@@ -129,10 +127,14 @@ export default class SfpPackageInquirer {
                 SFPLogger.log(
                     `currentRemoteURL: ${JSON.stringify(currentRemoteURL)}`,
                     LoggerLevel.DEBUG,
-                    this.packageLogger
+                    this.packageLogger,
                 );
                 throw new Error(
-                    `Artifacts must originate from the same source repository, for deployment to work. The artifact ${sfpPackage.packageName} has repository URL that doesn't meet the current repository URL ${JSON.stringify(currentRemoteURL)} not equal ${JSON.stringify(remoteURL)}`
+                    `Artifacts must originate from the same source repository, for deployment to work. The artifact ${
+                        sfpPackage.packageName
+                    } has repository URL that doesn't meet the current repository URL ${JSON.stringify(
+                        currentRemoteURL,
+                    )} not equal ${JSON.stringify(remoteURL)}`,
                 );
             }
         }
@@ -159,7 +161,7 @@ export default class SfpPackageInquirer {
                 // Also remove references to the package as a dependency
                 prunedLatestPackageManifest.packageDirectories.forEach((pkg) => {
                     let indexOfDependency = pkg.dependencies?.findIndex(
-                        (dependency) => dependency.package === removedPackageDirectory[0].package
+                        (dependency) => dependency.package === removedPackageDirectory[0].package,
                     );
 
                     if (indexOfDependency >= 0) pkg.dependencies.splice(indexOfDependency, 1);

@@ -1,17 +1,17 @@
-import BuildImpl, { BuildProps } from '../../../impl/parallelBuilder/BuildImpl';
-import { Stage } from '../../../impl/Stage';
-import BuildBase from '../../../BuildBase';
-import { Messages } from '@salesforce/core';
+import BuildImpl, { BuildProps } from "../../../impl/parallelBuilder/BuildImpl";
+import { Stage } from "../../../impl/Stage";
+import BuildBase from "../../../BuildBase";
+import { Messages } from "@salesforce/core";
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
 
 // Load the specific messages for this file. Messages from @salesforce/command, @salesforce/core,
 // or any library that is using the messages framework can also be loaded this way.
-const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'build');
+const messages = Messages.loadMessages("@dxatscale/sfpowerscripts", "build");
 
 export default class Build extends BuildBase {
-    public static description = messages.getMessage('commandDescription');
+    public static description = messages.getMessage("commandDescription");
 
     getStage() {
         return Stage.BUILD;

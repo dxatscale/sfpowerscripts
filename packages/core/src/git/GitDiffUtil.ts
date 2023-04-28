@@ -1,10 +1,10 @@
-import * as path from 'path';
-import * as fs from 'fs-extra';
-import * as _ from 'lodash';
+import * as path from "path";
+import * as fs from "fs-extra";
+import * as _ from "lodash";
 
-import { LoggerLevel } from '@salesforce/core';
-import simplegit, { SimpleGit } from 'simple-git';
-import SFPLogger, { Logger } from '@dxatscale/sfp-logger';
+import { LoggerLevel } from "@salesforce/core";
+import simplegit, { SimpleGit } from "simple-git";
+import SFPLogger, { Logger } from "@dxatscale/sfp-logger";
 const SEP = /\/|\\/;
 
 export interface DiffFileStatus {
@@ -28,25 +28,25 @@ export default class GitDiffUtils {
     }[];
 
     public async isFileIncludesContent(diffFile: DiffFileStatus, content: string): Promise<boolean> {
-        let fileAsString = await git.show(['--raw', diffFile.revisionFrom]);
+        let fileAsString = await git.show(["--raw", diffFile.revisionFrom]);
         let result = fileAsString.includes(content);
         return result;
     }
 
     public async fetchFileListRevisionTo(revisionTo: string, logger: Logger) {
-        SFPLogger.log('Fetching file list from target revision ' + revisionTo, LoggerLevel.TRACE, logger);
+        SFPLogger.log("Fetching file list from target revision " + revisionTo, LoggerLevel.TRACE, logger);
         this.gitTreeRevisionTo = [];
-        let revisionTree = await git.raw(['ls-tree', '-r', revisionTo]);
+        let revisionTree = await git.raw(["ls-tree", "-r", revisionTo]);
         const sepRegex = /\n|\r/;
         let lines = revisionTree.split(sepRegex);
         for (let i = 0; i < lines.length; i++) {
-            if (lines[i] === '') continue;
+            if (lines[i] === "") continue;
             let fields = lines[i].split(/\t/);
             let pathStr = fields[1];
             let revisionSha = fields[0].split(/\s/)[2];
             let fileMetadata = {
                 revision: revisionSha,
-                path: path.join('.', pathStr),
+                path: path.join(".", pathStr),
             };
             this.gitTreeRevisionTo.push(fileMetadata);
         }
@@ -78,7 +78,7 @@ export default class GitDiffUtils {
             SFPLogger.log(
                 `Associated file ${i}: ${gitFile.path}  Revision: ${gitFile.revision}`,
                 LoggerLevel.TRACE,
-                logger
+                logger,
             );
 
             let outputPath = path.join(outputFolder, gitFile.path);
@@ -90,13 +90,13 @@ export default class GitDiffUtils {
             }
             // Create folder structure
             for (let i = 0; i < filePathParts.length - 1; i++) {
-                let folder = filePathParts[i].replace('"', '');
+                let folder = filePathParts[i].replace('"', "");
                 outputFolder = path.join(outputFolder, folder);
                 if (fs.existsSync(outputFolder) == false) {
                     fs.mkdirSync(outputFolder);
                 }
             }
-            let fileContent = await git.binaryCatFile(['-p', gitFile.revision]);
+            let fileContent = await git.binaryCatFile(["-p", gitFile.revision]);
             fs.writeFileSync(outputPath, fileContent);
         }
     }

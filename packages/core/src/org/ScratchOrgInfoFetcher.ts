@@ -1,5 +1,5 @@
-import { Org, sfdc } from '@salesforce/core';
-import QueryHelper from '../queryHelper/QueryHelper';
+import { Org, sfdc } from "@salesforce/core";
+import QueryHelper from "../queryHelper/QueryHelper";
 
 export default class ScratchOrgInfoFetcher {
     constructor(private hubOrg: Org) {}
@@ -26,5 +26,5 @@ export default class ScratchOrgInfoFetcher {
 export interface ScratchOrgInfo {
     Id: string;
     ScratchOrg: string;
-    Status: 'New' | 'Deleted' | 'Active' | 'Error';
+    Status: "New" | "Deleted" | "Active" | "Error";
 }

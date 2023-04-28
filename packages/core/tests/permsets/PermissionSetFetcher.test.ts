@@ -1,15 +1,15 @@
-import { expect } from '@jest/globals';
-import PermissionSetFetcher from '../../src/permsets/PermissionSetFetcher';
-import { MockTestOrgData, testSetup } from '@salesforce/core/lib/testSetup';
-import { AnyJson } from '@salesforce/ts-types';
-import { AuthInfo, Connection } from '@salesforce/core';
+import { expect } from "@jest/globals";
+import PermissionSetFetcher from "../../src/permsets/PermissionSetFetcher";
+import { MockTestOrgData, testSetup } from "@salesforce/core/lib/testSetup";
+import { AnyJson } from "@salesforce/ts-types";
+import { AuthInfo, Connection } from "@salesforce/core";
 const $$ = testSetup();
 
-describe('Retrieve assigned permsets provided username and a target org', () => {
-    it('should return all the permsets for the provided username', async () => {
+describe("Retrieve assigned permsets provided username and a target org", () => {
+    it("should return all the permsets for the provided username", async () => {
         const testData = new MockTestOrgData();
 
-        $$.setConfigStubContents('AuthInfoConfig', {
+        $$.setConfigStubContents("AuthInfoConfig", {
             contents: await testData.getConfig(),
         });
 
@@ -17,42 +17,42 @@ describe('Retrieve assigned permsets provided username and a target org', () => 
             records: [
                 {
                     attributes: {
-                        type: 'PermissionSetAssignment',
-                        url: '/services/data/v50.0/sobjects/PermissionSetAssignment/0Pa2s000000PC8fCAG',
+                        type: "PermissionSetAssignment",
+                        url: "/services/data/v50.0/sobjects/PermissionSetAssignment/0Pa2s000000PC8fCAG",
                     },
-                    Id: '0Pa2s000000PC8fCAG',
+                    Id: "0Pa2s000000PC8fCAG",
                     PermissionSet: {
                         attributes: {
-                            type: 'PermissionSet',
-                            url: '/services/data/v50.0/sobjects/PermissionSet/0PS2s000000bldoGAA',
+                            type: "PermissionSet",
+                            url: "/services/data/v50.0/sobjects/PermissionSet/0PS2s000000bldoGAA",
                         },
-                        Name: 'Salesforce_DX_Permissions',
+                        Name: "Salesforce_DX_Permissions",
                     },
                     Assignee: {
                         attributes: {
-                            type: 'User',
-                            url: '/services/data/v50.0/sobjects/User/0052s000000kuInAAI',
+                            type: "User",
+                            url: "/services/data/v50.0/sobjects/User/0052s000000kuInAAI",
                         },
                         Username: testData.username,
                     },
                 },
                 {
                     attributes: {
-                        type: 'PermissionSetAssignment',
-                        url: '/services/data/v50.0/sobjects/PermissionSetAssignment/0Pa2s000000PC8aCAG',
+                        type: "PermissionSetAssignment",
+                        url: "/services/data/v50.0/sobjects/PermissionSetAssignment/0Pa2s000000PC8aCAG",
                     },
-                    Id: '0Pa2s000000PC8aCAG',
+                    Id: "0Pa2s000000PC8aCAG",
                     PermissionSet: {
                         attributes: {
-                            type: 'PermissionSet',
-                            url: '/services/data/v50.0/sobjects/PermissionSet/0PS6F000004MA6gWAG',
+                            type: "PermissionSet",
+                            url: "/services/data/v50.0/sobjects/PermissionSet/0PS6F000004MA6gWAG",
                         },
-                        Name: 'X00ex00000018ozT_128_09_43_34_1',
+                        Name: "X00ex00000018ozT_128_09_43_34_1",
                     },
                     Assignee: {
                         attributes: {
-                            type: 'User',
-                            url: '/services/data/v50.0/sobjects/User/0052s000000kuInAAI',
+                            type: "User",
+                            url: "/services/data/v50.0/sobjects/User/0052s000000kuInAAI",
                         },
                         Username: testData.username,
                     },
@@ -71,9 +71,9 @@ describe('Retrieve assigned permsets provided username and a target org', () => 
         expect(permsetRecords).toHaveLength(2);
     });
 
-    it('should return an empty array, if no permsets are assigned', async () => {
+    it("should return an empty array, if no permsets are assigned", async () => {
         const testData = new MockTestOrgData();
-        $$.setConfigStubContents('AuthInfoConfig', {
+        $$.setConfigStubContents("AuthInfoConfig", {
             contents: await testData.getConfig(),
         });
 
@@ -91,16 +91,16 @@ describe('Retrieve assigned permsets provided username and a target org', () => 
         expect(permsetRecords).toHaveLength(0);
     });
 
-    it('should throw an error, if unable to query permsets', async () => {
+    it("should throw an error, if unable to query permsets", async () => {
         const testData = new MockTestOrgData();
 
-        $$.setConfigStubContents('AuthInfoConfig', {
+        $$.setConfigStubContents("AuthInfoConfig", {
             contents: await testData.getConfig(),
         });
 
         let records: AnyJson = { records: [] };
         $$.fakeConnectionRequest = (request: AnyJson): Promise<AnyJson> => {
-            throw new Error('Unable to fetch records');
+            throw new Error("Unable to fetch records");
         };
 
         const connection: Connection = await Connection.create({

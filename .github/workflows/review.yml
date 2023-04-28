@@ -12,6 +12,16 @@ on:
 
 # Jobs to be executed
 jobs:
+  
+    formmatter:
+        runs-on: ubuntu-latest
+        steps:
+          - uses: rome/setup-rome@v0.4
+            with:
+              version: 12.0.0
+          - uses: actions/checkout@v2
+          - run: rome ci .
+
     validate:
         runs-on: ubuntu-latest
         steps:

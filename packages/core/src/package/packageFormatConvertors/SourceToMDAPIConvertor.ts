@@ -1,13 +1,13 @@
-import { ComponentSet, MetadataConverter } from '@salesforce/source-deploy-retrieve';
-import path from 'path';
-import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
+import { ComponentSet, MetadataConverter } from "@salesforce/source-deploy-retrieve";
+import path from "path";
+import SFPLogger, { Logger, LoggerLevel } from "@dxatscale/sfp-logger";
 
 export default class SourceToMDAPIConvertor {
     public constructor(
         private projectDirectory: string,
         private sourceDirectory: string,
         private sourceApiVersion: string,
-        private logger?: Logger
+        private logger?: Logger,
     ) {}
 
     public async convert() {
@@ -29,8 +29,8 @@ export default class SourceToMDAPIConvertor {
         if (this.sourceApiVersion) componentSet.sourceApiVersion = this.sourceApiVersion;
 
         const converter = new MetadataConverter();
-        let convertResult = await converter.convert(componentSet, 'metadata', {
-            type: 'directory',
+        let convertResult = await converter.convert(componentSet, "metadata", {
+            type: "directory",
             outputDirectory: mdapiDir,
         });
         SFPLogger.log(`Source converted successfully to ${mdapiDir}`, LoggerLevel.TRACE, this.logger);
@@ -40,9 +40,9 @@ export default class SourceToMDAPIConvertor {
     }
 
     private makefolderid(length): string {
-        var result = '';
+        var result = "";
         var characters =
-            'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
         var charactersLength = characters.length;
         for (var i = 0; i < length; i++) {
             result += characters.charAt(Math.floor(Math.random() * charactersLength));

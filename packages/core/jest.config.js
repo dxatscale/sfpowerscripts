@@ -1,14 +1,14 @@
 module.exports = {
-    preset: 'ts-jest/presets/js-with-babel',
-    testEnvironment: 'node',
+    preset: "ts-jest/presets/js-with-babel",
+    testEnvironment: "node",
     restoreMocks: true,
     clearMocks: true,
     resetMocks: true,
     globals: {
-        'ts-jest': {
-            tsconfig: 'tsconfig.json',
+        "ts-jest": {
+            tsconfig: "tsconfig.json",
             babelConfig: true,
         },
     },
-    transformIgnorePatterns: ['/node_modules/(?!@salesforce/source-deploy-retrieve)(.*)'],
+    transformIgnorePatterns: ["/node_modules/(?!@salesforce/source-deploy-retrieve)(.*)"],
 };
