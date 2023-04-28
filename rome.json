@@ -1,0 +1,18 @@
+{
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "suspicious": 
+       {
+        "noDoubleEquals":"off",
+        "noExplicitAny":"warn"
+       },
+      "style": {
+        "noUnusedTemplateLiteral": "off",
+        "useConst": "off",
+        "useSingleVarDeclarator":"warn"
+         
+      }
+    }
+  }
+}
