@@ -18,7 +18,7 @@ export class SplunkMetricSender extends NativeMetricSender {
           });
     }
 
-    public async sendGaugeMetric(metric: string, value: number, tags: string[] | { [key: string]: string }) {
+    public sendGaugeMetric(metric: string, value: number, tags: string[] | { [key: string]: string }) {
         metric = `sfpowerscripts.${metric}`;
         const payload = {source: "sfpowerscripts",sourcetype: "metrics",event: {metric: metric, type: 'guage', value: value,tags: tags as { [key: string]: string },timestamp: Date.now()}};
         this.instance.post('', JSON.stringify(payload))
