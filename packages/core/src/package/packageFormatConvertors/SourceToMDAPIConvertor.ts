@@ -33,7 +33,7 @@ export default class SourceToMDAPIConvertor {
             type: 'directory',
             outputDirectory: mdapiDir,
         });
-        SFPLogger.log(`Source converted successfully to ${mdapiDir}`, LoggerLevel.INFO, this.logger);
+        SFPLogger.log(`Source converted successfully to ${mdapiDir}`, LoggerLevel.TRACE, this.logger);
         SFPLogger.log(`ConvertResult:` + JSON.stringify(convertResult), LoggerLevel.TRACE, this.logger);
 
         return convertResult;

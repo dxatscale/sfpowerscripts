@@ -54,6 +54,7 @@ jobs:
     - name: 'Get package version'
       run: |
          echo "PKG_VERSION=$(jq -r ".version" packages/sfpowerscripts-cli/package.json)" >> $GITHUB_ENV
+         echo "RELEASE_VERSION=$(jq -r ".release" packages/sfpowerscripts-cli/package.json| read input; echo "$(cut -c1-3 <<< "$input")-$(cut -d' ' -f2 <<< "$input")" | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
     - name: 'Re expose secretes'
       run: |
@@ -92,6 +93,18 @@ jobs:
          image: ${{ inputs.image-as }}
          existing-tag: ${{ env.PKG_VERSION }}-${{ github.run_id }}
          new-tag: latest
+         registry: ghcr.io
+         username:  ${{ env.DOCKER_USERNAME }}
+         token: ${{ env.DOCKER_TOKEN }}
+
+
+    - name: 'Tag Docker With Release Info'
+      uses: ./.github/actions/tagDocker
+      with:
+         repo: ${{ inputs.repo }}
+         image: ${{ inputs.image }}
+         existing-tag: ${{ env.PKG_VERSION }}-${{ github.run_id }}
+         new-tag: release-${{ env.RELEASE_VERSION }}
          registry: ghcr.io
          username:  ${{ env.DOCKER_USERNAME }}
          token: ${{ env.DOCKER_TOKEN }}

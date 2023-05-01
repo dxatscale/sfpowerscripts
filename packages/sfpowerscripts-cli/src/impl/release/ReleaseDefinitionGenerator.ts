@@ -143,7 +143,6 @@ export default class ReleaseDefinitionGenerator {
                     LoggerLevel.WARN,
                     this.logger
                 );
-                continue;
             }
         }
 

@@ -1,4 +1,4 @@
-import { SFDXCommand } from '../command/SFDXCommand';
+import{ SFDXCommand} from "@dxatscale/sfdx-process-wrapper/lib/SFDXCommand";
 import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 
 export default class AnalyzeWithPMDImpl extends SFDXCommand {

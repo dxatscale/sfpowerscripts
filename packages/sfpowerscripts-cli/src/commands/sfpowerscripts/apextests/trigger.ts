@@ -16,6 +16,7 @@ import SfpPackage from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
 import { ConsoleLogger } from '@dxatscale/sfp-logger';
 import { CoverageOptions } from '@dxatscale/sfpowerscripts.core/lib/apex/coverage/IndividualClassCoverage';
 import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder';
+import { PackageType } from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
 const path = require('path');
 
 // Initialize Messages with the current plugin directory
@@ -125,7 +126,10 @@ export default class TriggerApexTest extends SfpowerscriptsCommand {
                 let pkg: SfpPackage = await SfpPackageBuilder.buildPackageFromProjectDirectory(
                     new ConsoleLogger(),
                     null,
-                    this.flags.package
+                    this.flags.package,
+                    {
+                        overridePackageTypeWith: PackageType.Source,
+                    }
                 );
                 testOptions = new RunAllTestsInPackageOptions(pkg, this.flags.waittime, outputdir);
             } else if (this.flags.testlevel === TestLevel.RunApexTestSuite.toString()) {

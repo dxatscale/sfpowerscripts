@@ -47,9 +47,9 @@ export default class ScratchOrgInfoFetcher {
                 let query;
 
                 if (tag)
-                    query = `SELECT Pooltag__c, Id,  CreatedDate, ScratchOrg, ExpirationDate, SignupUsername, SignupEmail, Password__c, Allocation_status__c,LoginUrl,SfdxAuthUrl__c FROM ScratchOrgInfo WHERE Pooltag__c = '${tag}'  AND Status = 'Active' `;
+                    query = `SELECT Pooltag__c, Id, CreatedDate, ScratchOrg, ExpirationDate, SignupUsername, SignupEmail, Password__c, Allocation_status__c,LoginUrl,SfdxAuthUrl__c FROM ScratchOrgInfo WHERE Pooltag__c = '${tag}'  AND Status = 'Active' `;
                 else
-                    query = `SELECT Pooltag__c, Id,  CreatedDate, ScratchOrg, ExpirationDate, SignupUsername, SignupEmail, Password__c, Allocation_status__c,LoginUrl,SfdxAuthUrl__c FROM ScratchOrgInfo WHERE Pooltag__c != null  AND Status = 'Active' `;
+                    query = `SELECT Pooltag__c, Id, CreatedDate, ScratchOrg, ExpirationDate, SignupUsername, SignupEmail, Password__c, Allocation_status__c,LoginUrl,SfdxAuthUrl__c FROM ScratchOrgInfo WHERE Pooltag__c != null  AND Status = 'Active' `;
 
                 if (isMyPool) {
                     query = query + ` AND createdby.username = '${this.hubOrg.getUsername()}' `;
@@ -59,6 +59,22 @@ export default class ScratchOrgInfoFetcher {
                     query =
                         query + `AND ( Allocation_status__c ='Available' OR Allocation_status__c = 'In Progress' ) `;
                 }
+                query = query + ORDER_BY_FILTER;
+                SFPLogger.log('QUERY:' + query, LoggerLevel.TRACE);
+                const results = (await hubConn.query(query)) as any;
+                return results;
+            },
+            { retries: 3, minTimeout: 3000 }
+        );
+    }
+
+    public async getOrphanedScratchOrgs() {
+        let hubConn = this.hubOrg.getConnection();
+
+        return retry(
+            async (bail) => {
+                let query;
+                    query = `SELECT Id, Pooltag__c,SignupUsername,Description,ScratchOrg FROM ScratchOrgInfo WHERE Pooltag__c = null  AND Status = 'Active'`;
                 query = query + ORDER_BY_FILTER;
                 SFPLogger.log('QUERY:' + query, LoggerLevel.TRACE);
                 const results = (await hubConn.query(query)) as any;

@@ -2,7 +2,7 @@ import SFPLogger, { COLOR_KEY_MESSAGE, Logger, LoggerLevel } from '@dxatscale/sf
 import { PackageInstallationResult, PackageInstallationStatus } from './PackageInstallationResult';
 import ProjectConfig from '../../project/ProjectConfig';
 import SFPStatsSender from '../../stats/SFPStatsSender';
-import PackageInstallationHelpers from './PackageInstallationHelpers';
+import AssignPermissionSets from '../../permsets/AssignPermissionSets';
 import ScriptExecutor from '../../scriptExecutor/ScriptExecutorHelpers';
 import { Connection } from '@salesforce/core';
 import * as fs from 'fs-extra';
@@ -41,7 +41,6 @@ export class SfpPackageInstallationOptions {
 }
 
 export abstract class InstallPackage {
-    private startTime: number;
     protected connection: Connection;
     protected packageDescriptor;
     protected packageDirectory;
@@ -56,9 +55,9 @@ export abstract class InstallPackage {
     ) {}
 
     public async exec(): Promise<PackageInstallationResult> {
+        let startTime = Date.now();
+        let elapsedTime: number;
         try {
-            this.startTime = Date.now();
-
             this.packageDescriptor = ProjectConfig.getSFDXPackageDescriptor(
                 this.sfpPackage.sourceDir,
                 this.sfpPackage.packageName
@@ -68,38 +67,55 @@ export abstract class InstallPackage {
 
             if (await this.isPackageToBeInstalled(this.options.skipIfPackageInstalled)) {
                 if (!this.options.isDryRun) {
-                    //Package Has Permission Set Group
                     await this.waitTillAllPermissionSetGroupIsUpdated();
-                    await this.preInstall();
-                    await this.getPackageDirectoryForAliasifiedPackages();
+                    await this.assignPermsetsPreDeployment();
+                    await this.executePreDeploymentScripts();
+                    await this.setPackageDirectoryForAliasifiedPackages();
                     await this.install();
-                    await this.postInstall();
+                    await this.assignPermsetsPostDeployment();
+                    await this.executePostDeployers();
+                    await this.executePostDeploymentScript();
                     await this.commitPackageInstallationStatus();
-                    this.sendMetricsWhenSuccessfullyInstalled();
+
+                    elapsedTime = Date.now() - startTime;
+                    this.sendMetricsWhenSuccessfullyInstalled(elapsedTime);
                 }
-                return { result: PackageInstallationStatus.Succeeded };
+                return { result: PackageInstallationStatus.Succeeded, elapsedTime: elapsedTime };
             } else {
                 SFPLogger.log('Skipping Package Installation', LoggerLevel.INFO, this.logger);
                 return { result: PackageInstallationStatus.Skipped };
             }
         } catch (error) {
-            this.sendMetricsWhenFailed();
+            elapsedTime = Date.now() - startTime;
+            this.sendMetricsWhenFailed(elapsedTime);
             return {
                 result: PackageInstallationStatus.Failed,
                 message: error.message,
+                elapsedTime: elapsedTime,
             };
         }
     }
 
     private async waitTillAllPermissionSetGroupIsUpdated() {
-        let permissionSetGroupUpdateAwaiter: PermissionSetGroupUpdateAwaiter = new PermissionSetGroupUpdateAwaiter(
-            this.connection,
-            this.logger
-        );
-        await permissionSetGroupUpdateAwaiter.waitTillAllPermissionSetGroupIsUpdated();
+        try {
+            //Package Has Permission Set Group
+            let permissionSetGroupUpdateAwaiter: PermissionSetGroupUpdateAwaiter = new PermissionSetGroupUpdateAwaiter(
+                this.connection,
+                this.logger
+            );
+            await permissionSetGroupUpdateAwaiter.waitTillAllPermissionSetGroupIsUpdated();
+        } catch (error) {
+            //Ignore error
+            // Lets try proceeding
+            SFPLogger.log(
+                `Unable to check the status of Permission Set Groups due to ${error}`,
+                LoggerLevel.WARN,
+                this.logger
+            );
+        }
     }
 
-    protected async getPackageDirectoryForAliasifiedPackages() {
+    protected async setPackageDirectoryForAliasifiedPackages() {
         if (this.packageDescriptor.aliasfy) {
             const searchDirectory = path.join(this.sfpPackage.sourceDir, this.packageDescriptor.path);
             const files = FileSystem.readdirRecursive(searchDirectory, true);
@@ -143,8 +159,7 @@ export abstract class InstallPackage {
         }
     }
 
-    private sendMetricsWhenFailed() {
-        let elapsedTime = Date.now() - this.startTime;
+    private sendMetricsWhenFailed(elapsedTime: number) {
         SFPLogger.log(
             `Package ${COLOR_KEY_MESSAGE(
                 this.sfpPackage.package_name
@@ -157,8 +172,7 @@ export abstract class InstallPackage {
         });
     }
 
-    private sendMetricsWhenSuccessfullyInstalled() {
-        let elapsedTime = Date.now() - this.startTime;
+    private sendMetricsWhenSuccessfullyInstalled(elapsedTime: number) {
         SFPLogger.log(
             `Package ${COLOR_KEY_MESSAGE(this.sfpPackage.package_name)} installation took ${COLOR_KEY_MESSAGE(
                 getFormattedTime(elapsedTime)
@@ -204,20 +218,26 @@ export abstract class InstallPackage {
         } else return true; // Always install packages if skipIfPackageInstalled is false
     }
 
-    public async preInstall() {
-        let preDeploymentScript: string = path.join(this.sfpPackage.sourceDir, `scripts`, `preDeployment`);
+    private async assignPermsetsPreDeployment() {
+        try {
+            if (this.sfpPackage.assignPermSetsPreDeployment) {
+                SFPLogger.log('Assigning permission sets before deployment:', LoggerLevel.INFO, this.logger);
 
-        if (this.sfpPackage.assignPermSetsPreDeployment) {
-            SFPLogger.log('Assigning permission sets before deployment:', LoggerLevel.INFO, this.logger);
-
-            await PackageInstallationHelpers.applyPermsets(
-                this.sfpPackage.assignPermSetsPreDeployment,
-                this.connection,
-                this.sfpPackage.sourceDir,
-                this.logger
-            );
+                await AssignPermissionSets.applyPermsets(
+                    this.sfpPackage.assignPermSetsPreDeployment,
+                    this.connection,
+                    this.sfpPackage.sourceDir,
+                    this.logger
+                );
+            }
+        } catch (error) {
+            //Proceed ahead not a critical error to break installation
+            SFPLogger.log(`Unable to assign permsets (Pre Deployment) due to ${error}`, LoggerLevel.WARN, this.logger);
         }
+    }
 
+    public async executePreDeploymentScripts() {
+        let preDeploymentScript: string = path.join(this.sfpPackage.sourceDir, `scripts`, `preDeployment`);
         if (fs.existsSync(preDeploymentScript)) {
             let alias = await this.sfpOrg.getAlias();
             SFPLogger.log('Executing preDeployment script', LoggerLevel.INFO, this.logger);
@@ -238,23 +258,26 @@ export abstract class InstallPackage {
 
     abstract install();
 
-    public async postInstall() {
-        let postDeploymentScript: string = path.join(this.sfpPackage.sourceDir, `scripts`, `postDeployment`);
+    private async assignPermsetsPostDeployment() {
+        try {
+            if (this.sfpPackage.assignPermSetsPostDeployment) {
+                SFPLogger.log('Assigning permission sets after deployment:', LoggerLevel.INFO, this.logger);
 
-        if (this.sfpPackage.assignPermSetsPostDeployment) {
-            SFPLogger.log('Assigning permission sets after deployment:', LoggerLevel.INFO, this.logger);
-
-            await PackageInstallationHelpers.applyPermsets(
-                this.sfpPackage.assignPermSetsPostDeployment,
-                this.connection,
-                this.sfpPackage.sourceDir,
-                this.logger
-            );
+                await AssignPermissionSets.applyPermsets(
+                    this.sfpPackage.assignPermSetsPostDeployment,
+                    this.connection,
+                    this.sfpPackage.sourceDir,
+                    this.logger
+                );
+            }
+        } catch (error) {
+            //Proceed ahead not a critical error to break installation
+            SFPLogger.log(`Unable to assign permsets (Post Deployment) due to ${error}`, LoggerLevel.WARN, this.logger);
         }
+    }
 
-        //run all the post Deployers
-        await this.executePostDeployers();
-
+    public async executePostDeploymentScript() {
+        let postDeploymentScript: string = path.join(this.sfpPackage.sourceDir, `scripts`, `postDeployment`);
         if (fs.existsSync(postDeploymentScript)) {
             SFPLogger.log('Executing postDeployment script', LoggerLevel.INFO, this.logger);
             let alias = await this.sfpOrg.getAlias();
