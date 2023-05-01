@@ -115,7 +115,7 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
         }
 
         if (!this.isSfpowerkitFound) {
-            throw new Error('sfpowerscripts require sfpowerkit to function, please install sfpowerkit and try again!');
+            SFPLogger.log('sfpowerscripts still require sfpowerkit for certain functions such as reconcile, You may need to install it!',LoggerLevel.WARN);
         }
 
         if (!process.env.DISABLE_SFDMU_CHECK) {
