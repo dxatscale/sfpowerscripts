@@ -34,7 +34,7 @@ export class SplunkMetricSender extends NativeMetricSender {
 
     public sendCountMetric(metric: string, tags: string[] | { [key: string]: string }) {
         metric = `sfpowerscripts.${metric}`;
-        const payload = {source: "sfpowerscripts",sourcetype: "metrics",metadata: {metric: metric, type: 'count', tags: tags as { [key: string]: string },timestamp: Date.now()}};
+        const payload = {source: "sfpowerscripts",sourcetype: "metrics",event: {metric: metric, type: 'count', tags: tags as { [key: string]: string },timestamp: Date.now()}};
         this.instance.post('', JSON.stringify(payload))
         .then((response) => {SFPLogger.log(`Transmitted metric ${metric} ${response.status}`, LoggerLevel.TRACE, this.logger)})
         .catch((error) => {
