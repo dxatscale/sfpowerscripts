@@ -1,6 +1,6 @@
 {
     "name": "@dxatscale/sfpowerscripts.core",
-    "version": "33.23.5",
+    "version": "33.23.6",
     "description": "Core Module used by sfpowerscripts",
     "main": "lib/index",
     "types": "lib/index",
@@ -19,7 +19,7 @@
         "node": ">=14.0.0"
     },
     "dependencies": {
-        "@dxatscale/apexlink": "^0.1.1",
+        "@dxatscale/apexlink": "0.2.0",
         "@dxatscale/sfdc-soup": "^18.2.6",
         "@dxatscale/sfdx-process-wrapper": "0.1.0",
         "@dxatscale/sfp-logger": "1.2.0",
