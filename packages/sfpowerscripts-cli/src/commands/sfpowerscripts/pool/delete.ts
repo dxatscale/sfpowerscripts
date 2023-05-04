@@ -131,7 +131,7 @@ export default class Delete extends SfpowerscriptsCommand {
             SFPLogger.log(table.toString(), LoggerLevel.INFO, new ConsoleLogger());
         } else {
             SFPLogger.log(
-                `${COLOR_WARNING(`No Scratch Orgs were found to be operated upon, The command will now exist`)}`,
+                `${COLOR_WARNING(`No Scratch Orgs were found to be operated upon, The command will now exit`)}`,
                 LoggerLevel.INFO,
                 new ConsoleLogger()
             );

@@ -96,6 +96,10 @@ export default class Git {
         }
     }
 
+    async deleteTags(tags?: string[]) {
+        if (tags) await this._git.push('origin', '--delete', tags);
+    }
+
     async addAnnotatedTag(tagName: string, annotation: string, commitId?: string) {
         try {
             await new GitIdentity(this._git).setUsernameAndEmail();

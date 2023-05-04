@@ -6,7 +6,7 @@ import SfpowerscriptsCommand from './SfpowerscriptsCommand';
 import { Messages } from '@salesforce/core';
 import fs = require('fs');
 import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender';
-import BuildImpl from './impl/parallelBuilder/BuildImpl';
+import BuildImpl, { BuildProps } from './impl/parallelBuilder/BuildImpl';
 import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig';
 import { Stage } from './impl/Stage';
 import SFPLogger, {
@@ -16,9 +16,15 @@ import SFPLogger, {
     COLOR_TIME,
     COLOR_SUCCESS,
     COLOR_KEY_MESSAGE,
+    Logger,
+    ConsoleLogger,
+    LoggerLevel,
+    COLOR_KEY_VALUE,
 } from '@dxatscale/sfp-logger';
 import getFormattedTime from '@dxatscale/sfpowerscripts.core/lib/utils/GetFormattedTime';
 import SfpPackage from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
+import ReleaseConfig from './impl/release/ReleaseConfig';
+
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -86,6 +92,9 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
             char: 'g',
             description: messages.getMessage('logsGroupSymbolFlagDescription'),
         }),
+        releaseconfig: flags.string({
+            description: messages.getMessage('releaseConfigFileFlagDescription'),
+        }),
         loglevel: flags.enum({
             description: 'logging level for this command invocation',
             default: 'info',
@@ -149,9 +158,15 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
                 tags['tag'] = this.flags.tag;
             }
 
+
+
             SFPStatsSender.logCount('build.scheduled', tags);
 
-            buildExecResult = await this.getBuildImplementer().exec();
+            let buildProps = this.getBuildProps();
+
+            //Filter Build Props by ReleaseConfig
+            buildProps = this.includeOnlyPackagesAsPerReleaseConfig(this.flags.releaseconfig, buildProps, new ConsoleLogger());
+            buildExecResult = await this.getBuildImplementer(buildProps).exec();
 
             if (
                 diffcheck &&
@@ -258,9 +273,29 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
         }
     }
 
+    private includeOnlyPackagesAsPerReleaseConfig(releaseConfigFilePath:string,buildProps: BuildProps,logger?:Logger): BuildProps {
+        if (releaseConfigFilePath) {
+        let releaseConfig:ReleaseConfig = new ReleaseConfig(logger, releaseConfigFilePath);
+         buildProps.includeOnlyPackages = releaseConfig.getPackagesAsPerReleaseConfig();
+         printIncludeOnlyPackages(buildProps.includeOnlyPackages);
+        }
+        return buildProps;
+
+
+        function printIncludeOnlyPackages(includeOnlyPackages: string[]) {
+            SFPLogger.log(
+                COLOR_KEY_MESSAGE(`Build will include the below packages as per inclusive filter`),
+                LoggerLevel.INFO
+            );
+            SFPLogger.log(COLOR_KEY_VALUE(`${includeOnlyPackages.toString()}`), LoggerLevel.INFO);
+        }
+    }
+
+    abstract getBuildProps(): BuildProps;
+
     abstract getStage(): Stage;
 
-    abstract getBuildImplementer(): BuildImpl;
+    abstract getBuildImplementer(buildProps:BuildProps): BuildImpl;
 }
 
 interface BuildResult {

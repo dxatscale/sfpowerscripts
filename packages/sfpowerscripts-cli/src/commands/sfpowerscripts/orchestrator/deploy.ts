@@ -77,6 +77,9 @@ export default class Deploy extends SfpowerscriptsCommand {
         releaseconfig: flags.string({
             description: messages.getMessage('configFileFlagDescription'),
         }),
+        enablesourcetracking: flags.boolean({
+            description: messages.getMessage('enableSourceTrackingFlagDescription'),
+        }),
         loglevel: flags.enum({
             description: 'logging level for this command invocation',
             default: 'info',
@@ -127,7 +130,7 @@ export default class Deploy extends SfpowerscriptsCommand {
             waitTime: this.flags.waittime,
             tags: tags,
             isTestsToBeTriggered: false,
-            deploymentMode: DeploymentMode.NORMAL,
+            deploymentMode: this.flags.enablesourcetracking? DeploymentMode.SOURCEPACKAGES_PUSH: DeploymentMode.NORMAL,
             skipIfPackageInstalled: this.flags.skipifalreadyinstalled,
             logsGroupSymbol: this.flags.logsgroupsymbol,
             currentStage: Stage.DEPLOY,
