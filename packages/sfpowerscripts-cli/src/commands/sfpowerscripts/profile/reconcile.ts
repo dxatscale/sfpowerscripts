@@ -9,6 +9,8 @@ import * as path from 'path';
 import ProfileReconcile from '@dxatscale/sfprofiles/lib/impl/source/profileReconcile';
 import MetadataFiles from '@dxatscale/sfprofiles/lib/impl/metadata/metadataFiles';
 import SfpowerscriptsCommand from '../../../SfpowerscriptsCommand';
+const Table = require('cli-table');
+import { ZERO_BORDER_TABLE } from '../../../ui/TableConstants';
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -87,16 +89,7 @@ export default class Reconcile extends SfpowerscriptsCommand {
     // Set this to true if your command requires a project workspace; 'requiresProject' is false by default
     protected static requiresProject = true;
 
-    public static result: SfdxResult = {
-        tableColumnData: ['State', 'Full Name', 'Type', 'Path'],
-        display() {
-            if (Array.isArray(this.data) && this.data.length) {
-                this.ux.table(this.data, this.tableColumnData);
-            }
-        },
-    };
-
-    public async execute(): Promise<AnyJson> {
+    public async execute(): Promise<Array<{state: any, fullName: any, type: any, path: any}>> {
         let argFolder = this.flags.folder;
         let argProfileList = this.flags.profilelist;
 
@@ -142,6 +135,14 @@ export default class Reconcile extends SfpowerscriptsCommand {
                 LoggerLevel.ERROR
             );
         }
+            const table = new Table({
+                head: ['State', 'Full Name', 'Type', 'Path'],
+                chars: ZERO_BORDER_TABLE,
+            });
+        for (let res of result) {
+            table.push([res.state, res.fullName, res.type, res.path]);
+        }
+        SFPLogger.log(table.toString(), LoggerLevel.INFO);
         return result;
     }
 }

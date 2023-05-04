@@ -60,8 +60,7 @@ export default class ProfileReconcile extends ProfileActions {
                         LoggerLevel.INFO
                     );
                     SFPLogger.log(`Profiles queued in thread :${workerCount} :`, LoggerLevel.INFO);
-                    SFPLogger.log(`${JSON.stringify(temparray)}`, LoggerLevel.INFO);
-                    let reconcileWorkerFile;
+                    let reconcileWorkerFile: string;
 
                     //Switch to typescript while run locally using sfdx link, for debugging, else switch to js
                     if (fs.existsSync(path.resolve(__dirname, `./reconcileWorker.js`))) {
@@ -81,17 +80,8 @@ export default class ProfileReconcile extends ProfileActions {
                         isSourceOnly: MetadataFiles.sourceOnly,
                         path: reconcileWorkerFile,
                     };
-                    console.log(workerData);
                     const worker = new Worker(path.resolve(__dirname, './worker.js'), {
-                        workerData: {
-                            profileChunk: temparray,
-                            destFolder: destFolder,
-                            targetOrg: this.org?.getUsername(), //Org can be null during source only reconcile
-                            loglevel: SFPLogger.logLevel,
-                            isJsonFormatEnabled: Sfpowerkit.isJsonFormatEnabled,
-                            isSourceOnly: MetadataFiles.sourceOnly,
-                            path: reconcileWorkerFile,
-                        },
+                        workerData
                     });
 
                     worker.on('message', (data) => {
