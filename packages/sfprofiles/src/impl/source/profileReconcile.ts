@@ -34,7 +34,6 @@ export default class ProfileReconcile extends ProfileActions {
                 profilesToReconcile.shift();
             }
             reconciledProfiles = reconciledProfiles.concat(await this.runWorkers(profilesToReconcile, destFolder));
-            console.log(`reconciledProfiles: ${reconciledProfiles}`);
             return reconciledProfiles;
         } catch (err) {
             console.error(err);
@@ -71,7 +70,8 @@ export default class ProfileReconcile extends ProfileActions {
                         reconcileWorkerFile = `./reconcileWorker.ts`;
                     }
 
-                    SFPLogger.log(`reconcileWorkerFile: ${reconcileWorkerFile}`, LoggerLevel.INFO);
+
+                    SFPLogger.log(`reconcileWorkerFile: ${reconcileWorkerFile}`, LoggerLevel.TRACE);
                     const workerData = {
                         profileChunk: temparray,
                         destFolder: destFolder,
@@ -111,7 +111,7 @@ export default class ProfileReconcile extends ProfileActions {
                     });
                     worker.on('exit', (code) => {
                         finishedWorkerCount++;
-                        SFPLogger.log(`Worker stopped with exit code ${code}`, LoggerLevel.ERROR);
+                        SFPLogger.log(`Worker stopped with exit code ${code}`, LoggerLevel.TRACE);
                         if (code !== 0)
                             //reject(new Error(`Worker stopped with exit code ${code}`));
                             SFPLogger.log(`Worker stopped with exit code ${code}`, LoggerLevel.ERROR);

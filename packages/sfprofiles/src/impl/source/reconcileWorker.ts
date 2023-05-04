@@ -14,8 +14,6 @@ import { MetadataResolver, SourceComponent } from '@salesforce/source-deploy-ret
 import { ProfileSourceFile } from './profileActions';
 import _ from 'lodash';
 
-console.log('hello from after imports');
-
 export default class ReconcileWorker {
     conn: Connection;
     public constructor(private targetOrg: string, private isSourceOnly: boolean) {}
@@ -109,10 +107,6 @@ export default class ReconcileWorker {
 Sfpowerkit.setLogLevel(workerData.loglevel, workerData.isJsonFormatEnabled);
 
 let reconcileWorker = new ReconcileWorker(workerData.targetOrg, workerData.isSourceOnly);
-console.log('hello before promise')
 reconcileWorker.reconcile(workerData.profileChunk, workerData.destFolder).then((result) => {
-    console.log('Hello from promise')
     parentPort.postMessage(result);
-}).catch(err => {
-        console.log('error in async function:', err);
-});
+})
