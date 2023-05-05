@@ -48,18 +48,28 @@ export default class PicklistEnabler implements PreDeployer {
                     let objName = sourceComponent.parent.fullName;
                     let picklistName = sourceComponent.name;
 
-                    let baseUrl = conn.baseUrl() + '/services/data/v' + conn.getApiVersion();
+                    //let baseUrl = conn.baseUrl() + '/services/data/v' + conn.getApiVersion();
                     //let urlId = baseUrl + '/tooling/query/?q=' + QUERY_BODY + objName + '\'+AND+QualifiedApiName+=+\'' + picklistName + '\'';
                     let urlId = QUERY_BODY + objName + 'AND QualifiedApiName = ' + picklistName;
 
-                    let picklistValueInOrg = await this.getPicklistInOrg(urlId, conn);
-
                     let picklistValueSource = await this.getPicklistSource(customField);
+
+                    let picklistInOrg = await this.getPicklistInOrg(urlId, conn);
+
+                    let picklistValueInOrg = [];
+
+                    for (var value in picklistInOrg.valueSet.valueSetDefinition.value) {
+                        let valueInfo : { [key: string]: string } = {} ;
+                        valueInfo.valueName = value['valueName'];
+                        valueInfo.label = value['label'];
+                        valueInfo.default = value['default'];
+                        picklistValueInOrg.push(valueInfo);
+                    }
 
                     let isDifferent = await this.compareValueSet(picklistValueInOrg, picklistValueSource);
 
                     if (isDifferent) {
-                        this.deployPicklist(picklistValueSource); //TO-DO
+                        this.deployPicklist(picklistInOrg, picklistValueSource, conn);
                     }
                 }
             }
@@ -68,8 +78,8 @@ export default class PicklistEnabler implements PreDeployer {
         }
     }
 
+
     private async getPicklistInOrg(urlId: string, conn: Connection) : Promise<any> {
-        let picklistValueSet = [];
 
         SFPLogger.log('PICKLIST QUERY: '+ urlId, LoggerLevel.DEBUG)
         let response = await QueryHelper.query<any>(urlId, conn, true);
@@ -79,45 +89,10 @@ export default class PicklistEnabler implements PreDeployer {
             let fieldId = responseUrl.slice(responseUrl.lastIndexOf('.') + 1);
             let responsePicklist = await conn.tooling.sobject('CustomField').find({ Id: fieldId });
 
-            responsePicklist.map((record) => {
-                let valueSet = record.Metadata.valueSet.valueSetDefinition.value;
-
-                for (var value in valueSet) {
-                    let valueInfo : { [key: string]: string } = {} ;
-                    valueInfo.valueName = value['valueName'];
-                    valueInfo.label = value['label'];
-                    valueInfo.default = value['default'];
-                    picklistValueSet.push(valueInfo);
-                }
-            });
-        }
-        //for testing only
-/*         let access_token = '00D2w00000RJsSM!AQsAQJmR8Ga0v_p6.1Ystt1uJP9JU0T7lbqUeHrW82WGn1OFfVF_sVjWNDhHcwuu33opLOGtTi2z7lgT1UjcfDfyJeFUCUsO';
-        const response = await fetch(urlId, {
-            headers: {"Authorization": "Bearer " + access_token}
-          });
-
-        if (response.ok) {
-            let responseUrl = (await response.json()).records[0].attributes.url;
-            let urlField = baseUrl + 'sobjects/CustomField/' + responseUrl.slice(responseUrl.lastIndexOf('.') + 1);
-
-            const responsePicklist = await fetch(urlField, {
-                headers: {"Authorization": "Bearer " + access_token}
-            });
-
-            if (responsePicklist.ok) {
-                let valueSet = (await responsePicklist.json()).Metadata.valueSet.valueSetDefinition.value;
-
-                for (var value in valueSet) {
-                    let valueInfo : { [key: string]: string } = {} ;
-                    valueInfo.valueName = value['valueName'];
-                    valueInfo.label = value['label'];
-                    valueInfo.default = value['default'];
-                    picklistValueSet.push(valueInfo);
-                }
+            if (responsePicklist) {
+                return responsePicklist[0].Metadata;
             }
-        } */
-        return picklistValueSet;
+        }
     }
 
     private async getPicklistSource(customField: any) : Promise<any> {
@@ -140,7 +115,7 @@ export default class PicklistEnabler implements PreDeployer {
         return picklistValueSet;
     }
 
-    private async compareValueSet(picklistValueInOrg: List<any> , picklistValueSource: List<any>) : Promise<any> {
+    private async compareValueSet(picklistValueInOrg: any[] , picklistValueSource: any[]) : Promise<any> {
             return (
                 picklistValueInOrg.length === picklistValueSource.length &&
                 picklistValueInOrg.every((element_1) =>
@@ -154,8 +129,13 @@ export default class PicklistEnabler implements PreDeployer {
             );
     }
 
-    private deployPicklist(picklistValueSource: any) {
-
+    private async deployPicklist(picklistInOrg: any, picklistValueSource: any, conn: Connection) {
+        //empty the the old value set
+        picklistInOrg.valueSet.valueSetDefinition.value = [];
+        picklistValueSource.map(value => {
+            picklistInOrg.valueSet.valueSetDefinition.value.push(value);
+        });
+        await conn.tooling.sobject('CustomField').update(picklistInOrg);
     }
 
     public getName(): string {
