@@ -5,7 +5,7 @@ import path from 'path';
 import SFPLogger from '@dxatscale/sfp-logger';
 import { ConsoleLogger } from '@dxatscale/sfp-logger';
 
-const jarFile = path.join(__dirname,  '..', 'jars', 'apexlink-2.3.5.jar');
+const jarFile = path.join(__dirname,  '..', 'jars', 'apexlink-2.3.7.jar');
 export default class ApexDepedencyCheckImpl {
     public constructor(private logger: Logger, private projectDirectory: string) {}
 

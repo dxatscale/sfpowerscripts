@@ -627,7 +627,7 @@ export default class DeployImpl {
         installationOptions.optimizeDeployment = this.isOptimizedDeploymentForSourcePackage(pkgDescriptor);
         installationOptions.skipTesting = skipTesting;
         installationOptions.deploymentType = deploymentType;
-
+        installationOptions.disableArtifactCommit = this.props.disableArtifactCommit;
         //During validate, if optimizeDeploymentMode is false, use full local tests to validate
         //but respect skipTesting #issue 1075
         //During Prepare (push), dont trigger tests
