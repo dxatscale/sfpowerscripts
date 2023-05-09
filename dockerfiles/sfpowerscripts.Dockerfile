@@ -1,4 +1,4 @@
-FROM  salesforce/salesforcedx:7.186.2-full
+FROM  salesforce/salesforcedx:7.194.1-full
 
 
 
