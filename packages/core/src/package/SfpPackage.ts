@@ -16,6 +16,7 @@ class PackageInfo {
     branch?: string;
     apextestsuite?: string;
     isApexFound?: boolean;
+    isPicklistFound: boolean;
     assignPermSetsPreDeployment?: string[];
     assignPermSetsPostDeployment?: string[];
     apexTestClassses?: string[];
@@ -109,13 +110,14 @@ export enum PackageType
 }
 
 export interface DiffPackageMetadata {
-  
- 
+
+
     sourceVersionFrom?: string;
     sourceVersionTo?: string;
     isProfilesFound?: boolean;
     apexTestClassses?: string[];
     isApexFound?: boolean;
+    isPicklistFound?: boolean;
     isPermissionSetGroupFound?: boolean;
     isPermissionSetFound?: boolean;
     payload?: any;
