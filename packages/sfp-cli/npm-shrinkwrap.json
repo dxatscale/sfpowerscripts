@@ -9,9 +9,6 @@
             "version": "5.1.0",
             "license": "MIT",
             "dependencies": {
-                "@dxatscale/sfdx-process-wrapper": "0.1.0",
-                "@dxatscale/sfp-logger": "1.2.0",
-                "@dxatscale/sfpowerscripts.core": "33.24.0",
                 "@oclif/command": "^1.8.0",
                 "@oclif/config": "1.18.3",
                 "@oclif/parser": "^3.8.5",
