@@ -16,7 +16,7 @@ export default class PicklistAnalyzer implements PackageAnalyzer {
                 let customField = sourceComponent.parseXmlSync().CustomField;
 
                 if (customField['type'] == 'Picklist') {
-                    sfpPackage['isPicklistFound'] = true;
+                    sfpPackage.isPickListsFound= true;
                 }
             }
         } catch (error) {

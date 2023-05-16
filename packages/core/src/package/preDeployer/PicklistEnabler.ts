@@ -1,32 +1,30 @@
 import SFPLogger, { COLOR_KEY_MESSAGE, Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 import { ComponentSet, registry } from '@salesforce/source-deploy-retrieve';
-import SfpPackage from '../SfpPackage';
+import SfpPackage, { PackageType } from '../SfpPackage';
 import { Connection } from '@salesforce/core';
 import { PreDeployer } from './PreDeployer';
 import { Schema } from 'jsforce';
 import OrgDetailsFetcher from '../../org/OrgDetailsFetcher';
-import fetch from 'node-fetch';
-import { List } from 'lodash';
 import QueryHelper from '../../queryHelper/QueryHelper';
 
-//const QUERY_BODY = 'select+Id+FROM+FieldDefinition+WHERE+EntityDefinition.QualifiedApiName+=+\'';
+
 const QUERY_BODY =
     'SELECT Id FROM FieldDefinition WHERE EntityDefinition.QualifiedApiName = ';
 
 
 export default class PicklistEnabler implements PreDeployer {
     public async isEnabled(sfpPackage: SfpPackage, conn: Connection<Schema>, logger: Logger): Promise<boolean> {
-        //ignore if its a scratch org
-        const orgDetails = await new OrgDetailsFetcher(conn.getUsername()).getOrgDetails();
-        if (orgDetails.isScratchOrg) return false;
 
-        //TO-DO: add new attributes to sfpPackage & sfpPackage.packageDescriptor
-        if (
-            sfpPackage['isPicklistFound'] &&
-            (sfpPackage.packageDescriptor.enablePicklist == undefined || sfpPackage.packageDescriptor.enablePicklist == true)
-        ) {
-            return true;
+        if (sfpPackage.packageType === PackageType.Unlocked) {
+            if (
+                sfpPackage.isPickListsFound &&
+                (sfpPackage.packageDescriptor.enablePicklist == undefined || sfpPackage.packageDescriptor.enablePicklist == true)
+            ) {
+                return true;
+            }
         }
+        else
+          return false;
     }
 
     public async execute(
@@ -47,9 +45,6 @@ export default class PicklistEnabler implements PreDeployer {
                 if (customField['type'] == 'Picklist') {
                     let objName = sourceComponent.parent.fullName;
                     let picklistName = sourceComponent.name;
-
-                    //let baseUrl = conn.baseUrl() + '/services/data/v' + conn.getApiVersion();
-                    //let urlId = baseUrl + '/tooling/query/?q=' + QUERY_BODY + objName + '\'+AND+QualifiedApiName+=+\'' + picklistName + '\'';
                     let urlId = QUERY_BODY + objName + 'AND QualifiedApiName = ' + picklistName;
 
                     let picklistValueSource = await this.getPicklistSource(customField);
@@ -59,7 +54,7 @@ export default class PicklistEnabler implements PreDeployer {
                     let picklistValueInOrg = [];
 
                     for (var value in picklistInOrg.valueSet.valueSetDefinition.value) {
-                        let valueInfo : { [key: string]: string } = {} ;
+                        let valueInfo: { [key: string]: string } = {};
                         valueInfo.valueName = value['valueName'];
                         valueInfo.label = value['label'];
                         valueInfo.default = value['default'];
@@ -74,14 +69,14 @@ export default class PicklistEnabler implements PreDeployer {
                 }
             }
         } catch (error) {
-            SFPLogger.log(`Unable to process Picklist update due to ${error.message}`,LoggerLevel.TRACE,logger);
+            SFPLogger.log(`Unable to process Picklist update due to ${error.message}`, LoggerLevel.WARN, logger);
         }
     }
 
 
-    private async getPicklistInOrg(urlId: string, conn: Connection) : Promise<any> {
+    private async getPicklistInOrg(urlId: string, conn: Connection): Promise<any> {
 
-        SFPLogger.log('PICKLIST QUERY: '+ urlId, LoggerLevel.DEBUG)
+        SFPLogger.log('PICKLIST QUERY: ' + urlId, LoggerLevel.DEBUG)
         let response = await QueryHelper.query<any>(urlId, conn, true);
 
         if (response) {
@@ -95,7 +90,7 @@ export default class PicklistEnabler implements PreDeployer {
         }
     }
 
-    private async getPicklistSource(customField: any) : Promise<any> {
+    private async getPicklistSource(customField: any): Promise<any> {
         let picklistValueSet = [];
         let values = customField['valueSet']['valueSetDefinition'];
 
@@ -105,7 +100,7 @@ export default class PicklistEnabler implements PreDeployer {
                 if (value['fullName'] == null) {
                     continue;
                 }
-                let valueInfo : { [key: string]: string } = {} ;
+                let valueInfo: { [key: string]: string } = {};
                 valueInfo.valueName = value['fullName'];
                 valueInfo.label = value['label'];
                 valueInfo.default = value['default'];
@@ -115,18 +110,18 @@ export default class PicklistEnabler implements PreDeployer {
         return picklistValueSet;
     }
 
-    private async compareValueSet(picklistValueInOrg: any[] , picklistValueSource: any[]) : Promise<any> {
-            return (
-                picklistValueInOrg.length === picklistValueSource.length &&
-                picklistValueInOrg.every((element_1) =>
+    private async compareValueSet(picklistValueInOrg: any[], picklistValueSource: any[]): Promise<any> {
+        return (
+            picklistValueInOrg.length === picklistValueSource.length &&
+            picklistValueInOrg.every((element_1) =>
                 picklistValueSource.some(
-                        (element_2) =>
-                            element_1.valueName === element_2.valueName &&
-                            element_1.label === element_2.label &&
-                            element_1.default === element_2.default
-                    )
+                    (element_2) =>
+                        element_1.valueName === element_2.valueName &&
+                        element_1.label === element_2.label &&
+                        element_1.default === element_2.default
                 )
-            );
+            )
+        );
     }
 
     private async deployPicklist(picklistInOrg: any, picklistValueSource: any, conn: Connection) {

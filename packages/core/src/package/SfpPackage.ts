@@ -20,6 +20,7 @@ class PackageInfo {
     assignPermSetsPreDeployment?: string[];
     assignPermSetsPostDeployment?: string[];
     apexTestClassses?: string[];
+    isPickListsFound?: boolean;
     isTriggerAllTests?: boolean;
     isProfilesFound?: boolean;
     isPermissionSetGroupFound?: boolean;
