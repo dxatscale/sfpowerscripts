@@ -7,16 +7,26 @@ export default class PicklistAnalyzer implements PackageAnalyzer {
     public async analyze(sfpPackage: SfpPackage, componentSet:ComponentSet, logger:Logger): Promise<SfpPackage> {
         try {
             let sourceComponents = componentSet.getSourceComponents().toArray();
+            let components = [];
 
             for (const sourceComponent of sourceComponents) {
-                if (sourceComponent.type.name !== registry.types.customobject.children.types.customfield.name) {
-                    continue;
+                if (sourceComponent.type.name == registry.types.customobject.name) {
+                    components.push(...sourceComponent.getChildren());
                 }
 
-                let customField = sourceComponent.parseXmlSync().CustomField;
+                if (sourceComponent.type.name == registry.types.customobject.children.types.customfield.name) {
+                    components.push(sourceComponent);
+                }
+            }
 
-                if (customField['type'] == 'Picklist') {
-                    sfpPackage.isPickListsFound= true;
+            if (components) {
+                for (const fieldComponent of components) {
+                    let customField = fieldComponent.parseXmlSync().CustomField;
+
+                    if (customField['type'] == 'Picklist') {
+                        sfpPackage.isPickListsFound= true;
+                        break;
+                    }
                 }
             }
         } catch (error) {

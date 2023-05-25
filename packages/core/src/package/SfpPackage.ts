@@ -16,7 +16,6 @@ class PackageInfo {
     branch?: string;
     apextestsuite?: string;
     isApexFound?: boolean;
-    isPicklistFound: boolean;
     assignPermSetsPreDeployment?: string[];
     assignPermSetsPostDeployment?: string[];
     apexTestClassses?: string[];

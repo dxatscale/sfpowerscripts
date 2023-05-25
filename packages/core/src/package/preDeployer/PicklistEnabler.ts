@@ -1,12 +1,10 @@
-import SFPLogger, { COLOR_KEY_MESSAGE, Logger, LoggerLevel } from '@dxatscale/sfp-logger';
+import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 import { ComponentSet, registry } from '@salesforce/source-deploy-retrieve';
 import SfpPackage, { PackageType } from '../SfpPackage';
 import { Connection } from '@salesforce/core';
 import { PreDeployer } from './PreDeployer';
 import { Schema } from 'jsforce';
-import OrgDetailsFetcher from '../../org/OrgDetailsFetcher';
 import QueryHelper from '../../queryHelper/QueryHelper';
-
 
 const QUERY_BODY =
     'SELECT Id FROM FieldDefinition WHERE EntityDefinition.QualifiedApiName = ';
@@ -35,17 +33,29 @@ export default class PicklistEnabler implements PreDeployer {
 
         try {
             let sourceComponents = componentSet.getSourceComponents().toArray();
+            let components = [];
 
             for (const sourceComponent of sourceComponents) {
-                if (sourceComponent.type.name !== registry.types.customobject.children.types.customfield.name) {
-                    continue;
+                if (sourceComponent.type.name == registry.types.customobject.name) {
+                    components.push(...sourceComponent.getChildren());
                 }
 
-                let customField = sourceComponent.parseXmlSync().CustomField;
-                if (customField['type'] == 'Picklist') {
-                    let objName = sourceComponent.parent.fullName;
-                    let picklistName = sourceComponent.name;
-                    let urlId = QUERY_BODY + objName + 'AND QualifiedApiName = ' + picklistName;
+                if (sourceComponent.type.name == registry.types.customobject.children.types.customfield.name) {
+                    components.push(sourceComponent);
+                }
+            }
+
+            if (components) {
+                for (const fieldComponent of components) {
+                    let customField = fieldComponent.parseXmlSync().CustomField;
+
+                    if (customField['type'] !== 'Picklist') {
+                        continue;
+                    }
+
+                    let objName = fieldComponent.parent.fullName;
+                    let picklistName = fieldComponent.name;
+                    let urlId = QUERY_BODY + '\'' + objName + '\'' + ' AND QualifiedApiName = ' + '\'' + picklistName + '\'';
 
                     let picklistValueSource = await this.getPicklistSource(customField);
 
@@ -53,7 +63,12 @@ export default class PicklistEnabler implements PreDeployer {
 
                     let picklistValueInOrg = [];
 
-                    for (var value in picklistInOrg.valueSet.valueSetDefinition.value) {
+                    for (const value of picklistInOrg.Metadata.valueSet.valueSetDefinition.value) {
+
+                        if (value.isActive == false) {
+                            continue;
+                        }
+
                         let valueInfo: { [key: string]: string } = {};
                         valueInfo.valueName = value['valueName'];
                         valueInfo.label = value['label'];
@@ -61,9 +76,9 @@ export default class PicklistEnabler implements PreDeployer {
                         picklistValueInOrg.push(valueInfo);
                     }
 
-                    let isDifferent = await this.compareValueSet(picklistValueInOrg, picklistValueSource);
+                    let notChanged = await this.compareValueSet(picklistValueInOrg, picklistValueSource);
 
-                    if (isDifferent) {
+                    if (notChanged == false) {
                         this.deployPicklist(picklistInOrg, picklistValueSource, conn);
                     }
                 }
@@ -76,7 +91,6 @@ export default class PicklistEnabler implements PreDeployer {
 
     private async getPicklistInOrg(urlId: string, conn: Connection): Promise<any> {
 
-        SFPLogger.log('PICKLIST QUERY: ' + urlId, LoggerLevel.DEBUG)
         let response = await QueryHelper.query<any>(urlId, conn, true);
 
         if (response) {
@@ -85,28 +99,22 @@ export default class PicklistEnabler implements PreDeployer {
             let responsePicklist = await conn.tooling.sobject('CustomField').find({ Id: fieldId });
 
             if (responsePicklist) {
-                return responsePicklist[0].Metadata;
+                return responsePicklist[0];
             }
         }
     }
 
     private async getPicklistSource(customField: any): Promise<any> {
         let picklistValueSet = [];
-        let values = customField['valueSet']['valueSetDefinition'];
+        let values = customField.valueSet.valueSetDefinition.value;
 
-        if (values) {
-            for (var value in values) {
-                //get rid of the sorted attribute
-                if (value['fullName'] == null) {
-                    continue;
-                }
-                let valueInfo: { [key: string]: string } = {};
-                valueInfo.valueName = value['fullName'];
-                valueInfo.label = value['label'];
-                valueInfo.default = value['default'];
-                picklistValueSet.push(valueInfo);
-            }
-        }
+        for (const [key, value] of Object.entries(values)) {
+            let valueInfo: { [key: string]: string } = {};
+            valueInfo.valueName = value['fullName'];
+            valueInfo.label = value['label'];
+            valueInfo.default = value['default'];
+            picklistValueSet.push(valueInfo);
+          }
         return picklistValueSet;
     }
 
@@ -126,11 +134,20 @@ export default class PicklistEnabler implements PreDeployer {
 
     private async deployPicklist(picklistInOrg: any, picklistValueSource: any, conn: Connection) {
         //empty the the old value set
-        picklistInOrg.valueSet.valueSetDefinition.value = [];
+        picklistInOrg.Metadata.valueSet.valueSetDefinition.value = [];
         picklistValueSource.map(value => {
-            picklistInOrg.valueSet.valueSetDefinition.value.push(value);
+            picklistInOrg.Metadata.valueSet.valueSetDefinition.value.push(value);
         });
-        await conn.tooling.sobject('CustomField').update(picklistInOrg);
+        picklistInOrg.Metadata.valueSet.valueSettings = [];
+
+
+        let picklistToDeploy : any;
+        picklistToDeploy = {attributes: picklistInOrg.attributes,
+                            Id: picklistInOrg.Id,
+                                Metadata: picklistInOrg.Metadata,
+                                FullName: picklistInOrg.FullName};
+
+        await conn.tooling.sobject('CustomField').update(picklistToDeploy);
     }
 
     public getName(): string {
