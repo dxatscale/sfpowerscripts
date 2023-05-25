@@ -1,4 +1,4 @@
-FROM  salesforce/salesforcedx:7.186.2-full
+FROM  salesforce/salesforcedx:7.194.1-full
 
 
 
@@ -92,4 +92,4 @@ LABEL org.opencontainers.image.documentation "https://docs.dxatscale.io/projects
 LABEL org.opencontainers.image.revision $GIT_COMMIT
 LABEL org.opencontainers.image.vendor "DX@Scale"
 LABEL org.opencontainers.image.source "https://github.com/dxatscale/sfpowerscripts"
-LABEL org.opencontainers.image.title "DX@Scale sfpowercripts docker image - March 23"
+LABEL org.opencontainers.image.title "DX@Scale sfpowercripts docker image - April 23"

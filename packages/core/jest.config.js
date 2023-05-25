@@ -11,4 +11,7 @@ module.exports = {
         },
     },
     transformIgnorePatterns: ['/node_modules/(?!@salesforce/source-deploy-retrieve)(.*)'],
+    moduleNameMapper: {
+        '^axios$': require.resolve('axios'),
+    }
 };

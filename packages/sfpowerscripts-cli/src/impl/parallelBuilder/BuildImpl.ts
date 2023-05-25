@@ -313,10 +313,10 @@ export default class BuildImpl {
             });
         }
 
-        // Ignore aliasfied packages on validate & prepare stages
+ //       Ignore aliasfied packages on  stages fix #1289
         packageDescriptors = packageDescriptors.filter((pkg) => {
             return !(
-                (this.props.currentStage === 'prepare' || this.props.currentStage === 'validate') &&
+                (this.props.currentStage === 'prepare') &&
                 pkg.aliasfy &&
                 pkg.type !== PackageType.Data
             );

@@ -177,6 +177,13 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
                 process.env.SFPOWERSCRIPTS_NEWRELIC_API_KEY,
                 new ConsoleLogger()
             );
+        } else if (process.env.SFPOWERSCRIPTS_SPLUNK) {
+            SFPStatsSender.initializeNativeMetrics(
+                'Splunk',
+                process.env.SFPOWERSCRIPTS_SPLUNK_HOST,
+                process.env.SFPOWERSCRIPTS_SPLUNK_API_KEY,
+                new ConsoleLogger()
+            );
         }
 
         SFPStatsSender.initializeLogBasedMetrics();

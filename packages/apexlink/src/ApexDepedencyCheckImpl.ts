@@ -1,11 +1,12 @@
 import findJavaHome from 'find-java-home';
 import ExecuteCommand from '@dxatscale/sfdx-process-wrapper/lib/commandExecutor/ExecuteCommand';
 import { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
-import path from 'path';
 import SFPLogger from '@dxatscale/sfp-logger';
 import { ConsoleLogger } from '@dxatscale/sfp-logger';
+import * as fs from 'fs-extra';
+import path from 'path';
 
-const jarFile = path.join(__dirname,  '..', 'jars', 'apexlink-2.3.5.jar');
+const jarFile = path.join(__dirname,  '..', 'jars', 'apexlink-2.3.7.jar');
 export default class ApexDepedencyCheckImpl {
     public constructor(private logger: Logger, private projectDirectory: string) {}
 
@@ -13,19 +14,21 @@ export default class ApexDepedencyCheckImpl {
 
         let apexLinkProcessExecutor = new ExecuteCommand(this.logger, LoggerLevel.INFO, false);
         let generatedCommand =  await this.getGeneratedCommandWithParams();
-        let result = await apexLinkProcessExecutor.execCommand(
+       
+        await apexLinkProcessExecutor.execCommand(
            generatedCommand,
             process.cwd()
         );
-        return JSON.parse(result);
+        let result = fs.readJSONSync(`${this.projectDirectory}/apexlink.json`)
+        return result;
     }
 
     private async getGeneratedCommandWithParams() {
-        let javaHome = await this.getJavaHome();
-
+        let javaHome:string = await this.getJavaHome();
+        //Replace Program Files with Progra~1 in Windows
+        javaHome = javaHome.replace(/Program Files/, "Progra~1");
         let command = `${path.join(javaHome, 'bin', 'java')}  -jar  ${jarFile} -depends  -json ${
-            this.projectDirectory
-        }`;
+            this.projectDirectory } > ${this.projectDirectory}/apexlink.json`;
         return command;
     }
 

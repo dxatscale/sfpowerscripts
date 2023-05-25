@@ -1,17 +1,17 @@
 {
     "name": "@dxatscale/sfp-cli",
-    "version": "4.1.9",
+    "version": "5.1.1",
     "lockfileVersion": 2,
     "requires": true,
     "packages": {
         "": {
             "name": "@dxatscale/sfp-cli",
-            "version": "4.1.9",
+            "version": "5.1.1",
             "license": "MIT",
             "dependencies": {
                 "@dxatscale/sfdx-process-wrapper": "0.1.0",
                 "@dxatscale/sfp-logger": "1.2.0",
-                "@dxatscale/sfpowerscripts.core": "33.23.2",
+                "@dxatscale/sfpowerscripts.core": "33.24.1",
                 "@oclif/command": "^1.8.0",
                 "@oclif/config": "1.18.3",
                 "@oclif/parser": "^3.8.5",
@@ -32,7 +32,7 @@
                 "lodash": "^4.17.21",
                 "simple-git": "3.7.1",
                 "tslib": "^1.14.1",
-                "xml2js": "^0.4.23"
+                "xml2js": "^0.5.0"
             },
             "bin": {
                 "sfp": "bin/run"
@@ -756,12 +756,12 @@
             "integrity": "sha512-77EbyPPpMz+FRFRuAFlWMtmgUWGe9UOG2Z25NqCwiIjRhOf5iKGuzSe5P2w1laq+FkRy4p+PCuVkJSGkzTEKVw=="
         },
         "node_modules/@oclif/core": {
-            "version": "1.10.0",
-            "resolved": "https://registry.npmjs.org/@oclif/core/-/core-1.10.0.tgz",
-            "integrity": "sha512-F1x5ckKWuPwB3dZY07jK7CUmsJTYLAbhVjBrMkOekbJR9lnVgOQG0fQthNsQlj+6wU2JXbbyWWjfgUjRdYl4EA==",
+            "version": "1.26.2",
+            "resolved": "https://registry.npmjs.org/@oclif/core/-/core-1.26.2.tgz",
+            "integrity": "sha512-6jYuZgXvHfOIc9GIaS4T3CIKGTjPmfAxuMcbCbMRKJJl4aq/4xeRlEz0E8/hz8HxvxZBGvN2GwAUHlrGWQVrVw==",
             "dependencies": {
                 "@oclif/linewrap": "^1.0.0",
-                "@oclif/screen": "^3.0.2",
+                "@oclif/screen": "^3.0.4",
                 "ansi-escapes": "^4.3.2",
                 "ansi-styles": "^4.3.0",
                 "cardinal": "^2.1.1",
@@ -785,18 +785,19 @@
                 "strip-ansi": "^6.0.1",
                 "supports-color": "^8.1.1",
                 "supports-hyperlinks": "^2.2.0",
-                "tslib": "^2.3.1",
+                "tslib": "^2.4.1",
                 "widest-line": "^3.1.0",
                 "wrap-ansi": "^7.0.0"
             },
             "engines": {
-                "node": ">=12.0.0"
+                "node": ">=14.0.0"
             }
         },
         "node_modules/@oclif/core/node_modules/@oclif/screen": {
-            "version": "3.0.2",
-            "resolved": "https://registry.npmjs.org/@oclif/screen/-/screen-3.0.2.tgz",
-            "integrity": "sha512-S/SF/XYJeevwIgHFmVDAFRUvM3m+OjhvCAYMk78ZJQCYCQ5wS7j+LTt1ZEv2jpEEGg2tx/F6TYYWxddNAYHrFQ==",
+            "version": "3.0.4",
+            "resolved": "https://registry.npmjs.org/@oclif/screen/-/screen-3.0.4.tgz",
+            "integrity": "sha512-IMsTN1dXEXaOSre27j/ywGbBjrzx0FNd1XmuhCWCB9NTPrhWI1Ifbz+YLSEcstfQfocYsrbrIessxXb2oon4lA==",
+            "deprecated": "Deprecated in favor of @oclif/core",
             "engines": {
                 "node": ">=12.0.0"
             }
@@ -857,9 +858,9 @@
             }
         },
         "node_modules/@oclif/core/node_modules/tslib": {
-            "version": "2.4.0",
-            "resolved": "https://registry.npmjs.org/tslib/-/tslib-2.4.0.tgz",
-            "integrity": "sha512-d6xOpEDfsi2CZVlPQzGeux8XMwLT9hssAsaPYExaQMuYskwb+x1x7J371tWlbBdWHroy99KnVB6qIkUbs5X3UQ=="
+            "version": "2.5.0",
+            "resolved": "https://registry.npmjs.org/tslib/-/tslib-2.5.0.tgz",
+            "integrity": "sha512-336iVw3rtn2BUK7ORdIAHTyxHGRIHVReokCR3XjbckJMK7ms8FysBfhLR8IXnAgy7T0PTPNBWKiH514FOW/WSg=="
         },
         "node_modules/@oclif/core/node_modules/universalify": {
             "version": "2.0.0",
@@ -7004,6 +7005,18 @@
                 "npm": ">=2.0.0"
             }
         },
+        "node_modules/jsforce/node_modules/xml2js": {
+            "version": "0.4.23",
+            "resolved": "https://registry.npmjs.org/xml2js/-/xml2js-0.4.23.tgz",
+            "integrity": "sha512-ySPiMjM0+pLDftHgXY4By0uswI3SPKLDw/i3UXbnO8M/p28zqexCUoPmQFrYD+/1BzhGJSs2i1ERWKJAtiLrug==",
+            "dependencies": {
+                "sax": ">=0.6.0",
+                "xmlbuilder": "~11.0.0"
+            },
+            "engines": {
+                "node": ">=4.0.0"
+            }
+        },
         "node_modules/json-buffer": {
             "version": "3.0.1",
             "resolved": "https://registry.npmjs.org/json-buffer/-/json-buffer-3.0.1.tgz",
@@ -8103,9 +8116,9 @@
             }
         },
         "node_modules/nan": {
-            "version": "2.15.0",
-            "resolved": "https://registry.npmjs.org/nan/-/nan-2.15.0.tgz",
-            "integrity": "sha512-8ZtvEnA2c5aYCZYd1cvgdnU6cqwixRoYg70xPLWUws5ORTa/lnw+u4amixRS/Ac5U5mQVgp9pnlSUnbNWFaWZQ==",
+            "version": "2.17.0",
+            "resolved": "https://registry.npmjs.org/nan/-/nan-2.17.0.tgz",
+            "integrity": "sha512-2ZTgtl0nJsO0KQCjEpxcIr5D+Yv90plTitZt9JBfQvVJDS5seMl3FOvsh3+9CoYWXf/1l5OaZzzF6nDm4cagaQ==",
             "optional": true
         },
         "node_modules/nanoid": {
@@ -11723,9 +11736,9 @@
             }
         },
         "node_modules/xml2js": {
-            "version": "0.4.23",
-            "resolved": "https://registry.npmjs.org/xml2js/-/xml2js-0.4.23.tgz",
-            "integrity": "sha512-ySPiMjM0+pLDftHgXY4By0uswI3SPKLDw/i3UXbnO8M/p28zqexCUoPmQFrYD+/1BzhGJSs2i1ERWKJAtiLrug==",
+            "version": "0.5.0",
+            "resolved": "https://registry.npmjs.org/xml2js/-/xml2js-0.5.0.tgz",
+            "integrity": "sha512-drPFnkQJik/O+uPKpqSgr22mpuFHqKdbS835iAQrUC73L2F5WkboIRd63ai/2Yg6I1jzifPFKH2NTK+cfglkIA==",
             "dependencies": {
                 "sax": ">=0.6.0",
                 "xmlbuilder": "~11.0.0"
@@ -13112,12 +13125,12 @@
             }
         },
         "@oclif/core": {
-            "version": "1.10.0",
-            "resolved": "https://registry.npmjs.org/@oclif/core/-/core-1.10.0.tgz",
-            "integrity": "sha512-F1x5ckKWuPwB3dZY07jK7CUmsJTYLAbhVjBrMkOekbJR9lnVgOQG0fQthNsQlj+6wU2JXbbyWWjfgUjRdYl4EA==",
+            "version": "1.26.2",
+            "resolved": "https://registry.npmjs.org/@oclif/core/-/core-1.26.2.tgz",
+            "integrity": "sha512-6jYuZgXvHfOIc9GIaS4T3CIKGTjPmfAxuMcbCbMRKJJl4aq/4xeRlEz0E8/hz8HxvxZBGvN2GwAUHlrGWQVrVw==",
             "requires": {
                 "@oclif/linewrap": "^1.0.0",
-                "@oclif/screen": "^3.0.2",
+                "@oclif/screen": "^3.0.4",
                 "ansi-escapes": "^4.3.2",
                 "ansi-styles": "^4.3.0",
                 "cardinal": "^2.1.1",
@@ -13141,15 +13154,15 @@
                 "strip-ansi": "^6.0.1",
                 "supports-color": "^8.1.1",
                 "supports-hyperlinks": "^2.2.0",
-                "tslib": "^2.3.1",
+                "tslib": "^2.4.1",
                 "widest-line": "^3.1.0",
                 "wrap-ansi": "^7.0.0"
             },
             "dependencies": {
                 "@oclif/screen": {
-                    "version": "3.0.2",
-                    "resolved": "https://registry.npmjs.org/@oclif/screen/-/screen-3.0.2.tgz",
-                    "integrity": "sha512-S/SF/XYJeevwIgHFmVDAFRUvM3m+OjhvCAYMk78ZJQCYCQ5wS7j+LTt1ZEv2jpEEGg2tx/F6TYYWxddNAYHrFQ=="
+                    "version": "3.0.4",
+                    "resolved": "https://registry.npmjs.org/@oclif/screen/-/screen-3.0.4.tgz",
+                    "integrity": "sha512-IMsTN1dXEXaOSre27j/ywGbBjrzx0FNd1XmuhCWCB9NTPrhWI1Ifbz+YLSEcstfQfocYsrbrIessxXb2oon4lA=="
                 },
                 "fs-extra": {
                     "version": "9.1.0",
@@ -13189,9 +13202,9 @@
                     }
                 },
                 "tslib": {
-                    "version": "2.4.0",
-                    "resolved": "https://registry.npmjs.org/tslib/-/tslib-2.4.0.tgz",
-                    "integrity": "sha512-d6xOpEDfsi2CZVlPQzGeux8XMwLT9hssAsaPYExaQMuYskwb+x1x7J371tWlbBdWHroy99KnVB6qIkUbs5X3UQ=="
+                    "version": "2.5.0",
+                    "resolved": "https://registry.npmjs.org/tslib/-/tslib-2.5.0.tgz",
+                    "integrity": "sha512-336iVw3rtn2BUK7ORdIAHTyxHGRIHVReokCR3XjbckJMK7ms8FysBfhLR8IXnAgy7T0PTPNBWKiH514FOW/WSg=="
                 },
                 "universalify": {
                     "version": "2.0.0",
@@ -18044,6 +18057,15 @@
                     "requires": {
                         "tslib": "^1.9.0"
                     }
+                },
+                "xml2js": {
+                    "version": "0.4.23",
+                    "resolved": "https://registry.npmjs.org/xml2js/-/xml2js-0.4.23.tgz",
+                    "integrity": "sha512-ySPiMjM0+pLDftHgXY4By0uswI3SPKLDw/i3UXbnO8M/p28zqexCUoPmQFrYD+/1BzhGJSs2i1ERWKJAtiLrug==",
+                    "requires": {
+                        "sax": ">=0.6.0",
+                        "xmlbuilder": "~11.0.0"
+                    }
                 }
             }
         },
@@ -18935,9 +18957,9 @@
             }
         },
         "nan": {
-            "version": "2.15.0",
-            "resolved": "https://registry.npmjs.org/nan/-/nan-2.15.0.tgz",
-            "integrity": "sha512-8ZtvEnA2c5aYCZYd1cvgdnU6cqwixRoYg70xPLWUws5ORTa/lnw+u4amixRS/Ac5U5mQVgp9pnlSUnbNWFaWZQ==",
+            "version": "2.17.0",
+            "resolved": "https://registry.npmjs.org/nan/-/nan-2.17.0.tgz",
+            "integrity": "sha512-2ZTgtl0nJsO0KQCjEpxcIr5D+Yv90plTitZt9JBfQvVJDS5seMl3FOvsh3+9CoYWXf/1l5OaZzzF6nDm4cagaQ==",
             "optional": true
         },
         "nanoid": {
@@ -21765,9 +21787,9 @@
             }
         },
         "xml2js": {
-            "version": "0.4.23",
-            "resolved": "https://registry.npmjs.org/xml2js/-/xml2js-0.4.23.tgz",
-            "integrity": "sha512-ySPiMjM0+pLDftHgXY4By0uswI3SPKLDw/i3UXbnO8M/p28zqexCUoPmQFrYD+/1BzhGJSs2i1ERWKJAtiLrug==",
+            "version": "0.5.0",
+            "resolved": "https://registry.npmjs.org/xml2js/-/xml2js-0.5.0.tgz",
+            "integrity": "sha512-drPFnkQJik/O+uPKpqSgr22mpuFHqKdbS835iAQrUC73L2F5WkboIRd63ai/2Yg6I1jzifPFKH2NTK+cfglkIA==",
             "requires": {
                 "sax": ">=0.6.0",
                 "xmlbuilder": "~11.0.0"
