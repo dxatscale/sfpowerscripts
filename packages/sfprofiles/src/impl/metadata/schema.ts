@@ -41,9 +41,9 @@ export interface WebLink extends BaseObject {
     PageOrSObjectType?: string;
 }
 
-export interface ListView extends BaseObject {}
-export interface ExternalDataSource extends BaseObject {}
-export interface Flow extends BaseObject {}
+export type ListView = BaseObject
+export type ExternalDataSource = BaseObject
+export type Flow = BaseObject
 export interface CustomPermission extends BaseObject {
     MasterLabel: string;
 }
@@ -54,7 +54,7 @@ export interface BusinessProcess extends BaseObject {
     Description?: string;
 }
 
-export interface CompactLayout extends BaseObject {}
+export type CompactLayout = BaseObject
 
 export interface CustomMetadata extends BaseObject {
     MasterLabel: string;
@@ -87,7 +87,7 @@ export interface Dashboard extends Report {
     Type: string;
 }
 
-export interface Field extends EntityDefinition {}
+export type Field = EntityDefinition
 export interface ProfileTooling extends BaseObject {
     UserType?: string;
     IsSsoEnabled?: boolean;
@@ -114,8 +114,8 @@ export interface CustomApplication extends BaseObject {
     IsNavPersonalizationDisabled?: boolean;
     IsNavAutoTempTabsDisabled?: boolean;
 }
-export interface ApexClass extends BaseObject {}
-export interface ApexPage extends BaseObject {}
+export type ApexClass = BaseObject
+export type ApexPage = BaseObject
 export interface UserLicence {
     Id: string;
     Name: string;

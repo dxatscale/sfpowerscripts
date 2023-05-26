@@ -20,10 +20,10 @@ export default class ProfileReconcile extends ProfileActions {
             }
 
             SFPLogger.log(`Project Directories ${JSON.stringify(srcFolders)}`, LoggerLevel.TRACE);
-            let localProfiles = await this.loadProfileFromPackageDirectories(srcFolders);
+            const localProfiles = await this.loadProfileFromPackageDirectories(srcFolders);
 
             //Find Profiles to Reconcile
-            let profilesToReconcile: ProfileSourceFile[] = this.findProfilesToReconcile(profileList, localProfiles);
+            const profilesToReconcile: ProfileSourceFile[] = this.findProfilesToReconcile(profileList, localProfiles);
 
             SFPLogger.log(`Profiles Found in Project Directory ${profilesToReconcile.length}`, LoggerLevel.INFO);
 
@@ -44,16 +44,16 @@ export default class ProfileReconcile extends ProfileActions {
     private runWorkers(profilesToReconcile: ProfileSourceFile[], destFolder) {
         let workerCount = 0;
         let finishedWorkerCount = 0;
-        let chunk = 10; // One worker to process 10 profiles
+        const chunk = 10; // One worker to process 10 profiles
         let i: number;
-        let profileCount = profilesToReconcile.length;
-        let result: string[] = [];
+        const profileCount = profilesToReconcile.length;
+        const result: string[] = [];
 
-        let workerPromise = new Promise<string[]>((resolve, reject) => {
+        const workerPromise = new Promise<string[]>((resolve, reject) => {
             try {
                 for (i = 0; i < profileCount; i += chunk) {
                     workerCount++;
-                    let temparray: ProfileSourceFile[] = profilesToReconcile.slice(i, i + chunk);
+                    const temparray: ProfileSourceFile[] = profilesToReconcile.slice(i, i + chunk);
 
                     SFPLogger.log(
                         `Initiated Profile reconcile thread :${workerCount}  with a chunk of ${temparray.length} profiles`,
@@ -87,7 +87,7 @@ export default class ProfileReconcile extends ProfileActions {
                     worker.on('message', (data) => {
                         // eslint-disable-next-line @typescript-eslint/no-array-constructor
                         SFPLogger.log(`Message received: ${data}`, LoggerLevel.TRACE);
-                        let completedProfiles: string[] = new Array();
+                        const completedProfiles: string[] = [];
                         completedProfiles.push(...data);
                         for (const profile of completedProfiles) {
                             SFPLogger.log(`Reconciled Profile ${profile}`, LoggerLevel.INFO);
