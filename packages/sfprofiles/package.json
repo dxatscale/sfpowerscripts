@@ -30,7 +30,7 @@
         "clean": "rimraf ./lib && rimraf tsconfig.tsbuildinfo",
         "compile": "tsc -b tsconfig.json && tsc-alias -p tsconfig.json",
         "compile:dev": "tsc -p . --sourcemap",
-        "clearCache": "jest --clearCache",
+        "clearCache": "jest --clearCache"
      },
     "bugs": {
         "url": "https://github.com/dxatscale/sfpowerscripts/issues"
