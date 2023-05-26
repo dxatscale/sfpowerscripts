@@ -77,7 +77,7 @@ RUN cd $HOME/sfpowerkit \
 # Install sfdx plugins
 RUN echo 'y' | sfdx plugins:install sfdx-browserforce-plugin@2.9.1
 RUN echo 'y' | sfdx plugins:install sfdmu@4.18.2
-RUN echo 'y' | sfdx plugins:install sfpowerkit@5.0.0
+
 # install sfpowerscripts
 RUN echo 'y' | sfdx plugins:install @dxatscale/sfpowerscripts@$SFPOWERSCRIPTS_VERSION
 
@@ -92,4 +92,4 @@ LABEL org.opencontainers.image.documentation "https://docs.dxatscale.io/projects
 LABEL org.opencontainers.image.revision $GIT_COMMIT
 LABEL org.opencontainers.image.vendor "DX@Scale"
 LABEL org.opencontainers.image.source "https://github.com/dxatscale/sfpowerscripts"
-LABEL org.opencontainers.image.title "DX@Scale sfpowercripts docker image - April 23"
+LABEL org.opencontainers.image.title "DX@Scale sfpowercripts docker image - May 23"
