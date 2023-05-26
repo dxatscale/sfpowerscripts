@@ -62,6 +62,7 @@ import GroupConsoleLogs from "../../ui/GroupConsoleLogs";
 import { COLON_MIDDLE_BORDER_TABLE } from "../../ui/TableConstants";
 import ReleaseConfig from "../release/ReleaseConfig";
 import { mapInstalledArtifactstoPkgAndCommits } from "../../utils/FetchArtifactsFromOrg";
+import { ApexTestValidator } from "./ApexTestValidator";
 const Table = require("cli-table");
 
 export enum ValidateAgainst {
@@ -89,7 +90,6 @@ export interface ValidateProps {
 	isDeleteScratchOrg?: boolean;
 	keys?: string;
 	baseBranch?: string;
-
 	isImpactAnalysis?: boolean;
 	isDependencyAnalysis?: boolean;
 	diffcheck?: boolean;
@@ -874,12 +874,8 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
 				packageInstallationResult.result === PackageInstallationStatus.Succeeded
 			) {
 				//Get Changed Components
-				const testResult = await this.triggerApexTests(
-					sfpPackage,
-					targetUsername,
-					this.props,
-					this.logger,
-				);
+				const apextestValidator = new ApexTestValidator(targetUsername,sfpPackage,this.props,this.logger);
+				const testResult = await apextestValidator.validateApexTests();
 				return {
 					isToFailDeployment: !testResult.result,
 					message: testResult.message,
@@ -889,184 +885,5 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
 		return { isToFailDeployment: false };
 	}
 
-	private async triggerApexTests(
-		sfpPackage: SfpPackage,
-		targetUsername: string,
-		props: ValidateProps,
-		logger: Logger,
-	): Promise<{
-		id: string;
-		result: boolean;
-		message: string;
-	}> {
-		if (sfpPackage.packageDescriptor.skipTesting)
-			return { id: null, result: true, message: "No Tests To Run" };
 
-		if (!sfpPackage.isApexFound)
-			return { id: null, result: true, message: "No Tests To Run" };
-
-		if (sfpPackage.packageDescriptor.isOptimizedDeployment == false)
-			return {
-				id: null,
-				result: true,
-				message: "Tests would have already run",
-			};
-
-		let testProps;
-
-
-		if (sfpPackage.packageType == PackageType.Diff) {
-			testProps = getTestOptionsForDiffPackage(sfpPackage, props);
-		} else if (sfpPackage.packageType != PackageType.Diff && (props.validationMode == ValidationMode.FAST_FEEDBACK ||
-			props.validationMode ==
-			ValidationMode.FASTFEEDBACK_LIMITED_BY_RELEASE_CONFIG)) {
-				testProps = getTestOptionsForFastFeedBackPackage(
-					sfpPackage,
-					props);
-	
-		}
-		else
-			testProps = getTestOptionsForFullPackageTest(
-				sfpPackage,
-				props);
-
-		let testOptions: TestOptions = testProps.testOptions;
-		let testCoverageOptions: CoverageOptions = testProps.testCoverageOptions;
-
-
-		if (testProps.testOptions == undefined) {
-			return { id: null, result: true, message: "No Tests To Run" };
-		}
-
-		if (testOptions == undefined) {
-			return { id: null, result: true, message: "No Tests To Run" };
-		}
-
-		//override any behaviour if the override is from the deploy props
-		if (this.props.disableParallelTestExecution) testOptions.synchronous = true;
-		if (sfpPackage.packageType == PackageType.Diff) testOptions.synchronous = true;
-		displayTestHeader(sfpPackage);
-
-		const triggerApexTests: TriggerApexTests = new TriggerApexTests(
-			targetUsername,
-			testOptions,
-			testCoverageOptions,
-			null,
-			logger,
-		);
-
-		return triggerApexTests.exec();
-
-		function getTestOptionsForFullPackageTest(
-			sfpPackage: SfpPackage,
-			props: ValidateProps,
-		): { testOptions: TestOptions; testCoverageOptions: CoverageOptions } {
-
-
-			const testOptions = new RunAllTestsInPackageOptions(
-				sfpPackage,
-				60,
-				".testresults",
-			);
-			const testCoverageOptions = {
-				isIndividualClassCoverageToBeValidated: false,
-				isPackageCoverageToBeValidated:
-					!sfpPackage.packageDescriptor.skipCoverageValidation,
-				coverageThreshold: props.coverageThreshold || 75,
-			};
-			return { testOptions, testCoverageOptions };
-		}
-
-		function getTestOptionsForDiffPackage(
-			sfpPackage: SfpPackage,
-			props: ValidateProps,
-		): { testOptions: TestOptions; testCoverageOptions: CoverageOptions } {
-			//Change in security model trigger full
-
-
-			//No impacted test class available
-			if (!sfpPackage.apexTestClassses || sfpPackage.apexTestClassses.length == 0) {
-				SFPLogger.log(
-					`${COLOR_HEADER(
-						"Unable to find any impacted test classses,skipping tests, You might need to use thorough option",
-					)}`,
-				);
-				return { testOptions: undefined, testCoverageOptions: undefined };
-			}
-
-			SFPLogger.log(
-				`${COLOR_HEADER(
-					"Diff package detected: triggering impacted test classes",
-				)}`,
-			);
-
-			const testOptions = new RunSpecifiedTestsOption(
-				60,
-				".testResults",
-				sfpPackage.apexTestClassses.join(),
-				true,
-			);
-			const testCoverageOptions = {
-				isIndividualClassCoverageToBeValidated: true,
-				isPackageCoverageToBeValidated: false,
-				coverageThreshold: props.coverageThreshold || 75,
-				classesToBeValidated: sfpPackage.apexClassWithOutTestClasses
-			};
-			return { testOptions, testCoverageOptions };
-		}
-
-		//TODO: Need to fix test options for earlier behaviour for fast feedback
-		function getTestOptionsForFastFeedBackPackage(
-			sfpPackage: SfpPackage,
-			props: ValidateProps,
-		): { testOptions: TestOptions; testCoverageOptions: CoverageOptions } {
-
-			//No impacted test class available
-			if (!sfpPackage.apexTestClassses || sfpPackage.apexTestClassses.length == 0) {
-				SFPLogger.log(
-					`${COLOR_HEADER(
-						"Unable to find any impacted test classses,skipping tests, You might need to use thorough option",
-					)}`,
-				);
-				return { testOptions: undefined, testCoverageOptions: undefined };
-			}
-
-			SFPLogger.log(
-				`${COLOR_HEADER(
-					"Diff mode activated, Only impacted test class will be triggered",
-				)}`,
-			);
-
-			const testOptions = new RunSpecifiedTestsOption(
-				60,
-				".testResults",
-				sfpPackage.apexTestClassses.join(),
-				true,
-			);
-			const testCoverageOptions = {
-				isIndividualClassCoverageToBeValidated: false,
-				isPackageCoverageToBeValidated: false,
-				coverageThreshold: 0
-			};
-			return { testOptions, testCoverageOptions };
-		}
-
-
-		function displayTestHeader(sfpPackage: SfpPackage) {
-			SFPLogger.log(
-				COLOR_HEADER(
-					`-------------------------------------------------------------------------------------------`,
-				),
-			);
-			SFPLogger.log(
-				`Triggering Apex tests for ${sfpPackage.packageName}`,
-				LoggerLevel.INFO,
-			);
-			SFPLogger.log(
-				COLOR_HEADER(
-					`-------------------------------------------------------------------------------------------`,
-				),
-			);
-		}
-	}
 }
