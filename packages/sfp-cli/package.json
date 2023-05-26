@@ -3,7 +3,7 @@
     "description": "Developer CLI for Salesforce programs following the DX@Scale model",
     "version": "5.1.2",
     "author": "dxatscale",
-    "release": "February 23",
+    "release": "May 23",
     "bin": {
         "sfp": "./bin/run"
     },
