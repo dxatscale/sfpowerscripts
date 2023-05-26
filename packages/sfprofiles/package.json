@@ -1,6 +1,6 @@
 {
     "name": "@dxatscale/sfprofiles",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "description": "Salesforce Profile management",
     "keywords": [
         "sfdx-plugin",
@@ -31,7 +31,7 @@
         "compile": "tsc -b tsconfig.json && tsc-alias -p tsconfig.json",
         "compile:dev": "tsc -p . --sourcemap",
         "clearCache": "jest --clearCache"
-     },
+    },
     "bugs": {
         "url": "https://github.com/dxatscale/sfpowerscripts/issues"
     },
