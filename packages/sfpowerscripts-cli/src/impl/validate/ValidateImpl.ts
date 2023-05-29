@@ -22,10 +22,6 @@ import PoolFetchImpl from "@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/Po
 import { Org } from "@salesforce/core";
 import InstalledArtifactsDisplayer from "@dxatscale/sfpowerscripts.core/lib/display/InstalledArtifactsDisplayer";
 import ValidateError from "../../errors/ValidateError";
-import ChangedComponentsFetcher from "@dxatscale/sfpowerscripts.core/lib/dependency/ChangedComponentsFetcher";
-import DependencyAnalysis from "@dxatscale/sfpowerscripts.core/lib/dependency/DependencyAnalysis";
-import DependencyViolationDisplayer from "@dxatscale/sfpowerscripts.core/lib/display/DependencyViolationDisplayer";
-import ImpactAnalysis from "./ImpactAnalysis";
 import ScratchOrg from "@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg";
 import { COLOR_KEY_MESSAGE } from "@dxatscale/sfp-logger";
 import { COLOR_WARNING } from "@dxatscale/sfp-logger";
@@ -63,6 +59,7 @@ import { COLON_MIDDLE_BORDER_TABLE } from "../../ui/TableConstants";
 import ReleaseConfig from "../release/ReleaseConfig";
 import { mapInstalledArtifactstoPkgAndCommits } from "../../utils/FetchArtifactsFromOrg";
 import { ApexTestValidator } from "./ApexTestValidator";
+import { DependencyAnalzer } from "./DependencyAnalyzer";
 const Table = require("cli-table");
 
 export enum ValidateAgainst {
@@ -100,7 +97,7 @@ export interface ValidateProps {
 }
 
 export default class ValidateImpl implements PostDeployHook, PreDeployHook {
-	private changedComponents: Component[];
+
 	private logger = new ConsoleLogger();
 	private orgAsSFPOrg: SFPOrg;
 
@@ -131,7 +128,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
 			this.orgAsSFPOrg = await SFPOrg.create({
 				aliasOrUsername: scratchOrgUsername,
 			});
-			const connToScratchOrg = this.orgAsSFPOrg.getConnection();
+	
 
 			//Fetch Artifacts in the org
 			let packagesInstalledInOrgMappedToCommits: { [p: string]: string };
@@ -160,10 +157,18 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
 				throw new ValidateError("Validation failed", { deploymentResult });
 			else {
 				//Do dependency analysis
-				await this.dependencyAnalysis(this.orgAsSFPOrg, deploymentResult);
+				if(this.props.isDependencyAnalysis)
+				{
+				let dependencyAnalzer = new DependencyAnalzer(this.props.baseBranch,this.orgAsSFPOrg,deploymentResult);
+				await dependencyAnalzer.dependencyAnalysis();
+				}
 
-				//Display impact analysis
-				await this.impactAnalysis(connToScratchOrg);
+				if(this.props.isDependencyAnalysis)
+				{
+				let dependencyAnalzer = new DependencyAnalzer(this.props.baseBranch,this.orgAsSFPOrg,deploymentResult);
+				await dependencyAnalzer.dependencyAnalysis();
+				}
+
 			}
 			return null; //TODO: Fix with actual object
 		} catch (error) {
@@ -206,82 +211,6 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
 		groupSection.end();
 	}
 
-	private async dependencyAnalysis(
-		orgAsSFPOrg: SFPOrg,
-		deploymentResult: DeploymentResult,
-	) {
-		if (this.props.isDependencyAnalysis) {
-			let groupSection = new GroupConsoleLogs(
-				`Validate Dependency tree`,
-			).begin();
-			SFPLogger.log(
-				COLOR_HEADER(
-					`-------------------------------------------------------------------------------------------`,
-				),
-			);
-			SFPLogger.log(
-				COLOR_KEY_MESSAGE(
-					"Validating dependency  tree of changed components..",
-				),
-				LoggerLevel.INFO,
-			);
-			const changedComponents = await this.getChangedComponents();
-			const dependencyAnalysis = new DependencyAnalysis(
-				orgAsSFPOrg,
-				changedComponents,
-			);
-
-			const dependencyViolations = await dependencyAnalysis.exec();
-
-			if (dependencyViolations.length > 0) {
-				DependencyViolationDisplayer.printDependencyViolations(
-					dependencyViolations,
-				);
-
-				//TODO: Just Print for now, will throw errors once org dependent is identified
-				// deploymentResult.error = `Dependency analysis failed due to ${JSON.stringify(dependencyViolations)}`;
-				// throw new ValidateError(`Dependency Analysis Failed`, { deploymentResult });
-			} else {
-				SFPLogger.log(
-					COLOR_SUCCESS("No Dependency violations found so far"),
-					LoggerLevel.INFO,
-				);
-			}
-
-			SFPLogger.log(
-				COLOR_HEADER(
-					`-------------------------------------------------------------------------------------------`,
-				),
-			);
-			groupSection.end();
-			return dependencyViolations;
-		}
-	}
-
-	private async impactAnalysis(connToScratchOrg) {
-		if (this.props.isImpactAnalysis) {
-			const changedComponents = await this.getChangedComponents();
-			try {
-				const impactAnalysis = new ImpactAnalysis(
-					connToScratchOrg,
-					changedComponents,
-				);
-				await impactAnalysis.exec();
-			} catch (err) {
-				SFPLogger.log(err.message);
-				SFPLogger.log("Failed to perform impact analysis");
-			}
-		}
-	}
-
-	/**
-	 *
-	 * @returns array of components that have changed, can be empty
-	 */
-	private async getChangedComponents(): Promise<Component[]> {
-		if (this.changedComponents) return this.changedComponents;
-		else return new ChangedComponentsFetcher(this.props.baseBranch).fetch();
-	}
 
 	private async installPackageDependencies(
 		sfdxProjectConfig: any,
