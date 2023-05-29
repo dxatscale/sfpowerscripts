@@ -466,12 +466,10 @@
             "description": "Enable automated update of feed tracking in the target org upon deployment"
         },
         "packageDirectory.enablePicklist": {
-            "type": "array",
+            "type": "boolean",
+            "default":true,
             "title": "Enable Picklist patching for Unlocked Packages",
-            "description": "Enable automated patching of picklist for unlocked packages as unlocked packages ignore changes",
-            "items": {
-                "type": "string"
-            }
+            "description": "Enable automated patching of picklist for unlocked packages as unlocked packages ignore changes"
         },
         "plugins.sfpowerscripts": {
             "type": "object",
