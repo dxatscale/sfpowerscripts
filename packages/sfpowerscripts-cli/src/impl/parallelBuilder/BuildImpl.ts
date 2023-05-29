@@ -107,8 +107,6 @@ export default class BuildImpl {
 			});
 
 
-
-		SFPLogger.log(`Invoking build...`, LoggerLevel.INFO);
 		let git = await Git.initiateRepo(new ConsoleLogger());
 		this.repository_url = await git.getRemoteOriginUrl(this.props.repourl);
 		this.commit_id = await git.getHeadCommit();
