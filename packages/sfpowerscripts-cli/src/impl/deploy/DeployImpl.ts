@@ -169,6 +169,8 @@ export default class DeployImpl {
                         `Installing: ${i + 1}/${queue.length}  ${queue[i].packageName}`,
                         this.props.logger
                     ).begin();
+
+                //Display Header
                 this.displayHeader(sfpPackage, pkgDescriptor, queue[i].packageName);
 
                 let preHookStatus = await this._preDeployHook?.preDeployPackage(
@@ -400,22 +402,14 @@ export default class DeployImpl {
                 LoggerLevel.INFO,
                 this.props.logger
             );
-        SFPLogger.log(
-            `Contains Apex Classes/Triggers: ${COLOR_KEY_MESSAGE(sfpPackage.isApexFound)}`,
-            LoggerLevel.INFO,
-            this.props.logger
-        );
+        if(sfpPackage.isApexFound)
+            SFPLogger.log(
+                `Contains Apex Classes/Triggers: ${COLOR_KEY_MESSAGE(sfpPackage.isApexFound)}`,
+                LoggerLevel.INFO,
+                this.props.logger
+            );
         if (sfpPackage.packageType == PackageType.Source || sfpPackage.packageType == PackageType.Unlocked) {
             if (!pkgDescriptor.aliasfy) {
-                if (this.props.selectiveComponentDeployment && sfpPackage.diffPackageMetadata?.metadataCount)
-                    SFPLogger.log(
-                        `Metadata to be deployed: ${COLOR_KEY_MESSAGE(
-                            sfpPackage.diffPackageMetadata?.metadataCount
-                        )} / ${COLOR_KEY_MESSAGE(sfpPackage.metadataCount)}`,
-                        LoggerLevel.INFO,
-                        this.props.logger
-                    );
-                else
                     SFPLogger.log(
                         `Metadata to be deployed: ${COLOR_KEY_MESSAGE(sfpPackage.metadataCount)}`,
                         LoggerLevel.INFO,
@@ -610,14 +604,12 @@ export default class DeployImpl {
         //Compute Deployment Type
         let deploymentType =
             this.props.deploymentMode === DeploymentMode.SOURCEPACKAGES_PUSH
-                ? DeploymentType.SOURCE_PUSH
-                : this.props.selectiveComponentDeployment
-                ? DeploymentType.SELECTIVE_MDAPI_DEPLOY
-                : DeploymentType.MDAPI_DEPLOY;
+                ? DeploymentType.SOURCE_PUSH : DeploymentType.MDAPI_DEPLOY;
 
         //Add Installation Options
         let installationOptions = new SfpPackageInstallationOptions();
-        (installationOptions.installationkey = null), (installationOptions.apexcompile = 'package');
+        installationOptions.installationkey = null, 
+        installationOptions.apexcompile = 'package';
         installationOptions.waitTime = waitTime;
         installationOptions.apiVersion = apiVersion;
         installationOptions.publishWaitTime = 60;
@@ -628,6 +620,7 @@ export default class DeployImpl {
         installationOptions.skipTesting = skipTesting;
         installationOptions.deploymentType = deploymentType;
         installationOptions.disableArtifactCommit = this.props.disableArtifactCommit;
+
         //During validate, if optimizeDeploymentMode is false, use full local tests to validate
         //but respect skipTesting #issue 1075
         //During Prepare (push), dont trigger tests

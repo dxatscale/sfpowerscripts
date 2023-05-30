@@ -62,23 +62,23 @@ export interface BuildProps {
 	includeOnlyPackages?: string[];
 }
 export default class BuildImpl {
-    private limiter: Bottleneck;
-    private parentsToBeFulfilled;
-    private childs;
-    private packagesToBeBuilt: string[];
-    private packageCreationPromises: Array<Promise<SfpPackage>>;
-    private projectConfig;
-    private parents: any;
-    private packagesInQueue: string[];
-    private packagesBuilt: string[];
-    private failedPackages: string[];
-    private generatedPackages: SfpPackage[];
-    private sfpOrg: SFPOrg;
-    private scratchOrgDefinitions: { [key: string]: any }[];
-    private isMultiConfigFilesEnabled: boolean;
+	private limiter: Bottleneck;
+	private parentsToBeFulfilled;
+	private childs;
+	private packagesToBeBuilt: string[];
+	private packageCreationPromises: Array<Promise<SfpPackage>>;
+	private projectConfig;
+	private parents: any;
+	private packagesInQueue: string[];
+	private packagesBuilt: string[];
+	private failedPackages: string[];
+	private generatedPackages: SfpPackage[];
+	private sfpOrg: SFPOrg;
+	private scratchOrgDefinitions: { [key: string]: any }[];
+	private isMultiConfigFilesEnabled: boolean;
 
-    private repository_url: string;
-    private commit_id: string;
+	private repository_url: string;
+	private commit_id: string;
 
 	private logger = new ConsoleLogger();
 	private recursiveAll = (a) =>
@@ -86,16 +86,16 @@ export default class BuildImpl {
 			r.length == a.length ? r : this.recursiveAll(a),
 		);
 
-    public constructor(private props: BuildProps) {
-        this.limiter = new Bottleneck({
-            maxConcurrent: this.props.executorcount,
-        });
+	public constructor(private props: BuildProps) {
+		this.limiter = new Bottleneck({
+			maxConcurrent: this.props.executorcount,
+		});
 
-        this.packagesBuilt = [];
-        this.failedPackages = [];
-        this.generatedPackages = [];
-        this.packageCreationPromises = new Array();
-    }
+		this.packagesBuilt = [];
+		this.failedPackages = [];
+		this.generatedPackages = [];
+		this.packageCreationPromises = new Array();
+	}
 
 	public async exec(): Promise<{
 		generatedPackages: SfpPackage[];

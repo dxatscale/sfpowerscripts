@@ -30,6 +30,7 @@ export default class SfpPackageInstaller {
                 );
                 installUnlockedPackageImpl.isArtifactToBeCommittedInOrg = !installationOptions.disableArtifactCommit;
                 return installUnlockedPackageImpl.exec();
+            case PackageType.Diff:
             case PackageType.Source:
                 installationOptions.pathToReplacementForceIgnore =   installationContext?.currentStage == 'prepare'
                 ? path.join(sfpPackage.sourceDir, 'forceignores', '.prepareignore')

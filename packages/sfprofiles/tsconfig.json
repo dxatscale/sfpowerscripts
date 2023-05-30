@@ -1,0 +1,20 @@
+{
+    "extends": "../../tsconfig.json",
+    "compilerOptions": {
+        "moduleResolution": "node",
+        "experimentalDecorators": true,
+        "outDir": "./lib",
+        "rootDir": "./src",
+        "skipLibCheck": true,
+        "declarationMap": true,
+        "baseUrl": "src",
+        "paths": {
+            "@utils/*": ["utils/*"],
+            "@impl/*": ["impl/*"]
+        },
+        "allowJs": true
+
+    },
+    "include": ["./src/**/*"]
+}
+

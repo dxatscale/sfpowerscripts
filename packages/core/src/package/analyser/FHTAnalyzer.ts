@@ -9,7 +9,7 @@ import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 export default class FHTAnalyser implements PackageAnalyzer {
     public async analyze(sfpPackage: SfpPackage, componentSet:ComponentSet, logger:Logger): Promise<SfpPackage> {
         try {
-         
+
             let fhtFields: { [key: string]: Array<string> } = {};
 
             //read the yaml
@@ -23,10 +23,10 @@ export default class FHTAnalyser implements PackageAnalyzer {
             //read components mentioned in yaml
             if (fs.existsSync(fhtYamlPath)) {
                 //convert yaml to json
-                fhtFields = yaml.load(fs.readFileSync(fhtYamlPath, { encoding: 'utf-8' }));
+                fhtFields = yaml.load(fs.readFileSync(fhtYamlPath, { encoding: 'utf-8' })) as {[key: string]: string[]};
             }
 
-           
+
             //filter the components in the package
             fhtFields = await this.addFieldsFromComponentSet(fhtFields, componentSet);
 

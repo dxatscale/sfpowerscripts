@@ -211,24 +211,6 @@ export default abstract class PackageCreateCommand extends SfpowerscriptsCommand
                 COLOR_KEY_MESSAGE(sfpPackage.isProfilesFound ? 'Yes' : 'No')
             );
             console.log(COLOR_HEADER(`-- Metadata Count:         `), COLOR_KEY_MESSAGE(sfpPackage.metadataCount));
-            if (sfpPackage.diffPackageMetadata) {
-                console.log(
-                    COLOR_HEADER(`-- Source Version From:         `),
-                    COLOR_KEY_MESSAGE(sfpPackage.diffPackageMetadata.sourceVersionFrom)
-                );
-                console.log(
-                    COLOR_HEADER(`-- Source Version To:         `),
-                    COLOR_KEY_MESSAGE(sfpPackage.diffPackageMetadata.sourceVersionTo)
-                );
-                console.log(
-                    COLOR_HEADER(`-- Metadata Count for Diff Package:         `),
-                    COLOR_KEY_MESSAGE(sfpPackage.diffPackageMetadata.metadataCount)
-                );
-                console.log(
-                    COLOR_HEADER(`-- Apex Test Class Invalidated:         `),
-                    COLOR_KEY_MESSAGE(sfpPackage.diffPackageMetadata.invalidatedTestClasses?.length)
-                );
-            }
         }
     }
 }

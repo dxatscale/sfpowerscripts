@@ -11,7 +11,7 @@ import OrgDetailsFetcher, { OrgDetails } from '../../org/OrgDetailsFetcher';
 import path = require('path');
 import PermissionSetGroupUpdateAwaiter from '../../permsets/PermissionSetGroupUpdateAwaiter';
 import SfpOrg from '../../org/SFPOrg';
-import SfpPackage from '../SfpPackage';
+import SfpPackage, { PackageType } from '../SfpPackage';
 import DeploymentExecutor, { DeploySourceResult, DeploymentType } from '../../deployers/DeploymentExecutor';
 import DeploySourceToOrgImpl, { DeploymentOptions } from '../../deployers/DeploySourceToOrgImpl';
 import getFormattedTime from '../../utils/GetFormattedTime';
@@ -51,7 +51,7 @@ export abstract class InstallPackage {
         protected sfpOrg: SfpOrg,
         protected logger: Logger,
         protected options: SfpPackageInstallationOptions
-    ) {}
+    ) { }
 
     public async exec(): Promise<PackageInstallationResult> {
         let startTime = Date.now();
@@ -69,7 +69,8 @@ export abstract class InstallPackage {
                     await this.waitTillAllPermissionSetGroupIsUpdated();
                     await this.assignPermsetsPreDeployment();
                     await this.executePreDeploymentScripts();
-                    await this.setPackageDirectoryForAliasifiedPackages();
+                    await this.setPackageDirectoryForPackage();
+                    await this.checkPackageDirectoryExists();
                     await this.install();
                     await this.assignPermsetsPostDeployment();
                     await this.executePostDeployers();
@@ -94,6 +95,13 @@ export abstract class InstallPackage {
             };
         }
     }
+    
+    checkPackageDirectoryExists() {
+        let absPackageDirectory: string = path.join(this.sfpPackage.sourceDir, this.packageDirectory);
+        if (!fs.existsSync(absPackageDirectory)) {
+            throw new Error(`Package directory ${absPackageDirectory} does not exist`);
+        }
+    }
 
     private async waitTillAllPermissionSetGroupIsUpdated() {
         try {
@@ -114,7 +122,7 @@ export abstract class InstallPackage {
         }
     }
 
-    protected async setPackageDirectoryForAliasifiedPackages() {
+    protected async setPackageDirectoryForPackage() {
         if (this.packageDescriptor.aliasfy) {
             const searchDirectory = path.join(this.sfpPackage.sourceDir, this.packageDescriptor.path);
             const files = FileSystem.readdirRecursive(searchDirectory, true);
@@ -148,14 +156,11 @@ export abstract class InstallPackage {
             }
 
             this.packageDirectory = path.join(this.packageDescriptor.path, aliasDir);
-        } else {
+        }
+         else {
             this.packageDirectory = path.join(this.packageDescriptor['path']);
         }
 
-        let absPackageDirectory: string = path.join(this.sfpPackage.sourceDir, this.packageDirectory);
-        if (!fs.existsSync(absPackageDirectory)) {
-            throw new Error(`Package directory ${absPackageDirectory} does not exist`);
-        }
     }
 
     private sendMetricsWhenFailed(elapsedTime: number) {
@@ -214,7 +219,16 @@ export abstract class InstallPackage {
         if (skipIfPackageInstalled) {
             let installationStatus = await this.sfpOrg.isArtifactInstalledInOrg(this.logger, this.sfpPackage);
             return !installationStatus.isInstalled;
-        } else return true; // Always install packages if skipIfPackageInstalled is false
+        } else if(this.sfpPackage.packageType == PackageType.Diff) 
+        {
+          // If diff package, check if there are any changes to be deployed, else skip
+           if(!this.sfpPackage.destructiveChanges && this.sfpPackage.metadataCount==0)
+           { 
+            return false;
+           }
+        }
+        
+         return true; // Always install packages if skipIfPackageInstalled is false
     }
 
     private async assignPermsetsPreDeployment() {
@@ -402,8 +416,10 @@ export abstract class InstallPackage {
             };
         }
 
-        if (this.sfpPackage.isApexFound) {
+
+       if (this.options.deploymentType == DeploymentType.MDAPI_DEPLOY && this.sfpPackage.isApexFound && this.options.isInstallingForValidation == false) {
             if (orgDetails.isSandbox) {
+                //enforce during selective deployment
                 if (skipTest) {
                     deploymentOptions.testLevel = TestLevel.RunNoTests;
                 } else if (this.sfpPackage.apexTestClassses.length > 0 && optimizeDeployment) {
@@ -436,7 +452,7 @@ export abstract class InstallPackage {
         deploymentOptions.rollBackOnError = true;
         return deploymentOptions;
     }
-
+    
     private getAStringOfSpecificTestClasses(apexTestClassses: string[]) {
         let specifedTests = apexTestClassses.join();
         return specifedTests;

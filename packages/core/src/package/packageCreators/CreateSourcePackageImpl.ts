@@ -43,7 +43,7 @@ export default class CreateSourcePackageImpl extends CreatePackage {
 
     postCreatePackage(sfpPackage) {}
 
-    private handleApexTestClasses(sfpPackage: SfpPackage) {
+    protected handleApexTestClasses(sfpPackage: SfpPackage) {
         let classTypes: ApexSortedByType = sfpPackage.apexClassesSortedByTypes;
 
         if (sfpPackage.isApexFound && classTypes?.testClass?.length == 0) {
