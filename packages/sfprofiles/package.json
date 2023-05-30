@@ -76,5 +76,8 @@
         "simple-git": "^3.16.0",
         "tslib": "2.1.0",
         "xml2js": "^0.5.0"
+    },
+    "publishConfig": {
+        "access": "public"
     }
 }
