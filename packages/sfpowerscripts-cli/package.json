@@ -1,7 +1,7 @@
 {
     "name": "@dxatscale/sfpowerscripts",
     "description": "DX@Scale Toolkit",
-    "version": "21.2.0",
+    "version": "21.2.1",
     "license": "MIT",
     "author": "dxatscale",
     "release": "May 23",
@@ -14,7 +14,7 @@
         "@dxatscale/sfdx-process-wrapper": "0.1.0",
         "@dxatscale/sfp-logger": "1.2.0",
         "@dxatscale/sfpowerscripts.core": "33.25.0",
-        "@dxatscale/sfprofiles": "0.1.0",
+        "@dxatscale/sfprofiles": "0.1.1",
         "@oclif/core": "1.10.0",
         "@oclif/plugin-help": "5.1.12",
         "@salesforce/command": "5.2.43",
