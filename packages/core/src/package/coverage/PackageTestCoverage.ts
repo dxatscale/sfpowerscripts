@@ -116,7 +116,7 @@ export default class PackageTestCoverage {
                     message: `Package overall coverage is greater than ${coverageThreshold}%`,
                 };
             }
-        } else if (this.pkg.packageType === PackageType.Source) {
+        } else if (this.pkg.packageType === PackageType.Source || this.pkg.packageType === PackageType.Diff) {
             SFPLogger.log("Package type is Source. Validating individual class coverage");
 
             let individualClassValidationResults = this.individualClassCoverage.validateIndividualClassCoverage(

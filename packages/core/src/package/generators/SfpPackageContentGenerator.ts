@@ -46,27 +46,6 @@ export default class SfpPackageContentGenerator {
 
         SfpPackageContentGenerator.createForceIgnores(artifactDirectory, rootDirectory);
 
-        //Compute diff
-        //Skip errors.. diff is not important we can always fall back
-        //Skip for aliasfied packages
-        if (
-            revisionFrom &&
-            revisionTo &&
-            !ProjectConfig.getPackageDescriptorFromConfig(sfdx_package, projectConfig).aliasfy
-        ) {
-            try {
-                let packageComponentDiffer: PackageComponentDiff = new PackageComponentDiff(
-                    logger,
-                    sfdx_package,
-                    revisionFrom,
-                    revisionTo,
-                    true
-                );
-                await packageComponentDiffer.build(path.join(artifactDirectory, 'diff'));
-            } catch (error) {
-                SFPLogger.log(`Unable to compute diff due to ${error}`, LoggerLevel.TRACE, logger);
-            }
-        }
 
         if (pathToReplacementForceIgnore)
             SfpPackageContentGenerator.replaceRootForceIgnore(artifactDirectory, pathToReplacementForceIgnore, logger);
