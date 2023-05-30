@@ -111,7 +111,7 @@ export class ApexTestValidator {
     sfpPackage: SfpPackage,
     props: ApexTestValidatorOptions,
   ): { testOptions: TestOptions; testCoverageOptions: CoverageOptions } {
-   z
+   
     //No impacted test class available
     if (!this.sfpPackage.apexTestClassses || this.sfpPackage.apexTestClassses.length == 0) {
       SFPLogger.log(
