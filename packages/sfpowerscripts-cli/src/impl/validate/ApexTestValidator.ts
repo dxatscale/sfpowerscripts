@@ -46,9 +46,9 @@ export class ApexTestValidator {
 
     if (this.sfpPackage.packageType == PackageType.Diff) {
       testProps = this.getTestOptionsForDiffPackage(this.sfpPackage, this.props);
-    } else if (this.sfpPackage.packageType != PackageType.Diff && (this.props.validationMode == ValidationMode.FAST_FEEDBACK ||
+    } else if (this.props.validationMode == ValidationMode.FAST_FEEDBACK ||
       this.props.validationMode ==
-      ValidationMode.FASTFEEDBACK_LIMITED_BY_RELEASE_CONFIG)) {
+      ValidationMode.FASTFEEDBACK_LIMITED_BY_RELEASE_CONFIG) {
       testProps = this.getTestOptionsForFastFeedBackPackage(
         this.sfpPackage,
         this.props);
@@ -111,9 +111,7 @@ export class ApexTestValidator {
     sfpPackage: SfpPackage,
     props: ApexTestValidatorOptions,
   ): { testOptions: TestOptions; testCoverageOptions: CoverageOptions } {
-    //Change in security model trigger full
-
-
+   z
     //No impacted test class available
     if (!this.sfpPackage.apexTestClassses || this.sfpPackage.apexTestClassses.length == 0) {
       SFPLogger.log(

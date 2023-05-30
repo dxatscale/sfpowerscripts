@@ -2,7 +2,7 @@ import * as _ from 'lodash';
 import ApexDepedencyCheckImpl from "@dxatscale/apexlink/lib/ApexDepedencyCheckImpl"
 import Component from '../dependency/Component';
 import SFPLogger, { COLOR_KEY_MESSAGE, COLOR_WARNING, Logger, LoggerLevel } from '@dxatscale/sfp-logger';
-import SfpPackage from '../package/SfpPackage';
+import SfpPackage, { PackageType } from '../package/SfpPackage';
 import path from 'path';
 
 export default class ImpactedApexTestClassFetcher {
@@ -47,15 +47,15 @@ export default class ImpactedApexTestClassFetcher {
             //If the component is a permset or profile, add every test class
             //There is a change in security model, add all test classes as invalidated
             // Temoorarily disabled this check as it is not working as expected
-            // if (_.includes(['Profile', 'PermissionSet', 'SharingRules'], changedComponent.type)) {
-            //     SFPLogger.log(
-            //         COLOR_WARNING(`Change in Security Model, pushing all test classes through`),
-            //         LoggerLevel.INFO,
-            //         this.logger
-            //     );
-            //     invalidatedClasses = invalidatedClasses.concat(this.sfpPackage.apexTestClassses);
-            //     break;
-            // }
+            if (this.sfpPackage.packageType != PackageType.Diff && _.includes(['Profile', 'PermissionSet', 'SharingRules'], changedComponent.type)) {
+                SFPLogger.log(
+                    COLOR_WARNING(`Change in Security Model, pushing all test classes through`),
+                    LoggerLevel.INFO,
+                    this.logger
+                );
+                invalidatedClasses = invalidatedClasses.concat(this.sfpPackage.apexTestClassses);
+                break;
+            }
 
             for (const apexClass of dependencies) {
                 // push any apex class or test class that is changed, which would then get filtered during subsequent matching with test class
