@@ -443,9 +443,17 @@ export default class BuildImpl {
     private resolveDependenciesOnCompletedPackage(dependentPackage: string, completedPackage: SfpPackage) {
         const pkgDescriptor = ProjectConfig.getPackageDescriptorFromConfig(dependentPackage, this.projectConfig);
         const dependency = pkgDescriptor.dependencies.find(
-            (dependency) => dependency.package === completedPackage.packageName
+            (dependency) => (dependency.package === completedPackage.packageName) || (dependency.package.includes(`${completedPackage.packageName}@`))
         );
-        dependency.versionNumber = completedPackage.versionNumber;
+        if( dependency.package.includes(`${completedPackage.packageName}@`) ){
+            const [packageName, version, branch] = this.splitString(dependency.package);
+            SFPLogger.log(`New branched package is created for dependency: ${packageName}, update the package version id`, LoggerLevel.INFO);
+            dependency.package = `${packageName}@${completedPackage.package_version_number}-${branch}`;
+            this.projectConfig.packageAliases[dependency.package] = completedPackage.package_version_id;
+        }else{
+            dependency.versionNumber = completedPackage.versionNumber;
+        }
+        
     }
 
     private getPriorityandTypeOfAPackage(projectConfig: any, pkg: string) {
@@ -639,6 +647,24 @@ export default class BuildImpl {
         }else{
             return projectConfig
         }
+    }
+
+    private splitString(input: string): [string, string, string] {
+        const parts = input.split('@');
+  
+        if (parts.length === 2) {
+            const packageName = parts[0];
+            const versionAndFeature = parts[1].split('-');
+            
+            if (versionAndFeature.length === 2) {
+            const version = versionAndFeature[0];
+            const branch = versionAndFeature[1];
+            
+            return [packageName, version, branch];
+            }
+        }
+        
+        return ['', '', ''];
     }
 
 }
