@@ -413,8 +413,8 @@
         "packageDirectory.type": {
             "type": "string",
             "title": "Type of the Package",
-            "enum": ["unlocked", "source", "data"],
-            "description": "Denotes the type of the package,  accepted values are \"source\",\"data\""
+            "enum": ["unlocked", "source", "data","diff"],
+            "description": "Denotes the type of the package,  accepted values are \"source\",\"data\",\"unlocked\" and \"diff\""
         },
         "packageDirectory.skipCoverageValidation": {
             "type": "boolean",

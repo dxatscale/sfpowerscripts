@@ -86,9 +86,7 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
 
         //Check sfpowerkit installation
         for (const plugin of this.config.plugins) {
-            if (plugin.name == 'sfpowerkit') {
-                this.isSfpowerkitFound = true;
-            } else if (plugin.name == 'sfdmu') {
+           if (plugin.name == 'sfdmu') {
                 this.isSfdmuFound = true;
             } else if (plugin.name == '@dxatscale/sfpowerscripts') {
                 this.sfpowerscriptsConfig = plugin;
@@ -114,9 +112,6 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
             );
         }
 
-        if (!this.isSfpowerkitFound) {
-            throw new Error('sfpowerscripts require sfpowerkit to function, please install sfpowerkit and try again!');
-        }
 
         if (!process.env.DISABLE_SFDMU_CHECK) {
             if (!this.isSfdmuFound) {
