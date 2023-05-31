@@ -2,16 +2,20 @@ import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 import { ComponentSet, registry } from '@salesforce/source-deploy-retrieve';
 import SfpPackage, { PackageType } from '../SfpPackage';
 import { Connection } from '@salesforce/core';
-import { PreDeployer } from './PreDeployer';
-import { Schema } from 'jsforce';
 import QueryHelper from '../../queryHelper/QueryHelper';
+import { DeploymentContext, DeploymentCustomizer } from './DeploymentCustomizer';
+import { DeploySourceResult } from '../../deployers/DeploymentExecutor';
+import SFPOrg from '../../org/SFPOrg';
+import { Schema } from 'jsforce';
+import { DeploymentOptions } from '../../deployers/DeploySourceToOrgImpl';
 
 const QUERY_BODY =
     'SELECT Id FROM FieldDefinition WHERE EntityDefinition.QualifiedApiName = ';
 
 
-export default class PicklistEnabler implements PreDeployer {
-    public async isEnabled(sfpPackage: SfpPackage, conn: Connection<Schema>, logger: Logger): Promise<boolean> {
+export default class PicklistEnabler implements DeploymentCustomizer {
+    
+    public async isEnabled(sfpPackage: SfpPackage, conn: Connection, logger: Logger): Promise<boolean> {
 
         if (sfpPackage.packageType === PackageType.Unlocked) {
             if (
@@ -22,15 +26,17 @@ export default class PicklistEnabler implements PreDeployer {
             }
         }
         else
-          return false;
+            return false;
     }
 
-    public async execute(
+    async execute(sfpPackage: SfpPackage,
         componentSet: ComponentSet,
-        conn: Connection,
-        logger: Logger
-    ) {
+        sfpOrg: SFPOrg,
+        logger: Logger,
+        deploymentContext: DeploymentContext
+    ): Promise<DeploySourceResult> {
 
+  
         try {
             let sourceComponents = componentSet.getSourceComponents().toArray();
             let components = [];
@@ -59,7 +65,7 @@ export default class PicklistEnabler implements PreDeployer {
 
                     let picklistValueSource = await this.getPicklistSource(customField);
 
-                    let picklistInOrg = await this.getPicklistInOrg(urlId, conn);
+                    let picklistInOrg = await this.getPicklistInOrg(urlId, sfpOrg.getConnection());
 
                     let picklistValueInOrg = [];
 
@@ -76,16 +82,23 @@ export default class PicklistEnabler implements PreDeployer {
                         picklistValueInOrg.push(valueInfo);
                     }
 
-                    let notChanged = await this.compareValueSet(picklistValueInOrg, picklistValueSource);
+                    let isPickListIdentical =  this.arePicklistsIdentical(picklistValueInOrg, picklistValueSource);
 
-                    if (notChanged == false) {
-                        this.deployPicklist(picklistInOrg, picklistValueSource, conn);
+                    if (!isPickListIdentical) {
+                        this.deployPicklist(picklistInOrg, picklistValueSource, sfpOrg.getConnection());
                     }
                 }
+
+                return {
+                    deploy_id: `000000`,
+                    result: true,
+                    message: `Patched Picklists`,
+                };
             }
         } catch (error) {
             SFPLogger.log(`Unable to process Picklist update due to ${error.message}`, LoggerLevel.WARN, logger);
         }
+       
     }
 
 
@@ -104,6 +117,15 @@ export default class PicklistEnabler implements PreDeployer {
         }
     }
 
+
+    gatherComponentsToBeDeployed(sfpPackage: SfpPackage, componentSet: ComponentSet, conn: Connection<Schema>, logger: Logger): Promise<{ location: string; componentSet: ComponentSet; }> {
+        throw new Error('Method not implemented.');
+    }
+    getDeploymentOptions(target_org: string, waitTime: string, apiVersion: string): Promise<DeploymentOptions> {
+        throw new Error('Method not implemented.');
+    }
+
+
     private async getPicklistSource(customField: any): Promise<any> {
         let picklistValueSet = [];
         let values = customField.valueSet.valueSetDefinition.value;
@@ -114,11 +136,11 @@ export default class PicklistEnabler implements PreDeployer {
             valueInfo.label = value['label'];
             valueInfo.default = value['default'];
             picklistValueSet.push(valueInfo);
-          }
+        }
         return picklistValueSet;
     }
 
-    private async compareValueSet(picklistValueInOrg: any[], picklistValueSource: any[]): Promise<any> {
+    private arePicklistsIdentical(picklistValueInOrg: any[], picklistValueSource: any[]): boolean {
         return (
             picklistValueInOrg.length === picklistValueSource.length &&
             picklistValueInOrg.every((element_1) =>
@@ -141,11 +163,13 @@ export default class PicklistEnabler implements PreDeployer {
         picklistInOrg.Metadata.valueSet.valueSettings = [];
 
 
-        let picklistToDeploy : any;
-        picklistToDeploy = {attributes: picklistInOrg.attributes,
-                            Id: picklistInOrg.Id,
-                                Metadata: picklistInOrg.Metadata,
-                                FullName: picklistInOrg.FullName};
+        let picklistToDeploy: any;
+        picklistToDeploy = {
+            attributes: picklistInOrg.attributes,
+            Id: picklistInOrg.Id,
+            Metadata: picklistInOrg.Metadata,
+            FullName: picklistInOrg.FullName
+        };
 
         await conn.tooling.sobject('CustomField').update(picklistToDeploy);
     }

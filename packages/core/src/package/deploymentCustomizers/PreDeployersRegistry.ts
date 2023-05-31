@@ -1,9 +1,10 @@
+import { DeploymentCustomizer } from './DeploymentCustomizer';
 import PicklistEnabler from './PicklistEnabler';
-import { PreDeployer } from './PreDeployer';
+
 
 export class PreDeployersRegistry {
-    static getPreDeployers(): PreDeployer[] {
-        let preDeployers: PreDeployer[] = [];
+    static getPreDeployers(): DeploymentCustomizer[] {
+        let preDeployers: DeploymentCustomizer[] = [];
 
         let picklistEnabler = new PicklistEnabler();
         preDeployers.push(picklistEnabler);
