@@ -14,16 +14,16 @@ export default class ApexTypeListener implements ApexParserListener {
 
     enterAnnotation(ctx: AnnotationContext): void {
         if (ctx.text.toUpperCase().startsWith('@ISTEST')) {
-            this.apexType['testClass'] = true;
+            this.apexType.testClass= true;
         }
     }
 
     enterInterfaceDeclaration(ctx: InterfaceDeclarationContext): void {
-        this.apexType['interface'] = true;
+        this.apexType.interface = true;
     }
 
     enterClassDeclaration(ctx: ClassDeclarationContext): void {
-        this.apexType['class'] = true;
+        this.apexType.class = true;
     }
 
     public getApexType(): ApexType {
