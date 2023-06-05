@@ -528,7 +528,7 @@ export default class TriggerApexTests {
                     this.fileLogger
                 );
                 return coverageValidator.validateIndividualClassCoverage(
-                    coverageValidator.getIndividualClassCoverage(),
+                    coverageValidator.getIndividualClassCoverage(this.coverageOptions.classesToBeValidated),
                     this.coverageOptions.coverageThreshold
                 );
             } else {
