@@ -1,6 +1,6 @@
 {
     "name": "@dxatscale/sfprofiles",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "description": "Salesforce Profile management",
     "keywords": [
         "sfdx-plugin",
@@ -11,15 +11,11 @@
     "author": "dxatscale",
     "homepage": "https://github.com/dxatscale/sfpowerscripts",
     "license": "MIT",
-    "main": "packages/sfprofiles",
-    "directories": {
-        "src": "src",
-        "test": "__tests__"
-    },
+    "main": "lib/sfprofiles",
+    "types": "lib/sfprofiles",
     "files": [
-        "src",
-        "/messages",
-        "/npm-shrinkwrap.json"
+        "lib",
+        "resources"
     ],
     "repository": {
         "type": "git",
