@@ -14,5 +14,10 @@
     "files.associations": {
         "*.log": "vt100"
     },
-    "editor.tabSize": 2
+    "editor.tabSize": 2,
+    "conventionalCommits.scopes": [
+        "sfp-cli",
+        "core",
+        "sfpowerscripts"
+    ]
 }
