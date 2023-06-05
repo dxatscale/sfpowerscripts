@@ -30,8 +30,8 @@ export default class TriggerApexTest extends SfpowerscriptsCommand {
     public static description = messages.getMessage('commandDescription');
 
     public static examples = [
-        `$ sfdx sfpowerscripts:apextests:trigger -u scratchorg -l RunLocalTests -s`,
-        `$ sfdx sfpowerscripts:apextests:trigger -u scratchorg -l RunAllTestsInPackage -n <mypackage> -c`,
+        `$ sfpowerscripts apextests:trigger -u scratchorg -l RunLocalTests -s`,
+        `$ sfpowerscripts apextests:trigger -u scratchorg -l RunAllTestsInPackage -n <mypackage> -c`,
     ];
 
     protected static flagsConfig = {

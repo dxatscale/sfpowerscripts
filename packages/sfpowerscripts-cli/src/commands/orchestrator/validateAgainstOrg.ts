@@ -13,7 +13,7 @@ const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'validateAga
 export default class Validate extends SfpowerscriptsCommand {
     public static description = messages.getMessage('commandDescription');
 
-    public static examples = [`$ sfdx sfpowerscripts:orchestrator:validateAgainstOrg -u <targetorg>`];
+    public static examples = [`$ sfpowerscripts orchestrator:validateAgainstOrg -u <targetorg>`];
 
     protected static flagsConfig = {
         targetorg: flags.string({

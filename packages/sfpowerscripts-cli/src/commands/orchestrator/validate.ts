@@ -19,7 +19,7 @@ export default class Validate extends SfpowerscriptsCommand {
     protected static requiresDevhubUsername = true;
 
     public static examples = [
-        `$ sfdx sfpowerscripts:orchestrator:validate -p "POOL_TAG_1,POOL_TAG_2" -v <devHubUsername>`,
+        `$ sfpowerscripts orchestrator:validate -p "POOL_TAG_1,POOL_TAG_2" -v <devHubUsername>`,
     ];
 
     static aliases = ['sfpowerscripts:orchestrator:validateAgainstPool'];

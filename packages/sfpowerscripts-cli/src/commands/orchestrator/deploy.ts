@@ -23,7 +23,7 @@ const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'deploy');
 export default class Deploy extends SfpowerscriptsCommand {
     public static description = messages.getMessage('commandDescription');
 
-    public static examples = [`$ sfdx sfpowerscripts:orchestrator:deploy -u <username>`];
+    public static examples = [`$ sfpowerscripts orchestrator:deploy -u <username>`];
 
     protected static requiresUsername = false;
     protected static requiresDevhubUsername = false;

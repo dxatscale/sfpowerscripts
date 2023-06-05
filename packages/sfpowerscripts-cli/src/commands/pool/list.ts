@@ -19,10 +19,10 @@ export default class List extends SfdxCommand {
     protected static requiresDevhubUsername = true;
 
     public static examples = [
-        `$ sfdx sfpowerscripts:pool:list -t core `,
-        `$ sfdx sfpowerscripts:pool:list -t core -v devhub`,
-        `$ sfdx sfpowerscripts:pool:list -t core -v devhub -m`,
-        `$ sfdx sfpowerscripts:pool:list -t core -v devhub -m -a`,
+        `$ sfpowerscripts pool:list -t core `,
+        `$ sfpowerscripts pool:list -t core -v devhub`,
+        `$ sfpowerscripts pool:list -t core -v devhub -m`,
+        `$ sfpowerscripts pool:list -t core -v devhub -m -a`,
     ];
 
     protected static flagsConfig = {

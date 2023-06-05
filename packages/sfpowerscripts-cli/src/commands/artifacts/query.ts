@@ -12,7 +12,7 @@ const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'artifacts_q
 export default class Query extends SfpowerscriptsCommand {
     public static description = messages.getMessage('commandDescription');
 
-    public static examples = [`$ sfdx sfpowerscripts:artifacts:query -u <target_org>`];
+    public static examples = [`$ sfpowerscripts artifacts:query -u <target_org>`];
 
     protected static requiresUsername = true;
     protected static requiresDevhubUsername = false;

@@ -12,8 +12,8 @@ export default class CreateSourcePackage extends PackageCreateCommand {
     public static description = messages.getMessage('commandDescription');
 
     public static examples = [
-        `$ sfdx sfpowerscripts:package:source:create -n mypackage -v <version>`,
-        `$ sfdx sfpowerscripts:package:source:create -n <mypackage> -v <version> --diffcheck --gittag`,
+        `$ sfpowerscripts package:source:create -n mypackage -v <version>`,
+        `$ sfpowerscripts package:source:create -n <mypackage> -v <version> --diffcheck --gittag`,
         `Output variable:`,
         `sfpowerscripts_artifact_metadata_directory`,
         `<refname>_sfpowerscripts_artifact_metadata_directory`,

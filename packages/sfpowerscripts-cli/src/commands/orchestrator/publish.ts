@@ -32,10 +32,10 @@ export default class Promote extends SfpowerscriptsCommand {
     public static description = messages.getMessage('commandDescription');
 
     public static examples = [
-        `$ sfdx sfpowerscripts:orchestrator:publish -f path/to/script`,
-        `$ sfdx sfpowerscripts:orchestrator:publish --npm`,
-        `$ sfdx sfpowerscripts:orchestrator:publish -f path/to/script -p -v HubOrg`,
-        `$ sfdx sfpowerscripts:orchestrator:publish -f path/to/script --gittag --pushgittag`,
+        `$ sfpowerscripts orchestrator:publish -f path/to/script`,
+        `$ sfpowerscripts orchestrator:publish --npm`,
+        `$ sfpowerscripts orchestrator:publish -f path/to/script -p -v HubOrg`,
+        `$ sfpowerscripts orchestrator:publish -f path/to/script --gittag --pushgittag`,
     ];
 
     protected static requiresUsername = false;

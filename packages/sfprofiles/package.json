@@ -1,6 +1,6 @@
 {
     "name": "@dxatscale/sfprofiles",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "Salesforce Profile management",
     "keywords": [
         "sfdx-plugin",

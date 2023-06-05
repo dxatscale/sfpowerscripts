@@ -23,9 +23,9 @@ export default class Reconcile extends SfpowerscriptsCommand {
     public static description = messages.getMessage('commandDescription');
 
     public static examples = [
-        `$ sfdx sfpowerscripts profile:reconcile  --folder force-app -d destfolder -s`,
-        `$ sfdx sfpowerscripts profile:reconcile  --folder force-app,module2,module3 -u sandbox -d destfolder`,
-        `$ sfdx sfpowerscripts profile:reconcile  -u myscratchorg -d destfolder`,
+        `$ sfpowerscripts profile:reconcile  --folder force-app -d destfolder -s`,
+        `$ sfpowerscripts profile:reconcile  --folder force-app,module2,module3 -u sandbox -d destfolder`,
+        `$ sfpowerscripts profile:reconcile  -u myscratchorg -d destfolder`,
     ];
 
     //public static args = [{name: 'file'}];

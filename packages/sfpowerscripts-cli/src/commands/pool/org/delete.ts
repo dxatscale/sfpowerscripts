@@ -17,7 +17,7 @@ export default class Delete extends SfpowerscriptsCommand {
 
     protected static requiresDevhubUsername = true;
 
-    public static examples = [`$ sfdx sfpowerscripts:pool:org:delete -u test-xasdasd@example.com -v devhub`];
+    public static examples = [`$ sfpowerscripts pool:org:delete -u test-xasdasd@example.com -v devhub`];
 
     protected static flagsConfig = {
         username: flags.string({

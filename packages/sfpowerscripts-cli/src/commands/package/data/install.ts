@@ -17,7 +17,7 @@ const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'install_dat
 export default class InstallDataPackage extends InstallPackageCommand {
     public static description = messages.getMessage('commandDescription');
 
-    public static examples = [`$ sfdx sfpowerscripts:package:data:install -n mypackage -u <org>`];
+    public static examples = [`$ sfpowerscripts package:data:install -n mypackage -u <org>`];
 
     protected static flagsConfig = {
         package: flags.string({

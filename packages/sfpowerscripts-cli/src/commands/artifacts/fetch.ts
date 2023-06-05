@@ -12,8 +12,8 @@ export default class Fetch extends SfpowerscriptsCommand {
     public static description = messages.getMessage('commandDescription');
 
     public static examples = [
-        `$ sfdx sfpowerscripts:artifacts:fetch -p myreleasedefinition.yaml -f myscript.sh`,
-        `$ sfdx sfpowerscripts:artifacts:fetch -p myreleasedefinition.yaml --npm --scope myscope --npmrcpath path/to/.npmrc`,
+        `$ sfpowerscripts artifacts:fetch -p myreleasedefinition.yaml -f myscript.sh`,
+        `$ sfpowerscripts artifacts:fetch -p myreleasedefinition.yaml --npm --scope myscope --npmrcpath path/to/.npmrc`,
     ];
 
     protected static requiresUsername = false;

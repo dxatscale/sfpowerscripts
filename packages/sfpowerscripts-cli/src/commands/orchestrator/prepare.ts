@@ -72,7 +72,7 @@ export default class Prepare extends SfpowerscriptsCommand {
 
     public static description = messages.getMessage('commandDescription');
 
-    public static examples = [`$ sfdx sfpowerscripts:orchestrator:prepare -f config/mypoolconfig.json  -v <devhub>`];
+    public static examples = [`$ sfpowerscripts orchestrator:prepare -f config/mypoolconfig.json  -v <devhub>`];
 
     public async execute(): Promise<any> {
         let executionStartTime = Date.now();
