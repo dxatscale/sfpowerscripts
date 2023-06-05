@@ -120,6 +120,7 @@ export default class Validate extends SfpowerscriptsCommand {
         tags = {
             tag: this.flags.tag != null ? this.flags.tag : undefined,
             validation_mode: this.flags.mode,
+            releaseConfig: this.flags.releaseconfig,
         };
 
         SFPLogger.log(COLOR_HEADER(`command: ${COLOR_KEY_MESSAGE(`validate`)}`));
