@@ -63,8 +63,8 @@ export default class ApexTypeFetcher {
                 SFPLogger.log(`Failed to parse ${clsFile} in ${this.searchDir}`, LoggerLevel.WARN);
                 SFPLogger.log(err.message, LoggerLevel.WARN);
 
-                fileDescriptor['error'] = err;
-                this.apexSortedByType['parseError'].push(fileDescriptor);
+                fileDescriptor.error = err;
+                this.apexSortedByType.parseError.push(fileDescriptor);
 
                 continue;
             }
@@ -77,15 +77,15 @@ export default class ApexTypeFetcher {
             let apexType = apexTypeListener.getApexType();
 
             if (apexType.class) {
-                this.apexSortedByType['class'].push(fileDescriptor);
+                this.apexSortedByType.class.push(fileDescriptor);
                 if (apexType.testClass) {
-                    this.apexSortedByType['testClass'].push(fileDescriptor);
+                    this.apexSortedByType.testClass.push(fileDescriptor);
                 }
             } else if (apexType.interface) {
-                this.apexSortedByType['interface'].push(fileDescriptor);
+                this.apexSortedByType.interface.push(fileDescriptor);
             } else {
-                fileDescriptor['error'] = { message: 'Unknown Apex Type' };
-                this.apexSortedByType['parseError'].push(fileDescriptor);
+                fileDescriptor.error = { message: 'Unknown Apex Type' };
+                this.apexSortedByType.parseError.push(fileDescriptor);
             }
         }
         return this.apexSortedByType;
