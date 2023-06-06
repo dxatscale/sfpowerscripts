@@ -60,6 +60,7 @@ import ReleaseConfig from "../release/ReleaseConfig";
 import { mapInstalledArtifactstoPkgAndCommits } from "../../utils/FetchArtifactsFromOrg";
 import { ApexTestValidator } from "./ApexTestValidator";
 import { DependencyAnalzer } from "./DependencyAnalyzer";
+import OrgInfoDisplayer from "../../ui/OrgInfoDisplayer";
 const Table = require("cli-table");
 
 export enum ValidateAgainst {
@@ -109,6 +110,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
 		let deploymentResult: DeploymentResult;
 		let scratchOrgUsername: string;
 		try {
+
 			if (this.props.validateAgainst === ValidateAgainst.PROVIDED_ORG) {
 				scratchOrgUsername = this.props.targetOrg;
 			} else if (
@@ -128,8 +130,14 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
 			this.orgAsSFPOrg = await SFPOrg.create({
 				aliasOrUsername: scratchOrgUsername,
 			});
-	
 
+
+			//Print Org Info for validateAgainstOrg modes
+		  //TODO: Not ideal need to unify sfpOrg and scratchOrg and then make this a global method
+			if (this.props.orgInfo && this.props.validateAgainst === ValidateAgainst.PROVIDED_ORG) 
+			  OrgInfoDisplayer.printOrgInfo(this.orgAsSFPOrg);
+		
+			
 			//Fetch Artifacts in the org
 			let packagesInstalledInOrgMappedToCommits: { [p: string]: string };
 
@@ -638,7 +646,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
 					this.logger,
 				);
 
-				if (displayOrgInfo) printOrgInfo(scratchOrg);
+				if (displayOrgInfo) OrgInfoDisplayer.printScratchOrgInfo(scratchOrg);
 
 				this.getCurrentRemainingNumberOfOrgsInPoolAndReport(scratchOrg.tag);
 				break;
@@ -651,69 +659,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
 				`Failed to fetch scratch org from ${pools}, Are you sure you created this pool using a DevHub authenticated using auth:sfdxurl or auth:web or auth:accesstoken:store`,
 			);
 
-		function printOrgInfo(scratchOrg: ScratchOrg): void {
-			let groupSection = new GroupConsoleLogs(`Display Org Info`).begin();
-
-			SFPLogger.log(
-				COLOR_HEADER(
-					`----------------------------------------------------------------------------------------------`,
-				),
-			);
-			SFPLogger.log(COLOR_KEY_VALUE(`-- Org Details:--`));
-			const table = new Table({
-				chars: COLON_MIDDLE_BORDER_TABLE,
-				style: { "padding-left": 2 },
-			});
-			table.push([COLOR_HEADER(`Org Id`), COLOR_KEY_MESSAGE(scratchOrg.orgId)]);
-			table.push([
-				COLOR_HEADER(`Instance URL`),
-				COLOR_KEY_MESSAGE(scratchOrg.instanceURL),
-			]);
-			table.push([
-				COLOR_HEADER(`Username`),
-				COLOR_KEY_MESSAGE(scratchOrg.username),
-			]);
-			table.push([
-				COLOR_HEADER(`Password`),
-				COLOR_KEY_MESSAGE(scratchOrg.password),
-			]);
-			table.push([
-				COLOR_HEADER(`Auth URL`),
-				COLOR_KEY_MESSAGE(scratchOrg.sfdxAuthUrl),
-			]);
-			table.push([
-				COLOR_HEADER(`Expiry`),
-				COLOR_KEY_MESSAGE(scratchOrg.expiryDate),
-			]);
-			SFPLogger.log(table.toString(), LoggerLevel.INFO);
-
-			SFPLogger.log(
-				COLOR_TRACE(
-					`You may use the following commands to authenticate to the org`,
-				),
-				LoggerLevel.INFO,
-			);
-			SFPLogger.log(
-				COLOR_TRACE(`cat ${scratchOrg.sfdxAuthUrl} > ./authfile`),
-				LoggerLevel.INFO,
-			);
-			SFPLogger.log(
-				COLOR_TRACE(`sfdx auth sfdxurl store  --sfdxurlfile authfile`),
-				LoggerLevel.INFO,
-			);
-			SFPLogger.log(
-				COLOR_TRACE(`sfdx force org open  --u ${scratchOrg.username}`),
-				LoggerLevel.INFO,
-			);
-
-			SFPLogger.log(
-				COLOR_HEADER(
-					`----------------------------------------------------------------------------------------------`,
-				),
-			);
-
-			groupSection.end();
-		}
+		
 	}
 
 	private async getCurrentRemainingNumberOfOrgsInPoolAndReport(tag: string) {

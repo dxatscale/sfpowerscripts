@@ -51,6 +51,10 @@ export default class ValidateAgainstOrg extends SfpowerscriptsCommand {
         basebranch: flags.string({
             description: messages.getMessage('baseBranchFlagDescription'),
         }),
+        orginfo: flags.boolean({
+            description: messages.getMessage('orgInfoFlagDescription'),
+            default: false,
+        }),
         devhubalias: flags.string({
             char: 'v',
             description: messages.getMessage('devhubAliasFlagDescription')
@@ -136,7 +140,8 @@ export default class ValidateAgainstOrg extends SfpowerscriptsCommand {
                 baseBranch: this.flags.basebranch,
                 disableArtifactCommit: this.flags.disableartifactupdate,
                 disableSourcePackageOverride: this.flags.disablesourcepkgoverride,
-                disableParallelTestExecution: this.flags.disableparalleltesting
+                disableParallelTestExecution: this.flags.disableparalleltesting,
+                orgInfo: this.flags.orginfo,
             };
 
 
