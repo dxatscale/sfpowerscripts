@@ -97,29 +97,12 @@ export default class OrgInfoDisplayer
       COLOR_KEY_MESSAGE(org.getUsername()),
     ]);
     table.push([
-      COLOR_HEADER(`Auth URL`),
-      COLOR_KEY_MESSAGE(org.getConnection().getAuthInfo().getSfdxAuthUrl()),
+      COLOR_HEADER(`Front Door URL`),
+      COLOR_KEY_MESSAGE(org.getConnection().getAuthInfo().getOrgFrontDoorUrl())
     ]);
     SFPLogger.log(table.toString(), LoggerLevel.INFO);
 
-    SFPLogger.log(
-      COLOR_TRACE(
-        `You may use the following commands to authenticate to the org`,
-      ),
-      LoggerLevel.INFO,
-    );
-    SFPLogger.log(
-      COLOR_TRACE(`cat ${org.getConnection().getAuthInfo().getSfdxAuthUrl()} > ./authfile`),
-      LoggerLevel.INFO,
-    );
-    SFPLogger.log(
-      COLOR_TRACE(`sfdx auth sfdxurl store  --sfdxurlfile authfile`),
-      LoggerLevel.INFO,
-    );
-    SFPLogger.log(
-      COLOR_TRACE(`sfdx force org open  --u ${org.getUsername()}`),
-      LoggerLevel.INFO,
-    );
+   
 
     SFPLogger.log(
       COLOR_HEADER(
