@@ -54,8 +54,8 @@ export default class PicklistEnabler implements DeploymentCustomizer {
             if (components) {
                 for (const fieldComponent of components) {
                     let customField = fieldComponent.parseXmlSync().CustomField;
-
-                    if (customField['type'] !== 'Picklist') {
+                    //check for empty picklists
+                    if (!customField || customField['type'] !== 'Picklist' || !customField.valueSet?.valueSetDefinition) {
                         continue;
                     }
 
@@ -66,6 +66,8 @@ export default class PicklistEnabler implements DeploymentCustomizer {
                     let picklistValueSource = await this.getPicklistSource(customField);
 
                     let picklistInOrg = await this.getPicklistInOrg(urlId, sfpOrg.getConnection());
+                    //check for empty picklists on org
+                    if(!picklistInOrg && picklistInOrg.Metadata?.valueSetc?.valueSetDefinition) continue;
 
                     let picklistValueInOrg = [];
 
@@ -76,16 +78,18 @@ export default class PicklistEnabler implements DeploymentCustomizer {
                         }
 
                         let valueInfo: { [key: string]: string } = {};
-                        valueInfo.valueName = value['valueName'];
+                        valueInfo.fullName = value['valueName'];
                         valueInfo.label = value['label'];
-                        valueInfo.default = value['default'];
+                        valueInfo.default = value['default'] && value['default'] === true ? 'true' : 'false';
                         picklistValueInOrg.push(valueInfo);
                     }
 
                     let isPickListIdentical =  this.arePicklistsIdentical(picklistValueInOrg, picklistValueSource);
 
                     if (!isPickListIdentical) {
-                        this.deployPicklist(picklistInOrg, picklistValueSource, sfpOrg.getConnection());
+                        this.deployPicklist(picklistInOrg, picklistValueSource, sfpOrg.getConnection(),logger);
+                    } else {
+                        SFPLogger.log(`Picklist for custom field ${picklistInOrg.fullName} is identical to the source.No deployment`, LoggerLevel.TRACE, logger);
                     }
                 }
 
@@ -128,14 +132,12 @@ export default class PicklistEnabler implements DeploymentCustomizer {
 
     private async getPicklistSource(customField: any): Promise<any> {
         let picklistValueSet = [];
-        let values = customField.valueSet.valueSetDefinition.value;
-
-        for (const [key, value] of Object.entries(values)) {
-            let valueInfo: { [key: string]: string } = {};
-            valueInfo.valueName = value['fullName'];
-            valueInfo.label = value['label'];
-            valueInfo.default = value['default'];
-            picklistValueSet.push(valueInfo);
+        let values = customField.valueSet?.valueSetDefinition?.value;
+        //only push values when picklist > 1 or exactly 1 value
+        if(Array.isArray(values)) {
+            picklistValueSet.push(...values);
+        } else if(typeof values === 'object' && 'fullName' in values) {
+            picklistValueSet.push(values);
         }
         return picklistValueSet;
     }
@@ -146,7 +148,7 @@ export default class PicklistEnabler implements DeploymentCustomizer {
             picklistValueInOrg.every((element_1) =>
                 picklistValueSource.some(
                     (element_2) =>
-                        element_1.valueName === element_2.valueName &&
+                        element_1.fullName === element_2.fullName &&
                         element_1.label === element_2.label &&
                         element_1.default === element_2.default
                 )
@@ -154,7 +156,7 @@ export default class PicklistEnabler implements DeploymentCustomizer {
         );
     }
 
-    private async deployPicklist(picklistInOrg: any, picklistValueSource: any, conn: Connection) {
+    private async deployPicklist(picklistInOrg: any, picklistValueSource: any, conn: Connection, logger: Logger) {
         //empty the the old value set
         picklistInOrg.Metadata.valueSet.valueSetDefinition.value = [];
         picklistValueSource.map(value => {
@@ -170,7 +172,7 @@ export default class PicklistEnabler implements DeploymentCustomizer {
             Metadata: picklistInOrg.Metadata,
             FullName: picklistInOrg.FullName
         };
-
+        SFPLogger.log(`Update picklist for custom field ${picklistToDeploy.FullName}`, LoggerLevel.INFO, logger);
         await conn.tooling.sobject('CustomField').update(picklistToDeploy);
     }
 
