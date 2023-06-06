@@ -133,11 +133,11 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
 
 
 			//Print Org Info for validateAgainstOrg modes
-		  //TODO: Not ideal need to unify sfpOrg and scratchOrg and then make this a global method
-			if (this.props.orgInfo && this.props.validateAgainst === ValidateAgainst.PROVIDED_ORG) 
-			  OrgInfoDisplayer.printOrgInfo(this.orgAsSFPOrg);
-		
-			
+			//TODO: Not ideal need to unify sfpOrg and scratchOrg and then make this a global method
+			if (this.props.orgInfo && this.props.validateAgainst === ValidateAgainst.PROVIDED_ORG)
+				OrgInfoDisplayer.printOrgInfo(this.orgAsSFPOrg);
+
+
 			//Fetch Artifacts in the org
 			let packagesInstalledInOrgMappedToCommits: { [p: string]: string };
 
@@ -165,22 +165,20 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
 				throw new ValidateError("Validation failed", { deploymentResult });
 			else {
 				//Do dependency analysis
-				if(this.props.isDependencyAnalysis)
-				{
-				let dependencyAnalzer = new DependencyAnalzer(this.props.baseBranch,this.orgAsSFPOrg,deploymentResult);
-				await dependencyAnalzer.dependencyAnalysis();
+				if (this.props.isDependencyAnalysis) {
+					let dependencyAnalzer = new DependencyAnalzer(this.props.baseBranch, this.orgAsSFPOrg, deploymentResult);
+					await dependencyAnalzer.dependencyAnalysis();
 				}
 
-				if(this.props.isDependencyAnalysis)
-				{
-				let dependencyAnalzer = new DependencyAnalzer(this.props.baseBranch,this.orgAsSFPOrg,deploymentResult);
-				await dependencyAnalzer.dependencyAnalysis();
+				if (this.props.isDependencyAnalysis) {
+					let dependencyAnalzer = new DependencyAnalzer(this.props.baseBranch, this.orgAsSFPOrg, deploymentResult);
+					await dependencyAnalzer.dependencyAnalysis();
 				}
 			}
 
-				return {
-					deploymentResult
-				}
+			return {
+				deploymentResult
+			}
 		} catch (error) {
 			if (
 				error.message?.includes(
@@ -494,21 +492,26 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
 
 		function computePackageOverrides(props: ValidateProps): { [key: string]: PackageType } {
 			let overridedPackages: { [key: string]: PackageType } = {};
-			if (
-				props.validationMode ===
-				ValidationMode.FASTFEEDBACK_LIMITED_BY_RELEASE_CONFIG ||
-				props.validationMode ===
-				ValidationMode.FAST_FEEDBACK
-			) {
-				const allPackages = ProjectConfig.getAllPackages(null);
-				const projectConfig = ProjectConfig.getSFDXProjectConfig(null);
-				for (const pkg of allPackages) {
+			const allPackages = ProjectConfig.getAllPackages(null);
+			const projectConfig = ProjectConfig.getSFDXProjectConfig(null);
+			for (const pkg of allPackages) {
 
-					if (ProjectConfig.getPackageType(projectConfig, pkg) == PackageType.Source) {
-						overridedPackages[pkg] = PackageType.Diff;
+				if (ProjectConfig.getPackageType(projectConfig, pkg) !== PackageType.Data) {
+					if (
+						props.validationMode ===
+						ValidationMode.FASTFEEDBACK_LIMITED_BY_RELEASE_CONFIG ||
+						props.validationMode ===
+						ValidationMode.FAST_FEEDBACK
+					) {
+						overridedPackages[pkg] = PackageType.Diff
+					}
+					else {
+						if (!this.props.disableSourcePackageOverride) {
+							if (ProjectConfig.getPackageType(projectConfig, pkg) != PackageType.Diff)
+								overridedPackages[pkg] = PackageType.Source
+						}
 					}
 				}
-
 			}
 			return overridedPackages;
 		}
@@ -659,7 +662,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
 				`Failed to fetch scratch org from ${pools}, Are you sure you created this pool using a DevHub authenticated using auth:sfdxurl or auth:web or auth:accesstoken:store`,
 			);
 
-		
+
 	}
 
 	private async getCurrentRemainingNumberOfOrgsInPoolAndReport(tag: string) {
@@ -751,7 +754,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
 				packageInstallationResult.result === PackageInstallationStatus.Succeeded
 			) {
 				//Get Changed Components
-				const apextestValidator = new ApexTestValidator(targetUsername,sfpPackage,this.props,this.logger);
+				const apextestValidator = new ApexTestValidator(targetUsername, sfpPackage, this.props, this.logger);
 				const testResult = await apextestValidator.validateApexTests();
 				return {
 					isToFailDeployment: !testResult.result,
