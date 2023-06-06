@@ -89,7 +89,7 @@ export default class PicklistEnabler implements DeploymentCustomizer {
                     if (!isPickListIdentical) {
                         this.deployPicklist(picklistInOrg, picklistValueSource, sfpOrg.getConnection(),logger);
                     } else {
-                        SFPLogger.log(`Picklist for custom field ${picklistInOrg.fullName} is identical to the source.No deployment`, LoggerLevel.TRACE, logger);
+                        SFPLogger.log(`Picklist for custom field ${picklistInOrg.fullName} is identical to the source.No deployment`, LoggerLevel.INFO, logger);
                     }
                 }
 

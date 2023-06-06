@@ -363,8 +363,15 @@ export abstract class InstallPackage {
 
         let analyzers = AnalyzerRegistry.getAnalyzers();
         for (const analyzer of analyzers) {
-            SFPLogger.log(JSON.stringify(analyzer.isEnabled), LoggerLevel.INFO, this.logger);
-            if(analyzer.isEnabled(this.sfpPackage, this.logger)) this.sfpPackage = await analyzer.analyze(this.sfpPackage,componentSet, this.logger);
+            if(await analyzer.isEnabled(this.sfpPackage, this.logger)) 
+            {
+              SFPLogger.log(`Executing ${analyzer.getName()}`, LoggerLevel.INFO, this.logger);
+              this.sfpPackage = await analyzer.analyze(this.sfpPackage,componentSet, this.logger);
+            }
+            else
+            {
+                SFPLogger.log(`Skipped ${analyzer.getName()}`, LoggerLevel.INFO, this.logger);
+            }
         }
 
         for (const preDeployer of PreDeployersRegistry.getPreDeployers()) {
