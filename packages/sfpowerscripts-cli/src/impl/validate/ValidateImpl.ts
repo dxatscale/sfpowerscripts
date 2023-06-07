@@ -168,9 +168,11 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
 				let dependencyAnalzer = new DependencyAnalzer(this.props.baseBranch,this.orgAsSFPOrg,deploymentResult);
 				await dependencyAnalzer.dependencyAnalysis();
 				}
-
 			}
-			return null; //TODO: Fix with actual object
+
+				return {
+					deploymentResult
+				}
 		} catch (error) {
 			if (
 				error.message?.includes(
