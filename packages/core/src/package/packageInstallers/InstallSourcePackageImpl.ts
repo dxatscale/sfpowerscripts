@@ -1,6 +1,6 @@
 import DeploymentExecutor, { DeploySourceResult, DeploymentType } from '../../deployers/DeploymentExecutor';
-import ReconcileProfileAgainstOrgImpl from '../../sfpowerkitwrappers/ReconcileProfileAgainstOrgImpl';
-import DeployDestructiveManifestToOrgImpl from '../../sfpowerkitwrappers/DeployDestructiveManifestToOrgImpl';
+import ReconcileProfileAgainstOrgImpl from '../components/ReconcileProfileAgainstOrgImpl';
+import DeployDestructiveManifestToOrgImpl from '../components/DeployDestructiveManifestToOrgImpl';
 import SFPLogger, { COLOR_SUCCESS, COLOR_WARNING, Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 import * as fs from 'fs-extra';
 const path = require('path');
@@ -18,6 +18,7 @@ import { DeploymentFilterRegistry } from '../deploymentFilters/DeploymentFilterR
 import DeploymentOptionDisplayer from '../../display/DeploymentOptionDisplayer';
 import PackageComponentPrinter from '../../display/PackageComponentPrinter';
 import DeployErrorDisplayer from '../../display/DeployErrorDisplayer';
+import { COLOR_ERROR } from '@dxatscale/sfp-logger';
 
 export default class InstallSourcePackageImpl extends InstallPackage {
     private pathToReplacementForceIgnore: string;
@@ -46,9 +47,8 @@ export default class InstallSourcePackageImpl extends InstallPackage {
             this.handleForceIgnores();
 
             // Apply Destructive Manifest
-            if (this.sfpPackage.destructiveChanges) {
-                await this.applyDestructiveChanges();
-            }
+            await this.applyDestructiveChanges();
+            
 
             //Apply Reconcile if Profiles are found
             //To Reconcile we have to go for multiple deploys, first we have to reconcile profiles and deploy the metadata
@@ -83,7 +83,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
 
             //Make a copy.. dont mutate sourceDirectory
             let resolvedSourceDirectory = this.sfpPackage.sourceDir;
-            
+
             let emptyCheck = this.handleEmptyPackage(resolvedSourceDirectory, this.packageDirectory);
 
             if (emptyCheck.isToSkip == true) {
@@ -128,13 +128,13 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                 }
 
                 //Print components inside Component Set
-                let components =  componentSet.getSourceComponents();
+                let components = componentSet.getSourceComponents();
                 PackageComponentPrinter.printComponentTable(components, this.logger);
-                                    
 
-                if(!this.options.isInstallingForValidation)
-                  DeploymentOptionDisplayer.printDeploymentOptions(deploymentOptions,this.logger);
-                
+
+                if (!this.options.isInstallingForValidation)
+                    DeploymentOptionDisplayer.printDeploymentOptions(deploymentOptions, this.logger);
+
                 let deploySourceToOrgImpl: DeploymentExecutor = new DeploySourceToOrgImpl(
                     this.sfpOrg,
                     this.sfpPackage.sourceDir,
@@ -160,7 +160,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                             );
                         }
                     } catch (error) {
-                        
+
                         SFPLogger.log(
                             'Failed to apply reconcile the second time, Partial Metadata applied',
                             LoggerLevel.INFO,
@@ -168,7 +168,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                         );
                     }
                 } else if (result.result === false) {
-                    DeployErrorDisplayer.displayErrors(result.response,this.logger);
+                    DeployErrorDisplayer.displayErrors(result.response, this.logger);
                     throw new Error(result.message);
                 }
             }
@@ -186,7 +186,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
         //Check empty conditions
         let status = PackageEmptyChecker.isToBreakBuildForEmptyDirectory(sourceDirectory, packageDirectory, false);
 
-    
+
         if (status.result == 'break') {
             throw new Error('No compoments in the package, Please check your build again');
         } else if (status.result == 'skip') {
@@ -206,7 +206,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
         if (this.pathToReplacementForceIgnore) {
             this.replaceForceIgnoreInSourceDirectory(this.sfpPackage.sourceDir, this.pathToReplacementForceIgnore);
 
-           
+
             //Handle Diff condition
             // if (this.isDiffFolderAvailable)
             //     this.replaceForceIgnoreInSourceDirectory(
@@ -217,6 +217,9 @@ export default class InstallSourcePackageImpl extends InstallPackage {
     }
 
     private async applyDestructiveChanges() {
+
+        if(this.sfpPackage.destructiveChanges)
+        {
         try {
             SFPLogger.log(
                 'Attempt to delete components mentioned in destructive manifest',
@@ -224,18 +227,25 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                 this.logger
             );
             let deployDestructiveManifestToOrg = new DeployDestructiveManifestToOrgImpl(
-                this.sfpOrg.getUsername(),
+                this.sfpOrg,
                 path.join(this.sfpPackage.sourceDir, 'destructive', 'destructiveChanges.xml')
             );
 
             await deployDestructiveManifestToOrg.exec();
         } catch (error) {
             SFPLogger.log(
-                'We attempted a deletion of components, However were are not succesfull. Either the components are already deleted or there are components which have dependency to components in the manifest, Please check whether this manifest works!',
+           `We attempted a deletion of components, However we are not successful. \
+            Either the components are already deleted or there are components which \
+            have dependency to components in the manifest. \
+            Please check whether this manifest works! \
+            Acutal Error Observed: \
+            ----------------------------------------------------------------------- \
+            ${COLOR_ERROR(error.message)}`,
                 LoggerLevel.INFO,
                 this.logger
             );
         }
+      }
     }
 
     private async reconcileProfilesBeforeDeployment(sourceDirectoryPath: string, target_org: string, tempDir: string) {
@@ -268,7 +278,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
             }
             //Now Reconcile
             let reconcileProfileAgainstOrg: ReconcileProfileAgainstOrgImpl = new ReconcileProfileAgainstOrgImpl(
-                target_org,
+                this.sfpOrg,
                 path.join(sourceDirectoryPath),
                 this.logger
             );
@@ -299,7 +309,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
         //doing a reconcile
         if (this.sfpPackage.isProfilesFound == false) return;
         if (this.sfpPackage.isPayLoadContainTypesSupportedByProfiles == false) return;
-        
+
 
         if (profileFolders.length > 0) {
             SFPLogger.log(`Restoring original profiles for reconcile and deploy`, LoggerLevel.INFO, this.logger);
@@ -309,7 +319,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
 
             //Now Reconcile
             let reconcileProfileAgainstOrg: ReconcileProfileAgainstOrgImpl = new ReconcileProfileAgainstOrgImpl(
-                target_org,
+                this.sfpOrg,
                 sourceDirectoryPath,
                 this.logger
             );
@@ -347,7 +357,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                 path.resolve(profileDeploymentStagingDirectory, sourceDirectory)
             );
 
-            DeploymentOptionDisplayer.printDeploymentOptions(deploymentOptions,this.logger);
+            DeploymentOptionDisplayer.printDeploymentOptions(deploymentOptions, this.logger);
             let deploySourceToOrgImpl: DeploySourceToOrgImpl = new DeploySourceToOrgImpl(
                 this.sfpOrg,
                 this.sfpPackage.sourceDir,
@@ -358,13 +368,13 @@ export default class InstallSourcePackageImpl extends InstallPackage {
             let profileReconcile: DeploySourceResult = await deploySourceToOrgImpl.exec();
 
             if (!profileReconcile.result) {
-                DeployErrorDisplayer.displayErrors(profileReconcile.response,this.logger);
+                DeployErrorDisplayer.displayErrors(profileReconcile.response, this.logger);
                 SFPLogger.log('Unable to deploy reconciled  profiles', LoggerLevel.INFO, this.logger);
             }
         }
     }
 
-   
+
 
     /**
      * Replaces forceignore in source directory with provided forceignore

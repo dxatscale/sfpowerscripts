@@ -61,25 +61,12 @@ RUN ln -sf bash /bin/sh && \
     export XDG_CACHE_HOME
 
 
-
-
-RUN npm install --global vlocity@1.16.1
-
-
-# Install PMD
-RUN mkdir -p $HOME/sfpowerkit
-RUN cd $HOME/sfpowerkit \
-      && wget -nc -O pmd.zip https://github.com/pmd/pmd/releases/download/pmd_releases/${PMD_VERSION}/pmd-bin-${PMD_VERSION}.zip \
-      && unzip pmd.zip \
-      && rm -f pmd.zip 
-
-
 # Install sfdx plugins
 RUN echo 'y' | sfdx plugins:install sfdx-browserforce-plugin@2.9.1
 RUN echo 'y' | sfdx plugins:install sfdmu@4.18.2
 
 # install sfpowerscripts
-RUN echo 'y' | sfdx plugins:install @dxatscale/sfpowerscripts@$SFPOWERSCRIPTS_VERSION
+RUN npm install --global @dxatscale/sfpowerscripts@$SFPOWERSCRIPTS_VERSION
 
 
 
@@ -92,4 +79,4 @@ LABEL org.opencontainers.image.documentation "https://docs.dxatscale.io/projects
 LABEL org.opencontainers.image.revision $GIT_COMMIT
 LABEL org.opencontainers.image.vendor "DX@Scale"
 LABEL org.opencontainers.image.source "https://github.com/dxatscale/sfpowerscripts"
-LABEL org.opencontainers.image.title "DX@Scale sfpowercripts docker image - May 23"
+LABEL org.opencontainers.image.title "DX@Scale sfpowercripts docker image - June 23"
