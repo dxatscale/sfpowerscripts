@@ -4,7 +4,7 @@ import * as fs from 'fs-extra';
 import QueryHelper from '../../queryHelper/QueryHelper';
 import SfpPackage from '../SfpPackage';
 import { Connection } from '@salesforce/core';
-import { PostDeployer } from './PostDeployer';
+
 import { Schema } from 'jsforce';
 import CustomFieldFetcher from '../../metadata/CustomFieldFetcher';
 import SFPOrg from '../../org/SFPOrg';
@@ -12,11 +12,13 @@ import path from 'path';
 import OrgDetailsFetcher from '../../org/OrgDetailsFetcher';
 import { DeploymentOptions } from '../../deployers/DeploySourceToOrgImpl';
 import { TestLevel } from '../../apextest/TestOptions';
+import { MetdataDeploymentCustomizer } from './MetadataDeploymentCustomizer';
 
 const QUERY_BODY =
     'SELECT QualifiedApiName, EntityDefinition.QualifiedApiName  FROM FieldDefinition WHERE IsFieldHistoryTracked = true AND EntityDefinitionId IN ';
 
-export default class FHTEnabler implements PostDeployer {
+export default class FHTEnabler extends MetdataDeploymentCustomizer {
+
     public async isEnabled(sfpPackage: SfpPackage, conn: Connection<Schema>, logger: Logger): Promise<boolean> {
         //ignore if its a scratch org
         const orgDetails = await new OrgDetailsFetcher(conn.getUsername()).getOrgDetails();
@@ -44,7 +46,7 @@ export default class FHTEnabler implements PostDeployer {
         }
     }
 
-    public async gatherPostDeploymentComponents(
+    public async gatherComponentsToBeDeployed(
         sfpPackage: SfpPackage,
         componentSet: ComponentSet,
         conn: Connection,

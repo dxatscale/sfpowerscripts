@@ -1,10 +1,11 @@
+import { DeploymentCustomizer } from './DeploymentCustomizer';
 import FHTEnabler from './FHTEnabler';
 import FTEnabler from './FTEnabler';
-import { PostDeployer } from './PostDeployer';
+
 
 export class PostDeployersRegistry {
-    static getPostDeployers(): PostDeployer[] {
-        let postDeployers: PostDeployer[] = [];
+    static getPostDeployers(): DeploymentCustomizer[] {
+        let postDeployers: DeploymentCustomizer[] = [];
 
         //TODO: Make dynamic
         let fhtEnabler = new FHTEnabler();
