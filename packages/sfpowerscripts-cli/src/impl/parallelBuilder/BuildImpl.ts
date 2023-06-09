@@ -468,16 +468,14 @@ export default class BuildImpl {
 		//Remove myself and my  childs
 		this.failedPackages.push(pkg);
 		SFPStatsSender.logCount("build.failed.packages", { package: pkg });
-		this.packagesToBeBuilt = this.packagesToBeBuilt.filter((pkg) => {
-			if (this.childs[pkg].includes(pkg)) {
-				this.childs[pkg].forEach((removedChilds) => {
+		this.packagesToBeBuilt = this.packagesToBeBuilt.filter((pkgBuild) => {
+			if (this.childs[pkgBuild].includes(pkg)) {
 					SFPStatsSender.logCount("build.failed.packages", {
-						package: removedChilds,
+						package: pkgBuild,
 					});
-				});
-				this.failedPackages.push(this.childs[pkg]);
+				this.failedPackages.push(pkgBuild);
 				return false;
-			}
+			} return true
 		});
 		SFPLogger.log(
 			COLOR_KEY_MESSAGE(`${EOL}Removed all childs of ${pkg} from queue`),
