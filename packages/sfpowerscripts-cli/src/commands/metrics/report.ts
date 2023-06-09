@@ -84,7 +84,7 @@ export default class Report extends SfpowerscriptsCommand {
         break;
       default:
         throw new Error('Invalid Metric Type');
-    };
+    }
 
 
   }
