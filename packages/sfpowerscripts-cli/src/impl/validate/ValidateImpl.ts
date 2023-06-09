@@ -76,6 +76,7 @@ export enum ValidationMode {
 }
 
 export interface ValidateProps {
+	installExternalDependencies?: boolean;
 	validateAgainst: ValidateAgainst;
 	validationMode: ValidationMode;
 	releaseConfigPath?: string;
@@ -715,6 +716,19 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
 						deployedPackages,
 					);
 				}
+				else if (this.props.validationMode == ValidationMode.FASTFEEDBACK_LIMITED_BY_RELEASE_CONFIG 
+					|| this.props.validationMode == ValidationMode.FAST_FEEDBACK) {
+					if(this.props.installExternalDependencies)
+					await this.installPackageDependencies(
+						ProjectConfig.cleanupMPDFromProjectDirectory(
+							null,
+							sfpPackage.package_name,
+						),
+						this.orgAsSFPOrg,
+						sfpPackage,
+						deployedPackages,
+					);
+				}
 				break;
 			case ValidateAgainst.PROVIDED_ORG:
 				if (this.props.validationMode == ValidationMode.INDIVIDUAL) {
@@ -735,6 +749,19 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
 							)}`,
 							LoggerLevel.INFO,
 						);
+				}
+				else if (this.props.validationMode == ValidationMode.FASTFEEDBACK_LIMITED_BY_RELEASE_CONFIG 
+					|| this.props.validationMode == ValidationMode.FAST_FEEDBACK) {
+					if(this.props.installExternalDependencies)
+					await this.installPackageDependencies(
+						ProjectConfig.cleanupMPDFromProjectDirectory(
+							null,
+							sfpPackage.package_name,
+						),
+						this.orgAsSFPOrg,
+						sfpPackage,
+						deployedPackages,
+					);
 				}
 		}
 

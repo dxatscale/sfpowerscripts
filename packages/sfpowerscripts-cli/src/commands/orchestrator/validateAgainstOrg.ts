@@ -55,6 +55,10 @@ export default class ValidateAgainstOrg extends SfpowerscriptsCommand {
             description: messages.getMessage('orgInfoFlagDescription'),
             default: false,
         }),
+        installdeps: flags.boolean({
+            description: messages.getMessage('installDepsFlagDescription'),
+            default: false,
+        }),
         devhubalias: flags.string({
             char: 'v',
             description: messages.getMessage('devhubAliasFlagDescription')
@@ -142,6 +146,7 @@ export default class ValidateAgainstOrg extends SfpowerscriptsCommand {
                 disableSourcePackageOverride: this.flags.disablesourcepkgoverride,
                 disableParallelTestExecution: this.flags.disableparalleltesting,
                 orgInfo: this.flags.orginfo,
+                installExternalDependencies: this.flags.installdeps,
             };
 
 

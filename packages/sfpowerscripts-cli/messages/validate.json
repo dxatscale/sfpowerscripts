@@ -19,6 +19,7 @@
     "disableArtifactUpdateFlagDescription": "Do not update information about deployed artifacts to the org",
     "fastfeedbackFlagDescription": "Enable validation in fast feedback mode, In fast feedback mode, validation will only do selective deployment of and selective tests",
     "orgInfoFlagDescription": "Display info about the org that is used for validation",
+    "installDepsFlagDescription":"Install dependencies during fast feedback",
     "disableSourcePackageOverride": "Disables overriding unlocked package installation as source package installation during validate",
     "disableParallelTestingFlagDescription": "Disable test execution in parallel, this will execute apex tests in serial"
     

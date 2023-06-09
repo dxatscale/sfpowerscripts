@@ -11,5 +11,6 @@
     "devhubAliasFlagDescription": "Provide the alias of the devhub previously authenticated, used for installing or updating dependency in individual/thorough modes",
     "disableSourcePackageOverride": "Disables overriding unlocked package installation as source package installation during validate",
     "disableParallelTestingFlagDescription": "Disable test execution in parallel, this will execute apex tests in serial",
+    "installDepsFlagDescription":"Install dependencies during fast feedback",
     "orgInfoFlagDescription": "Display info about the org that is used for validation"
 }

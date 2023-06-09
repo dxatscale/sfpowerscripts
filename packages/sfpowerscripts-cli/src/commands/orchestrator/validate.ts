@@ -36,6 +36,10 @@ export default class Validate extends SfpowerscriptsCommand {
             required: true,
             options: ['individual', 'fastfeedback', 'thorough', 'ff-release-config', 'thorough-release-config'],
         }),
+        installdeps: flags.boolean({
+            description: messages.getMessage('installDepsFlagDescription'),
+            default: false,
+        }),
         releaseconfig: flags.string({
             description: messages.getMessage('configFileFlagDescription'),
         }),
@@ -174,7 +178,8 @@ export default class Validate extends SfpowerscriptsCommand {
                 disableArtifactCommit: this.flags.disableartifactupdate,
                 orgInfo: this.flags.orginfo,
                 disableSourcePackageOverride : this.flags.disablesourcepkgoverride,
-                disableParallelTestExecution: this.flags.disableparalleltesting
+                disableParallelTestExecution: this.flags.disableparalleltesting,
+                installExternalDependencies: this.flags.installdeps,
             };
 
             setReleaseConfigForReleaseBasedModes(this.flags.releaseconfig,validateProps);
