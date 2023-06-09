@@ -72,15 +72,15 @@ export default class Report extends SfpowerscriptsCommand {
     switch (this.flags.type) {
       case 'gauge':
         SFPLogger.log(COLOR_KEY_MESSAGE(`Publishing Gauge Metric ${this.flags.metric} with value ${this.flags.value}`));
-        SFPStatsSender.logGauge(this.flags.metric, this.flags.value, JSON.parse(this.flags.tags));
+        SFPStatsSender.logGauge(this.flags.metric, this.flags.value, this.flags.tags?JSON.parse(this.flags.tags):undefined);
         break;
       case 'counter':
         SFPLogger.log(COLOR_KEY_MESSAGE(`Publishing Count Metric ${this.flags.metric} with value ${this.flags.value}`));
-        SFPStatsSender.logCount(this.flags.metric, JSON.parse(this.flags.tags));
+        SFPStatsSender.logCount(this.flags.metric, this.flags.tags?JSON.parse(this.flags.tags):undefined);
         break;
       case 'timer':
         SFPLogger.log(COLOR_KEY_MESSAGE(`Publishing Elapsed Metric ${this.flags.metric} with value ${this.flags.value}`));
-        SFPStatsSender.logElapsedTime(this.flags.metric, Number.parseInt(this.flags.value), JSON.parse(this.flags.tags));
+        SFPStatsSender.logElapsedTime(this.flags.metric, Number.parseInt(this.flags.value), this.flags.tags?JSON.parse(this.flags.tags):undefined);
         break;
       default:
         throw new Error('Invalid Metric Type');
