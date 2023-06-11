@@ -37,7 +37,6 @@ export default class Report extends SfpowerscriptsCommand {
     }),
     value: flags.string({
       description: 'value of metric',
-      required: true,
       char: 'v',
     }),
     tags: flags.string({
@@ -75,7 +74,7 @@ export default class Report extends SfpowerscriptsCommand {
         SFPStatsSender.logGauge(this.flags.metric, this.flags.value, this.flags.tags?JSON.parse(this.flags.tags):undefined);
         break;
       case 'counter':
-        SFPLogger.log(COLOR_KEY_MESSAGE(`Publishing Count Metric ${this.flags.metric} with value ${this.flags.value}`));
+        SFPLogger.log(COLOR_KEY_MESSAGE(`Publishing Count Metric ${this.flags.metric}`));
         SFPStatsSender.logCount(this.flags.metric, this.flags.tags?JSON.parse(this.flags.tags):undefined);
         break;
       case 'timer':
