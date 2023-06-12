@@ -1,5 +1,5 @@
 import ArtifactFetcher, { Artifact } from '@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFetcher';
-import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
+import SFPLogger, { COLOR_ERROR, COLOR_SUCCESS, Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 import { EOL } from 'os';
 import { Stage } from '../Stage';
 import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig';
@@ -473,15 +473,9 @@ export default class DeployImpl {
         });
 
         queue.forEach((pkg) => {
-            maxTable.push([
-                pkg.packageName,
-                pkg.versionNumber,
-                packagesToPackageInfo[pkg.packageName].versionInstalledInOrg
-                    ? packagesToPackageInfo[pkg.packageName].versionInstalledInOrg
-                    : 'N/A',
-                packagesToPackageInfo[pkg.packageName].isPackageInstalled ? 'No' : 'Yes',
-            ]);
+            maxTable.push(processColoursForAllPackages(pkg));
         });
+
         SFPLogger.log(maxTable.toString(), LoggerLevel.INFO, this.props.logger);
         groupSection.end();
 
@@ -498,15 +492,43 @@ export default class DeployImpl {
         queue.forEach((pkg) => {
             if (!packagesToPackageInfo[pkg.packageName].isPackageInstalled)
                 minTable.push([
-                    pkg.packageName,
-                    pkg.versionNumber,
+                    COLOR_KEY_MESSAGE(pkg.packageName),
+                    COLOR_KEY_MESSAGE(pkg.versionNumber),
                     packagesToPackageInfo[pkg.packageName].versionInstalledInOrg
-                        ? packagesToPackageInfo[pkg.packageName].versionInstalledInOrg
-                        : 'N/A',
+                        ? COLOR_KEY_MESSAGE(packagesToPackageInfo[pkg.packageName].versionInstalledInOrg)
+                        : COLOR_KEY_MESSAGE('N/A'),
                 ]);
         });
         SFPLogger.log(minTable.toString(), LoggerLevel.INFO, this.props.logger);
         groupSection.end();
+
+
+
+        function processColoursForAllPackages(pkg) {
+            const pkgInfo = packagesToPackageInfo[pkg.packageName];
+          
+            let packageName = pkg.packageName;
+            let versionNumber = pkg.versionNumber;
+            let versionInstalledInOrg = pkgInfo.versionInstalledInOrg ? pkgInfo.versionInstalledInOrg : 'N/A';
+            let isPackageInstalled = pkgInfo.isPackageInstalled ? 'No' : 'Yes';
+          
+            if (pkgInfo.isPackageInstalled) {
+              packageName = COLOR_SUCCESS(packageName);
+              versionNumber = COLOR_SUCCESS(versionNumber);
+              versionInstalledInOrg = COLOR_SUCCESS(versionInstalledInOrg);
+              isPackageInstalled = COLOR_SUCCESS(isPackageInstalled);
+            }
+            else
+            {
+                packageName = COLOR_ERROR(packageName);
+                versionNumber = COLOR_ERROR(versionNumber);
+                versionInstalledInOrg = COLOR_ERROR(versionInstalledInOrg);
+                isPackageInstalled = COLOR_ERROR(isPackageInstalled);
+
+            }
+          
+            return [packageName, versionNumber, versionInstalledInOrg, isPackageInstalled];
+          }
     }
 
     private printArtifactVersions(queue: SfpPackage[], packagesToPackageInfo: { [p: string]: PackageInfo }) {
