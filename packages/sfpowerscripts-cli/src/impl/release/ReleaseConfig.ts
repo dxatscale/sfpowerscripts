@@ -3,7 +3,7 @@ import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectCon
 import Ajv, { _ } from 'ajv';
 import ReleaseDefinitionGeneratorConfigSchema from './ReleaseDefinitionGeneratorConfigSchema';
 import lodash = require('lodash');
-import yaml from 'js-yaml';
+const yaml = require('js-yaml');
 import { Logger } from '@dxatscale/sfp-logger';
 const path = require('path');
 

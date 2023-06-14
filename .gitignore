@@ -21,3 +21,5 @@ packages/core/.sfpowerscripts/**
 coverage/**
 packages/apexlink/coverage
 packages/sfpowerscripts-cli/oclif.manifest.json
+packages/apexlink/tests/resources/core-crm/apexlink.json
+packages/apexlink/tests/resources/feature-mgmt/apexlink.json

@@ -3,7 +3,7 @@ import SFPLogger, { Logger, LoggerLevel } from "@dxatscale/sfp-logger"
 export default class IndividualClassCoverage {
     public constructor(private codeCoverage: any, private logger: Logger) {}
 
-    public getIndividualClassCoverage(): ClassCoverage[] {
+    public getIndividualClassCoverage(classesToBeValidated?:string[]): ClassCoverage[] {
         let individualClassCoverage: {
             name: string;
             coveredPercent: number;
@@ -13,6 +13,14 @@ export default class IndividualClassCoverage {
         individualClassCoverage = this.codeCoverage.map((cls) => {
             return { name: cls.name, coveredPercent: cls.coveredPercent };
         });
+
+         // Filter individualClassCoverage based on classesToBeValidated
+        if(classesToBeValidated && classesToBeValidated.length > 0)
+        individualClassCoverage = individualClassCoverage.filter((cls) => {
+             return classesToBeValidated.includes(cls.name);
+        });
+
+
         return individualClassCoverage;
     }
 
@@ -59,6 +67,7 @@ export type CoverageOptions = {
     isPackageCoverageToBeValidated: boolean;
     isIndividualClassCoverageToBeValidated: boolean;
     coverageThreshold: number;
+    classesToBeValidated?: string[];
 };
 
 export type ClassCoverage = {

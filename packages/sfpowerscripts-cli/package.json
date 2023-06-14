@@ -1,20 +1,22 @@
 {
     "name": "@dxatscale/sfpowerscripts",
     "description": "DX@Scale Toolkit",
-    "version": "21.2.3",
+    "version": "22.4.0",
     "license": "MIT",
     "author": "dxatscale",
-    "release": "May 23",
+    "release": "June 23",
     "bin": {
-        "readVars": "./scripts/readVars.sh"
+        "sfp": "./bin/run",
+        "sfpowerscripts": "./bin/run"
     },
     "bugs": "https://github.com/dxatscale/sfpowerscripts/issues",
     "dependencies": {
         "@dxatscale/sfdc-soup": "^18.2.6",
         "@dxatscale/sfdx-process-wrapper": "0.1.0",
         "@dxatscale/sfp-logger": "1.2.0",
-        "@dxatscale/sfpowerscripts.core": "33.25.2",
-        "@dxatscale/sfprofiles": "0.1.1",
+        "@dxatscale/sfpowerscripts.core": "34.1.3",
+        "@dxatscale/sfprofiles": "1.0.3",
+        "@oclif/command": "~1.8.27",
         "@oclif/core": "1.10.0",
         "@oclif/plugin-help": "5.1.12",
         "@salesforce/command": "5.2.43",
@@ -62,7 +64,7 @@
         "typescript": "^4.1.3"
     },
     "engines": {
-        "node": ">=14.0.0"
+        "node": ">=16.0.0"
     },
     "files": [
         "/lib",
@@ -74,64 +76,59 @@
     ],
     "homepage": "https://github.com/dxatscale/sfpowerscripts",
     "keywords": [
-        "sfdx-plugin"
+        "dxatscale",
+        "cli"
     ],
     "oclif": {
         "commands": "./lib/commands",
         "topics": {
-            "sfpowerscripts": {
-                "description": "The DX@Scale CI/CD Orchestrator",
-                "external": true,
+            "releasedefinition": {
+                "description": "Commands around release definition"
+            },
+            "orchestrator": {
+                "description": "Orchestrate packages from a monorepo through its lifecycle, driven by descriptors in your sfdx-project.json"
+            },
+            "pool": {
+                "description": "Manage the pooled orgs created by the sfpowerscripts orchestrator in prepare stage"
+            },
+            "changelog": {
+                "description": "Track your artifacts & user stories as they progress through different environments, with release changelogs"
+            },
+            "package": {
+                "description": "Work with various types of packages such as unlocked/source/data/delta individually",
                 "subtopics": {
-                    "releasedefinition": {
-                        "description": "Commands around release definition"
+                    "data": {
+                        "description": "Commands to create and install data packages (sfdmu)"
                     },
-                    "orchestrator": {
-                        "description": "Orchestrate packages from a monorepo through its lifecycle, driven by descriptors in your sfdx-project.json"
+                    "unlocked": {
+                        "description": "Commands to create and install unlocked packages"
                     },
-                    "pool": {
-                        "description": "Manage the pooled orgs created by the sfpowerscripts orchestrator in prepare stage"
+                    "source": {
+                        "description": "Commands to create and install sfpowerscripts source packages"
+                    }
+                }
+            },
+            "analyze": {
+                "description": "Analyze your projects using static analysis tools such as PMD",
+                "external": true
+            },
+            "apextests": {
+                "description": "Trigger Apex Tests and validate apex tests in a package"
+            },
+            "repo": {
+                "description": "Commands to help with maintaing repository"
+            },
+            "dependency": {
+                "description": "Commands to help with dependency management of a project",
+                "subtopics": {
+                    "expand": {
+                        "description": "Expand the dependency list in sfdx-project.json file for each package, fix the gap of dependencies from its dependent packages"
                     },
-                    "changelog": {
-                        "description": "Track your artifacts & user stories as they progress through different environments, with release changelogs"
+                    "shrink": {
+                        "description": "Shrink the dependency list in sfdx-project.json file for each package, remove duplicate dependencies that already exist in its dependent packages"
                     },
-                    "package": {
-                        "description": "Work with various types of packages such as unlocked/source/data/delta individually",
-                        "subtopics": {
-                            "data": {
-                                "description": "Commands to create and install data packages (sfdmu)"
-                            },
-                            "unlocked": {
-                                "description": "Commands to create and install unlocked packages"
-                            },
-                            "source": {
-                                "description": "Commands to create and install sfpowerscripts source packages"
-                            }
-                        }
-                    },
-                    "analyze": {
-                        "description": "Analyze your projects using static analysis tools such as PMD",
-                        "external": true
-                    },
-                    "apextests": {
-                        "description": "Trigger Apex Tests and validate apex tests in a package"
-                    },
-                    "repo": {
-                        "description": "Commands to help with maintaing repository"
-                    },
-                    "dependency": {
-                        "description": "Commands to help with dependency management of a project",
-                        "subtopics": {
-                            "expand": {
-                                "description": "Expand the dependency list in sfdx-project.json file for each package, fix the gap of dependencies from its dependent packages"
-                            },
-                            "shrink": {
-                                "description": "Shrink the dependency list in sfdx-project.json file for each package, remove duplicate dependencies that already exist in its dependent packages"
-                            },
-                            "install": {
-                                "description": "Install all the external dependencies of a given project"
-                            }
-                        }
+                    "install": {
+                        "description": "Install all the external dependencies of a given project"
                     }
                 }
             }
