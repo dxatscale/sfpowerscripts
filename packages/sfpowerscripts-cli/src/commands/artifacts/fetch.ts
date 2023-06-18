@@ -4,6 +4,7 @@ import { Messages } from '@salesforce/core';
 import FetchImpl, { ArtifactVersion } from '../../impl/artifacts/FetchImpl';
 import ReleaseDefinition from '../../impl/release/ReleaseDefinition';
 import FetchArtifactsError from '../../impl/artifacts/FetchArtifactsError';
+import { ConsoleLogger } from '@dxatscale/sfp-logger';
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'fetch');
@@ -73,7 +74,6 @@ export default class Fetch extends SfpowerscriptsCommand {
         this.validateFlags();
 
         let releaseDefinition = (await ReleaseDefinition.loadReleaseDefinition(this.flags.releasedefinition)).releaseDefinition;
-
         let result: {
             success: ArtifactVersion[];
             failed:  ArtifactVersion[];
@@ -84,9 +84,9 @@ export default class Fetch extends SfpowerscriptsCommand {
             let fetchImpl: FetchImpl = new FetchImpl(
                 this.flags.artifactdir,
                 this.flags.scriptpath,
-                this.flags.npm,
                 this.flags.scope,
-                this.flags.npmrcpath
+                this.flags.npmrcpath,
+                new ConsoleLogger()
             );
 
             result = await fetchImpl.fetchArtifacts([releaseDefinition]);
