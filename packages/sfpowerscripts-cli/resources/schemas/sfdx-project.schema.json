@@ -138,7 +138,11 @@
                     },
                     "enableFHT": {
                         "$ref": "#/definitions/packageDirectory.enableFHT"
+                    },
+                    "enablePicklist": {
+                        "$ref": "#/definitions/packageDirectory.enablePicklist"
                     }
+                    
                 }
             }
         },
@@ -460,6 +464,12 @@
             "default" : true,
             "title": "Enable Feed Tracking support?",
             "description": "Enable automated update of feed tracking in the target org upon deployment"
+        },
+        "packageDirectory.enablePicklist": {
+            "type": "boolean",
+            "default":true,
+            "title": "Enable Picklist patching for Unlocked Packages",
+            "description": "Enable automated patching of picklist for unlocked packages as unlocked packages ignore changes"
         },
         "plugins.sfpowerscripts": {
             "type": "object",

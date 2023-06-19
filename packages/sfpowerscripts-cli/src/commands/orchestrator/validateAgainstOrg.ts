@@ -5,12 +5,14 @@ import ValidateImpl, { ValidateAgainst, ValidateProps, ValidationMode } from '..
 import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender';
 import SFPLogger, { COLOR_HEADER, COLOR_KEY_MESSAGE } from '@dxatscale/sfp-logger';
 import * as fs from 'fs-extra';
+import ValidateError from '../../errors/ValidateError';
+import ValidateResult from '../../impl/validate/ValidateResult';
 
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'validateAgainstOrg');
 
-export default class Validate extends SfpowerscriptsCommand {
+export default class ValidateAgainstOrg extends SfpowerscriptsCommand {
     public static description = messages.getMessage('commandDescription');
 
     public static examples = [`$ sfpowerscripts orchestrator:validateAgainstOrg -u <targetorg>`];
@@ -49,6 +51,14 @@ export default class Validate extends SfpowerscriptsCommand {
         basebranch: flags.string({
             description: messages.getMessage('baseBranchFlagDescription'),
         }),
+        orginfo: flags.boolean({
+            description: messages.getMessage('orgInfoFlagDescription'),
+            default: false,
+        }),
+        installdeps: flags.boolean({
+            description: messages.getMessage('installDepsFlagDescription'),
+            default: false,
+        }),
         devhubalias: flags.string({
             char: 'v',
             description: messages.getMessage('devhubAliasFlagDescription')
@@ -85,6 +95,13 @@ export default class Validate extends SfpowerscriptsCommand {
     async execute(): Promise<void> {
         let executionStartTime = Date.now();
 
+        let tags: { [p: string]: string };
+        tags = {
+            tag: this.flags.tag != null ? this.flags.tag : undefined,
+            validation_mode: this.flags.mode,
+            releaseConfig: this.flags.releaseconfig,
+        };
+
         SFPLogger.log(COLOR_HEADER(`command: ${COLOR_KEY_MESSAGE(`validateAgainstOrg`)}`));
         SFPLogger.log(COLOR_HEADER(`Target Org: ${this.flags.targetorg}`));
         SFPLogger.log(
@@ -110,7 +127,8 @@ export default class Validate extends SfpowerscriptsCommand {
         );
 
 
-        let validateResult: boolean = false;
+        
+        let validateResult: ValidateResult;
         try {
             let validateProps: ValidateProps = {
                 validateAgainst: ValidateAgainst.PROVIDED_ORG,
@@ -126,7 +144,9 @@ export default class Validate extends SfpowerscriptsCommand {
                 baseBranch: this.flags.basebranch,
                 disableArtifactCommit: this.flags.disableartifactupdate,
                 disableSourcePackageOverride: this.flags.disablesourcepkgoverride,
-                disableParallelTestExecution: this.flags.disableparalleltesting
+                disableParallelTestExecution: this.flags.disableparalleltesting,
+                orgInfo: this.flags.orginfo,
+                installExternalDependencies: this.flags.installdeps,
             };
 
 
@@ -138,17 +158,41 @@ export default class Validate extends SfpowerscriptsCommand {
 
             setReleaseConfigForReleaseBasedModes(this.flags.releaseconfig,validateProps);
             let validateImpl: ValidateImpl = new ValidateImpl(validateProps);
-            await validateImpl.exec();
+            validateResult = await validateImpl.exec();
         } catch (error) {
-            console.log(error.message);
+            if (error instanceof ValidateError) {
+                validateResult = error.data;
+            } else SFPLogger.log(error.message);
+
+            SFPStatsSender.logCount('validate.failed', tags);
+
             process.exitCode = 1;
         } finally {
             let totalElapsedTime: number = Date.now() - executionStartTime;
 
-            SFPStatsSender.logGauge('validate.duration', totalElapsedTime);
+            SFPStatsSender.logGauge('validate.duration', totalElapsedTime, tags);
 
-            if (validateResult) SFPStatsSender.logCount('validate.succeeded');
-            else SFPStatsSender.logCount('validate.failed');
+            SFPStatsSender.logCount('validate.scheduled', tags);
+
+            if (validateResult) {
+                SFPStatsSender.logGauge(
+                    'validate.packages.scheduled',
+                    validateResult.deploymentResult?.scheduled,
+                    tags
+                );
+
+                SFPStatsSender.logGauge(
+                    'validate.packages.succeeded',
+                    validateResult.deploymentResult?.deployed?.length,
+                    tags
+                );
+
+                SFPStatsSender.logGauge(
+                    'validate.packages.failed',
+                    validateResult.deploymentResult?.failed?.length,
+                    tags
+                );
+            }
         }
 
         function setReleaseConfigForReleaseBasedModes(releaseconfigPath:string,validateProps: ValidateProps) {

@@ -13,7 +13,7 @@
 </p>
 
 
-A build system for package based development in Salesforce, delivered as a sfdx plugin that can be implemented in any CI/CD system of choice.Read more about the plugin and details here - https://docs.dxatscale.io
+A build system for package based development in Salesforce, delivered as a node cli that can be implemented in any CI/CD system of choice.Read more about the cli and details here - https://docs.dxatscale.io
 
 #### Features
 
@@ -28,7 +28,7 @@ A build system for package based development in Salesforce, delivered as a sfdx 
 
 There are lot more features to explore. Read more at  https://docs.dxatscale.io
 
-The project is delivered as a <b>SFDX CLI Plugin</b> that can be deployed in any CI/CD system, The plugin is available in  [NPM](https://www.npmjs.com/package/@dxatscale/sfpowerscripts) or can be 
+The project is delivered as a <b>CLI</b> that can be deployed in any CI/CD system, The module is available in  [NPM](https://www.npmjs.com/package/@dxatscale/sfpowerscripts) or can be 
 used by using the [docker image](https://github.com/dxatscale/sfpowerscripts/pkgs/container/sfpowerscripts)
 
 
@@ -59,7 +59,7 @@ To build sfpowerscripts execute the following on the terminal:
 ```
 npm i -g lerna #Install Lerna Globally
 cd <sfpowerscrips directory> # Navigate to the checked out directory 
-lerna bootstrap
+npm i
 lerna run build
 ```
 
@@ -73,7 +73,7 @@ To debug and test plugin
 
 ```
  cd sfpowerscripts-cli
- sfdx plugins:link
+ npm link
 ```
 
 #### Maintainers
