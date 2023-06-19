@@ -566,16 +566,21 @@ export default class BuildImpl {
 			dependentPackage,
 			this.projectConfig,
 		);
+		const packageBranch = this.projectConfig.packageDirectories.find(
+			(dir) => dir.package === completedPackage.packageName,
+		).branch;
 		const dependency = pkgDescriptor.dependencies.find(
             (dependency) => (dependency.package === completedPackage.packageName) || (dependency.package.includes(`${completedPackage.packageName}@`))
         );
-        if( dependency.package.includes(`${completedPackage.packageName}@`) ){
-            const [packageName, version, branch] = this.extractPackageVersionAndBranch(dependency.package);
+        if( dependency.package.includes(`${completedPackage.packageName}@`)){
+					if(packageBranch){
+						const [packageName, version, branch] = this.extractPackageVersionAndBranch(dependency.package);
             SFPLogger.log(`New branched package is created for dependency: ${packageName}, update the package version id`, LoggerLevel.INFO);
             dependency.package = `${packageName}@${completedPackage.package_version_number}-${branch}`;
             this.projectConfig.packageAliases[dependency.package] = completedPackage.package_version_id;
+					}
         }else{
-            dependency.versionNumber = completedPackage.versionNumber;
+						dependency.versionNumber = completedPackage.versionNumber;
         }
         
     }

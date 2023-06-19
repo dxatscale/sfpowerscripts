@@ -88,7 +88,6 @@ export default class Package2VersionFetcher {
         query += orderByClause;
 
         const records = await QueryHelper.query<Package2Version>(query, this.conn, true);
-        console.log(records)
         return records;
 
     }        
