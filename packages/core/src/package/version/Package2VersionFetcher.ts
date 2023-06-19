@@ -66,7 +66,12 @@ export default class Package2VersionFetcher {
         return records[0];
     }
 
-    async fetchByPackageBranchAndName(packageBranch: string, packageName: string, versionNumber?: string,): Promise<Package2Version[]> {
+    async fetchByPackageBranchAndName(
+        packageBranch: string, 
+        packageName: string, 
+        versionNumber?: string,
+        ): Promise<Package2Version[]> {
+            
         let query = this.query;
 
         let whereClause: string = `where Branch='${packageBranch}' and Package2.Name ='${packageName}' `;
@@ -83,6 +88,7 @@ export default class Package2VersionFetcher {
         query += orderByClause;
 
         const records = await QueryHelper.query<Package2Version>(query, this.conn, true);
+        console.log(records)
         return records;
 
     }        

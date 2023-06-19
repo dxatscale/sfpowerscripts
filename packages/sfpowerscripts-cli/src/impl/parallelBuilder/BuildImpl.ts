@@ -570,7 +570,7 @@ export default class BuildImpl {
             (dependency) => (dependency.package === completedPackage.packageName) || (dependency.package.includes(`${completedPackage.packageName}@`))
         );
         if( dependency.package.includes(`${completedPackage.packageName}@`) ){
-            const [packageName, version, branch] = this.splitString(dependency.package);
+            const [packageName, version, branch] = this.extractPackageVersionAndBranch(dependency.package);
             SFPLogger.log(`New branched package is created for dependency: ${packageName}, update the package version id`, LoggerLevel.INFO);
             dependency.package = `${packageName}@${completedPackage.package_version_number}-${branch}`;
             this.projectConfig.packageAliases[dependency.package] = completedPackage.package_version_id;
@@ -851,8 +851,8 @@ export default class BuildImpl {
 		}
 	}
 	
-	private splitString(input: string): [string, string, string] {
-            const parts = input.split('@');
+	private extractPackageVersionAndBranch(packageAlias: string): [string, string, string] {
+            const parts = packageAlias.split('@');
   
 		if (parts.length === 2) {
 		    const packageName = parts[0];
