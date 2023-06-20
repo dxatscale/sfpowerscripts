@@ -32,8 +32,8 @@ RUN apt-get update && apt-get install -qq software-properties-common \
         libgtk-3-0 libnspr4 libnss3 libx11-xcb1 libxcb-dri3-0 libxcomposite1 libxcursor1 \
         libxdamage1 libxfixes3 libxi6 libxinerama1 libxrandr2 libxshmfence1 libxss1 libxtst6 \
         fonts-liberation fonts-ipafont-gothic fonts-wqy-zenhei fonts-thai-tlwg fonts-kacst fonts-freefont-ttf \
-    && apt-get autoremove --assume-yes \ 
-    && apt-get clean --assume-yes  \   
+    && apt-get autoremove --assume-yes \
+    && apt-get clean --assume-yes  \
     && rm -rf /var/lib/apt/lists/*
 
 
@@ -62,7 +62,7 @@ RUN ln -sf bash /bin/sh && \
 
 
 # Install sfdx plugins
-RUN echo 'y' | sfdx plugins:install sfdx-browserforce-plugin@2.9.1
+RUN echo 'y' | sfdx plugins:install sfdx-browserforce-plugin@2.11.0
 RUN echo 'y' | sfdx plugins:install sfdmu@4.18.2
 
 # install sfpowerscripts
