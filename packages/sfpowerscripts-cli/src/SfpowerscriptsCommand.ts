@@ -72,11 +72,7 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
 
         this.validateFlags();
 
-        if (this.statics.requiresProject) {
-            let projectValidation = new ProjectValidation();
-            projectValidation.validateSFDXProjectJSON();
-            projectValidation.validatePackageNames();
-        }
+       
 
         //Clear temp directory before every run
         rimraf.sync('.sfpowerscripts');
@@ -102,6 +98,12 @@ export default abstract class SfpowerscriptsCommand extends SfdxCommand {
                     `-------------------------------------------------------------------------------------------`
                 )
             );
+        }
+
+        if (this.statics.requiresProject) {
+            let projectValidation = new ProjectValidation();
+            projectValidation.validateSFDXProjectJSON();
+            projectValidation.validatePackageNames();
         }
 
 
