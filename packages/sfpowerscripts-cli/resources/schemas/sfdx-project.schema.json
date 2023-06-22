@@ -36,7 +36,7 @@
                     "branch": ["package"]
                 },
                 "required": ["path"],
-                "additionalProperties": true,
+                "additionalProperties": false,
                 "properties": {
                     "ancestorId": {
                         "$ref": "#/definitions/packageDirectory.ancestorId"
