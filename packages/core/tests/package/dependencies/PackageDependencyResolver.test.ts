@@ -11,9 +11,10 @@ const setupFakeConnection = async () => {
   $$.setConfigStubContents('AuthInfoConfig', {
       contents: await testData.getConfig(),
   });
-  $$.fakeConnectionRequest = (request) => {
+
+$$.fakeConnectionRequest = (request: any): Promise<any> => {
     return Promise.resolve(response);
-  };
+};
 
   const conn = await Connection.create({
     authInfo: await AuthInfo.create({username: testData.username})
@@ -120,6 +121,53 @@ describe("Given a PackageDependencyResolver", () => {
     const packageDependencyResolver = new PackageDependencyResolver(conn, falseProjectConfig, ["contact-management"]);
     expect(() => {return packageDependencyResolver.resolvePackageDependencyVersions()}).rejects.toThrow();
   });
+  it('should return the latest branched package version id if matching records found', async () => {
+    // Mock the query method in QueryHelper to return some dummy data
+    response = {
+      records: [
+        {
+          attributes: {
+            type: 'Package2Version',
+            url: '/services/data/v57.0/tooling/sobjects/Package2Version/05i5i000000TNPWAA4'
+          },
+          SubscriberPackageVersionId: '04t5i000000V2DiAAK',
+          Package2Id: '0Ho5i000000sYaWCAU',
+          Package2: { attributes: [Object], Name: 'core' },
+          IsPasswordProtected: false,
+          IsReleased: false,
+          MajorVersion: 0,
+          MinorVersion: 1,
+          PatchVersion: 0,
+          BuildNumber: 17,
+          CodeCoverage: { apexCodeCoveragePercentage: 100 },
+          HasPassedCodeCoverageCheck: true,
+          Branch: 'inspection'
+        },
+        {
+          attributes: {
+            type: 'Package2Version',
+            url: '/services/data/v57.0/tooling/sobjects/Package2Version/05i5i000000TNOiAAO'
+          },
+          SubscriberPackageVersionId: '04t5i000000UyCJAA0',
+          Package2Id: '0Ho5i000000sYaWCAU',
+          Package2: { attributes: [Object], Name: 'core' },
+          IsPasswordProtected: false,
+          IsReleased: false,
+          MajorVersion: 0,
+          MinorVersion: 1,
+          PatchVersion: 0,
+          BuildNumber: 16,
+          CodeCoverage: { apexCodeCoveragePercentage: 100 },
+          HasPassedCodeCoverageCheck: true,
+          Branch: 'inspection'
+        }
+      ],
+  };
+    const packageDependencyResolver = new PackageDependencyResolver(conn, projectConfig, ["inspections"]);
+    const resolvedProjectConfig = await packageDependencyResolver.resolvePackageDependencyVersions();
+
+    expect(resolvedProjectConfig.packageAliases['core@0.1.0.17-inspection']).toEqual('04t5i000000V2DiAAK');
+  });
 
   // TODO: test cache
 });
@@ -198,7 +246,7 @@ const projectConfig = {
             },
             {
               package: 'core',
-              versionNumber: '1.0.0.LATEST'
+              versionNumber: '1.0.0.LATEST',
             }
           ]
       },
@@ -214,7 +262,21 @@ const projectConfig = {
             versionNumber: '1.0.0.LATEST'
           }
         ]
-    }
+    },
+    {
+      path: 'packages/inspections',
+      package: 'inspections',
+      default: false,
+      versionName: 'inspections-1.0.0',
+      versionNumber: '1.0.0.NEXT',
+      dependencies: [
+        {
+          package: 'core',
+          versionNumber: '1.0.0.LATEST',
+          branch: 'inspection'
+        }
+      ]
+  }
   ],
   namespace: '',
   sfdcLoginUrl: 'https://login.salesforce.com',
