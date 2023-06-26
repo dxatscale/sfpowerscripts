@@ -314,16 +314,16 @@ export abstract class InstallPackage {
             path.join(this.sfpPackage.projectDirectory, this.sfpPackage.packageDirectory)
         );
 
-        for (const preDeployer of PreDeployersRegistry.getPreDeployers()) {
+        for (const postDeployer of PostDeployersRegistry.getPostDeployers()) {
             try {
-                if (await preDeployer.isEnabled(this.sfpPackage, this.connection, this.logger)) {
+                if (await postDeployer.isEnabled(this.sfpPackage, this.connection, this.logger)) {
                     SFPLogger.log(
-                        `Executing Pre Deployer ${COLOR_KEY_MESSAGE(preDeployer.getName())}`,
+                        `Executing Pre Deployer ${COLOR_KEY_MESSAGE(postDeployer.getName())}`,
                         LoggerLevel.INFO,
                         this.logger
                     );
 
-                    await preDeployer.execute(
+                    await postDeployer.execute(
                         this.sfpPackage,
                         componentSet,
                         this.sfpOrg,
@@ -333,19 +333,19 @@ export abstract class InstallPackage {
 
                 } else {
                     SFPLogger.log(
-                        `Pre Deployer ${COLOR_KEY_MESSAGE(preDeployer.getName())} skipped or not enabled`,
+                        `Post Deployer ${COLOR_KEY_MESSAGE(postDeployer.getName())} skipped or not enabled`,
                         LoggerLevel.INFO,
                         this.logger
                     );
                 }
             } catch (error) {
                 SFPLogger.log(
-                    `Unable to process pre deploy for ${preDeployer.getName()} due to ${error.message}`,
+                    `Unable to process post deploy for ${postDeployer.getName()} due to ${error.message}`,
                     LoggerLevel.WARN,
                     this.logger
                 );
                 SFPLogger.log(
-                    `Pre Deployer ${COLOR_KEY_MESSAGE(preDeployer.getName())} skipped due to error`,
+                    `Pre Deployer ${COLOR_KEY_MESSAGE(postDeployer.getName())} skipped due to error`,
                     LoggerLevel.INFO,
                     this.logger
                 );
