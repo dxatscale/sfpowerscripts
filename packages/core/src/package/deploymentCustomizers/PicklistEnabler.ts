@@ -65,7 +65,12 @@ export default class PicklistEnabler implements DeploymentCustomizer {
 
                     let picklistValueSource = await this.getPicklistSource(customField);
 
+
+                    SFPLogger.log(`Fetching picklist for custom field ${picklistName} on object ${objName}`, LoggerLevel.INFO, logger);
+
                     let picklistInOrg = await this.getPicklistInOrg(urlId, sfpOrg.getConnection());
+
+                  
                     //check for empty picklists on org
                     if(!picklistInOrg && picklistInOrg.Metadata?.valueSetc?.valueSetDefinition) continue;
 
@@ -89,7 +94,7 @@ export default class PicklistEnabler implements DeploymentCustomizer {
                     if (!isPickListIdentical) {
                         this.deployPicklist(picklistInOrg, picklistValueSource, sfpOrg.getConnection(),logger);
                     } else {
-                        SFPLogger.log(`Picklist for custom field ${picklistInOrg.fullName} is identical to the source.No deployment`, LoggerLevel.INFO, logger);
+                        SFPLogger.log(`Picklist for custom field ${objName}.${picklistName} is identical to the source.No deployment`, LoggerLevel.INFO, logger);
                     }
                 }
 
