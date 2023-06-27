@@ -365,12 +365,12 @@ export abstract class InstallPackage {
         for (const analyzer of analyzers) {
             if(await analyzer.isEnabled(this.sfpPackage, this.logger)) 
             {
-              SFPLogger.log(`Executing ${analyzer.getName()}`, LoggerLevel.INFO, this.logger);
+              SFPLogger.log(`Executing ${COLOR_KEY_MESSAGE(analyzer.getName())}`, LoggerLevel.INFO, this.logger);
               this.sfpPackage = await analyzer.analyze(this.sfpPackage,componentSet, this.logger);
             }
             else
             {
-                SFPLogger.log(`Skipped ${analyzer.getName()}`, LoggerLevel.INFO, this.logger);
+                SFPLogger.log(`Skipped ${COLOR_KEY_MESSAGE(analyzer.getName())}`, LoggerLevel.INFO, this.logger);
             }
         }
 
