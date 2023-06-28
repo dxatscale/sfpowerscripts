@@ -58,6 +58,8 @@ export default class PicklistEnabler implements DeploymentCustomizer {
                     if (!customField || customField['type'] !== 'Picklist' || !customField.valueSet?.valueSetDefinition) {
                         continue;
                     }
+                    //no updates for custom metadata picklists  
+                    if(customField['fieldManageability']) continue;
 
                     let objName = fieldComponent.parent.fullName;
                     let picklistName = fieldComponent.name;
@@ -78,7 +80,7 @@ export default class PicklistEnabler implements DeploymentCustomizer {
 
                     for (const value of picklistInOrg.Metadata.valueSet.valueSetDefinition.value) {
 
-                        if (value.isActive == false) {
+                        if (value.isActive == 'false') {
                             continue;
                         }
 
@@ -115,7 +117,7 @@ export default class PicklistEnabler implements DeploymentCustomizer {
 
         let response = await QueryHelper.query<any>(urlId, conn, true);
 
-        if (response) {
+        if (response && Array.isArray(response) && response.length > 0 && response[0].attributes) {
             let responseUrl = response[0].attributes.url;
             let fieldId = responseUrl.slice(responseUrl.lastIndexOf('.') + 1);
             let responsePicklist = await conn.tooling.sobject('CustomField').find({ Id: fieldId });
