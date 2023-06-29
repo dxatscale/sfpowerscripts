@@ -32,10 +32,11 @@
                     "releaseNotesUrl": ["package", "versionNumber"],
                     "versionDescription": ["package", "versionNumber"],
                     "versionName": ["package", "versionNumber"],
-                    "versionNumber": ["package"]
+                    "versionNumber": ["package"],
+                    "branch": ["package"]
                 },
                 "required": ["path"],
-                "additionalProperties": true,
+                "additionalProperties": false,
                 "properties": {
                     "ancestorId": {
                         "$ref": "#/definitions/packageDirectory.ancestorId"
@@ -141,6 +142,9 @@
                     },
                     "enablePicklist": {
                         "$ref": "#/definitions/packageDirectory.enablePicklist"
+                    },
+                    "branch": {
+                        "$ref": "#/definitions/packageDirectory.branch"
                     }
                     
                 }
@@ -250,6 +254,9 @@
                         "type": "string"
                     },
                     "versionNumber": {
+                        "type": "string"
+                    },
+                    "branch": {
                         "type": "string"
                     }
                 }
@@ -470,6 +477,11 @@
             "default":true,
             "title": "Enable Picklist patching for Unlocked Packages",
             "description": "Enable automated patching of picklist for unlocked packages as unlocked packages ignore changes"
+        },
+        "packageDirectory.branch": {
+            "type": "string",
+            "title": "Package branch",
+            "description": "branched package for the specific dev team"
         },
         "plugins.sfpowerscripts": {
             "type": "object",

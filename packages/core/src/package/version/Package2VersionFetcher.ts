@@ -7,7 +7,7 @@ import semver from 'semver';
  */
 export default class Package2VersionFetcher {
     private readonly query: string =
-        'Select SubscriberPackageVersionId, Package2Id, Package2.Name, IsPasswordProtected, IsReleased, MajorVersion, MinorVersion, PatchVersion, BuildNumber, CodeCoverage, HasPassedCodeCoverageCheck from Package2Version ';
+        'Select SubscriberPackageVersionId, Package2Id, Package2.Name, IsPasswordProtected, IsReleased, MajorVersion, MinorVersion, PatchVersion, BuildNumber, CodeCoverage, HasPassedCodeCoverageCheck, Branch from Package2Version ';
 
     constructor(private conn: Connection) {}
 
@@ -65,6 +65,32 @@ export default class Package2VersionFetcher {
         const records = await QueryHelper.query<Package2Version>(query, this.conn, true);
         return records[0];
     }
+
+    async fetchByPackageBranchAndName(
+        packageBranch: string, 
+        packageName: string, 
+        versionNumber?: string,
+        ): Promise<Package2Version[]> {
+            
+        let query = this.query;
+
+        let whereClause: string = `where Branch='${packageBranch}' and Package2.Name ='${packageName}' `;
+        if (versionNumber) {
+            // TODO: validate version number
+            const versions = versionNumber.split('.');
+            if (versions[0]) whereClause += `and MajorVersion=${versions[0]} `;
+            if (versions[1]) whereClause += `and MinorVersion=${versions[1]} `;
+            if (versions[2]) whereClause += `and PatchVersion=${versions[2]} `;
+        }
+        query += whereClause;
+
+        let orderByClause: string = `order by CreatedDate desc`;
+        query += orderByClause;
+
+        const records = await QueryHelper.query<Package2Version>(query, this.conn, true);
+        return records;
+
+    }        
 }
 
 export interface Package2Version {
@@ -79,4 +105,5 @@ export interface Package2Version {
     BuildNumber: number;
     CodeCoverage: { apexCodeCoveragePercentage: number };
     HasPassedCodeCoverageCheck: boolean;
+    Branch: string;
 }

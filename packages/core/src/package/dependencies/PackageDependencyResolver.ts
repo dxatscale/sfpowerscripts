@@ -3,6 +3,8 @@ import lodash = require('lodash');
 import Git from '../../git/Git';
 import GitTags from '../../git/GitTags';
 import Package2VersionFetcher, { Package2Version } from '../version/Package2VersionFetcher';
+import SFPLogger, { LoggerLevel } from '@dxatscale/sfp-logger';
+
 
 /**
  * Resolves package dependency versions to their exact versions
@@ -39,7 +41,6 @@ export default class PackageDependencyResolver {
             if (this.packagesToBeResolved && !this.packagesToBeResolved.includes(packageDirectory.package)) {
                 continue;
             }
-
             if (packageDirectory.dependencies && Array.isArray(packageDirectory.dependencies)) {
                 for (let i = 0; i < packageDirectory.dependencies.length; i++) {
                     let dependency = packageDirectory.dependencies[i];
@@ -55,16 +56,45 @@ export default class PackageDependencyResolver {
                         continue;
                     }
 
-                    if (this.packagesToBeSkipped && this.packagesToBeSkipped.includes(dependency.package)) {
+                    if (this.packagesToBeSkipped && this.packagesToBeSkipped.includes(dependency.package) && !dependency.branch) {
                         // Dependency is part of the same build, will be resolved when new version is created
                         continue;
                     }
+                    let package2VersionForDependency: any = '';
+                    if ( dependency.branch && dependency.branch !== '' ) {
+                        SFPLogger.log(`Specified branch: ${dependency.branch} for dependency: ${dependency.package}`, LoggerLevel.INFO);
+                        package2VersionForDependency = await this.getPackage2VersionForDependency(
+                            this.conn,
+                            dependency,
+                            packageVersionId,
+                            dependency.branch
+                        );
+                        SFPLogger.log(`Fetched latest branched package of ${dependency.package},`
+                                        +`version: ${package2VersionForDependency.MajorVersion}.`
+                                                 +`${package2VersionForDependency.MinorVersion}.`
+                                                 +`${package2VersionForDependency.PatchVersion}.`
+                                                 +`${package2VersionForDependency.BuildNumber}`, LoggerLevel.INFO);
 
-                    const package2VersionForDependency = await this.getPackage2VersionForDependency(
-                        this.conn,
-                        dependency,
-                        packageVersionId
-                    );
+                        let branchedPackageAlias = `${dependency.package}@`
+                                                    +`${package2VersionForDependency.MajorVersion}.`
+                                                    +`${package2VersionForDependency.MinorVersion}.`
+                                                    +`${package2VersionForDependency.PatchVersion}.`
+                                                    +`${package2VersionForDependency.BuildNumber}-`
+                                                    +`${dependency.branch}`;
+                        dependency.package = branchedPackageAlias;
+                        this.projectConfig.packageAliases[branchedPackageAlias] = package2VersionForDependency.SubscriberPackageVersionId;
+                        delete dependency.versionNumber;
+                        delete dependency.branch;
+                        continue;
+                        
+                    }else {
+                        package2VersionForDependency = await this.getPackage2VersionForDependency(
+                            this.conn,
+                            dependency,
+                            packageVersionId
+                        );
+                    }
+                    
 
                     if (package2VersionForDependency == null) {
                         packageDirectory.dependencies.splice(i, 1);
@@ -74,7 +104,6 @@ export default class PackageDependencyResolver {
                 }
             }
         }
-
         return this.projectConfig;
     }
 
@@ -87,7 +116,8 @@ export default class PackageDependencyResolver {
     private async getPackage2VersionForDependency(
         conn: Connection,
         dependency: { package: string; versionNumber: string },
-        packageVersionId: string
+        packageVersionId: string,
+        branch?: string,
     ): Promise<Package2Version> {
 
         //Dont hit api's if its only for external dependencies
@@ -111,11 +141,21 @@ export default class PackageDependencyResolver {
             );
         } else {
             const package2VersionFetcher = new Package2VersionFetcher(conn);
-            const records = await package2VersionFetcher.fetchByPackage2Id(
-                packageVersionId,
-                versionNumber,
-                true
-            );
+            let records;
+            if( branch ){
+                records = await package2VersionFetcher.fetchByPackageBranchAndName(
+                    branch,
+                    dependency.package,
+                    versionNumber
+                );
+            }else{
+                records = await package2VersionFetcher.fetchByPackage2Id(
+                    packageVersionId,
+                    versionNumber,
+                    true
+                );
+            }
+            
             this.package2VersionCache.set(
                 packageVersionId,
                 versionNumber,
@@ -133,13 +173,12 @@ export default class PackageDependencyResolver {
             );
         }
 
-        if (this.projectConfig.packageDirectories.find((dir) => dir.package === dependency.package)) {
+        if (this.projectConfig.packageDirectories.find((dir) => dir.package === dependency.package && !branch)) {
             package2Version = await this.getPackage2VersionFromCurrentBranch(package2Versions, dependency);
         } else {
             // Take last validated package for external packages
             package2Version = package2Versions[0];
         }
-
         return package2Version;
     }
 

@@ -8,7 +8,7 @@ import FetchImpl from '../../impl/artifacts/FetchImpl';
 import ReleaseDefinitionSchema from '../../impl/release/ReleaseDefinitionSchema';
 import path = require('path');
 import ArtifactFetcher, { Artifact } from '@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFetcher';
-import SfpPackage from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
+import SfpPackage, { PackageType } from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
 import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder';
 import SFPLogger, { ConsoleLogger, Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 import SfpPackageInquirer from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageInquirer';
@@ -219,11 +219,22 @@ export default class Patch extends SfpowerscriptsCommand {
                 //Create new path as mentioned in artifact
                 fs.mkdirpSync(path.join(temporaryWorkingDirectory, sfpPackage.packageDirectory));
 
-                //Copy from artifacts to each package directory
-                fs.copySync(
-                    path.join(sfpPackage.sourceDir, sfpPackage.packageDirectory),
-                    path.join(temporaryWorkingDirectory, sfpPackage.packageDirectory)
-                );
+
+                 //Copy from artifacts to each package directory
+                //If diff, artifact will only contain delta, so use the version control to checkout the entire reference
+                if(sfpPackage.packageType==PackageType.Diff)
+                {
+
+                    await git.checkoutPath(sfpPackage.commitSHATo, sfpPackage.packageDirectory);
+                }
+                else
+                {
+                    fs.copySync(
+                        path.join(sfpPackage.sourceDir, sfpPackage.packageDirectory),
+                        path.join(temporaryWorkingDirectory, sfpPackage.packageDirectory)
+                    );
+                }
+
                 SFPLogger.log(
                     COLOR_KEY_MESSAGE(
                         `Succesfully copied from artifact ${sfpPackage.packageName} ${sfpPackage.package_version_number} to target directory`

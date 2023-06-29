@@ -566,11 +566,24 @@ export default class BuildImpl {
 			dependentPackage,
 			this.projectConfig,
 		);
+		const packageBranch = this.projectConfig.packageDirectories.find(
+			(dir) => dir.package === completedPackage.packageName,
+		).branch;
 		const dependency = pkgDescriptor.dependencies.find(
-			(dependency) => dependency.package === completedPackage.packageName,
-		);
-		dependency.versionNumber = completedPackage.versionNumber;
-	}
+            (dependency) => (dependency.package === completedPackage.packageName) || (dependency.package.includes(`${completedPackage.packageName}@`))
+        );
+        if( dependency.package.includes(`${completedPackage.packageName}@`)){
+					if(packageBranch){
+						const [packageName, version, branch] = this.extractPackageVersionAndBranch(dependency.package);
+            SFPLogger.log(`New branched package is created for dependency: ${packageName}, update the package version id`, LoggerLevel.INFO);
+            dependency.package = `${packageName}@${completedPackage.package_version_number}-${branch}`;
+            this.projectConfig.packageAliases[dependency.package] = completedPackage.package_version_id;
+					}
+        }else{
+						dependency.versionNumber = completedPackage.versionNumber;
+        }
+        
+    }
 
 	private getPriorityandTypeOfAPackage(projectConfig: any, pkg: string) {
 		let priority = 0;
@@ -842,4 +855,23 @@ export default class BuildImpl {
 			return projectConfig;
 		}
 	}
+	
+	private extractPackageVersionAndBranch(packageAlias: string): [string, string, string] {
+            const parts = packageAlias.split('@');
+  
+		if (parts.length === 2) {
+		    const packageName = parts[0];
+		    const versionAndFeature = parts[1].split('-');
+            
+		    if (versionAndFeature.length === 2) {
+		    const version = versionAndFeature[0];
+		    const branch = versionAndFeature[1];
+            
+		    return [packageName, version, branch];
+		    }
+		}
+        
+		return ['', '', ''];
+		}
+
 }
