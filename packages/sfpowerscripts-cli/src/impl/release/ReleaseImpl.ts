@@ -220,6 +220,7 @@ export default class ReleaseImpl {
                 currentStage: Stage.DEPLOY,
                 baselineOrg: releaseDefinition.baselineOrg,
                 isDryRun: this.props.isDryRun,
+                disableArtifactCommit: releaseDefinition.skipArtifactUpdate?releaseDefinition.skipArtifactUpdate:false,
                 promotePackagesBeforeDeploymentToOrg: releaseDefinition.promotePackagesBeforeDeploymentToOrg,
                 devhubUserName: this.props.devhubUserName,
             };
