@@ -56,6 +56,9 @@
             "skipIfAlreadyInstalled": {
                 "type": "boolean"
             },
+            "skipArtifactUpdate": {
+                "type": "boolean"
+            },
             "baselineOrg": {
                 "type": "string"
             },
