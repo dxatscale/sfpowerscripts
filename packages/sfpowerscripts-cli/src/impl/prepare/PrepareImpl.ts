@@ -70,6 +70,7 @@ export default class PrepareImpl {
 
         if (this.pool.releaseConfigFile) {
             restrictedPackages = await getArtifactsByGeneratingReleaseDefinitionFromConfig(this.pool.releaseConfigFile);
+            FileLoggerService.writeReleaseConfig(restrictedPackages);
             projectConfig = ProjectConfig.cleanupPackagesFromProjectDirectory(null, restrictedPackages);
         }
 

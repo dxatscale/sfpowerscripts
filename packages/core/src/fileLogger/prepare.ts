@@ -1,13 +1,15 @@
 import fs from 'fs';
-import { PATH, PROCESSNAME, PrepareFile, Poolinfo, OrgInfo, ExternalDependency } from './types';
+import { PATH, PROCESSNAME, PrepareFile, Poolinfo, OrgInfo, ExternalDependency, PoolDefinition } from './types';
 
 export class FileLoggerService {
-    public static writePoolInfo(activeOrgs: number, maxOrgs: number, allocatedOrgs: number, tag: string): void {
+    public static writePoolDefinition(poolDefinition: PoolDefinition): void {
+        PrepareFileBuilder.getInstance().buildPoolDefinition(poolDefinition).build();
+    }
+
+    public static writePoolInfo(activeOrgs: number, maxOrgs: number): void {
         const poolInfo: Poolinfo = {
             activeOrgs: activeOrgs,
             maxOrgs: maxOrgs,
-            allocatedOrgs: allocatedOrgs,
-            tag: tag,
             prepareDuration: 0,
             orgInfos: [],
         };
@@ -34,6 +36,10 @@ export class FileLoggerService {
             .build();
     }
 
+    public static writeReleaseConfig(releaseConfig: string[]): void {
+        PrepareFileBuilder.getInstance().buildReleaseConfig(releaseConfig).build();
+    }
+
     public static writeOrgInfo(index: number, orgInfo: OrgInfo): void {
         PrepareFileBuilder.getInstance().buildOrgInfo(index, orgInfo).build();
     }
@@ -51,7 +57,8 @@ class PrepareFileBuilder {
             status: 'inprogress',
             message: '',
             errorCode: '',
-            poolInfo: { tag: '', activeOrgs: 0, maxOrgs: 0, allocatedOrgs: 0, prepareDuration: 0, orgInfos: [] },
+            poolDefinition: {tag: '', maxAllocation: 0},
+            poolInfo: { activeOrgs: 0, maxOrgs: 0, prepareDuration: 0, orgInfos: [] },
             externalDependencies: []
         };
     }
@@ -66,7 +73,6 @@ class PrepareFileBuilder {
             if (!fs.existsSync(PATH.PREPARE)) {
                 // File doesn't exist, create it
                 fs.writeFileSync(PATH.PREPARE, JSON.stringify(PrepareFileBuilder.instance.file), 'utf-8');
-                console.log('File created successfully.');
             }
         }
 
@@ -82,6 +88,11 @@ class PrepareFileBuilder {
         return this;
     }
 
+    buildPoolDefinition(poolDefinition: PoolDefinition): PrepareFileBuilder {
+        this.file.poolDefinition = poolDefinition;
+        return this; 
+    }
+
     buildPoolinfo(poolInfo: Poolinfo): PrepareFileBuilder {
         this.file.poolInfo = poolInfo;
         return this;
@@ -94,6 +105,11 @@ class PrepareFileBuilder {
 
     buildExternalDependencies(externalDependency: ExternalDependency): PrepareFileBuilder {
         this.file.externalDependencies.push(externalDependency);
+        return this;
+    }
+
+    buildReleaseConfig(releaseConfig: string[]): PrepareFileBuilder {
+        this.file.releaseConfig = releaseConfig;
         return this;
     }
 

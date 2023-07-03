@@ -37,6 +37,7 @@ import TransitiveDependencyResolver from "@dxatscale/sfpowerscripts.core/lib/pac
 import GroupConsoleLogs from "../../ui/GroupConsoleLogs";
 import UserDefinedExternalDependency from "@dxatscale/sfpowerscripts.core/lib/project/UserDefinedExternalDependency";
 import PackageDependencyDisplayer from "@dxatscale/sfpowerscripts.core/lib/display/PackageDependencyDisplayer";
+import { FileLoggerService } from '@dxatscale/sfpowerscripts.core/lib/fileLogger/build';
 
 const PRIORITY_UNLOCKED_PKG_WITH_DEPENDENCY = 1;
 const PRIORITY_UNLOCKED_PKG_WITHOUT_DEPENDENCY = 3;
@@ -309,6 +310,7 @@ export default class BuildImpl {
 		});
 		for (const pkg of this.packagesToBeBuilt) {
 			let item = [pkg, "Activated as part of all package build"];
+			FileLoggerService.writePackageInitialitation(pkg,'Activated as part of all package build','');
 			if (
 				this.isMultiConfigFilesEnabled &&
 				this.props.currentStage == Stage.BUILD
@@ -351,6 +353,7 @@ export default class BuildImpl {
 					reason: packageDiffCheck.reason,
 					tag: packageDiffCheck.tag,
 				});
+				FileLoggerService.writePackageInitialitation(pkg,packageDiffCheck.reason,packageDiffCheck.tag);
 				//Add Bundles
 				if (buildCollections.isPackageInACollection(pkg)) {
 					buildCollections
@@ -360,6 +363,7 @@ export default class BuildImpl {
 								packagesToBeBuilt.set(packageInCollection, {
 									reason: "Part of a build collection",
 								});
+								FileLoggerService.writePackageInitialitation(packageInCollection,'Part of a build collection','');
 							}
 						});
 				}
@@ -444,6 +448,7 @@ export default class BuildImpl {
 		SFPLogger.log(
 			COLOR_HEADER(`${EOL}-----------------------------------------`),
 		);
+		FileLoggerService.writePackageError(pkg,reason.message);
 		SFPLogger.log(COLOR_ERROR(`Package Creation Failed for ${pkg}`));
 		try {
 			// Append error to log file
@@ -460,24 +465,28 @@ export default class BuildImpl {
 			if (el == pkg) return false;
 			else return true;
 		});
+		FileLoggerService.writePackageAwaitingList(this.packagesToBeBuilt);
+		
 		this.packagesInQueue = this.packagesInQueue.filter((pkg_name) => {
 			if (pkg == pkg_name) return false;
 			else return true;
 		});
+		FileLoggerService.writePackageCurrentlyProcessedList(this.packagesInQueue);
 
 		//Remove myself and my  childs
 		this.failedPackages.push(pkg);
+		FileLoggerService.writePackageErrorList(pkg);
 		SFPStatsSender.logCount("build.failed.packages", { package: pkg });
-		this.packagesToBeBuilt = this.packagesToBeBuilt.filter((pkg) => {
-			if (this.childs[pkg].includes(pkg)) {
-				this.childs[pkg].forEach((removedChilds) => {
+		this.packagesToBeBuilt = this.packagesToBeBuilt.filter((pkgBuild) => {
+			if (this.childs[pkg].includes(pkgBuild)) {
 					SFPStatsSender.logCount("build.failed.packages", {
-						package: removedChilds,
+						package: pkgBuild,
 					});
-				});
-				this.failedPackages.push(this.childs[pkg]);
+				FileLoggerService.writePackageError(pkgBuild,reason.message);
+				FileLoggerService.writePackageErrorList(pkgBuild);
+				this.failedPackages.push(pkgBuild);
 				return false;
-			}
+			} return true
 		});
 		SFPLogger.log(
 			COLOR_KEY_MESSAGE(`${EOL}Removed all childs of ${pkg} from queue`),
@@ -489,6 +498,8 @@ export default class BuildImpl {
 
 	private queueChildPackages(sfpPackage: SfpPackage): any {
 		this.packagesBuilt.push(sfpPackage.packageName);
+		FileLoggerService.writePackageSuccessList(sfpPackage.packageName);
+		FileLoggerService.writePackageCompletedInfos(sfpPackage);
 		this.printPackageDetails(sfpPackage);
 
 		this.packagesToBeBuilt.forEach((pkg) => {
@@ -553,9 +564,11 @@ export default class BuildImpl {
 		this.packagesToBeBuilt = this.packagesToBeBuilt.filter((el) => {
 			return !pushedPackages.includes(el);
 		});
+		FileLoggerService.writePackageAwaitingList(this.packagesToBeBuilt);
 		this.packagesInQueue = this.packagesInQueue.filter(
 			(pkg_name) => pkg_name !== sfpPackage.packageName,
 		);
+		FileLoggerService.writePackageCurrentlyProcessedList(this.packagesInQueue);
 	}
 
 	private resolveDependenciesOnCompletedPackage(

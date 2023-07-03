@@ -1,6 +1,7 @@
 import { Org } from '@salesforce/core';
 import Bottleneck from 'bottleneck';
-import { PoolConfig } from './PoolConfig';import { FileLoggerService } from '../../fileLogger/prepare';
+import { PoolConfig } from './PoolConfig';
+import { FileLoggerService } from '../../fileLogger/prepare';
 import { PoolBaseImpl } from './PoolBaseImpl';
 import ScratchOrg from '../ScratchOrg';
 import ScratchOrgInfoFetcher from './services/fetchers/ScratchOrgInfoFetcher';
@@ -52,6 +53,7 @@ export default class PoolCreateImpl extends PoolBaseImpl {
         await this.hubOrg.refreshAuth();
 
         const scriptExecPromises: Array<Promise<ScriptExecutionResult>> = [];
+        FileLoggerService.writePoolDefinition(this.pool);
 
 
         //fetch current status limits
@@ -184,7 +186,7 @@ export default class PoolCreateImpl extends PoolBaseImpl {
         
         SFPLogger.log('Remaining Active scratchOrgs in the org: ' + remainingScratchOrgs, LoggerLevel.INFO);
         SFPLogger.log('ScratchOrgs to be allocated: ' + pool.to_allocate, LoggerLevel.INFO);
-        FileLoggerService.writePoolInfo(pool.current_allocation,remainingScratchOrgs,pool.to_allocate,this.pool.tag)
+        FileLoggerService.writePoolInfo(pool.current_allocation,remainingScratchOrgs)
         return pool.to_allocate;
     }
 
