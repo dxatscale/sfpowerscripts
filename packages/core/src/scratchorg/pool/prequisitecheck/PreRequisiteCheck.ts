@@ -3,6 +3,7 @@ const retry = require('async-retry');
 import { Result, ok, err } from 'neverthrow';
 import { PoolConfig } from '../PoolConfig';
 import { PoolError, PoolErrorCodes } from '../PoolError';
+import { FileLoggerService } from '../../../fileLogger/prepare';
 
 export default class PreRequisiteCheck {
     private static isPrerequisiteChecked: boolean = false;
@@ -56,8 +57,10 @@ export default class PreRequisiteCheck {
         }
 
         if (!PreRequisiteCheck.isPrerequisiteMet) {
+              FileLoggerService.writePoolError(0,0,`Required Prerequisite values in ScratchOrgInfo is missing in the DevHub` +
+              `For more information Please refer https://docs.dxatscale.io/implementing-your-ci-cd/prerequisites \n`,'PreRequisiteCheck')
               throw new Error( `Required Prerequisite values in ScratchOrgInfo is missing in the DevHub` +
-                               `For more information Please refer https://sfpowerscripts.dxatscale.io/getting-started/prerequisites \n`);
+                               `For more information Please refer https://docs.dxatscale.io/implementing-your-ci-cd/prerequisites \n`);
         }
     }
 }

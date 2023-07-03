@@ -28,6 +28,7 @@ import { ZERO_BORDER_TABLE } from '../../ui/TableConstants';
 import GroupConsoleLogs from '../../ui/GroupConsoleLogs';
 import ReleaseConfig from '../release/ReleaseConfig';
 import { COLOR_KEY_VALUE } from '@dxatscale/sfp-logger';
+import { FileLoggerService } from '@dxatscale/sfpowerscripts.core/lib/fileLogger/prepare';
 
 const Table = require('cli-table');
 

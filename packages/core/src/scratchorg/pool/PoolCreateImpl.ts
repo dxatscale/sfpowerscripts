@@ -1,6 +1,6 @@
 import { Org } from '@salesforce/core';
 import Bottleneck from 'bottleneck';
-import { PoolConfig } from './PoolConfig';
+import { PoolConfig } from './PoolConfig';import { FileLoggerService } from '../../fileLogger/prepare';
 import { PoolBaseImpl } from './PoolBaseImpl';
 import ScratchOrg from '../ScratchOrg';
 import ScratchOrgInfoFetcher from './services/fetchers/ScratchOrgInfoFetcher';
@@ -22,6 +22,7 @@ import { COLOR_ERROR } from '@dxatscale/sfp-logger';
 import getFormattedTime from '../../utils/GetFormattedTime';
 import OrphanedOrgsDeleteImpl from './OrphanedOrgsDeleteImpl';
 import path from 'path';
+
 
 export default class PoolCreateImpl extends PoolBaseImpl {
     private limiter;
@@ -74,6 +75,7 @@ export default class PoolCreateImpl extends PoolBaseImpl {
                 try {
                     this.totalToBeAllocated = await this.computeAllocation();
                 } catch (error) {
+                    FileLoggerService.writePoolError(0,0,`Unable to access fields on ScratchOrgInfo, Please check the profile being used`,PoolErrorCodes.PrerequisiteMissing)
                     return err({
                         success: 0,
                         failed: 0,
@@ -84,6 +86,7 @@ export default class PoolCreateImpl extends PoolBaseImpl {
 
                 if (this.totalToBeAllocated === 0) {
                     if (this.limits.ActiveScratchOrgs.Remaining > 0) {
+                        FileLoggerService.writePoolError(0,0,`The tag provided ${this.pool.tag} is currently at the maximum capacity , No scratch orgs will be allocated`,PoolErrorCodes.Max_Capacity)
                         return err({
                             success: 0,
                             failed: 0,
@@ -91,6 +94,7 @@ export default class PoolCreateImpl extends PoolBaseImpl {
                             errorCode: PoolErrorCodes.Max_Capacity,
                         });
                     } else {
+                        FileLoggerService.writePoolError(0,0,`There is no capacity to create a pool at this time, Please try again later`,PoolErrorCodes.No_Capacity)
                         return err({
                             success: 0,
                             failed: 0,
@@ -114,6 +118,7 @@ export default class PoolCreateImpl extends PoolBaseImpl {
                 );
             }
         } catch (error) {
+            FileLoggerService.writePoolError(0,this.pool.failedToCreate,`All requested scratch orgs failed to provision, Please check your code or config \n Failed with ${error.message}`,PoolErrorCodes.UnableToProvisionAny)
             return err({
                 success: 0,
                 failed: this.pool.failedToCreate,
@@ -137,6 +142,7 @@ export default class PoolCreateImpl extends PoolBaseImpl {
         );
 
         if (!this.pool.scratchOrgs || this.pool.scratchOrgs.length == 0) {
+            FileLoggerService.writePoolError(0,this.pool.failedToCreate,`All requested scratch orgs failed to provision, Please check your code or config`,PoolErrorCodes.UnableToProvisionAny)
             return err({
                 success: 0,
                 failed: this.pool.failedToCreate,
@@ -175,8 +181,10 @@ export default class PoolCreateImpl extends PoolBaseImpl {
             `${EOL}Current Allocation of ScratchOrgs in the pool ${this.pool.tag}: ` + pool.current_allocation,
             LoggerLevel.INFO
         );
+        
         SFPLogger.log('Remaining Active scratchOrgs in the org: ' + remainingScratchOrgs, LoggerLevel.INFO);
         SFPLogger.log('ScratchOrgs to be allocated: ' + pool.to_allocate, LoggerLevel.INFO);
+        FileLoggerService.writePoolInfo(pool.current_allocation,remainingScratchOrgs,pool.to_allocate,this.pool.tag)
         return pool.to_allocate;
     }
 
@@ -199,7 +207,7 @@ export default class PoolCreateImpl extends PoolBaseImpl {
         const startTime = Date.now();
         for (let i = 1; i <= pool.to_allocate; i++) {
             const scratchOrgPromise: Promise<ScratchOrg> = scratchOrgCreationLimiter.schedule(() =>
-                scratchOrgOperator.create(`SO` + i, this.pool.configFilePath, this.pool.expiry, this.pool.waitTime)
+                scratchOrgOperator.create(`SO` + i, this.pool.configFilePath, this.pool.expiry, this.pool.waitTime,i)
             );
             scratchOrgPromises.push(scratchOrgPromise);
         }

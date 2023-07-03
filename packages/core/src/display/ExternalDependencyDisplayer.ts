@@ -3,6 +3,7 @@ import { EOL } from 'os';
 import Package2Detail from '../package/Package2Detail';
 import { ZERO_BORDER_TABLE } from './TableConstants';
 const Table = require('cli-table');
+import { FileLoggerService } from '../fileLogger/prepare';
 
 export default class ExternalDependencyDisplayer {
     public constructor(private externalPackage2s: Package2Detail[], private logger: Logger) {}
@@ -21,6 +22,7 @@ export default class ExternalDependencyDisplayer {
                     externalPackage.versionNumber ? externalPackage.versionNumber : 'N/A',
                     externalPackage.subscriberPackageVersionId ?  externalPackage.subscriberPackageVersionId:'N/A, Could be  part of current operation',
                 ]);
+                FileLoggerService.writeExternalDependency(i,externalPackage.name,externalPackage.versionNumber,externalPackage.subscriberPackageVersionId)
             }
             SFPLogger.log(EOL, LoggerLevel.INFO, this.logger);
             SFPLogger.log(COLOR_KEY_MESSAGE(`Resolved external package dependencies:`), LoggerLevel.INFO, this.logger);

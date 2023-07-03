@@ -20,8 +20,9 @@ import SFPLogger, {
 import getFormattedTime from '@dxatscale/sfpowerscripts.core/lib/utils/GetFormattedTime';
 import { PoolConfig } from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolConfig';
 import { COLOR_WARNING } from '@dxatscale/sfp-logger';
-import PoolSchema from '@dxatscale/sfpowerscripts.core/resources/pooldefinition.schema.json';
+import * as PoolSchema from '@dxatscale/sfpowerscripts.core/resources/pooldefinition.schema.json'; //create namespace to import schema via npm link
 import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
+import { FileLoggerService } from '@dxatscale/sfpowerscripts.core/lib/fileLogger/prepare';
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'prepare');
@@ -249,7 +250,7 @@ export default class Prepare extends SfpowerscriptsCommand {
                     4
                 )}`;
             });
-
+            FileLoggerService.writePoolError(0,0,errorMsg,'schema-validator')
             throw new Error(errorMsg);
         }
     }

@@ -8,6 +8,9 @@ import { COLOR_KEY_MESSAGE } from '@dxatscale/sfp-logger';
 import getFormattedTime from '../utils/GetFormattedTime';
 import SFPStatsSender from '../stats/SFPStatsSender';
 const retry = require('async-retry');
+import { FileLoggerService } from '../fileLogger/prepare';
+import { OrgInfo } from '../fileLogger/types';
+import { file } from 'tmp';
 
 export default class ScratchOrgOperator {
     constructor(private hubOrg: Org) {}
@@ -16,11 +19,13 @@ export default class ScratchOrgOperator {
         alias: string,
         config_file_path: string,
         expiry: number,
-        waitTime: number = 6
+        waitTime: number = 6,
+        index?: number
     ): Promise<ScratchOrg> {
         SFPLogger.log('Parameters: ' + alias + ' ' + config_file_path + ' ' + expiry + ' ', LoggerLevel.TRACE);
 
         let startTime = Date.now();
+        let orgInfoIndex = index ? index - 1 : 0;
         SFPLogger.log(`Requesting Scratch Org ${alias}..`, LoggerLevel.INFO);
         let scatchOrgResult = await this.requestAScratchOrg(
             alias,
@@ -39,11 +44,25 @@ export default class ScratchOrgOperator {
             elapsedTime: Date.now() - startTime,
         };
 
+        let fileOrgInfo:OrgInfo = {
+            alias: alias,
+            orgId: scatchOrgResult.orgId,
+            username: scatchOrgResult.username,
+            loginURL: scatchOrgResult.loginURL,
+            elapsedTime: Date.now() - startTime,
+            password: ''
+        }
+
+        FileLoggerService.writeOrgInfo(orgInfoIndex,fileOrgInfo);
+
         try {
             //Get Sfdx Auth URL
             const authInfo = await AuthInfo.create({ username: scratchOrg.username });
             scratchOrg.sfdxAuthUrl = authInfo.getSfdxAuthUrl();
         } catch (error) {
+            fileOrgInfo.status = 'failed';
+            fileOrgInfo.message = `Unable to set auth URL, Ignoring this scratch org, as its not suitable for pool due to ${error.message}`;
+            FileLoggerService.writeOrgInfo(orgInfoIndex,fileOrgInfo);
             throw new Error(
                 `Unable to set auth URL, Ignoring this scratch org, as its not suitable for pool due to ${error.message}`
             );
@@ -54,11 +73,22 @@ export default class ScratchOrgOperator {
 
         scratchOrg.password = passwordData.password;
 
+        fileOrgInfo.password = passwordData.password;
+
         if (!passwordData.password) {
+            fileOrgInfo.status = 'failed';
+            fileOrgInfo.message = `Unable to setup password to scratch org`;
+            FileLoggerService.writeOrgInfo(orgInfoIndex,fileOrgInfo);
             throw new Error('Unable to setup password to scratch org');
         } else {
             SFPLogger.log(`Password successfully set for ${scratchOrg.alias}`, LoggerLevel.DEBUG);
         }
+
+        fileOrgInfo.status = 'success';
+        fileOrgInfo.message = `Creation request for Scratch Org ${scratchOrg.alias} is completed successfully in ${COLOR_KEY_MESSAGE(
+            getFormattedTime(scratchOrg.elapsedTime)
+        )}`;
+        FileLoggerService.writeOrgInfo(orgInfoIndex,fileOrgInfo);
 
         SFPLogger.log(
             `Creation request for Scratch Org ${scratchOrg.alias} is completed successfully in ${COLOR_KEY_MESSAGE(
