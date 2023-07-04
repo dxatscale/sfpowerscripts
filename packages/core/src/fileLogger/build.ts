@@ -126,6 +126,11 @@ class PrepareFileBuilder {
         return this;
     }
 
+    buildPackageDependencies(pck: string, dependencies: BuildPackageDependencies): PrepareFileBuilder {
+        this.file.packagesToBuild[pck].packageDependencies.push(dependencies);
+        return this;
+    }
+
     build(): void {
         fs.writeFileSync(PATH.BUILD, JSON.stringify(this.file, null, 2), 'utf-8');
     }
