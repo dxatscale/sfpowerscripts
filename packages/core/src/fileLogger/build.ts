@@ -1,5 +1,5 @@
 import fs from 'fs';
-import { PATH, PROCESSNAME, BuildFile, BuildPackage, BuildPackageDetails, BuildPackageDependencies } from './types';
+import { PATH, PROCESSNAME, BuildFile, BuildProps, BuildPackageDetails, BuildPackageDependencies } from './types';
 import SfpPackage from "../package/SfpPackage";
 
 export class FileLoggerService {
@@ -30,6 +30,26 @@ export class FileLoggerService {
     public static writePackageCompletedInfos(sfpPackage: SfpPackage): void {
         PrepareFileBuilder.getInstance().buildPackageCompletedInfos(sfpPackage).build();
     }
+
+    public static writePackageDependencies(pck: string, dependencies: BuildPackageDependencies): void {
+        PrepareFileBuilder.getInstance().buildPackageDependencies(pck, dependencies).build();
+    }
+
+    public static writeProps(props: BuildProps): void {
+        PrepareFileBuilder.getInstance().buildProps(props).build();
+    }
+
+    public static writeStatus(status: 'success' | 'failed' | 'inprogress', message: string): void {
+        PrepareFileBuilder.getInstance().buildStatus(status, message).build();
+    }
+
+    public static writeStatistics(scheduled: number, success: number, failed: number, elapsedTime: number): void {
+        PrepareFileBuilder.getInstance().buildStatistics(scheduled,success, failed,elapsedTime).build();
+    }
+
+    public static writeReleaseConfig(pcks: string[]): void {
+        PrepareFileBuilder.getInstance().buildReleaseConfig(pcks).build();
+    }
 }
 
 class PrepareFileBuilder {
@@ -39,10 +59,13 @@ class PrepareFileBuilder {
     private constructor() {
         this.file = {
             processName: PROCESSNAME.PREPARE,
+            scheduled: 0,
             success: 0,
             failed: 0,
+            elapsedTime: 0,
             status: 'inprogress',
             message: '',
+            releaseConfig: [],
             awaitingDependencies: [],
             currentlyProcessed: [],
             successfullyProcessed: [],
@@ -70,7 +93,7 @@ class PrepareFileBuilder {
     buildPackageInitialitation(pck: string, reason: string, tag: string): PrepareFileBuilder {
         this.file.packagesToBuild[pck] = {
             status: 'awaiting',
-            message: '',
+            message: [],
             reasonToBuild: reason,
             lastKnownTag: tag,
             type: '',
@@ -102,7 +125,9 @@ class PrepareFileBuilder {
 
     buildPackageError(pck: string, message: string): PrepareFileBuilder {
         this.file.packagesToBuild[pck].status = 'failed';
-        this.file.packagesToBuild[pck].message = message;
+        if(message){
+        this.file.packagesToBuild[pck].message.push(message);
+        }
         return this;
     }
 
@@ -128,6 +153,30 @@ class PrepareFileBuilder {
 
     buildPackageDependencies(pck: string, dependencies: BuildPackageDependencies): PrepareFileBuilder {
         this.file.packagesToBuild[pck].packageDependencies.push(dependencies);
+        return this;
+    }
+
+    buildProps(props: BuildProps): PrepareFileBuilder {
+        this.file.buildProps = {...props};
+        return this;
+    }
+
+    buildStatus(status: "inprogress" | "success" | "failed", message: string): PrepareFileBuilder {
+        this.file.status = status;
+        this.file.message = message;
+        return this;
+    }
+
+    buildStatistics(scheduled: number, success: number, failed: number, elapsedTime: number): PrepareFileBuilder {
+        this.file.scheduled = success + failed;
+        this.file.success = success;
+        this.file.failed = failed;
+        this.file.elapsedTime = elapsedTime;
+        return this;
+    }
+
+    buildReleaseConfig(pcks: string[]): PrepareFileBuilder {
+        this.file.releaseConfig = pcks;
         return this;
     }
 

@@ -4,6 +4,7 @@ import FileSystem from '../../utils/FileSystem';
 import { CreatePackage } from './CreatePackage';
 import SfpPackage, { PackageType, SfpPackageParams } from '../SfpPackage';
 import { PackageCreationParams } from '../SfpPackageBuilder';
+import { FileLoggerService } from '../../fileLogger/build';
 
 const SFDMU_CONFIG = 'export.json';
 const VLOCITY_CONFIG = 'VlocityComponents.yaml';
@@ -62,6 +63,7 @@ export default class CreateDataPackageImpl extends CreatePackage {
         }
 
         if (isSfdmu && isVlocity) {
+            FileLoggerService.writePackageError(this.sfpPackage.packageName,`Data package '${this.sfpPackage.packageName}' contains both SFDMU & Vlocity configuration`)
             throw new Error(
                 `Data package '${this.sfpPackage.packageName}' contains both SFDMU & Vlocity configuration`
             );
@@ -78,6 +80,7 @@ export default class CreateDataPackageImpl extends CreatePackage {
                 this.logger
             );
         } else {
+            FileLoggerService.writePackageError(this.sfpPackage.packageName,`Could not find export.json or VlocityComponents.yaml in ${packageDirectory}. sfpowerscripts only support vlocity or sfdmu based data packages`)
             throw new Error(
                 `Could not find export.json or VlocityComponents.yaml in ${packageDirectory}. sfpowerscripts only support vlocity or sfdmu based data packages`
             );

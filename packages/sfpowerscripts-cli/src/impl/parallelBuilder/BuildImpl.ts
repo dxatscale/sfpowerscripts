@@ -107,7 +107,7 @@ export default class BuildImpl {
 				aliasOrUsername: this.props.devhubAlias,
 			});
 
-
+		FileLoggerService.writeProps(this.props);
 		let git = await Git.initiateRepo(new ConsoleLogger());
 		this.repository_url = await git.getRemoteOriginUrl(this.props.repourl);
 		this.commit_id = await git.getHeadCommit();
@@ -439,9 +439,11 @@ export default class BuildImpl {
 		SFPLogger.log(
 			`${EOL}Packages currently processed:{${this.packagesInQueue.length}} + ${this.packagesInQueue}`,
 		);
+		FileLoggerService.writePackageCurrentlyProcessedList(this.packagesInQueue);
 		SFPLogger.log(
 			`Awaiting Dependencies to be resolved:{${this.packagesToBeBuilt.length}} + ${this.packagesToBeBuilt}`,
 		);
+		FileLoggerService.writePackageAwaitingList(this.packagesToBeBuilt);
 	}
 
 	private handlePackageError(reason: any, pkg: string): any {

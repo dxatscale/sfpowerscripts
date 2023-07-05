@@ -75,10 +75,14 @@ export interface PoolDefinition {
 
 export interface BuildFile {
     processName: string;
+    scheduled: number;
     success: number;
     failed: number;
+    elapsedTime: number;
     status: 'success' | 'failed' | 'inprogress';
     message: string;
+    buildProps?: BuildProps;
+    releaseConfig: string[];
     awaitingDependencies: string[];
     currentlyProcessed: string[];
     successfullyProcessed: string[];
@@ -92,7 +96,7 @@ export interface BuildPackage {
 
 export interface BuildPackageDetails {
     status: 'success' | 'failed' | 'inprogress' | 'awaiting';
-    message: string;
+    message: string[];
     reasonToBuild: string;
     lastKnownTag: string;
     type: string;
@@ -104,11 +108,26 @@ export interface BuildPackageDetails {
     apexInPackage: boolean;
     profilesInPackage: boolean;
     sourceVersion?: string;
-    packageDependencies?: BuildPackageDependencies[];
+    packageDependencies: BuildPackageDependencies[];
 }
 
 export interface BuildPackageDependencies {
     order: number;
     pck: string;
     version: string;
+}
+
+export interface BuildProps {
+	projectDirectory?: string;
+	devhubAlias?: string;
+	repourl?: string;
+	waitTime: number;
+	isQuickBuild: boolean;
+	isDiffCheckEnabled: boolean;
+	buildNumber: number;
+	executorcount: number;
+	isBuildAllAsSourcePackages: boolean;
+	branch?: string;
+	baseBranch?: string;
+	includeOnlyPackages?: string[];
 }
