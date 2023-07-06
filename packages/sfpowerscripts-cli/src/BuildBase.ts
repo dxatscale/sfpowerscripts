@@ -199,9 +199,11 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
 
             totalElapsedTime = Date.now() - executionStartTime;
 
-            if (artifactCreationErrors.length > 0 || buildExecResult.failedPackages.length > 0)
-            FileLoggerService.writeStatus('failed','Build Failed');
+            if (artifactCreationErrors.length > 0 || buildExecResult.failedPackages.length > 0){
+                FileLoggerService.writeStatus('failed','Build Failed');
                 throw new Error('Build Failed');
+            }
+              
 
             SFPStatsSender.logGauge('build.duration', Date.now() - executionStartTime, tags);
 

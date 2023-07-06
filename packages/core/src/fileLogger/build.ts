@@ -4,61 +4,65 @@ import SfpPackage from "../package/SfpPackage";
 
 export class FileLoggerService {
     public static writePackageInitialitation(pck: string, reason: string, tag: string): void {
-        PrepareFileBuilder.getInstance().buildPackageInitialitation(pck, reason, tag).build();
+        BuildFileBuilder.getInstance().buildPackageInitialitation(pck, reason, tag).build();
     }
 
     public static writePackageError(pck: string, message: string): void {
-        PrepareFileBuilder.getInstance().buildPackageError(pck, message).build();
+        BuildFileBuilder.getInstance().buildPackageError(pck, message).build();
     }
 
     public static writePackageErrorList(pck: string): void {
-        PrepareFileBuilder.getInstance().buildPackageErrorList(pck).build();
+        BuildFileBuilder.getInstance().buildPackageErrorList(pck).build();
     }
 
     public static writePackageSuccessList(pck: string): void {
-        PrepareFileBuilder.getInstance().buildPackageSuccessList(pck).build();
+        BuildFileBuilder.getInstance().buildPackageSuccessList(pck).build();
     }
 
     public static writePackageAwaitingList(pck: string[]): void {
-        PrepareFileBuilder.getInstance().buildPackageAwaitingList(pck).build();
+        BuildFileBuilder.getInstance().buildPackageAwaitingList(pck).build();
     }
 
     public static writePackageCurrentlyProcessedList(pck: string[]): void {
-        PrepareFileBuilder.getInstance().buildPackageCurrentlyProcessedList(pck).build();
+        BuildFileBuilder.getInstance().buildPackageCurrentlyProcessedList(pck).build();
     }
 
     public static writePackageCompletedInfos(sfpPackage: SfpPackage): void {
-        PrepareFileBuilder.getInstance().buildPackageCompletedInfos(sfpPackage).build();
+        BuildFileBuilder.getInstance().buildPackageCompletedInfos(sfpPackage).build();
     }
 
     public static writePackageDependencies(pck: string, dependencies: BuildPackageDependencies): void {
-        PrepareFileBuilder.getInstance().buildPackageDependencies(pck, dependencies).build();
+        BuildFileBuilder.getInstance().buildPackageDependencies(pck, dependencies).build();
     }
 
     public static writeProps(props: BuildProps): void {
-        PrepareFileBuilder.getInstance().buildProps(props).build();
+        BuildFileBuilder.getInstance().buildProps(props).build();
     }
 
     public static writeStatus(status: 'success' | 'failed' | 'inprogress', message: string): void {
-        PrepareFileBuilder.getInstance().buildStatus(status, message).build();
+        BuildFileBuilder.getInstance().buildStatus(status, message).build();
     }
 
     public static writeStatistics(scheduled: number, success: number, failed: number, elapsedTime: number): void {
-        PrepareFileBuilder.getInstance().buildStatistics(scheduled,success, failed,elapsedTime).build();
+        BuildFileBuilder.getInstance().buildStatistics(scheduled,success, failed,elapsedTime).build();
     }
 
     public static writeReleaseConfig(pcks: string[]): void {
-        PrepareFileBuilder.getInstance().buildReleaseConfig(pcks).build();
+        BuildFileBuilder.getInstance().buildReleaseConfig(pcks).build();
     }
+
+   public static writePackageStatus(pck: string, status: 'success' | 'inprogress',elapsedTime?: number): void {
+       BuildFileBuilder.getInstance().buildPackageStatus(pck, status, elapsedTime).build();
+   }
 }
 
-class PrepareFileBuilder {
+class BuildFileBuilder {
     private file: BuildFile;
-    private static instance: PrepareFileBuilder;
+    private static instance: BuildFileBuilder;
 
     private constructor() {
         this.file = {
-            processName: PROCESSNAME.PREPARE,
+            processName: PROCESSNAME.BUILD,
             scheduled: 0,
             success: 0,
             failed: 0,
@@ -74,26 +78,27 @@ class PrepareFileBuilder {
         };
     }
 
-    public static getInstance(): PrepareFileBuilder {
-        if (!PrepareFileBuilder.instance) {
-            PrepareFileBuilder.instance = new PrepareFileBuilder();
+    public static getInstance(): BuildFileBuilder {
+        if (!BuildFileBuilder.instance) {
+            BuildFileBuilder.instance = new BuildFileBuilder();
             // Create .sfpowerscripts folder if not exist
             if (!fs.existsSync(PATH.DEFAULT)) {
                 fs.mkdirSync(PATH.DEFAULT);
             }
             if (!fs.existsSync(PATH.BUILD)) {
                 // File doesn't exist, create it
-                fs.writeFileSync(PATH.BUILD, JSON.stringify(PrepareFileBuilder.instance.file), 'utf-8');
+                fs.writeFileSync(PATH.BUILD, JSON.stringify(BuildFileBuilder.instance.file), 'utf-8');
             }
         }
 
-        return PrepareFileBuilder.instance;
+        return BuildFileBuilder.instance;
     }
 
-    buildPackageInitialitation(pck: string, reason: string, tag: string): PrepareFileBuilder {
+    buildPackageInitialitation(pck: string, reason: string, tag: string): BuildFileBuilder {
         this.file.packagesToBuild[pck] = {
             status: 'awaiting',
             message: [],
+            elapsedTime: 0,
             reasonToBuild: reason,
             lastKnownTag: tag,
             type: '',
@@ -110,7 +115,7 @@ class PrepareFileBuilder {
         return this;
     }
 
-    buildPackageCompletedInfos(sfpPackage: SfpPackage): PrepareFileBuilder {
+    buildPackageCompletedInfos(sfpPackage: SfpPackage): BuildFileBuilder {
         this.file.packagesToBuild[sfpPackage.package_name].type = sfpPackage.package_type;
         this.file.packagesToBuild[sfpPackage.package_name].versionNumber = sfpPackage.package_version_number;
         this.file.packagesToBuild[sfpPackage.package_name].versionId = sfpPackage.package_version_id;
@@ -123,7 +128,7 @@ class PrepareFileBuilder {
         return this;
     }
 
-    buildPackageError(pck: string, message: string): PrepareFileBuilder {
+    buildPackageError(pck: string, message: string): BuildFileBuilder {
         this.file.packagesToBuild[pck].status = 'failed';
         if(message){
         this.file.packagesToBuild[pck].message.push(message);
@@ -131,52 +136,66 @@ class PrepareFileBuilder {
         return this;
     }
 
-    buildPackageErrorList(pcks: string): PrepareFileBuilder {
+    buildPackageErrorList(pcks: string): BuildFileBuilder {
         this.file.failedToProcess.push(pcks);
         return this;
     }
 
-    buildPackageSuccessList(pcks: string): PrepareFileBuilder {
+    buildPackageSuccessList(pcks: string): BuildFileBuilder {
         this.file.successfullyProcessed.push(pcks);
         return this;
     }
 
-    buildPackageAwaitingList(pcks: string[]): PrepareFileBuilder {
+    buildPackageAwaitingList(pcks: string[]): BuildFileBuilder {
         this.file.awaitingDependencies = pcks;
         return this;
     }
 
-    buildPackageCurrentlyProcessedList(pcks: string[]): PrepareFileBuilder {
+    buildPackageCurrentlyProcessedList(pcks: string[]): BuildFileBuilder {
         this.file.currentlyProcessed = pcks;
         return this;
     }
 
-    buildPackageDependencies(pck: string, dependencies: BuildPackageDependencies): PrepareFileBuilder {
+    buildPackageDependencies(pck: string, dependencies: BuildPackageDependencies): BuildFileBuilder {
         this.file.packagesToBuild[pck].packageDependencies.push(dependencies);
         return this;
     }
 
-    buildProps(props: BuildProps): PrepareFileBuilder {
+    buildProps(props: BuildProps): BuildFileBuilder {
         this.file.buildProps = {...props};
         return this;
     }
 
-    buildStatus(status: "inprogress" | "success" | "failed", message: string): PrepareFileBuilder {
+    buildStatus(status: "inprogress" | "success" | "failed", message: string): BuildFileBuilder {
         this.file.status = status;
         this.file.message = message;
         return this;
     }
 
-    buildStatistics(scheduled: number, success: number, failed: number, elapsedTime: number): PrepareFileBuilder {
+    buildStatistics(scheduled: number, success: number, failed: number, elapsedTime: number): BuildFileBuilder {
         this.file.scheduled = success + failed;
         this.file.success = success;
         this.file.failed = failed;
         this.file.elapsedTime = elapsedTime;
+        // set status to success when scheduled = success
+        if ( this.file.scheduled > 1 && this.file.scheduled === this.file.success) {
+          this.file.status = 'success';
+        } else {
+          this.file.status = 'failed';
+        }
         return this;
     }
 
-    buildReleaseConfig(pcks: string[]): PrepareFileBuilder {
+    buildReleaseConfig(pcks: string[]): BuildFileBuilder {
         this.file.releaseConfig = pcks;
+        return this;
+    }
+
+    buildPackageStatus(pck: string, status: 'success' | 'inprogress', elapsedTime?: number): BuildFileBuilder {
+        this.file.packagesToBuild[pck].status = status;
+        if(elapsedTime){
+            this.file.packagesToBuild[pck].elapsedTime = elapsedTime;
+        }
         return this;
     }
 
