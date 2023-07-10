@@ -1,11 +1,14 @@
-import { flags, FlagsConfig, SfdxResult } from '@salesforce/command';
+import { flags, FlagsConfig } from '@salesforce/command';
 
 import { Messages, SfdxError } from '@salesforce/core';
-import * as _ from 'lodash';
-import { Sfpowerkit } from '../../../../sfpowerkit';
-import ProfileRetriever from '../../../../impl/metadata/retriever/profileRetriever';
-import ProfileMerge from '../../../../impl/source/profiles/profileMerge';
-import SfpowerkitCommand from '../../../../sfpowerkitCommand';
+import { isNil } from 'lodash';
+import { Sfpowerkit } from '@dxatscale/sfprofiles/lib/utils/sfpowerkit';
+import SFPLogger, { LoggerLevel } from '@dxatscale/sfp-logger';
+import ProfileRetriever from '@dxatscale/sfprofiles/lib/impl/metadata/retriever/profileRetriever';
+import ProfileMerge from '@dxatscale/sfprofiles/lib/impl/source/profileMerge';
+import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
+import Table from 'cli-table';
+import { ZERO_BORDER_TABLE } from '../../ui/TableConstants';
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -14,13 +17,13 @@ Messages.importMessagesDirectory(__dirname);
 // or any library that is using the messages framework can also be loaded this way.
 const messages = Messages.loadMessages('sfpowerkit', 'profile_merge');
 
-export default class Merge extends SfpowerkitCommand {
+export default class Merge extends SfpowerscriptsCommand {
     public static description = messages.getMessage('commandDescription');
 
     public static examples = [
-        `$ sfdx sfpowerkit:source:profile:merge -u sandbox`,
-        `$ sfdx sfpowerkit:source:profile:merge -f force-app -n "My Profile" -u sandbox`,
-        `$ sfdx sfpowerkit:source:profile:merge -f "module1, module2, module3" -n "My Profile1, My profile2"  -u sandbox`,
+        `$ sfpowerscripts source:profile:merge -u sandbox`,
+        `$ sfpowerscripts source:profile:merge -f force-app -n "My Profile" -u sandbox`,
+        `$ sfpowerscripts source:profile:merge -f "module1, module2, module3" -n "My Profile1, My profile2"  -u sandbox`,
     ];
 
     //public static args = [{ name: 'file' }];
@@ -87,22 +90,6 @@ export default class Merge extends SfpowerkitCommand {
     // Set this to true if your command requires a project workspace; 'requiresProject' is false by default
     protected static requiresProject = true;
 
-    public static result: SfdxResult = {
-        tableColumnData: {
-            columns: [
-                { key: 'state', label: 'State' },
-                { key: 'fullName', label: 'Full Name' },
-                { key: 'type', label: 'Type' },
-                { key: 'path', label: 'Path' },
-            ],
-        },
-        display() {
-            if (Array.isArray(this.data) && this.data.length) {
-                this.ux.table(this.data, this.tableColumnData);
-            }
-        },
-    };
-
     public async execute(): Promise<any> {
         let argFolder = this.flags.folder;
         let argProfileList = this.flags.profilelist;
@@ -133,7 +120,7 @@ export default class Merge extends SfpowerkitCommand {
             }
         }
 
-        if (!_.isNil(argFolder) && argFolder.length !== 0) {
+        if (!isNil(argFolder) && argFolder.length !== 0) {
             Sfpowerkit.setDefaultFolder(argFolder[0]);
         }
         ``;
@@ -142,10 +129,14 @@ export default class Merge extends SfpowerkitCommand {
 
         let mergedProfiles = await profileUtils.merge(argFolder, argProfileList || [], metadatas, this.flags.delete);
 
+        const table = new Table({
+            head: ['State', 'Full Name', 'Type', 'Path'],
+            chars: ZERO_BORDER_TABLE,
+        });
         let result = [];
         if (mergedProfiles.added) {
             mergedProfiles.added.forEach((profile) => {
-                result.push({
+                table.push({
                     state: 'Add',
                     fullName: profile.name,
                     type: 'Profile',
@@ -155,7 +146,7 @@ export default class Merge extends SfpowerkitCommand {
         }
         if (mergedProfiles.updated) {
             mergedProfiles.updated.forEach((profile) => {
-                result.push({
+                table.push({
                     state: 'Merged',
                     fullName: profile.name,
                     type: 'Profile',
@@ -166,7 +157,7 @@ export default class Merge extends SfpowerkitCommand {
         if (this.flags.delete) {
             if (mergedProfiles.deleted) {
                 mergedProfiles.deleted.forEach((profile) => {
-                    result.push({
+                    table.push({
                         state: 'Deleted',
                         fullName: profile.name,
                         type: 'Profile',
@@ -177,7 +168,7 @@ export default class Merge extends SfpowerkitCommand {
         } else {
             if (mergedProfiles.deleted) {
                 mergedProfiles.deleted.forEach((profile) => {
-                    result.push({
+                    table.push({
                         state: 'Skipped',
                         fullName: profile.name,
                         type: 'Profile',
@@ -186,7 +177,8 @@ export default class Merge extends SfpowerkitCommand {
                 });
             }
         }
+        SFPLogger.log(table.toString(), LoggerLevel.INFO);
 
-        return result;
+        return mergedProfiles;
     }
 }

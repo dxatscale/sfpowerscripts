@@ -1,11 +1,11 @@
-import { flags, FlagsConfig, SfdxResult } from '@salesforce/command';
+import { flags, FlagsConfig } from '@salesforce/command';
 
 import { SfdxError, Messages } from '@salesforce/core';
 import * as fs from 'fs-extra';
-import * as _ from 'lodash';
-import { Sfpowerkit } from '../../../../sfpowerkit';
-import ProfileSync from '../../../../impl/source/profiles/profileSync';
-import SfpowerkitCommand from '../../../../sfpowerkitCommand';
+import { isNil } from 'lodash';
+import { Sfpowerkit } from '@dxatscale/sfprofiles/lib/utils/sfpowerkit';
+import ProfileSync from '@dxatscale/sfprofiles/lib/impl/source/profileSync';
+import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -14,13 +14,13 @@ Messages.importMessagesDirectory(__dirname);
 // or any library that is using the messages framework can also be loaded this way.
 const messages = Messages.loadMessages('sfpowerkit', 'profile_retrieve');
 
-export default class Retrieve extends SfpowerkitCommand {
+export default class Retrieve extends SfpowerscriptsCommand {
     public static description = messages.getMessage('commandDescription');
 
     public static examples = [
-        `$ sfdx sfpowerkit:source:profile:retrieve -u prod`,
-        `$ sfdx sfpowerkit:source:profile:retrieve  -f force-app -n "My Profile" -u prod`,
-        `$ sfdx sfpowerkit:source:profile:retrieve  -f "module1, module2, module3" -n "My Profile1, My profile2"  -u prod`,
+        `$ sfpowerscripts source:profile:retrieve -u prod`,
+        `$ sfpowerscripts source:profile:retrieve -f force-app -n "My Profile" -u prod`,
+        `$ sfpowerscripts source:profile:retrieve -f "module1, module2, module3" -n "My Profile1, My profile2"  -u prod`,
     ];
 
     //public static args = [{ name: 'file' }];
@@ -70,28 +70,12 @@ export default class Retrieve extends SfpowerkitCommand {
     // Set this to true if your command requires a project workspace; 'requiresProject' is false by default
     protected static requiresProject = true;
 
-    public static result: SfdxResult = {
-        tableColumnData: {
-            columns: [
-                { key: 'state', label: 'State' },
-                { key: 'fullName', label: 'Full Name' },
-                { key: 'type', label: 'Type' },
-                { key: 'path', label: 'Path' },
-            ],
-        },
-        display() {
-            if (Array.isArray(this.data) && this.data.length) {
-                this.ux.table(this.data, this.tableColumnData);
-            }
-        },
-    };
-
     public async execute(): Promise<any> {
         let argFolder: string = this.flags.folder;
         let argProfileList: string[] = this.flags.profilelist;
 
         let folders: string[] = [];
-        if (!_.isNil(argFolder) && argFolder.length !== 0) {
+        if (!isNil(argFolder) && argFolder.length !== 0) {
             for (let dir of argFolder) {
                 if (!fs.existsSync(dir)) {
                     throw new SfdxError(`The profile path ${dir} does not exist.`);
@@ -151,6 +135,6 @@ export default class Retrieve extends SfpowerkitCommand {
             }
         }
 
-        return result;
+        return syncPofles;
     }
 }
