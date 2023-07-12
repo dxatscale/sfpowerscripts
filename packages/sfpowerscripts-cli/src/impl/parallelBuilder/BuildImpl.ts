@@ -469,7 +469,7 @@ export default class BuildImpl {
 		this.failedPackages.push(pkg);
 		SFPStatsSender.logCount("build.failed.packages", { package: pkg });
 		this.packagesToBeBuilt = this.packagesToBeBuilt.filter((pkgBuild) => {
-			if (this.childs[pkgBuild].includes(pkg)) {
+			if (this.childs[pkg].includes(pkgBuild)) {
 					SFPStatsSender.logCount("build.failed.packages", {
 						package: pkgBuild,
 					});
