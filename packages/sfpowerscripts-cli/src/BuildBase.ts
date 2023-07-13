@@ -24,7 +24,7 @@ import SFPLogger, {
 import getFormattedTime from '@dxatscale/sfpowerscripts.core/lib/utils/GetFormattedTime';
 import SfpPackage from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
 import ReleaseConfig from './impl/release/ReleaseConfig';
-import { FileLoggerService } from '@dxatscale/sfpowerscripts.core/lib/fileLogger/build';
+import { BuildStreamService } from '@dxatscale/sfpowerscripts.core/lib/eventStream/build';
 
 
 // Initialize Messages with the current plugin directory
@@ -181,7 +181,7 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
                         `----------------------------------------------------------------------------------------------------`
                     )
                 );
-                FileLoggerService.writeStatus('failed','No packages to be found to be built')
+                BuildStreamService.buildStatus('failed','No packages to be found to be built')
                 throw new Error('No packages to be found to be built');
             }
 
@@ -200,7 +200,7 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
             totalElapsedTime = Date.now() - executionStartTime;
 
             if (artifactCreationErrors.length > 0 || buildExecResult.failedPackages.length > 0){
-                FileLoggerService.writeStatus('failed','Build Failed');
+                BuildStreamService.buildStatus('failed','Build Failed');
                 throw new Error('Build Failed');
             }
               
@@ -210,7 +210,7 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
             SFPStatsSender.logCount('build.succeeded', tags);
         } catch (error) {
             SFPStatsSender.logCount('build.failed', tags);
-            FileLoggerService.writeStatus('failed',error.toString())
+            BuildStreamService.buildStatus('failed',error.toString())
             SFPLogger.log(COLOR_ERROR(error));
             process.exitCode = 1;
         } finally {
@@ -272,7 +272,8 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
                 buildResult['summary'].elapsed_time = totalElapsedTime;
                 buildResult['summary'].succeeded = buildExecResult.generatedPackages.length;
                 buildResult['summary'].failed = buildExecResult.failedPackages.length;
-                FileLoggerService.writeStatistics(buildResult['summary'].scheduled_packages,buildResult['summary'].succeeded,buildResult['summary'].failed,buildResult['summary'].elapsed_time)
+                BuildStreamService.sendStatistics(buildResult['summary'].scheduled_packages,buildResult['summary'].succeeded,buildResult['summary'].failed,buildResult['summary'].elapsed_time)
+                BuildStreamService.closeServer();
                 fs.writeFileSync(`buildResult.json`, JSON.stringify(buildResult, null, 4));
             }
         }
@@ -282,7 +283,7 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
         if (releaseConfigFilePath) {
         let releaseConfig:ReleaseConfig = new ReleaseConfig(logger, releaseConfigFilePath);
          buildProps.includeOnlyPackages = releaseConfig.getPackagesAsPerReleaseConfig();
-         FileLoggerService.writeReleaseConfig(buildProps.includeOnlyPackages);
+         BuildStreamService.buildReleaseConfig(buildProps.includeOnlyPackages);
          printIncludeOnlyPackages(buildProps.includeOnlyPackages);
         }
         return buildProps;

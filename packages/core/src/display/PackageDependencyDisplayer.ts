@@ -1,7 +1,7 @@
 import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 import { ZERO_BORDER_TABLE } from './TableConstants';
 const Table = require('cli-table');
-import { FileLoggerService } from '../fileLogger/build';
+import { BuildStreamService } from '../eventStream/build';
 
 export default class PackageDependencyDisplayer {
     public static printPackageDependencies(
@@ -30,7 +30,7 @@ export default class PackageDependencyDisplayer {
                 const row = [order,dependency.package, versionNumber];
                 table.push(row);
                 if(pck){
-                FileLoggerService.writePackageDependencies(pck,{order:order, pck: dependency.package, version: versionNumber});
+                    BuildStreamService.buildPackageDependencies(pck,{order:order, pck: dependency.package, version: versionNumber});
                 }
                 order++;
             }

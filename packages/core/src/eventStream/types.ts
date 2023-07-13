@@ -98,7 +98,28 @@ export interface BuildPackage {
 }
 
 export interface BuildPackageDetails {
-    status: 'success' | 'failed' | 'inprogress' | 'awaiting';
+    event: 'packageCreationSuccess' | 'packageCreationFailed' |  'packageCreationInProgress' | 'packageCreationAwaiting';
+    context: BuildPackageContext;
+    metadata: BuildPackageMetadata;
+    orgId: string;
+}
+
+export interface BuildPackageDependencies {
+    order: number;
+    pck: string;
+    version: string;
+}
+
+export interface BuildPackageContext {
+   command: string;
+   gitref: string;
+   gitsha: string;
+   run_id: string;
+   timestamp: Date;
+}
+
+export interface BuildPackageMetadata {
+    package: string;
     message: string[];
     elapsedTime: number;
     reasonToBuild: string;
@@ -113,12 +134,6 @@ export interface BuildPackageDetails {
     profilesInPackage: boolean;
     sourceVersion?: string;
     packageDependencies: BuildPackageDependencies[];
-}
-
-export interface BuildPackageDependencies {
-    order: number;
-    pck: string;
-    version: string;
 }
 
 export interface BuildProps {

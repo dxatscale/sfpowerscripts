@@ -8,8 +8,8 @@ import { COLOR_KEY_MESSAGE } from '@dxatscale/sfp-logger';
 import getFormattedTime from '../utils/GetFormattedTime';
 import SFPStatsSender from '../stats/SFPStatsSender';
 const retry = require('async-retry');
-import { FileLoggerService } from '../fileLogger/prepare';
-import { OrgInfo } from '../fileLogger/types';
+import { FileLoggerService } from '../eventStream/prepare';
+import { OrgInfo } from '../eventStream/types';
 import { file } from 'tmp';
 
 export default class ScratchOrgOperator {

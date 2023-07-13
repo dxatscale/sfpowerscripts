@@ -3,7 +3,7 @@ import { EOL } from 'os';
 import Package2Detail from '../package/Package2Detail';
 import { ZERO_BORDER_TABLE } from './TableConstants';
 const Table = require('cli-table');
-import { FileLoggerService } from '../fileLogger/prepare';
+import { FileLoggerService } from '../eventStream/prepare';
 
 export default class ExternalDependencyDisplayer {
     public constructor(private externalPackage2s: Package2Detail[], private logger: Logger) {}

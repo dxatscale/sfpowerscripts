@@ -1,7 +1,7 @@
 import { Org } from '@salesforce/core';
 import Bottleneck from 'bottleneck';
 import { PoolConfig } from './PoolConfig';
-import { FileLoggerService } from '../../fileLogger/prepare';
+import { FileLoggerService } from '../../eventStream/prepare';
 import { PoolBaseImpl } from './PoolBaseImpl';
 import ScratchOrg from '../ScratchOrg';
 import ScratchOrgInfoFetcher from './services/fetchers/ScratchOrgInfoFetcher';

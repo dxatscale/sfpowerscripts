@@ -3,7 +3,7 @@ const retry = require('async-retry');
 import { Result, ok, err } from 'neverthrow';
 import { PoolConfig } from '../PoolConfig';
 import { PoolError, PoolErrorCodes } from '../PoolError';
-import { FileLoggerService } from '../../../fileLogger/prepare';
+import { FileLoggerService } from '../../../eventStream/prepare';
 
 export default class PreRequisiteCheck {
     private static isPrerequisiteChecked: boolean = false;
