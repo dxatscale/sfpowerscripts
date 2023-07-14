@@ -95,7 +95,7 @@ export default class ReconcileWorker {
                 })
                 .catch((error) => {
                     SFPLogger.log(
-                        'Error while processing file ' + profileComponent + '. ERROR Message: ' + error.message,
+                        `Error while processing file ${profileComponent.path}.\n${error}`,
                         LoggerLevel.ERROR
                     );
                 });
