@@ -9,34 +9,28 @@ import SFPOrg from '../../org/SFPOrg';
 import { Schema } from 'jsforce';
 import { DeploymentOptions } from '../../deployers/DeploySourceToOrgImpl';
 
-const QUERY_BODY =
-    'SELECT Id FROM FieldDefinition WHERE EntityDefinition.QualifiedApiName = ';
-
+const QUERY_BODY = 'SELECT Id FROM FieldDefinition WHERE EntityDefinition.QualifiedApiName = ';
 
 export default class PicklistEnabler implements DeploymentCustomizer {
-    
     public async isEnabled(sfpPackage: SfpPackage, conn: Connection, logger: Logger): Promise<boolean> {
-
         if (sfpPackage.packageType === PackageType.Unlocked) {
             if (
                 sfpPackage.isPickListsFound &&
-                (sfpPackage.packageDescriptor.enablePicklist == undefined || sfpPackage.packageDescriptor.enablePicklist == true)
+                (sfpPackage.packageDescriptor.enablePicklist == undefined ||
+                    sfpPackage.packageDescriptor.enablePicklist == true)
             ) {
                 return true;
             }
-        }
-        else
-            return false;
+        } else return false;
     }
 
-    async execute(sfpPackage: SfpPackage,
+    async execute(
+        sfpPackage: SfpPackage,
         componentSet: ComponentSet,
         sfpOrg: SFPOrg,
         logger: Logger,
         deploymentContext: DeploymentContext
     ): Promise<DeploySourceResult> {
-
-  
         try {
             let sourceComponents = componentSet.getSourceComponents().toArray();
             let components = [];
@@ -55,31 +49,37 @@ export default class PicklistEnabler implements DeploymentCustomizer {
                 for (const fieldComponent of components) {
                     let customField = fieldComponent.parseXmlSync().CustomField;
                     //check for empty picklists
-                    if (!customField || customField['type'] !== 'Picklist' || !customField.valueSet?.valueSetDefinition) {
+                    if (
+                        !customField ||
+                        customField['type'] !== 'Picklist' ||
+                        !customField.valueSet?.valueSetDefinition
+                    ) {
                         continue;
                     }
-                    //no updates for custom metadata picklists  
-                    if(customField['fieldManageability']) continue;
+                    //no updates for custom metadata picklists
+                    if (customField['fieldManageability']) continue;
 
                     let objName = fieldComponent.parent.fullName;
                     let picklistName = fieldComponent.name;
-                    let urlId = QUERY_BODY + '\'' + objName + '\'' + ' AND QualifiedApiName = ' + '\'' + picklistName + '\'';
+                    let urlId =
+                        QUERY_BODY + "'" + objName + "'" + ' AND QualifiedApiName = ' + "'" + picklistName + "'";
 
                     let picklistValueSource = await this.getPicklistSource(customField);
 
-
-                    SFPLogger.log(`Fetching picklist for custom field ${picklistName} on object ${objName}`, LoggerLevel.INFO, logger);
+                    SFPLogger.log(
+                        `Fetching picklist for custom field ${picklistName} on object ${objName}`,
+                        LoggerLevel.INFO,
+                        logger
+                    );
 
                     let picklistInOrg = await this.getPicklistInOrg(urlId, sfpOrg.getConnection());
 
-                  
-                    //check for empty picklists on org
-                    if(!picklistInOrg && picklistInOrg.Metadata?.valueSetc?.valueSetDefinition) continue;
+                    //check for empty picklists on org and fix first deployment issue
+                    if (!picklistInOrg && picklistInOrg?.Metadata?.valueSetc?.valueSetDefinition) continue;
 
                     let picklistValueInOrg = [];
 
                     for (const value of picklistInOrg.Metadata.valueSet.valueSetDefinition.value) {
-
                         if (value.isActive == 'false') {
                             continue;
                         }
@@ -91,12 +91,16 @@ export default class PicklistEnabler implements DeploymentCustomizer {
                         picklistValueInOrg.push(valueInfo);
                     }
 
-                    let isPickListIdentical =  this.arePicklistsIdentical(picklistValueInOrg, picklistValueSource);
+                    let isPickListIdentical = this.arePicklistsIdentical(picklistValueInOrg, picklistValueSource);
 
                     if (!isPickListIdentical) {
-                        this.deployPicklist(picklistInOrg, picklistValueSource, sfpOrg.getConnection(),logger);
+                        this.deployPicklist(picklistInOrg, picklistValueSource, sfpOrg.getConnection(), logger);
                     } else {
-                        SFPLogger.log(`Picklist for custom field ${objName}.${picklistName} is identical to the source.No deployment`, LoggerLevel.INFO, logger);
+                        SFPLogger.log(
+                            `Picklist for custom field ${objName}.${picklistName} is identical to the source.No deployment`,
+                            LoggerLevel.INFO,
+                            logger
+                        );
                     }
                 }
 
@@ -109,12 +113,9 @@ export default class PicklistEnabler implements DeploymentCustomizer {
         } catch (error) {
             SFPLogger.log(`Unable to process Picklist update due to ${error.message}`, LoggerLevel.WARN, logger);
         }
-       
     }
 
-
     private async getPicklistInOrg(urlId: string, conn: Connection): Promise<any> {
-
         let response = await QueryHelper.query<any>(urlId, conn, true);
 
         if (response && Array.isArray(response) && response.length > 0 && response[0].attributes) {
@@ -128,22 +129,25 @@ export default class PicklistEnabler implements DeploymentCustomizer {
         }
     }
 
-
-    gatherComponentsToBeDeployed(sfpPackage: SfpPackage, componentSet: ComponentSet, conn: Connection<Schema>, logger: Logger): Promise<{ location: string; componentSet: ComponentSet; }> {
+    gatherComponentsToBeDeployed(
+        sfpPackage: SfpPackage,
+        componentSet: ComponentSet,
+        conn: Connection<Schema>,
+        logger: Logger
+    ): Promise<{ location: string; componentSet: ComponentSet }> {
         throw new Error('Method not implemented.');
     }
     getDeploymentOptions(target_org: string, waitTime: string, apiVersion: string): Promise<DeploymentOptions> {
         throw new Error('Method not implemented.');
     }
 
-
     private async getPicklistSource(customField: any): Promise<any> {
         let picklistValueSet = [];
         let values = customField.valueSet?.valueSetDefinition?.value;
         //only push values when picklist > 1 or exactly 1 value
-        if(Array.isArray(values)) {
+        if (Array.isArray(values)) {
             picklistValueSet.push(...values);
-        } else if(typeof values === 'object' && 'fullName' in values) {
+        } else if (typeof values === 'object' && 'fullName' in values) {
             picklistValueSet.push(values);
         }
         return picklistValueSet;
@@ -166,21 +170,26 @@ export default class PicklistEnabler implements DeploymentCustomizer {
     private async deployPicklist(picklistInOrg: any, picklistValueSource: any, conn: Connection, logger: Logger) {
         //empty the the old value set
         picklistInOrg.Metadata.valueSet.valueSetDefinition.value = [];
-        picklistValueSource.map(value => {
+        picklistValueSource.map((value) => {
             picklistInOrg.Metadata.valueSet.valueSetDefinition.value.push(value);
         });
         picklistInOrg.Metadata.valueSet.valueSettings = [];
-
 
         let picklistToDeploy: any;
         picklistToDeploy = {
             attributes: picklistInOrg.attributes,
             Id: picklistInOrg.Id,
             Metadata: picklistInOrg.Metadata,
-            FullName: picklistInOrg.FullName
+            FullName: picklistInOrg.FullName,
         };
         SFPLogger.log(`Update picklist for custom field ${picklistToDeploy.FullName}`, LoggerLevel.INFO, logger);
-        await conn.tooling.sobject('CustomField').update(picklistToDeploy);
+        try {
+            await conn.tooling.sobject('CustomField').update(picklistToDeploy);
+        } catch (error) {
+            throw new Error(
+                `Unable to update picklist for custom field ${picklistToDeploy.FullName} due to ${error.message}`
+            );
+        }
     }
 
     public getName(): string {
