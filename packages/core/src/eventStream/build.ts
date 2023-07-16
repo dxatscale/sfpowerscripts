@@ -61,7 +61,6 @@ export class BuildStreamService {
     }
 
     public static closeServer(): void {
-        console.log('Closing server')
         EventService.getInstance().closeServer();
     }
 }

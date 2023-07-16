@@ -48,7 +48,6 @@ export class EventService<T> {
   }
 
   closeServer() {
-    console.log('Closing server instance')
     if (this.server) {
       this.eventSubject.complete(); // Complete the eventSubject when closing the server
       this.server.close(() => {

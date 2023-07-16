@@ -1,7 +1,7 @@
 import { Org } from '@salesforce/core';
 import Bottleneck from 'bottleneck';
 import { PoolConfig } from './PoolConfig';
-import { FileLoggerService } from '../../eventStream/prepare';
+import { PrepareStreamService } from '../../eventStream/prepare';
 import { PoolBaseImpl } from './PoolBaseImpl';
 import ScratchOrg from '../ScratchOrg';
 import ScratchOrgInfoFetcher from './services/fetchers/ScratchOrgInfoFetcher';
@@ -53,7 +53,7 @@ export default class PoolCreateImpl extends PoolBaseImpl {
         await this.hubOrg.refreshAuth();
 
         const scriptExecPromises: Array<Promise<ScriptExecutionResult>> = [];
-        FileLoggerService.writePoolDefinition(this.pool);
+        PrepareStreamService.buildPoolDefinition(this.pool);
 
 
         //fetch current status limits
@@ -77,7 +77,7 @@ export default class PoolCreateImpl extends PoolBaseImpl {
                 try {
                     this.totalToBeAllocated = await this.computeAllocation();
                 } catch (error) {
-                    FileLoggerService.writePoolError(0,0,`Unable to access fields on ScratchOrgInfo, Please check the profile being used`,PoolErrorCodes.PrerequisiteMissing)
+                    PrepareStreamService.buildPoolError(0,0,`Unable to access fields on ScratchOrgInfo, Please check the profile being used`,PoolErrorCodes.PrerequisiteMissing)
                     return err({
                         success: 0,
                         failed: 0,
@@ -88,7 +88,7 @@ export default class PoolCreateImpl extends PoolBaseImpl {
 
                 if (this.totalToBeAllocated === 0) {
                     if (this.limits.ActiveScratchOrgs.Remaining > 0) {
-                        FileLoggerService.writePoolError(0,0,`The tag provided ${this.pool.tag} is currently at the maximum capacity , No scratch orgs will be allocated`,PoolErrorCodes.Max_Capacity)
+                        PrepareStreamService.buildPoolError(0,0,`The tag provided ${this.pool.tag} is currently at the maximum capacity , No scratch orgs will be allocated`,PoolErrorCodes.Max_Capacity)
                         return err({
                             success: 0,
                             failed: 0,
@@ -96,7 +96,7 @@ export default class PoolCreateImpl extends PoolBaseImpl {
                             errorCode: PoolErrorCodes.Max_Capacity,
                         });
                     } else {
-                        FileLoggerService.writePoolError(0,0,`There is no capacity to create a pool at this time, Please try again later`,PoolErrorCodes.No_Capacity)
+                        PrepareStreamService.buildPoolError(0,0,`There is no capacity to create a pool at this time, Please try again later`,PoolErrorCodes.No_Capacity)
                         return err({
                             success: 0,
                             failed: 0,
@@ -120,7 +120,7 @@ export default class PoolCreateImpl extends PoolBaseImpl {
                 );
             }
         } catch (error) {
-            FileLoggerService.writePoolError(0,this.pool.failedToCreate,`All requested scratch orgs failed to provision, Please check your code or config \n Failed with ${error.message}`,PoolErrorCodes.UnableToProvisionAny)
+            PrepareStreamService.buildPoolError(0,this.pool.failedToCreate,`All requested scratch orgs failed to provision, Please check your code or config \n Failed with ${error.message}`,PoolErrorCodes.UnableToProvisionAny)
             return err({
                 success: 0,
                 failed: this.pool.failedToCreate,
@@ -144,7 +144,7 @@ export default class PoolCreateImpl extends PoolBaseImpl {
         );
 
         if (!this.pool.scratchOrgs || this.pool.scratchOrgs.length == 0) {
-            FileLoggerService.writePoolError(0,this.pool.failedToCreate,`All requested scratch orgs failed to provision, Please check your code or config`,PoolErrorCodes.UnableToProvisionAny)
+            PrepareStreamService.buildPoolError(0,this.pool.failedToCreate,`All requested scratch orgs failed to provision, Please check your code or config`,PoolErrorCodes.UnableToProvisionAny)
             return err({
                 success: 0,
                 failed: this.pool.failedToCreate,
@@ -186,7 +186,7 @@ export default class PoolCreateImpl extends PoolBaseImpl {
         
         SFPLogger.log('Remaining Active scratchOrgs in the org: ' + remainingScratchOrgs, LoggerLevel.INFO);
         SFPLogger.log('ScratchOrgs to be allocated: ' + pool.to_allocate, LoggerLevel.INFO);
-        FileLoggerService.writePoolInfo(pool.current_allocation,remainingScratchOrgs)
+        PrepareStreamService.buildPoolInfo(pool.current_allocation,remainingScratchOrgs)
         return pool.to_allocate;
     }
 

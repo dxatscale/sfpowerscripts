@@ -1,53 +1,59 @@
 import fs from 'fs';
 import { PATH, PROCESSNAME, PrepareFile, Poolinfo, OrgInfo, ExternalDependency, PoolDefinition } from './types';
+import { EventService } from './event';
+import { HookService } from './hooks';
 
-export class FileLoggerService {
-    public static writePoolDefinition(poolDefinition: PoolDefinition): void {
-        PrepareFileBuilder.getInstance().buildPoolDefinition(poolDefinition).build();
+export class PrepareStreamService {
+    public static buildPoolDefinition(poolDefinition: PoolDefinition): void {
+        PrepareLoggerBuilder.getInstance().buildPoolDefinition(poolDefinition);
     }
 
-    public static writePoolInfo(activeOrgs: number, maxOrgs: number): void {
+    public static buildPoolInfo(activeOrgs: number, maxOrgs: number): void {
         const poolInfo: Poolinfo = {
             activeOrgs: activeOrgs,
             maxOrgs: maxOrgs,
             prepareDuration: 0,
             orgInfos: [],
         };
-        PrepareFileBuilder.getInstance().buildPoolinfo(poolInfo).build();
+        PrepareLoggerBuilder.getInstance().buildPoolinfo(poolInfo);
     }
 
-    public static writePoolError(success: number, failed: number, message: string, errorCode: string): void {
-        PrepareFileBuilder.getInstance().buildPoolError(success, failed, message, errorCode).build();
+    public static buildPoolError(success: number, failed: number, message: string, errorCode: string): void {
+        const file = PrepareLoggerBuilder.getInstance().buildPoolError(success, failed, message, errorCode).build();
+        HookService.getInstance().logEvent(file);
     }
 
-    public static writeExternalDependency(
+    public static buildExternalDependency(
         order: number,
         pck: string,
         version: string,
         subscriberVersionId: string
     ): void {
-        PrepareFileBuilder.getInstance()
+        PrepareLoggerBuilder.getInstance()
             .buildExternalDependencies({
                 order: order,
                 pck: pck,
                 version: version,
                 subscriberVersionId: subscriberVersionId,
-            })
-            .build();
+            });
     }
 
-    public static writeReleaseConfig(releaseConfig: string[]): void {
-        PrepareFileBuilder.getInstance().buildReleaseConfig(releaseConfig).build();
+    public static buildReleaseConfig(releaseConfig: string[]): void {
+        PrepareLoggerBuilder.getInstance().buildReleaseConfig(releaseConfig)
     }
 
-    public static writeOrgInfo(index: number, orgInfo: OrgInfo): void {
-        PrepareFileBuilder.getInstance().buildOrgInfo(index, orgInfo).build();
+    public static buildOrgInfo(index: number, orgInfo: OrgInfo): void {
+        PrepareLoggerBuilder.getInstance().buildOrgInfo(index, orgInfo);
+    }
+
+    public static closeServer(): void {
+        EventService.getInstance().closeServer();
     }
 }
 
-class PrepareFileBuilder {
+class PrepareLoggerBuilder {
     private file: PrepareFile;
-    private static instance: PrepareFileBuilder;
+    private static instance: PrepareLoggerBuilder;
 
     private constructor() {
         this.file = {
@@ -63,23 +69,23 @@ class PrepareFileBuilder {
         };
     }
 
-    public static getInstance(): PrepareFileBuilder {
-        if (!PrepareFileBuilder.instance) {
-            PrepareFileBuilder.instance = new PrepareFileBuilder();
+    public static getInstance(): PrepareLoggerBuilder {
+        if (!PrepareLoggerBuilder.instance) {
+            PrepareLoggerBuilder.instance = new PrepareLoggerBuilder();
             // Create .sfpowerscripts folder if not exist
             if (!fs.existsSync(PATH.DEFAULT)) {
                 fs.mkdirSync(PATH.DEFAULT);
             }
             if (!fs.existsSync(PATH.PREPARE)) {
                 // File doesn't exist, create it
-                fs.writeFileSync(PATH.PREPARE, JSON.stringify(PrepareFileBuilder.instance.file), 'utf-8');
+                fs.writeFileSync(PATH.PREPARE, JSON.stringify(PrepareLoggerBuilder.instance.file), 'utf-8');
             }
         }
 
-        return PrepareFileBuilder.instance;
+        return PrepareLoggerBuilder.instance;
     }
 
-    buildPoolError(success: number, failed: number, message: string, errorCode: string): PrepareFileBuilder {
+    buildPoolError(success: number, failed: number, message: string, errorCode: string): PrepareLoggerBuilder {
         this.file.success = success;
         this.file.failed = failed;
         this.file.status = 'failed';
@@ -88,32 +94,33 @@ class PrepareFileBuilder {
         return this;
     }
 
-    buildPoolDefinition(poolDefinition: PoolDefinition): PrepareFileBuilder {
+    buildPoolDefinition(poolDefinition: PoolDefinition): PrepareLoggerBuilder {
         this.file.poolDefinition = poolDefinition;
         return this; 
     }
 
-    buildPoolinfo(poolInfo: Poolinfo): PrepareFileBuilder {
+    buildPoolinfo(poolInfo: Poolinfo): PrepareLoggerBuilder {
         this.file.poolInfo = poolInfo;
         return this;
     }
 
-    buildOrgInfo(index: number, orgInfo: OrgInfo): PrepareFileBuilder {
+    buildOrgInfo(index: number, orgInfo: OrgInfo): PrepareLoggerBuilder {
         this.file.poolInfo.orgInfos[index] = orgInfo;
+        EventService.getInstance().logEvent(this.file.poolInfo.orgInfos[index]);
         return this;
     }
 
-    buildExternalDependencies(externalDependency: ExternalDependency): PrepareFileBuilder {
+    buildExternalDependencies(externalDependency: ExternalDependency): PrepareLoggerBuilder {
         this.file.externalDependencies.push(externalDependency);
         return this;
     }
 
-    buildReleaseConfig(releaseConfig: string[]): PrepareFileBuilder {
+    buildReleaseConfig(releaseConfig: string[]): PrepareLoggerBuilder {
         this.file.releaseConfig = releaseConfig;
         return this;
     }
 
-    build(): void {
-        fs.writeFileSync(PATH.PREPARE, JSON.stringify(this.file, null, 2), 'utf-8');
+    build(): PrepareFile {
+        return this.file;
     }
 }

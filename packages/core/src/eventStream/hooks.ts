@@ -16,6 +16,9 @@ export class HookService<T> {
 
   private constructor() {
     this.axiosInstance = axios.create();
+    if(process.env.EVENT_STREAM_WEBHOOK_TOKEN){
+      this.axiosInstance.defaults.headers.common['Authorization'] = process.env.EVENT_STREAM_WEBHOOK_TOKEN;
+    }
     this.logSubject = new Subject<T>();
     this.logSubject.subscribe((event) => this.sendLogEvent(event));
   }
@@ -32,7 +35,7 @@ export class HookService<T> {
   }
 
   private sendLogEvent(event: T) {
-    const webhookUrl = process.env.EVENT_STREAM_WEBHOOK; // Replace with your actual webhook URL
+    const webhookUrl = process.env.EVENT_STREAM_WEBHOOK_URL; // Replace with your actual webhook URL
 
     this.axiosInstance.post(webhookUrl, event)
       .then(() => {
@@ -40,6 +43,7 @@ export class HookService<T> {
       })
       .catch((error) => {
         SFPLogger.log(COLOR_TRACE(`Failed to fire hook: ${error}`), LoggerLevel.TRACE); 
+        console.log('Hookie',error)
       });
   }
 }

@@ -22,7 +22,7 @@ import { PoolConfig } from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/P
 import { COLOR_WARNING } from '@dxatscale/sfp-logger';
 import * as PoolSchema from '@dxatscale/sfpowerscripts.core/resources/pooldefinition.schema.json'; //create namespace to import schema via npm link
 import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
-import { FileLoggerService } from '@dxatscale/sfpowerscripts.core/lib/fileLogger/prepare';
+import { PrepareStreamService } from '@dxatscale/sfpowerscripts.core/lib/eventStream/prepare';
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'prepare');
@@ -171,6 +171,7 @@ export default class Prepare extends SfpowerscriptsCommand {
                 }
             }
         } catch (err) {
+            PrepareStreamService.buildPoolError(0,0,err,'failed')
             throw new SfdxError('Unable to execute command .. ' + err);
         }
     }
@@ -250,7 +251,7 @@ export default class Prepare extends SfpowerscriptsCommand {
                     4
                 )}`;
             });
-            FileLoggerService.writePoolError(0,0,errorMsg,'schema-validator')
+            PrepareStreamService.buildPoolError(0,0,errorMsg,'schema-validator')
             throw new Error(errorMsg);
         }
     }

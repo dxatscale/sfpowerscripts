@@ -28,7 +28,7 @@ import { ZERO_BORDER_TABLE } from '../../ui/TableConstants';
 import GroupConsoleLogs from '../../ui/GroupConsoleLogs';
 import ReleaseConfig from '../release/ReleaseConfig';
 import { COLOR_KEY_VALUE } from '@dxatscale/sfp-logger';
-import { FileLoggerService } from '@dxatscale/sfpowerscripts.core/lib/fileLogger/prepare';
+import { PrepareStreamService } from '@dxatscale/sfpowerscripts.core/lib/eventStream/prepare';
 
 const Table = require('cli-table');
 
@@ -52,12 +52,19 @@ export default class PrepareImpl {
         SFPLogger.log(COLOR_KEY_MESSAGE('Validating Org Authentication Mechanism..'), LoggerLevel.INFO);
         let orgDisplayResult = await new OrgDetailsFetcher(this.hubOrg.getUsername()).getOrgDetails();
 
-        if (!(orgDisplayResult.sfdxAuthUrl && isValidSfdxAuthUrl(orgDisplayResult.sfdxAuthUrl)))
+        if (!(orgDisplayResult.sfdxAuthUrl && isValidSfdxAuthUrl(orgDisplayResult.sfdxAuthUrl))) {
+            PrepareStreamService.buildPoolError(
+                0,
+                0,
+                `Pools have to be created using a DevHub authenticated with auth:web or auth:store or auth:accesstoken:store`,
+                'failed'
+            );
             throw new Error(
                 `Pools have to be created using a DevHub authenticated with auth:web or auth:store or auth:accesstoken:store`
             );
 
-        return this.poolScratchOrgs();
+            return this.poolScratchOrgs();
+        }
     }
 
     private async poolScratchOrgs(): Promise<Result<PoolConfig, PoolError>> {
@@ -70,7 +77,7 @@ export default class PrepareImpl {
 
         if (this.pool.releaseConfigFile) {
             restrictedPackages = await getArtifactsByGeneratingReleaseDefinitionFromConfig(this.pool.releaseConfigFile);
-            FileLoggerService.writeReleaseConfig(restrictedPackages);
+            PrepareStreamService.buildReleaseConfig(restrictedPackages);
             projectConfig = ProjectConfig.cleanupPackagesFromProjectDirectory(null, restrictedPackages);
         }
 
@@ -145,7 +152,7 @@ export default class PrepareImpl {
                 'Installed/Requested Count',
                 'Last Installed Package',
             ],
-            chars: ZERO_BORDER_TABLE
+            chars: ZERO_BORDER_TABLE,
         });
 
         for (const scratchOrg of pool.scratchOrgs) {
@@ -208,8 +215,7 @@ export default class PrepareImpl {
 
         let artifactFetcher: FetchAnArtifact;
         if (this.pool.fetchArtifacts) {
-            
-            let fetchArtifactsLogGroup = new GroupConsoleLogs(`Fetching Artifacts`); 
+            let fetchArtifactsLogGroup = new GroupConsoleLogs(`Fetching Artifacts`);
             fetchArtifactsLogGroup.begin();
             artifactFetcher = new FetchArtifactSelector(
                 this.pool.fetchArtifacts.artifactFetchScript,
@@ -235,16 +241,20 @@ export default class PrepareImpl {
             }
             fetchArtifactsLogGroup.end();
         } else {
-            let buildArtifactsLogGroup = new GroupConsoleLogs(`Building Artifacts`); 
+            let buildArtifactsLogGroup = new GroupConsoleLogs(`Building Artifacts`);
             buildArtifactsLogGroup.begin();
             //Build All Artifacts
             SFPLogger.log(`${EOL}`);
             SFPLogger.log(
-                '-------------------------------------WARNING!!!!------------------------------------------------'
-            ,LoggerLevel.WARN);
-            SFPLogger.log('Building packages, as script to fetch artifacts was not provided',LoggerLevel.WARN);
-            SFPLogger.log('This is not ideal, as the artifacts are  built from the current head of the provided branch',LoggerLevel.WARN);
-            SFPLogger.log('Pools should be prepared with previously validated packages',LoggerLevel.WARN);
+                '-------------------------------------WARNING!!!!------------------------------------------------',
+                LoggerLevel.WARN
+            );
+            SFPLogger.log('Building packages, as script to fetch artifacts was not provided', LoggerLevel.WARN);
+            SFPLogger.log(
+                'This is not ideal, as the artifacts are  built from the current head of the provided branch',
+                LoggerLevel.WARN
+            );
+            SFPLogger.log('Pools should be prepared with previously validated packages', LoggerLevel.WARN);
             SFPLogger.log(
                 '------------------------------------------------------------------------------------------------',
                 LoggerLevel.WARN
@@ -258,13 +268,13 @@ export default class PrepareImpl {
                 isDiffCheckEnabled: false,
                 buildNumber: 1,
                 executorcount: 10,
-                isBuildAllAsSourcePackages: this.pool.disableSourcePackageOverride?false:true,
+                isBuildAllAsSourcePackages: this.pool.disableSourcePackageOverride ? false : true,
                 branch: null,
                 currentStage: Stage.PREPARE,
             };
 
             buildProps = includeOnlyPackagesAsPerReleaseConfig(this.pool.releaseConfigFile, buildProps);
-            
+
             let buildImpl = new BuildImpl(buildProps);
             let { generatedPackages, failedPackages } = await buildImpl.exec();
 
@@ -291,16 +301,18 @@ export default class PrepareImpl {
             else return true;
         }
 
-
-        function includeOnlyPackagesAsPerReleaseConfig(releaseConfigFilePath:string,buildProps: BuildProps,logger?:Logger): BuildProps {
+        function includeOnlyPackagesAsPerReleaseConfig(
+            releaseConfigFilePath: string,
+            buildProps: BuildProps,
+            logger?: Logger
+        ): BuildProps {
             if (releaseConfigFilePath) {
-            let releaseConfig:ReleaseConfig = new ReleaseConfig(logger, releaseConfigFilePath);
-             buildProps.includeOnlyPackages = releaseConfig.getPackagesAsPerReleaseConfig();
-             printIncludeOnlyPackages(buildProps.includeOnlyPackages);
+                let releaseConfig: ReleaseConfig = new ReleaseConfig(logger, releaseConfigFilePath);
+                buildProps.includeOnlyPackages = releaseConfig.getPackagesAsPerReleaseConfig();
+                printIncludeOnlyPackages(buildProps.includeOnlyPackages);
             }
             return buildProps;
-    
-    
+
             function printIncludeOnlyPackages(includeOnlyPackages: string[]) {
                 SFPLogger.log(
                     COLOR_KEY_MESSAGE(`Build will include the below packages as per inclusive filter`),
