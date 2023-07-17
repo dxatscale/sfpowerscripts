@@ -97,25 +97,36 @@ export default class PackageComponentDiff {
 
         if (filesToCopy && filesToCopy.length > 0) {
             for (let i = 0; i < filesToCopy.length; i++) {
-                let filePath = filesToCopy[i].path;
 
-                let sourceComponents = resolver.getComponentsFromPath(filePath);
-                for (const sourceComponent of sourceComponents) {
-                    if (sourceComponent.type.strategies?.adapter == AdapterId.MatchingContentFile) {
-                        await this.gitDiffUtils.copyFile(sourceComponent.xml, outputFolder, this.logger);
-                        await this.gitDiffUtils.copyFile(sourceComponent.content, outputFolder, this.logger);
-                    } else if (sourceComponent.type.strategies?.adapter == AdapterId.MixedContent) {
-                        await this.gitDiffUtils.copyFile(sourceComponent.xml, outputFolder, this.logger);
-                        await this.gitDiffUtils.copyFolder(sourceComponent.content, outputFolder, this.logger);
-                    } else if (sourceComponent.type.strategies?.adapter == AdapterId.Decomposed) {
-                        await this.gitDiffUtils.copyFile(sourceComponent.xml, outputFolder, this.logger);
-                    } else if (sourceComponent.type.strategies?.adapter == AdapterId.Bundle) {
-                        await this.gitDiffUtils.copyFolder(sourceComponent.content, outputFolder, this.logger);
-                    } else if (sourceComponent.type.strategies?.adapter == AdapterId.Default) {
-                        await this.gitDiffUtils.copyFile(sourceComponent.xml, outputFolder, this.logger);
-                    } else {
-                        await this.gitDiffUtils.copyFile(sourceComponent.xml, outputFolder, this.logger);
+                try {
+                    let filePath = filesToCopy[i].path;
+
+                    let sourceComponents = resolver.getComponentsFromPath(filePath);
+                    for (const sourceComponent of sourceComponents) {
+                        if (sourceComponent.type.strategies?.adapter == AdapterId.MatchingContentFile) {
+                            await this.gitDiffUtils.copyFile(sourceComponent.xml, outputFolder, this.logger);
+                            await this.gitDiffUtils.copyFile(sourceComponent.content, outputFolder, this.logger);
+                        } else if (sourceComponent.type.strategies?.adapter == AdapterId.MixedContent) {
+                            await this.gitDiffUtils.copyFile(sourceComponent.xml, outputFolder, this.logger);
+                            await this.gitDiffUtils.copyFolder(sourceComponent.content, outputFolder, this.logger);
+                        } else if (sourceComponent.type.strategies?.adapter == AdapterId.Decomposed) {
+                            await this.gitDiffUtils.copyFile(sourceComponent.xml, outputFolder, this.logger);
+                        } else if (sourceComponent.type.strategies?.adapter == AdapterId.Bundle) {
+                            await this.gitDiffUtils.copyFolder(sourceComponent.content, outputFolder, this.logger);
+                        } else if (sourceComponent.type.strategies?.adapter == AdapterId.Default) {
+                            await this.gitDiffUtils.copyFile(sourceComponent.xml, outputFolder, this.logger);
+                        } else {
+                            await this.gitDiffUtils.copyFile(sourceComponent.xml, outputFolder, this.logger);
+                        }
                     }
+                } catch (error) {
+                    //Metadata resolver is not respecting forceignores at this stage
+                    // So it fails on diff packages with post deploy, so lets ignore and move on
+                    SFPLogger.log(
+                        `Error while inferencing type of  ${filesToCopy[i].path} to ${outputFolder} : ${error.message}`,
+                        LoggerLevel.TRACE,
+                        this.logger
+                    );
                 }
             }
         }
