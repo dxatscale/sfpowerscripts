@@ -277,7 +277,7 @@ export default class ReleaseImpl {
                 externalPackage2s.push(dependendentPackage);
             }
             let sfpOrg = await SFPOrg.create({ aliasOrUsername: targetOrg });
-            let packageCollectionInstaller = new InstallUnlockedPackageCollection(sfpOrg, new ConsoleLogger());
+            let packageCollectionInstaller = new InstallUnlockedPackageCollection(sfpOrg, new ConsoleLogger(),this.props.isDryRun);
             await packageCollectionInstaller.install(externalPackage2s, true, true);
 
             groupSection.end();
