@@ -444,7 +444,7 @@ export default class BuildImpl {
 		SFPLogger.log(
 			COLOR_HEADER(`${EOL}-----------------------------------------`),
 		);
-		SFPLogger.log(COLOR_ERROR(`Package Creation Failed for ${pkg}`));
+		SFPLogger.log(COLOR_ERROR(`Package Creation Failed for ${pkg}, Here are the datails:`));
 		try {
 			// Append error to log file
 			fs.appendFileSync(`.sfpowerscripts/logs/${pkg}`, reason.message, "utf8");
