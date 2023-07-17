@@ -192,8 +192,8 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
 				);
 				return;
 			} else if (error instanceof ValidateError)
-				SFPLogger.log(`Error: ${error}`, LoggerLevel.DEBUG);
-			else SFPLogger.log(`Error: ${error}}`, LoggerLevel.ERROR);
+				SFPLogger.log(`Validation failed due to : ${error}`, LoggerLevel.DEBUG);
+			else SFPLogger.log(`Failure Reason: ${error}`, LoggerLevel.ERROR);
 			throw error;
 		} finally {
 			await this.handleScratchOrgStatus(
@@ -458,7 +458,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
 		const { generatedPackages, failedPackages } = await buildImpl.exec();
 
 		if (failedPackages.length > 0)
-			throw new Error(`Failed to create source packages ${failedPackages}`);
+			throw new Error(`Failed to create source1 packages ${failedPackages}`);
 
 		if (generatedPackages.length === 0) {
 			throw new Error(

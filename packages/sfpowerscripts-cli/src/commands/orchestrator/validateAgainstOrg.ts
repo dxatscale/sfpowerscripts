@@ -162,7 +162,7 @@ export default class ValidateAgainstOrg extends SfpowerscriptsCommand {
         } catch (error) {
             if (error instanceof ValidateError) {
                 validateResult = error.data;
-            } else SFPLogger.log(error.message);
+            } 
 
             SFPStatsSender.logCount('validate.failed', tags);
 
