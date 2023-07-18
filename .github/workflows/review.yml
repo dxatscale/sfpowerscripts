@@ -20,11 +20,10 @@ jobs:
             uses: actions/setup-node@v1
             with:
               node-version: '16.x'
-              registry-url: 'https://registry.npmjs.org'          
+              registry-url: 'https://registry.npmjs.org'
           - run: npm ci
-          - run: npx lerna bootstrap
           - run: npx lerna run build
           - run: npx lerna run test -- --colors
           - run: bash <(curl -s https://codecov.io/bash) -v
-    
-  
+
+
