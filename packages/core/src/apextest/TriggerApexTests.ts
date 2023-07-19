@@ -416,9 +416,7 @@ export default class TriggerApexTests {
                 const mergedTestResults: ApexTestResultData[] = modifiedTestResult.tests;
                 for (const testObject of secondTestResult.tests){
                     const index = mergedTestResults.findIndex((test) => test.fullName === testObject.fullName);
-                    console.log('INDEX: ' + index + ' ' + testObject.fullName)
                     if (index !== -1) {
-                        console.log('UPDATE TEST RESULT FOR ' + testObject.fullName)
                         mergedTestResults[index] = testObject;
                     }else{
                         mergedTestResults.push(testObject);
