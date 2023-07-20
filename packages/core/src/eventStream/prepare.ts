@@ -1,5 +1,5 @@
 import fs from 'fs';
-import { PATH, PROCESSNAME, PrepareFile, Poolinfo, OrgInfo, ExternalDependency, PoolDefinition } from './types';
+import { PATH, PROCESSNAME, PrepareFile, Poolinfo, OrgInfo, ExternalDependency, PoolDefinition, PrepareHookSchema } from './types';
 import { EventService } from './event';
 import { HookService } from './hooks';
 
@@ -19,8 +19,7 @@ export class PrepareStreamService {
     }
 
     public static buildPoolError(success: number, failed: number, message: string, errorCode: string): void {
-        const file = PrepareLoggerBuilder.getInstance().buildPoolError(success, failed, message, errorCode).build();
-        HookService.getInstance().logEvent(file);
+        PrepareLoggerBuilder.getInstance().buildPoolError(success, failed, message, errorCode).build();
     }
 
     public static buildExternalDependency(
@@ -47,16 +46,18 @@ export class PrepareStreamService {
     }
 
     public static closeServer(): void {
+        const file = PrepareLoggerBuilder.getInstance().build();
+        HookService.getInstance().logEvent(file);
         EventService.getInstance().closeServer();
     }
 }
 
 class PrepareLoggerBuilder {
-    private file: PrepareFile;
+    private file: PrepareHookSchema;
     private static instance: PrepareLoggerBuilder;
 
     private constructor() {
-        this.file = {
+        this.file = {payload: {
             processName: PROCESSNAME.PREPARE,
             success: 0,
             failed: 0,
@@ -66,6 +67,9 @@ class PrepareLoggerBuilder {
             poolDefinition: {tag: '', maxAllocation: 0},
             poolInfo: { activeOrgs: 0, maxOrgs: 0, prepareDuration: 0, orgInfos: [] },
             externalDependencies: []
+        },
+        eventId: process.env.EVENT_STREAM_WEBHOOK_EVENTID,
+        eventType: 'sfpowerscripts.prepare'
         };
     }
 
@@ -86,41 +90,50 @@ class PrepareLoggerBuilder {
     }
 
     buildPoolError(success: number, failed: number, message: string, errorCode: string): PrepareLoggerBuilder {
-        this.file.success = success;
-        this.file.failed = failed;
-        this.file.status = 'failed';
-        this.file.message = message;
-        this.file.errorCode = errorCode;
+        this.file.payload.success = success;
+        this.file.payload.failed = failed;
+        this.file.payload.status = 'failed';
+        this.file.payload.message = message;
+        this.file.payload.errorCode = errorCode;
         return this;
     }
 
     buildPoolDefinition(poolDefinition: PoolDefinition): PrepareLoggerBuilder {
-        this.file.poolDefinition = poolDefinition;
+        this.file.payload.poolDefinition = poolDefinition;
         return this; 
     }
 
     buildPoolinfo(poolInfo: Poolinfo): PrepareLoggerBuilder {
-        this.file.poolInfo = poolInfo;
+        this.file.payload.poolInfo = poolInfo;
         return this;
     }
 
     buildOrgInfo(index: number, orgInfo: OrgInfo): PrepareLoggerBuilder {
-        this.file.poolInfo.orgInfos[index] = orgInfo;
-        EventService.getInstance().logEvent(this.file.poolInfo.orgInfos[index]);
+        this.file.payload.poolInfo.orgInfos[index] = {
+            event: orgInfo.status === 'failed' ? 'sfpowerscripts.prepare.failed' : 'sfpowerscripts.prepare.success',
+            context: {
+                command: 'sfpowerscripts:orchestrator:prepare',
+                eventId: process.env.EVENT_STREAM_WEBHOOK_EVENTID,
+                timestamp: new Date(),
+            },
+            metadata: orgInfo,
+            orgId: ''
+        }
+        EventService.getInstance().logEvent(this.file.payload.poolInfo.orgInfos[index]);
         return this;
     }
 
     buildExternalDependencies(externalDependency: ExternalDependency): PrepareLoggerBuilder {
-        this.file.externalDependencies.push(externalDependency);
+        this.file.payload.externalDependencies.push(externalDependency);
         return this;
     }
 
     buildReleaseConfig(releaseConfig: string[]): PrepareLoggerBuilder {
-        this.file.releaseConfig = releaseConfig;
+        this.file.payload.releaseConfig = releaseConfig;
         return this;
     }
 
-    build(): PrepareFile {
+    build(): PrepareHookSchema {
         return this.file;
     }
 }

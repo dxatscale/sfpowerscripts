@@ -62,9 +62,8 @@ export default class PrepareImpl {
             throw new Error(
                 `Pools have to be created using a DevHub authenticated with auth:web or auth:store or auth:accesstoken:store`
             );
-
-            return this.poolScratchOrgs();
         }
+        return this.poolScratchOrgs();
     }
 
     private async poolScratchOrgs(): Promise<Result<PoolConfig, PoolError>> {

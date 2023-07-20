@@ -13,6 +13,12 @@ export enum PROCESSNAME {
     VALIDATE = "validate"
 }
 
+export interface PrepareHookSchema {
+    eventType: string;
+    eventId: string;
+    payload: PrepareFile;
+}
+
 // types for file logger prepare
 export interface PrepareFile {
     processName: string;
@@ -31,7 +37,14 @@ export interface Poolinfo {
     activeOrgs: number;
     maxOrgs: number;
     prepareDuration: number;
-    orgInfos: OrgInfo[];
+    orgInfos: OrgDetails[];
+}
+
+export interface OrgDetails {
+    event: 'sfpowerscripts.prepare.success' | 'sfpowerscripts.prepare.failed';
+    context: Context;
+    metadata: OrgInfo;
+    orgId: string;
 }
 
 export interface OrgInfo {
@@ -76,6 +89,12 @@ export interface PoolDefinition {
 
 // types for file logger build
 
+export interface BuildHookSchema {
+    eventType: string;
+    eventId: string;
+    payload: BuildFile;
+}
+
 export interface BuildFile {
     processName: string;
     scheduled: number;
@@ -98,8 +117,8 @@ export interface BuildPackage {
 }
 
 export interface BuildPackageDetails {
-    event: 'packageCreationSuccess' | 'packageCreationFailed' |  'packageCreationInProgress' | 'packageCreationAwaiting';
-    context: BuildPackageContext;
+    event: 'sfpowerscripts.build.success' | 'sfpowerscripts.build.failed' |  'sfpowerscripts.build.progress' | 'sfpowerscripts.build.awaiting';
+    context: Context;
     metadata: BuildPackageMetadata;
     orgId: string;
 }
@@ -110,11 +129,9 @@ export interface BuildPackageDependencies {
     version: string;
 }
 
-export interface BuildPackageContext {
+export interface Context {
    command: string;
-   gitref: string;
-   gitsha: string;
-   run_id: string;
+   eventId: string;
    timestamp: Date;
 }
 

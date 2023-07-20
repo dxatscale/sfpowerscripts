@@ -171,8 +171,15 @@ export default class Prepare extends SfpowerscriptsCommand {
                 }
             }
         } catch (err) {
-            PrepareStreamService.buildPoolError(0,0,err,'failed')
-            throw new SfdxError('Unable to execute command .. ' + err);
+            if(err?.message){
+                PrepareStreamService.buildPoolError(0,0,err.message,'failed');
+            } else {
+                PrepareStreamService.buildPoolError(0,0,JSON.stringify(err),'failed');
+            }
+            SFPLogger.log(COLOR_ERROR('Unable to execute command .. ' + err));
+            process.exitCode = 1;
+        } finally {
+            PrepareStreamService.closeServer();
         }
     }
 
