@@ -65,6 +65,7 @@ export default class OrgsUpdater {
                     if (indexOfReleaseToOrg >= 0) {
                         // Update release names in releases to org
                         org.releases[indexOfReleaseToOrg] = this.idOfReleaseWithMatchingHashId;
+                        org.releases[indexOfReleaseToOrg].date = new Date().toUTCString();
                     } else {
                         // Add releaseId in releases to org
                         org.releases.push(this.idOfReleaseWithMatchingHashId);
