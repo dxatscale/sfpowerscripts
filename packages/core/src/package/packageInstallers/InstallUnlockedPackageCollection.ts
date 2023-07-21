@@ -8,7 +8,7 @@ import { EOL } from 'os';
 
 export default class InstallUnlockedPackageCollection {
     private installedPackages: Package2Detail[];
-    constructor(private sfpOrg: SFPOrg, private logger: Logger) {}
+    constructor(private sfpOrg: SFPOrg, private logger: Logger,private dryRun:boolean=false) {}
 
     public async install(
         package2s: Package2Detail[],
@@ -38,7 +38,8 @@ export default class InstallUnlockedPackageCollection {
                 );
                 if (package2.key) installUnlockedPackageImpl.setInstallationKey(package2.key);
                 try {
-                    await installUnlockedPackageImpl.install();
+                    if(!this.dryRun)
+                        await installUnlockedPackageImpl.install();
                 } catch (error) {
                     let message: string = error.message;
                     if (

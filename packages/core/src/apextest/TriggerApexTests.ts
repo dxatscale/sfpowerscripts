@@ -23,6 +23,8 @@ import {
     ApexTestProgressValue,
     CancellationTokenSource,
     ApexTestResultOutcome,
+    ApexTestResultData,
+    CodeCoverageResult,
 } from '@salesforce/apex-node';
 import { CliJsonFormat, JsonReporter } from './JSONReporter';
 import { Duration } from '@salesforce/kit';
@@ -410,16 +412,31 @@ export default class TriggerApexTests {
 
                 this.writeTestOutput(secondTestResult);
 
-                //Replace original test result
-                modifiedTestResult.tests = modifiedTestResult.tests.map(
-                    (obj) => secondTestResult.tests.find((o) => o.methodName === obj.methodName) || obj
-                );
+                //Merge original test results with second run
+                const mergedTestResults: ApexTestResultData[] = modifiedTestResult.tests;
+                for (const testObject of secondTestResult.tests){
+                    const index = mergedTestResults.findIndex((test) => test.fullName === testObject.fullName);
+                    if (index !== -1) {
+                        mergedTestResults[index] = testObject;
+                    }else{
+                        mergedTestResults.push(testObject);
+                    }
+                }
+                modifiedTestResult.tests = mergedTestResults;
 
-                //Replace original code coverage
+                //Merge original code coverage with second run
                 if (isCoverageToBeFetched) {
-                    modifiedTestResult.codecoverage = modifiedTestResult.codecoverage.map(
-                        (obj) => secondTestResult.codecoverage.find((o) => o.name === obj.name) || obj
-                    );
+                    const mergedCodecoverage: CodeCoverageResult[] = modifiedTestResult.codecoverage;
+                    for (const codeCoverageObject of secondTestResult.codecoverage){
+                    
+                        const index = mergedCodecoverage.findIndex((codeCoverage) => codeCoverage.name === codeCoverageObject.name);
+                        if (index !== -1) {
+                            mergedCodecoverage[index] = codeCoverageObject;
+                        }else{
+                            mergedCodecoverage.push(codeCoverageObject);
+                        }
+                    }
+                    modifiedTestResult.codecoverage = mergedCodecoverage;
                 }
 
                 //Now redo the math
