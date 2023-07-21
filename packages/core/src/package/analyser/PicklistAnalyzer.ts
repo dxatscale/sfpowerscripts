@@ -6,7 +6,7 @@ import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 export default class PicklistAnalyzer implements PackageAnalyzer {
 
     public getName() {
-        return "Field History Tracking Analyzer"
+        return "Picklist Analyzer"
      }
 
      
