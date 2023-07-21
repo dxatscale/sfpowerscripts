@@ -336,7 +336,8 @@ export default class TriggerApexTests {
                     //Check for messages
                     if (
                         test.message.includes(`Your request exceeded the time limit for processing`) ||
-                        test.message.includes(`UNABLE_TO_LOCK_ROW`)
+                        test.message.includes(`UNABLE_TO_LOCK_ROW`) ||
+                        test.message.includes(`Internal Salesforce Error`)
                     ) {
                         if (!testToBeTriggered.includes(test.apexClass.fullName)) {
                             parallelFailedTestClasses.push(test.apexClass.fullName);
