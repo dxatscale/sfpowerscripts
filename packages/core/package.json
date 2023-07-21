@@ -48,7 +48,7 @@
         "lodash": "^4.17.21",
         "neverthrow": "4.2.1",
         "rimraf": "^3.0.2",
-        "semver": "7.3.7",
+        "semver": "7.5.2",
         "simple-git": "3.16.0",
         "tar": "^6.1.9",
         "tmp": "^0.2.1"
