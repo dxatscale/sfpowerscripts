@@ -121,6 +121,8 @@ export default class TriggerApexTests {
                 { retries: 2, minTimeout: 3000 }
             );
 
+            testResult = this.fixBadNamespaceClassFullNames(testResult);
+
             //Collect Failed Tests only if Parallel
             testResult = await this.triggerSecondRunInSerialForParallelFailedTests(
                 testResult,
@@ -403,11 +405,15 @@ export default class TriggerApexTests {
                     { retries: 2, minTimeout: 3000 }
                 );
 
+                secondRuntestRunResult = this.fixBadNamespaceClassFullNames(secondRuntestRunResult);
+
                 //Fetch Test Results
-                const secondTestResult = await testService.reportAsyncResults(
-                    secondRuntestRunResult.summary.testRunId,
-                    true,
-                    this.cancellationTokenSource.token
+                const secondTestResult = this.fixBadNamespaceClassFullNames(
+                    await testService.reportAsyncResults(
+                        secondRuntestRunResult.summary.testRunId,
+                        true,
+                        this.cancellationTokenSource.token
+                    )
                 );
 
                 this.writeTestOutput(secondTestResult);
@@ -443,6 +449,27 @@ export default class TriggerApexTests {
                 modifiedTestResult = this.combineTestResult(modifiedTestResult, secondRuntestRunResult);
             }
         }
+
+        return modifiedTestResult;
+    }
+
+    private fixBadNamespaceClassFullNames(testResult: any): any {
+        let modifiedTestResult = _.cloneDeep(testResult);
+
+        modifiedTestResult.tests = modifiedTestResult.tests.map((test) => {
+            return {
+                ...test,
+                ...{
+                    fullName: test.fullName.replace('__', '.'),
+                    apexClass: {
+                        ...test.apexClass,
+                        ...{
+                            fullName: test.apexClass.fullName.replace('__', '.'),
+                        },
+                    },
+                },
+            };
+        });
 
         return modifiedTestResult;
     }
