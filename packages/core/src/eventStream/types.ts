@@ -1,11 +1,5 @@
 import { Org } from "@salesforce/core";
 // default types for file logger
-export enum PATH {
-    DEFAULT = ".sfpowerscripts",
-    PREPARE = ".sfpowerscripts/prepare.json",
-    BUILD = ".sfpowerscripts/build.json",
-    VALIDATE = ".sfpowerscripts/validate.json"
-}
 
 export enum PROCESSNAME {
     PREPARE = "prepare",
@@ -13,13 +7,19 @@ export enum PROCESSNAME {
     VALIDATE = "validate"
 }
 
+
+export interface Context {
+    command: string;
+    eventId: string;
+    timestamp: Date;
+ }
+
+// types for file logger prepare
 export interface PrepareHookSchema {
     eventType: string;
     eventId: string;
     payload: PrepareFile;
 }
-
-// types for file logger prepare
 export interface PrepareFile {
     processName: string;
     success: number;
@@ -37,7 +37,7 @@ export interface Poolinfo {
     activeOrgs: number;
     maxOrgs: number;
     prepareDuration: number;
-    orgInfos: OrgDetails[];
+    events: OrgDetails[];
 }
 
 export interface OrgDetails {
@@ -109,7 +109,7 @@ export interface BuildFile {
     currentlyProcessed: string[];
     successfullyProcessed: string[];
     failedToProcess: string[];
-    packagesToBuild: BuildPackage;
+    events: BuildPackage;
 }
 
 export interface BuildPackage {
@@ -129,11 +129,6 @@ export interface BuildPackageDependencies {
     version: string;
 }
 
-export interface Context {
-   command: string;
-   eventId: string;
-   timestamp: Date;
-}
 
 export interface BuildPackageMetadata {
     package: string;
@@ -168,6 +163,12 @@ export interface BuildProps {
 	includeOnlyPackages?: string[];
 }
 
+export interface ValidateHookSchema {
+    eventType: string;
+    eventId: string;
+    payload: ValidateFile;
+}
+
 // types for file logger validate
 export interface ValidateFile {
     processName: string;
@@ -178,6 +179,64 @@ export interface ValidateFile {
     status: 'success' | 'failed' | 'inprogress';
     message: string;
     validateProps?: ValidateProps;
+    releaseConfig?: string[];
+    events: ValidatePackage;
+}
+
+export interface ValidatePackage {
+    [key: string]: ValidatePackageDetails
+}
+
+export interface ValidatePackageDetails {
+    event: 'sfpowerscripts.validate.success' | 'sfpowerscripts.validate.failed' |  'sfpowerscripts.validate.awaiting' | 'sfpowerscripts.validate.progress';
+    context: Context;
+    metadata: ValidatePackageMetadata;
+    orgId: string;
+}
+
+export interface ValidatePackageMetadata {
+    package: string;
+    message: string[];
+    elapsedTime: number;
+    reasonToBuild: string;
+    type: string;
+    targetVersion: string;
+    orgVersion: string;
+    versionId: string;
+    packageCoverage: number;
+    coverageCheckPassed: boolean;
+    metadataCount: number;
+    apexInPackage: boolean;
+    profilesInPackage: boolean;
+    sourceVersion?: string;
+    deployErrors: ValidateDeployError[];
+    testResults: ValidateTestResult[];
+    testCoverages: ValidateTestCoverage[];
+    testSummary: ValidateTestSummary;
+}
+
+export interface ValidateTestResult {
+    name: string;
+    outcome: string;
+    message: string;
+    runtime: number;
+}
+
+export interface ValidateTestCoverage {
+    class: string;
+    coverage: number;
+}
+
+export interface ValidateTestSummary {
+    [key: string]: string | number;
+}
+
+export interface ValidateDeployError {
+    package?: string;
+    metadataType: string;
+    apiName: string;
+    problemType: string;
+    problem: string;
 }
 
 export enum ValidateAgainst {

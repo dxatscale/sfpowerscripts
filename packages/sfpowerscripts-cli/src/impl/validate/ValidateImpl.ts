@@ -62,6 +62,7 @@ import { ApexTestValidator } from "./ApexTestValidator";
 import { DependencyAnalzer } from "./DependencyAnalyzer";
 import OrgInfoDisplayer from "../../ui/OrgInfoDisplayer";
 const Table = require("cli-table");
+import { ValidateStreamService } from "@dxatscale/sfpowerscripts.core/lib/eventStream/validate";
 
 export enum ValidateAgainst {
 	PROVIDED_ORG = "PROVIDED_ORG",
@@ -451,6 +452,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
 			this.props,
 		);
 		if (buildProps.includeOnlyPackages) {
+			ValidateStreamService.buildReleaseConfig(buildProps.includeOnlyPackages);
 			printIncludeOnlyPackages(buildProps.includeOnlyPackages);
 		}
 

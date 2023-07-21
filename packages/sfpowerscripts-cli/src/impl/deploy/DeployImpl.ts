@@ -24,6 +24,7 @@ import GroupConsoleLogs from '../../ui/GroupConsoleLogs';
 import { ZERO_BORDER_TABLE } from '../../ui/TableConstants';
 import convertBuildNumDotDelimToHyphen from '@dxatscale/sfpowerscripts.core/lib/utils/VersionNumberConverter';
 import ReleaseConfig from '../release/ReleaseConfig';
+import { ValidateStreamService } from '@dxatscale/sfpowerscripts.core/lib/eventStream/validate';
 
 
 const Table = require('cli-table');
@@ -148,6 +149,7 @@ export default class DeployImpl {
             }
 
             for (let i = 0; i < queue.length; i++) {
+                ValidateStreamService.buildStatusProgress(queue[i].packageName);
                 let packageInfo = packagesToPackageInfo[queue[i].packageName];
                 let sfpPackage: SfpPackage = packageInfo.sfpPackage;
 
@@ -181,7 +183,13 @@ export default class DeployImpl {
                     this.props.logger
                 );
                 if (preHookStatus?.isToFailDeployment) {
-                    failed = queue.slice(i).map((pkg) => packagesToPackageInfo[pkg.packageName]);
+                    ValidateStreamService.buildDeployErrorsPkg(sfpPackage.packageName);
+                    failed = queue.slice(i).map((pkg) => {
+                        ValidateStreamService.sendPackageError(pkg.packageName, preHookStatus.message
+                            ? preHookStatus.message
+                            : 'Hook Failed to execute, but didnt provide proper message');
+                        return packagesToPackageInfo[pkg.packageName]
+                    });
                     throw new Error(
                         preHookStatus.message
                             ? preHookStatus.message
@@ -216,7 +224,6 @@ export default class DeployImpl {
 
                             //Handle specific error condition which need a retry, overriding the set value
                             isToBeRetried = handleRetryOnSpecificConditions(isToBeRetried, installPackageResult, attemptCount,this.props.maxRetryCount);
-
                             if (isToBeRetried) {
                                 throw new Error(installPackageResult.message);
                             } else return installPackageResult;
@@ -258,7 +265,11 @@ export default class DeployImpl {
                 } else if (packageInstallationResult.result === PackageInstallationStatus.Skipped) {
                     continue;
                 } else if (packageInstallationResult.result === PackageInstallationStatus.Failed) {
-                    failed = queue.slice(i).map((pkg) => packagesToPackageInfo[pkg.packageName]);
+                    ValidateStreamService.buildDeployErrorsPkg(sfpPackage.packageName);
+                    failed = queue.slice(i).map((pkg) => {
+                        ValidateStreamService.sendPackageError(pkg.packageName, packageInstallationResult.message);
+                        return packagesToPackageInfo[pkg.packageName]
+                    });
                 }
 
                 let postHookStatus = await this._postDeployHook?.postDeployPackage(
@@ -271,7 +282,13 @@ export default class DeployImpl {
                 );
 
                 if (postHookStatus?.isToFailDeployment) {
-                    failed = queue.slice(i).map((pkg) => packagesToPackageInfo[pkg.packageName]);
+                    ValidateStreamService.buildDeployErrorsPkg(sfpPackage.packageName);
+                    failed = queue.slice(i).map((pkg) => {
+                        ValidateStreamService.sendPackageError(pkg.packageName, postHookStatus.message
+                            ? postHookStatus.message
+                            : 'Hook Failed to execute, but didnt provide proper message')
+                        return packagesToPackageInfo[pkg.packageName]
+                    });
                     throw new Error(
                         postHookStatus.message
                             ? postHookStatus.message
@@ -280,9 +297,15 @@ export default class DeployImpl {
                 }
 
                 if (packageInstallationResult.result === PackageInstallationStatus.Failed) {
-                    failed = queue.slice(i).map((pkg) => packagesToPackageInfo[pkg.packageName]);
+                    ValidateStreamService.buildDeployErrorsPkg(sfpPackage.packageName);
+                    failed = queue.slice(i).map((pkg) => {
+                        ValidateStreamService.sendPackageError(pkg.packageName, packageInstallationResult.message)
+                        return packagesToPackageInfo[pkg.packageName]
+                    });
                     throw new Error(packageInstallationResult.message);
                 }
+
+                ValidateStreamService.sendPackageSuccess(packageInfo.sfpPackage);
 
                 groupSection.end();
             }
@@ -490,7 +513,7 @@ export default class DeployImpl {
         });
 
         queue.forEach((pkg) => {
-            if (!packagesToPackageInfo[pkg.packageName].isPackageInstalled)
+            if (!packagesToPackageInfo[pkg.packageName].isPackageInstalled){
                 minTable.push([
                     COLOR_KEY_MESSAGE(pkg.packageName),
                     COLOR_KEY_MESSAGE(pkg.versionNumber),
@@ -498,6 +521,10 @@ export default class DeployImpl {
                         ? COLOR_KEY_MESSAGE(packagesToPackageInfo[pkg.packageName].versionInstalledInOrg)
                         : COLOR_KEY_MESSAGE('N/A'),
                 ]);
+                ValidateStreamService.buildPackageInitialitation(pkg.packageName,pkg.versionNumber,packagesToPackageInfo[pkg.packageName].versionInstalledInOrg
+                    ? COLOR_KEY_MESSAGE(packagesToPackageInfo[pkg.packageName].versionInstalledInOrg)
+                    : COLOR_KEY_MESSAGE('N/A'),pkg.package_type)
+            }
         });
         SFPLogger.log(minTable.toString(), LoggerLevel.INFO, this.props.logger);
         groupSection.end();
@@ -540,6 +567,7 @@ export default class DeployImpl {
 
         queue.forEach((pkg) => {
             table.push([pkg.packageName, pkg.versionNumber]);
+            ValidateStreamService.buildPackageInitialitation(pkg.packageName,pkg.versionNumber,'N/A',pkg.package_type);
         });
         SFPLogger.log(table.toString(), LoggerLevel.INFO, this.props.logger);
         groupSection.end();

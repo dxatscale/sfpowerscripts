@@ -7,6 +7,7 @@ import SFPLogger, { COLOR_HEADER, COLOR_KEY_MESSAGE } from '@dxatscale/sfp-logge
 import ValidateError from '../../errors/ValidateError';
 import ValidateResult from '../../impl/validate/ValidateResult';
 import * as fs from 'fs-extra';
+import { ValidateStreamService } from '@dxatscale/sfpowerscripts.core/lib/eventStream/validate';
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'validate');
@@ -18,9 +19,7 @@ export default class Validate extends SfpowerscriptsCommand {
 
     protected static requiresDevhubUsername = true;
 
-    public static examples = [
-        `$ sfpowerscripts orchestrator:validate -p "POOL_TAG_1,POOL_TAG_2" -v <devHubUsername>`,
-    ];
+    public static examples = [`$ sfpowerscripts orchestrator:validate -p "POOL_TAG_1,POOL_TAG_2" -v <devHubUsername>`];
 
     static aliases = ['sfpowerscripts:orchestrator:validateAgainstPool'];
 
@@ -148,7 +147,6 @@ export default class Validate extends SfpowerscriptsCommand {
         SFPLogger.log(
             COLOR_HEADER(`Dependency Validation: ${this.flags.enabledependencyvalidation ? 'true' : 'false'}`)
         );
-       
 
         SFPLogger.log(
             COLOR_HEADER(`-------------------------------------------------------------------------------------------`)
@@ -177,27 +175,34 @@ export default class Validate extends SfpowerscriptsCommand {
                 diffcheck: !this.flags.disablediffcheck,
                 disableArtifactCommit: this.flags.disableartifactupdate,
                 orgInfo: this.flags.orginfo,
-                disableSourcePackageOverride : this.flags.disablesourcepkgoverride,
+                disableSourcePackageOverride: this.flags.disablesourcepkgoverride,
                 disableParallelTestExecution: this.flags.disableparalleltesting,
                 installExternalDependencies: this.flags.installdeps,
             };
 
-            setReleaseConfigForReleaseBasedModes(this.flags.releaseconfig,validateProps);
+            ValidateStreamService.buildProps(validateProps);
+
+            setReleaseConfigForReleaseBasedModes(this.flags.releaseconfig, validateProps);
 
             let validateImpl: ValidateImpl = new ValidateImpl(validateProps);
 
             validateResult = await validateImpl.exec();
+            fs.writeFile('validateResult.json', JSON.stringify(validateResult, null, 2));
 
             SFPStatsSender.logCount('validate.succeeded', tags);
         } catch (error) {
             if (error instanceof ValidateError) {
                 validateResult = error.data;
-            } else SFPLogger.log(error.message);
+                fs.writeFile('validateResult.json', JSON.stringify(validateResult, null, 2));
+            } else {
+                SFPLogger.log(error.message);
+                ValidateStreamService.buildCommandError(error.message);
+                SFPStatsSender.logCount('validate.failed', tags);
 
-            SFPStatsSender.logCount('validate.failed', tags);
-
-            process.exitCode = 1;
+                process.exitCode = 1;
+            }
         } finally {
+            ValidateStreamService.closeServer();
             let totalElapsedTime: number = Date.now() - executionStartTime;
 
             SFPStatsSender.logGauge('validate.duration', totalElapsedTime, tags);
@@ -225,14 +230,14 @@ export default class Validate extends SfpowerscriptsCommand {
             }
         }
 
-        function setReleaseConfigForReleaseBasedModes(releaseconfigPath:string,validateProps: ValidateProps) {
-            if (validateProps.validationMode == ValidationMode.FASTFEEDBACK_LIMITED_BY_RELEASE_CONFIG ||
-                validateProps.validationMode == ValidationMode.THOROUGH_LIMITED_BY_RELEASE_CONFIG) {
+        function setReleaseConfigForReleaseBasedModes(releaseconfigPath: string, validateProps: ValidateProps) {
+            if (
+                validateProps.validationMode == ValidationMode.FASTFEEDBACK_LIMITED_BY_RELEASE_CONFIG ||
+                validateProps.validationMode == ValidationMode.THOROUGH_LIMITED_BY_RELEASE_CONFIG
+            ) {
                 if (releaseconfigPath && fs.existsSync(releaseconfigPath)) {
                     validateProps.releaseConfigPath = releaseconfigPath;
-                }
-
-                else {
+                } else {
                     if (!releaseconfigPath)
                         throw new Error(`Release config is required when using validation by release config`);
                     else if (!fs.existsSync(releaseconfigPath))

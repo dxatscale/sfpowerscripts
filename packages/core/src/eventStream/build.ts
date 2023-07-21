@@ -1,5 +1,5 @@
 import fs from 'fs';
-import { PATH, PROCESSNAME, BuildFile, BuildProps, BuildHookSchema, BuildPackageDependencies } from './types';
+import { PROCESSNAME, BuildProps, BuildHookSchema, BuildPackageDependencies } from './types';
 import SfpPackage from '../package/SfpPackage';
 import { EventService } from './event';
 import { HookService } from './hooks';
@@ -14,7 +14,7 @@ export class BuildStreamService {
 
     public static sendPackageError(sfpPackage: SfpPackage, message: string): void {
         const file = BuildLoggerBuilder.getInstance().buildPackageError(sfpPackage, message).build();
-        EventService.getInstance().logEvent(file.payload.packagesToBuild[sfpPackage.package_name]);
+        EventService.getInstance().logEvent(file.payload.events[sfpPackage.package_name]);
     }
 
     public static buildPackageErrorList(pck: string): void {
@@ -35,7 +35,7 @@ export class BuildStreamService {
 
     public static sendPackageCompletedInfos(sfpPackage: SfpPackage): void {
         const file = BuildLoggerBuilder.getInstance().buildPackageCompletedInfos(sfpPackage).build();
-        EventService.getInstance().logEvent(file.payload.packagesToBuild[sfpPackage.package_name]);
+        EventService.getInstance().logEvent(file.payload.events[sfpPackage.package_name]);
     }
 
     public static buildPackageDependencies(pck: string, dependencies: BuildPackageDependencies): void {
@@ -87,7 +87,7 @@ class BuildLoggerBuilder {
             currentlyProcessed: [],
             successfullyProcessed: [],
             failedToProcess: [],
-            packagesToBuild: {},
+            events: {},
             },
             eventType: 'sfpowerscripts.build',
             eventId: process.env.EVENT_STREAM_WEBHOOK_EVENTID,
@@ -97,21 +97,13 @@ class BuildLoggerBuilder {
     public static getInstance(): BuildLoggerBuilder {
         if (!BuildLoggerBuilder.instance) {
             BuildLoggerBuilder.instance = new BuildLoggerBuilder();
-            // Create .sfpowerscripts folder if not exist
-            if (!fs.existsSync(PATH.DEFAULT)) {
-                fs.mkdirSync(PATH.DEFAULT);
-            }
-            if (!fs.existsSync(PATH.BUILD)) {
-                // File doesn't exist, create it
-                fs.writeFileSync(PATH.BUILD, JSON.stringify(BuildLoggerBuilder.instance.file), 'utf-8');
-            }
         }
 
         return BuildLoggerBuilder.instance;
     }
 
     buildPackageInitialitation(pck: string, reason: string, tag: string): BuildLoggerBuilder {
-        this.file.payload.packagesToBuild[pck] = {
+        this.file.payload.events[pck] = {
             event: 'sfpowerscripts.build.awaiting',
             context: { command: 'sfpowerscript:orchestrator:build', eventId: process.env.EVENT_STREAM_WEBHOOK_EVENTID, timestamp: new Date() },
             metadata: {
@@ -137,27 +129,27 @@ class BuildLoggerBuilder {
     }
 
     buildPackageCompletedInfos(sfpPackage: SfpPackage): BuildLoggerBuilder {
-        this.file.payload.packagesToBuild[sfpPackage.package_name].event = 'sfpowerscripts.build.success';
-        this.file.payload.packagesToBuild[sfpPackage.package_name].metadata.type = sfpPackage.package_type;
-        this.file.payload.packagesToBuild[sfpPackage.package_name].metadata.versionNumber = sfpPackage.package_version_number;
-        this.file.payload.packagesToBuild[sfpPackage.package_name].metadata.versionId = sfpPackage.package_version_id;
-        this.file.payload.packagesToBuild[sfpPackage.package_name].metadata.testCoverage = sfpPackage.test_coverage;
-        this.file.payload.packagesToBuild[sfpPackage.package_name].metadata.coverageCheckPassed =
+        this.file.payload.events[sfpPackage.package_name].event = 'sfpowerscripts.build.success';
+        this.file.payload.events[sfpPackage.package_name].metadata.type = sfpPackage.package_type;
+        this.file.payload.events[sfpPackage.package_name].metadata.versionNumber = sfpPackage.package_version_number;
+        this.file.payload.events[sfpPackage.package_name].metadata.versionId = sfpPackage.package_version_id;
+        this.file.payload.events[sfpPackage.package_name].metadata.testCoverage = sfpPackage.test_coverage;
+        this.file.payload.events[sfpPackage.package_name].metadata.coverageCheckPassed =
             sfpPackage.has_passed_coverage_check;
-        this.file.payload.packagesToBuild[sfpPackage.package_name].metadata.metadataCount = sfpPackage.metadataCount;
-        this.file.payload.packagesToBuild[sfpPackage.package_name].metadata.apexInPackage = sfpPackage.isApexFound;
-        this.file.payload.packagesToBuild[sfpPackage.package_name].metadata.profilesInPackage = sfpPackage.isProfilesFound;
-        this.file.payload.packagesToBuild[sfpPackage.package_name].metadata.sourceVersion = sfpPackage.sourceVersion;
-        this.file.payload.packagesToBuild[sfpPackage.package_name].context.timestamp = new Date();
+        this.file.payload.events[sfpPackage.package_name].metadata.metadataCount = sfpPackage.metadataCount;
+        this.file.payload.events[sfpPackage.package_name].metadata.apexInPackage = sfpPackage.isApexFound;
+        this.file.payload.events[sfpPackage.package_name].metadata.profilesInPackage = sfpPackage.isProfilesFound;
+        this.file.payload.events[sfpPackage.package_name].metadata.sourceVersion = sfpPackage.sourceVersion;
+        this.file.payload.events[sfpPackage.package_name].context.timestamp = new Date();
         return this;
     }
 
     buildPackageError(sfpPackage: SfpPackage, message: string): BuildLoggerBuilder {
-        this.file.payload.packagesToBuild[sfpPackage.package_name].event = 'sfpowerscripts.build.failed';
-        this.file.payload.packagesToBuild[sfpPackage.package_name].metadata.type = sfpPackage.package_type;
-        this.file.payload.packagesToBuild[sfpPackage.package_name].context.timestamp = new Date();
+        this.file.payload.events[sfpPackage.package_name].event = 'sfpowerscripts.build.failed';
+        this.file.payload.events[sfpPackage.package_name].metadata.type = sfpPackage.package_type;
+        this.file.payload.events[sfpPackage.package_name].context.timestamp = new Date();
         if (message) {
-            this.file.payload.packagesToBuild[sfpPackage.package_name].metadata.message.push(message);
+            this.file.payload.events[sfpPackage.package_name].metadata.message.push(message);
         }
         return this;
     }
@@ -183,7 +175,7 @@ class BuildLoggerBuilder {
     }
 
     buildPackageDependencies(pck: string, dependencies: BuildPackageDependencies): BuildLoggerBuilder {
-        this.file.payload.packagesToBuild[pck].metadata.packageDependencies.push(dependencies);
+        this.file.payload.events[pck].metadata.packageDependencies.push(dependencies);
         return this;
     }
 
@@ -219,10 +211,10 @@ class BuildLoggerBuilder {
     }
 
     buildPackageStatus(pck: string, status: 'success' | 'inprogress', elapsedTime?: number): BuildLoggerBuilder {
-        this.file.payload.packagesToBuild[pck].event =
+        this.file.payload.events[pck].event =
             status === 'success' ? 'sfpowerscripts.build.success' : 'sfpowerscripts.build.progress';
         if (elapsedTime) {
-            this.file.payload.  packagesToBuild[pck].metadata.elapsedTime = elapsedTime;
+            this.file.payload.events[pck].metadata.elapsedTime = elapsedTime;
         }
         return this;
     }

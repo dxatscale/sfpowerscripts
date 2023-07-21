@@ -1,5 +1,5 @@
 import fs from 'fs';
-import { PATH, PROCESSNAME, PrepareFile, Poolinfo, OrgInfo, ExternalDependency, PoolDefinition, PrepareHookSchema } from './types';
+import { PROCESSNAME, PrepareFile, Poolinfo, OrgInfo, ExternalDependency, PoolDefinition, PrepareHookSchema } from './types';
 import { EventService } from './event';
 import { HookService } from './hooks';
 
@@ -13,7 +13,7 @@ export class PrepareStreamService {
             activeOrgs: activeOrgs,
             maxOrgs: maxOrgs,
             prepareDuration: 0,
-            orgInfos: [],
+            events: [],
         };
         PrepareLoggerBuilder.getInstance().buildPoolinfo(poolInfo);
     }
@@ -65,7 +65,7 @@ class PrepareLoggerBuilder {
             message: '',
             errorCode: '',
             poolDefinition: {tag: '', maxAllocation: 0},
-            poolInfo: { activeOrgs: 0, maxOrgs: 0, prepareDuration: 0, orgInfos: [] },
+            poolInfo: { activeOrgs: 0, maxOrgs: 0, prepareDuration: 0, events: [] },
             externalDependencies: []
         },
         eventId: process.env.EVENT_STREAM_WEBHOOK_EVENTID,
@@ -76,14 +76,6 @@ class PrepareLoggerBuilder {
     public static getInstance(): PrepareLoggerBuilder {
         if (!PrepareLoggerBuilder.instance) {
             PrepareLoggerBuilder.instance = new PrepareLoggerBuilder();
-            // Create .sfpowerscripts folder if not exist
-            if (!fs.existsSync(PATH.DEFAULT)) {
-                fs.mkdirSync(PATH.DEFAULT);
-            }
-            if (!fs.existsSync(PATH.PREPARE)) {
-                // File doesn't exist, create it
-                fs.writeFileSync(PATH.PREPARE, JSON.stringify(PrepareLoggerBuilder.instance.file), 'utf-8');
-            }
         }
 
         return PrepareLoggerBuilder.instance;
@@ -109,7 +101,7 @@ class PrepareLoggerBuilder {
     }
 
     buildOrgInfo(index: number, orgInfo: OrgInfo): PrepareLoggerBuilder {
-        this.file.payload.poolInfo.orgInfos[index] = {
+        this.file.payload.poolInfo.events[index] = {
             event: orgInfo.status === 'failed' ? 'sfpowerscripts.prepare.failed' : 'sfpowerscripts.prepare.success',
             context: {
                 command: 'sfpowerscripts:orchestrator:prepare',
@@ -119,7 +111,7 @@ class PrepareLoggerBuilder {
             metadata: orgInfo,
             orgId: ''
         }
-        EventService.getInstance().logEvent(this.file.payload.poolInfo.orgInfos[index]);
+        EventService.getInstance().logEvent(this.file.payload.poolInfo.events[index]);
         return this;
     }
 

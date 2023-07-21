@@ -1,6 +1,7 @@
 import { RunAllTestsInPackageOptions, RunApexTestSuitesOption, TestOptions } from './TestOptions';
 import SFPLogger, { COLOR_ERROR, COLOR_SUCCESS, LoggerLevel } from '@dxatscale/sfp-logger';
 import { ZERO_BORDER_TABLE } from '../display/TableConstants';
+import { ValidateStreamService } from '../eventStream/validate';
 
 const Table = require('cli-table');
 
@@ -29,7 +30,8 @@ export class TestReportDisplayer {
 
         Object.entries<string | number>(apexTestReport.summary).forEach((keyValuePair) => {
             keyValuePair[1] = keyValuePair[1] || '';
-            table.push(keyValuePair);
+            ValidateStreamService.buildTestSummary(keyValuePair[0],keyValuePair[1]);
+            table.push(keyValuePair);   
         });
 
         SFPLogger.log(table.toString(), LoggerLevel.INFO, this.fileLogger);
@@ -45,6 +47,7 @@ export class TestReportDisplayer {
         });
 
         this.apexTestReport.tests.forEach((test) => {
+            ValidateStreamService.buildTestResult(test.FullName, test.Outcome, test.Message, test.RunTime);
             if (test.Outcome === 'Pass') {
                 table.push([
                     COLOR_SUCCESS(test.FullName || ''),
@@ -107,9 +110,14 @@ export class TestReportDisplayer {
         individualClassCoverage.forEach((cls) => {
             if (cls.coveredPercent !== null && cls.coveredPercent < 75) {
                 table.push([COLOR_ERROR(cls.name || ''), COLOR_ERROR(cls.coveredPercent)]);
+                ValidateStreamService.buildTestCoverage(cls.name || '', cls.coveredPercent);
             } else if (cls.coveredPercent !== null && cls.coveredPercent >= 75) {
                 table.push([COLOR_SUCCESS(cls.name || ''), COLOR_SUCCESS(cls.coveredPercent)]);
-            } else table.push([cls.name || '', 'N/A']);
+                ValidateStreamService.buildTestCoverage(cls.name || '', cls.coveredPercent);
+            } else {
+                ValidateStreamService.buildTestCoverage(cls.name || '', 0);
+                table.push([cls.name || '', 'N/A'])
+            };
         });
 
         SFPLogger.log(table.toString(), LoggerLevel.INFO, this.fileLogger);
