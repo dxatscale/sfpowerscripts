@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>My page</title>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="initial-scale=1, width=device-width" />
+        <script src="https://unpkg.com/react@latest/umd/react.development.js" crossorigin="anonymous"></script>
+        <script src="https://unpkg.com/react-dom@latest/umd/react-dom.development.js"></script>
+        <script
+            src="https://unpkg.com/@mui/material@latest/umd/material-ui.development.js"
+            crossorigin="anonymous"
+        ></script>
+        <script src="https://unpkg.com/babel-standalone@latest/babel.min.js" crossorigin="anonymous"></script>
+        <!-- Fonts to support Material Design -->
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" />
+        <!-- Icons to support Material Design -->
+        <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
+    </head>
+    <body>
+        <div id="root"></div>
+        <script type="text/babel">
+            const {
+                colors,
+                Grid,
+                Item,
+                CssBaseline,
+                ThemeProvider,
+                Typography,
+                Container,
+                createTheme,
+                Box,
+                SvgIcon,
+                Link,
+                Table,
+                TableHead,
+                TableRow,
+                TableBody,
+                TableCell,
+                TableContainer,
+                Paper,
+                Stack,
+                Alert,
+                AlertTitle
+            } = MaterialUI;
+
+            const { useState, useEffect } = React;
+
+            const serverBaseURL = 'http://localhost:3000';
+
+            // Create a theme instance.
+            const theme = createTheme({
+                palette: {
+                    primary: {
+                        main: '#556cd6'
+                    },
+                    secondary: {
+                        main: '#19857b'
+                    },
+                    error: {
+                        main: colors.red.A400
+                    }
+                }
+            });
+
+            function ErrorAlerts({ data }) {
+                const [error, setError] = useState([]);
+                useEffect(() => {
+                    let dataArray = data.data && Array.isArray(data.data) ? data.data : [];
+                    let i = 0;
+                    setError(
+                        dataArray.filter((row) => {
+                            i++;
+                            if(row.event === 'sfpowerscripts.validate.failed' || row.event === 'sfpowerscripts.release.failed' || row.event === 'sfpowerscripts.build.failed'){
+                                return row;
+                            }
+                        }).map((value)=>{
+                           return {index: `${value.event}-${i}`, title: value.context.command, description: 'Please check the logs to see the details.', pckInfo: `Check package: ${value.metadata.package}`}
+                        })
+                    );
+                }, [data]);
+                return (
+                    <Stack sx={{ width: '100%' }} spacing={2}>
+                        {error.map((row) => (
+                            <Alert severity="error" key={row.index}>
+                                <AlertTitle>{row.title}</AlertTitle>
+                                {row.description}<strong>{row.pckInfo}</strong>
+                              </Alert>
+                        ))}  
+                    </Stack>
+                  );
+            }
+
+            function CustomizedTables({ data }) {
+                const [rows, setRows] = useState([]);
+                useEffect(() => {
+                    console.log('####tableData###', data);
+                    let dataArray = data.data && Array.isArray(data.data) ? data.data : [];
+                    let i = 0;
+                    setRows(
+                        dataArray.map((row) => {
+                            i++;
+                            return {
+                                index: `${row.event}-${i}`,
+                                event: row.event,
+                                eventId: row.context.eventId,
+                                pck: row.metadata.package,
+                                timestamp: new Date(row.context.timestamp).toLocaleString()
+                            };
+                        })
+                    );
+                }, [data]);
+                return (
+                    <TableContainer component={Paper}>
+                        <Table sx={{ minWidth: 700 }} aria-label="customized table">
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell
+                                        sx={{
+                                            backgroundColor: theme.palette.common.black,
+                                            color: theme.palette.common.white
+                                        }}
+                                    >
+                                        Event Name
+                                    </TableCell>
+                                    <TableCell
+                                        align="right"
+                                        sx={{
+                                            backgroundColor: theme.palette.common.black,
+                                            color: theme.palette.common.white
+                                        }}
+                                    >
+                                        Event Id
+                                    </TableCell>
+                                    <TableCell
+                                        align="right"
+                                        sx={{
+                                            backgroundColor: theme.palette.common.black,
+                                            color: theme.palette.common.white
+                                        }}
+                                    >
+                                        Package
+                                    </TableCell>
+                                    <TableCell
+                                        align="right"
+                                        sx={{
+                                            backgroundColor: theme.palette.common.black,
+                                            color: theme.palette.common.white
+                                        }}
+                                    >
+                                        Timestamp
+                                    </TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {rows.map((row) => (
+                                    <TableRow
+                                        key={row.index}
+                                        sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                                    >
+                                        <TableCell component="th" scope="row">
+                                            {row.event}
+                                        </TableCell>
+                                        <TableCell align="right">{row.eventId}</TableCell>
+                                        <TableCell align="right">{row.pck}</TableCell>
+                                        <TableCell align="right">{row.timestamp}</TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                );
+            }
+
+            function LightBulbIcon(props) {
+                return (
+                    <SvgIcon {...props}>
+                        <path d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7zm2.85 11.1l-.85.6V16h-4v-2.3l-.85-.6C7.8 12.16 7 10.63 7 9c0-2.76 2.24-5 5-5s5 2.24 5 5c0 1.63-.8 3.16-2.15 4.1z" />
+                    </SvgIcon>
+                );
+            }
+
+            function EventIcon(props) {
+                return (
+                    <SvgIcon color="primary" fontSize="large" {...props}>
+                        <path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z"></path>
+                    </SvgIcon>
+                );
+            }
+
+            function ProTip() {
+                return (
+                    <Typography sx={{ mt: 6, mb: 3 }} color="text.secondary">
+                        <LightBulbIcon sx={{ mr: 1, verticalAlign: 'top' }} />
+                        Pro tip: See more <Link href="https://mui.com/getting-started/templates/">events</Link> in the
+                        sfpowerscripts documentation.
+                    </Typography>
+                );
+            }
+
+            function Copyright() {
+                return (
+                    <Typography variant="body2" color="text.secondary" align="center">
+                        {'Copyright © '}
+                        <Link color="inherit" href="https://mui.com/">
+                            dx@scale
+                        </Link>{' '}
+                        {new Date().getFullYear()}
+                        {'.'}
+                    </Typography>
+                );
+            }
+
+            function App() {
+                const [data, setData] = useState([]);
+                const updateEventData = (eventData) => {
+                    setData((prevData) => [...prevData, JSON.parse(eventData)]);
+                };
+                useEffect(() => {
+                    const fetchData = async () => {
+                        const eventSource = new EventSource(`${serverBaseURL}/events`);
+                        eventSource.onmessage = (e) => {
+                            updateEventData(e.data);
+                            console.log('Event Received:', JSON.parse(e.data));
+                        };
+                        eventSource.onerror = (e) => {
+                            console.error('EventSource failed:', e);
+                            eventSource.close();
+                        };
+                    };
+                    fetchData();
+                    console.log('#####data##', data);
+                }, []);
+                return (
+                    <Grid container spacing={2}>
+                        <Grid item xs={12}>
+                            <Container maxWidth="sm">
+                                <Box sx={{ my: 4 }}>
+                                    <Typography variant="h4" component="h1" gutterBottom>
+                                        <EventIcon sx={{ mr: 1 }} />
+                                        sfpowerscripts Events Example
+                                    </Typography>
+                                    <ProTip />
+                                    <Copyright />
+                                </Box>
+                            </Container>
+                        </Grid>
+                        <Grid item xs={12}>
+                            <Container maxWidth="sm">
+                                <Box sx={{ my: 4 }}>
+                                    <ErrorAlerts data={{ data }} />
+                                </Box>
+                            </Container>
+                        </Grid>
+                        <Grid item xs={12}>
+                            <Container maxWidth="la">
+                                <Box sx={{ my: 4 }}>
+                                    <CustomizedTables data={{ data }} />
+                                </Box>
+                            </Container>
+                        </Grid>
+                    </Grid>
+                );
+            }
+
+            const root = ReactDOM.createRoot(document.getElementById('root'));
+            root.render(
+                <ThemeProvider theme={theme}>
+                    {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
+                    <CssBaseline />
+                    <App />
+                </ThemeProvider>
+            );
+        </script>
+    </body>
+</html>

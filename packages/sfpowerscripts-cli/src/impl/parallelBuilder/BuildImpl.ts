@@ -106,7 +106,7 @@ export default class BuildImpl {
 			this.sfpOrg = await SFPOrg.create({
 				aliasOrUsername: this.props.devhubAlias,
 			});
-
+        BuildStreamService.startServer();
 		BuildStreamService.buildProps(this.props);
 		let git = await Git.initiateRepo(new ConsoleLogger());
 		this.repository_url = await git.getRemoteOriginUrl(this.props.repourl);

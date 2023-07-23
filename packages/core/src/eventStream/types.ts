@@ -4,7 +4,8 @@ import { Org } from "@salesforce/core";
 export enum PROCESSNAME {
     PREPARE = "prepare",
     BUILD = "build",
-    VALIDATE = "validate"
+    VALIDATE = "validate",
+    RELEASE = "release",
 }
 
 
@@ -163,13 +164,14 @@ export interface BuildProps {
 	includeOnlyPackages?: string[];
 }
 
+// types for file logger validate
+
 export interface ValidateHookSchema {
     eventType: string;
     eventId: string;
     payload: ValidateFile;
 }
 
-// types for file logger validate
 export interface ValidateFile {
     processName: string;
     scheduled: number;
@@ -208,6 +210,11 @@ export interface ValidatePackageMetadata {
     metadataCount: number;
     apexInPackage: boolean;
     profilesInPackage: boolean;
+    permissionSetGroupInPackage: boolean;
+    isPayLoadContainTypesSupportedByProfiles: boolean;
+    isPickListsFound: boolean;
+    isDependencyValidated: boolean;
+    creationDetails: {[key: string]: number};
     sourceVersion?: string;
     deployErrors: ValidateDeployError[];
     testResults: ValidateTestResult[];
@@ -273,3 +280,127 @@ export interface ValidateProps {
 	disableSourcePackageOverride?: boolean;
 	disableParallelTestExecution?: boolean;
 }
+
+// types for file logger release
+
+export interface ReleaseHookSchema {
+    eventType: string;
+    eventId: string;
+    payload: ReleaseFile;
+}
+
+export interface ReleaseFile {
+    processName: string;
+    scheduled: number;
+    success: number;
+    failed: number;
+    elapsedTime: number;
+    status: 'success' | 'failed' | 'inprogress';
+    message: string;
+    releaseProps?: ReleaseProps;
+    releaseConfig?: string[];
+    events: ReleasePackage;
+}
+
+export interface ReleasePackage {
+    [key: string]: ReleasePackageDetails
+}
+
+export interface ReleasePackageDetails {
+    event: 'sfpowerscripts.release.success' | 'sfpowerscripts.release.failed' |  'sfpowerscripts.release.awaiting' | 'sfpowerscripts.release.progress';
+    context: Context;
+    metadata: ReleasePackageMetadata;
+    orgId: string;
+}
+
+export interface ReleasePackageMetadata {
+    package: string;
+    message: string[];
+    elapsedTime: number;
+    reasonToBuild: string;
+    type: string;
+    targetVersion: string;
+    orgVersion: string;
+    versionId: string;
+    packageCoverage: number;
+    coverageCheckPassed: boolean;
+    metadataCount: number;
+    apexInPackage: boolean;
+    profilesInPackage: boolean;
+    permissionSetGroupInPackage: boolean;
+    isPayLoadContainTypesSupportedByProfiles: boolean;
+    isPickListsFound: boolean;
+    isDependencyValidated: boolean;
+    creationDetails: {[key: string]: number};
+    sourceVersion?: string;
+    deployErrors: ValidateDeployError[];
+    testResults: ValidateTestResult[];
+    testCoverages: ValidateTestCoverage[];
+    testSummary: ValidateTestSummary;
+}
+
+export interface ReleaseTestResult {
+    name: string;
+    outcome: string;
+    message: string;
+    runtime: number;
+}
+
+export interface ReleaseTestCoverage {
+    class: string;
+    coverage: number;
+}
+
+export interface ReleaseTestSummary {
+    [key: string]: string | number;
+}
+
+export interface ReleaseDeployError {
+    package?: string;
+    metadataType: string;
+    apiName: string;
+    problemType: string;
+    problem: string;
+}
+
+
+export interface ReleaseProps {
+    releaseDefinitions: ReleaseDefinitionSchema[];
+    targetOrg: string;
+    fetchArtifactScript: string;
+    isNpm: boolean;
+    scope: string;
+    npmrcPath: string;
+    logsGroupSymbol: string[];
+    tags: any;
+    isDryRun: boolean;
+    waitTime: number;
+    keys: string;
+    isGenerateChangelog: boolean;
+    devhubUserName: string;
+    branch: string;
+    directory: string;
+}
+
+export default interface ReleaseDefinitionSchema {
+    release: string;
+    skipIfAlreadyInstalled: boolean;
+    skipArtifactUpdate:boolean;
+    baselineOrg?: string;
+    artifacts: {
+        [p: string]: string;
+    };
+    packageDependencies?: {
+        [p: string]: string;
+    };
+    promotePackagesBeforeDeploymentToOrg?: string;
+    changelog?: {
+        repoUrl?: string;
+        workItemFilter?:string;
+        workItemFilters?: string[];
+        workItemUrl?: string;
+        limit?: number;
+        showAllArtifacts?: boolean;
+    };
+}
+

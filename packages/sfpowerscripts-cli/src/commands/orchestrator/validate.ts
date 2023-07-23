@@ -117,6 +117,8 @@ export default class Validate extends SfpowerscriptsCommand {
     async execute(): Promise<void> {
         let executionStartTime = Date.now();
 
+        ValidateStreamService.startServer();
+
         await this.hubOrg.refreshAuth();
 
         let tags: { [p: string]: string };
@@ -194,6 +196,7 @@ export default class Validate extends SfpowerscriptsCommand {
             if (error instanceof ValidateError) {
                 validateResult = error.data;
                 fs.writeFile('validateResult.json', JSON.stringify(validateResult, null, 2));
+                ValidateStreamService.buildCommandError(`Validation Failed. Please check deployment errors.`);
             } else {
                 SFPLogger.log(error.message);
                 ValidateStreamService.buildCommandError(error.message);
@@ -202,7 +205,6 @@ export default class Validate extends SfpowerscriptsCommand {
                 process.exitCode = 1;
             }
         } finally {
-            ValidateStreamService.closeServer();
             let totalElapsedTime: number = Date.now() - executionStartTime;
 
             SFPStatsSender.logGauge('validate.duration', totalElapsedTime, tags);
@@ -228,6 +230,11 @@ export default class Validate extends SfpowerscriptsCommand {
                     tags
                 );
             }
+            const scheduled = validateResult && validateResult.deploymentResult?.scheduled || 0;
+            const succeeded = validateResult && validateResult.deploymentResult?.deployed?.length || 0;
+            const failed = validateResult && validateResult.deploymentResult?.failed?.length || 0;
+            ValidateStreamService.buildStatistik(totalElapsedTime, succeeded, failed, scheduled);
+            ValidateStreamService.closeServer();
         }
 
         function setReleaseConfigForReleaseBasedModes(releaseconfigPath: string, validateProps: ValidateProps) {

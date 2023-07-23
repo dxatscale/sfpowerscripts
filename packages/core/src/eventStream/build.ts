@@ -63,6 +63,10 @@ export class BuildStreamService {
         BuildLoggerBuilder.getInstance().buildPackageStatus(pck, status, elapsedTime);
     }
 
+    public static startServer(): void {
+        EventService.getInstance();
+    }
+
     public static closeServer(): void {
         EventService.getInstance().closeServer();
     }

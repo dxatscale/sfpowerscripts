@@ -1,41 +1,37 @@
-import { PROCESSNAME, ValidateHookSchema, ValidateProps, ValidateDeployError, ValidateTestResult, ValidateTestCoverage, ValidateTestSummary } from './types';
+import { PROCESSNAME, ReleaseHookSchema, ReleaseProps, ReleaseDeployError, ReleaseTestResult, ReleaseTestCoverage, ReleaseTestSummary } from './types';
 import { EventService } from './event';
 import { HookService } from './hooks';
 import SfpPackage from '../package/SfpPackage';
 
-export class ValidateStreamService {
+export class ReleaseStreamService {
     public static buildPackageInitialitation(
         pck: string,
         targetVersion: string,
         orgVersion: string,
         type: string
     ): void {
-        ValidateLoggerBuilder.getInstance().buildPackageInitialitation(pck, targetVersion, orgVersion, type);
+        ReleaseLoggerBuilder.getInstance().buildPackageInitialitation(pck, targetVersion, orgVersion, type);
     }
 
-    public static buildProps(props: ValidateProps): void {
-        ValidateLoggerBuilder.getInstance().buildProps(props);
+    public static buildProps(props: ReleaseProps): void {
+        ReleaseLoggerBuilder.getInstance().buildProps(props);
     }
 
     public static buildStatus(message: string): void {
-        ValidateLoggerBuilder.getInstance().buildCommandError(message);
-    }
-
-    public static buildReleaseConfig(pcks: string[]): void {
-        ValidateLoggerBuilder.getInstance().buildReleaseConfig(pcks);
+        ReleaseLoggerBuilder.getInstance().buildCommandError(message);
     }
 
     public static buildCommandError(message: string): void {
-        ValidateLoggerBuilder.getInstance().buildCommandError(message);
+        ReleaseLoggerBuilder.getInstance().buildCommandError(message);
     }
 
     public static sendPackageError(pck: string, message: string): void {
-        const file = ValidateLoggerBuilder.getInstance().buildPackageError(pck, message).build();
+        const file = ReleaseLoggerBuilder.getInstance().buildPackageError(pck, message).build();
         EventService.getInstance().logEvent(file.payload.events[pck]);
     }
 
     public static sendPackageSuccess(sfpPackage: SfpPackage): void {
-        const file = ValidateLoggerBuilder.getInstance().buildPackageCompleted(sfpPackage).build();
+        const file = ReleaseLoggerBuilder.getInstance().buildPackageCompleted(sfpPackage).build();
         EventService.getInstance().logEvent(file.payload.events[sfpPackage.packageName]);
     }
 
@@ -45,7 +41,7 @@ export class ValidateStreamService {
         problemType: string,
         problem: string
     ): void {
-        ValidateLoggerBuilder.getInstance().buildDeployErrorsMsg({
+        ReleaseLoggerBuilder.getInstance().buildDeployErrorsMsg({
             metadataType: metadataType,
             apiName: apiName,
             problemType: problemType,
@@ -54,43 +50,44 @@ export class ValidateStreamService {
     }
 
     public static buildDeployErrorsPkg(pck: string): void {
-        ValidateLoggerBuilder.getInstance().buildDeployErrorsPkg(pck);
+        ReleaseLoggerBuilder.getInstance().buildDeployErrorsPkg(pck);
     }
 
     public static buildStatusProgress(sfpPackage: SfpPackage): void {
-        ValidateLoggerBuilder.getInstance().buildStatusProgress(sfpPackage);
+        ReleaseLoggerBuilder.getInstance().buildStatusProgress(sfpPackage);
     }
 
     public static buildTestResult(name: string, outcome: string, message: string, runtime: number): void {
-        ValidateLoggerBuilder.getInstance().buildTestResult({name: name, outcome: outcome, message: message || 'N/A', runtime: runtime});
+        ReleaseLoggerBuilder.getInstance().buildTestResult({name: name, outcome: outcome, message: message || 'N/A', runtime: runtime});
     }
 
     public static buildTestCoverage(cls: string, coverage: number): void {
-        ValidateLoggerBuilder.getInstance().buildTestCoverage({class: cls, coverage: coverage});
+        ReleaseLoggerBuilder.getInstance().buildTestCoverage({class: cls, coverage: coverage});
     }
     
     public static buildTestSummary(key: string, message: string | number): void {
-        ValidateLoggerBuilder.getInstance().buildTestSummary(key, message);
+        ReleaseLoggerBuilder.getInstance().buildTestSummary(key, message);
     }
 
     public static buildStatistik(elapsedTime: number, failed: number, success: number, scheduled: number): void {
-        ValidateLoggerBuilder.getInstance().buildStatistik(elapsedTime,failed,success, scheduled);
+        ReleaseLoggerBuilder.getInstance().buildStatistik(elapsedTime,failed,success, scheduled);
     }
 
     public static startServer(): void {
         EventService.getInstance();
     }
 
+
     public static closeServer(): void {
-        const file = ValidateLoggerBuilder.getInstance().build();
+        const file = ReleaseLoggerBuilder.getInstance().build();
         HookService.getInstance().logEvent(file);
         EventService.getInstance().closeServer();
     }
 }
 
-class ValidateLoggerBuilder {
-    private file: ValidateHookSchema;
-    private static instance: ValidateLoggerBuilder;
+class ReleaseLoggerBuilder {
+    private file: ReleaseHookSchema;
+    private static instance: ReleaseLoggerBuilder;
 
     private constructor() {
         this.file = {
@@ -105,17 +102,17 @@ class ValidateLoggerBuilder {
                 releaseConfig: [],
                 events: {},
             },
-            eventType: 'sfpowerscripts.validate',
+            eventType: 'sfpowerscripts.release',
             eventId: process.env.EVENT_STREAM_WEBHOOK_EVENTID,
         };
     }
 
-    public static getInstance(): ValidateLoggerBuilder {
-        if (!ValidateLoggerBuilder.instance) {
-            ValidateLoggerBuilder.instance = new ValidateLoggerBuilder();
+    public static getInstance(): ReleaseLoggerBuilder {
+        if (!ReleaseLoggerBuilder.instance) {
+            ReleaseLoggerBuilder.instance = new ReleaseLoggerBuilder();
         }
 
-        return ValidateLoggerBuilder.instance;
+        return ReleaseLoggerBuilder.instance;
     }
 
     buildPackageInitialitation(
@@ -123,11 +120,11 @@ class ValidateLoggerBuilder {
         targetVersion: string,
         orgVersion: string,
         type: string
-    ): ValidateLoggerBuilder {
+    ): ReleaseLoggerBuilder {
         this.file.payload.events[pck] = {
-            event: 'sfpowerscripts.validate.awaiting',
+            event: 'sfpowerscripts.release.awaiting',
             context: {
-                command: 'sfpowerscript:orchestrator:validate',
+                command: 'sfpowerscript:orchestrator:release',
                 eventId: process.env.EVENT_STREAM_WEBHOOK_EVENTID,
                 timestamp: new Date(),
             },
@@ -161,14 +158,13 @@ class ValidateLoggerBuilder {
         return this;
     }
 
-    buildProps(props: ValidateProps): ValidateLoggerBuilder {
-        const { hubOrg, ...rest } = props;
-        this.file.payload.validateProps = { ...rest };
+    buildProps(props: ReleaseProps): ReleaseLoggerBuilder {
+        this.file.payload.releaseProps = props;
         return this;
     }
 
-    buildPackageError(pck: string, message: string): ValidateLoggerBuilder {
-        this.file.payload.events[pck].event = 'sfpowerscripts.validate.failed';
+    buildPackageError(pck: string, message: string): ReleaseLoggerBuilder {
+        this.file.payload.events[pck].event = 'sfpowerscripts.release.failed';
         this.file.payload.events[pck].context.timestamp = new Date();
         if (message) {
             this.file.payload.events[pck].metadata.message.push(message);
@@ -176,8 +172,8 @@ class ValidateLoggerBuilder {
         return this;
     }
 
-    buildPackageCompleted(sfpPackage: SfpPackage): ValidateLoggerBuilder {
-        this.file.payload.events[sfpPackage.packageName].event = 'sfpowerscripts.validate.success';
+    buildPackageCompleted(sfpPackage: SfpPackage): ReleaseLoggerBuilder {
+        this.file.payload.events[sfpPackage.packageName].event = 'sfpowerscripts.release.success';
         this.file.payload.events[sfpPackage.packageName].context.timestamp = new Date();
         this.file.payload.events[sfpPackage.packageName].metadata.apexInPackage = sfpPackage.isApexFound;
         this.file.payload.events[sfpPackage.packageName].metadata.profilesInPackage = sfpPackage.isProfilesFound;
@@ -194,18 +190,18 @@ class ValidateLoggerBuilder {
         return this;
     }
 
-    buildDeployErrorsMsg(deployError: ValidateDeployError): ValidateLoggerBuilder {
+    buildDeployErrorsMsg(deployError: ReleaseDeployError): ReleaseLoggerBuilder {
         Object.values(this.file.payload.events).forEach((value) => {
-            if (value.event === 'sfpowerscripts.validate.awaiting') {
+            if (value.event === 'sfpowerscripts.release.awaiting') {
                 value.metadata.deployErrors.push(deployError);
             }
         });
         return this;
     }
 
-    buildDeployErrorsPkg(pck: string): ValidateLoggerBuilder {
+    buildDeployErrorsPkg(pck: string): ReleaseLoggerBuilder {
         Object.values(this.file.payload.events).forEach((value) => {
-            if (value.event === 'sfpowerscripts.validate.awaiting' || value.event === 'sfpowerscripts.validate.progress') {
+            if (value.event === 'sfpowerscripts.release.awaiting' || value.event === 'sfpowerscripts.release.progress') {
                 for (const err of value.metadata.deployErrors) {
                     err.package = pck;
                 }
@@ -214,34 +210,34 @@ class ValidateLoggerBuilder {
         return this;
     }
 
-    buildTestResult(testResult: ValidateTestResult): ValidateLoggerBuilder {
+    buildTestResult(testResult: ReleaseTestResult): ReleaseLoggerBuilder {
         Object.values(this.file.payload.events).forEach((value) => {
-            if (value.event === 'sfpowerscripts.validate.progress') {
+            if (value.event === 'sfpowerscripts.release.progress') {
                 value.metadata.testResults.push(testResult);
             }
         });
         return this;
     }
 
-    buildTestCoverage(testCoverage: ValidateTestCoverage): ValidateLoggerBuilder {
+    buildTestCoverage(testCoverage: ReleaseTestCoverage): ReleaseLoggerBuilder {
         Object.values(this.file.payload.events).forEach((value) => {
-            if (value.event === 'sfpowerscripts.validate.progress') {
+            if (value.event === 'sfpowerscripts.release.progress') {
                 value.metadata.testCoverages.push(testCoverage);
             }
         });
         return this;
     }
 
-    buildTestSummary(key: string, message: string | number): ValidateLoggerBuilder {
+    buildTestSummary(key: string, message: string | number): ReleaseLoggerBuilder {
         Object.values(this.file.payload.events).forEach((value) => {
-            if (value.event === 'sfpowerscripts.validate.progress') {
+            if (value.event === 'sfpowerscripts.release.progress') {
                 value.metadata.testSummary[key] = message;
             }
         });
         return this;
     }
 
-    buildStatistik(elapsedTime: number, failed: number, success: number, scheduled: number): ValidateLoggerBuilder {
+    buildStatistik(elapsedTime: number, failed: number, success: number, scheduled: number): ReleaseLoggerBuilder {
         this.file.payload.elapsedTime = elapsedTime;
         this.file.payload.status = this.file.payload.status === 'inprogress' ? 'success' : 'failed';
         this.file.payload.failed = failed;
@@ -250,8 +246,8 @@ class ValidateLoggerBuilder {
         return this;
     }
 
-    buildStatusProgress(sfpPackage: SfpPackage): ValidateLoggerBuilder {
-        this.file.payload.events[sfpPackage.package_name].event = 'sfpowerscripts.validate.progress';
+    buildStatusProgress(sfpPackage: SfpPackage): ReleaseLoggerBuilder {
+        this.file.payload.events[sfpPackage.packageName].event = 'sfpowerscripts.release.progress';
         this.file.payload.events[sfpPackage.packageName].metadata.apexInPackage = sfpPackage.isApexFound;
         this.file.payload.events[sfpPackage.packageName].metadata.profilesInPackage = sfpPackage.isProfilesFound;
         this.file.payload.events[sfpPackage.packageName].metadata.metadataCount = sfpPackage.metadataCount;
@@ -267,18 +263,13 @@ class ValidateLoggerBuilder {
         return this;
     }
 
-    buildCommandError(message: string): ValidateLoggerBuilder {
+    buildCommandError(message: string): ReleaseLoggerBuilder {
         this.file.payload.status = 'failed';
         this.file.payload.message = message;
         return this;
     }
 
-    buildReleaseConfig(pcks: string[]): ValidateLoggerBuilder {
-        this.file.payload.releaseConfig = pcks;
-        return this;
-    }
-
-    build(): ValidateHookSchema {
+    build(): ReleaseHookSchema {
         return this.file;
     }
 }

@@ -6,7 +6,7 @@ import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectCon
 import semver = require('semver');
 import PromoteUnlockedPackageImpl from '@dxatscale/sfpowerscripts.core/lib/package/promote/PromoteUnlockedPackageImpl';
 import { DeploymentType } from '@dxatscale/sfpowerscripts.core/lib/deployers/DeploymentExecutor';
-import { COLOR_KEY_MESSAGE,COLOR_KEY_VALUE,COLOR_HEADER } from '@dxatscale/sfp-logger';
+import { COLOR_KEY_MESSAGE, COLOR_KEY_VALUE, COLOR_HEADER } from '@dxatscale/sfp-logger';
 import {
     PackageInstallationResult,
     PackageInstallationStatus,
@@ -25,7 +25,7 @@ import { ZERO_BORDER_TABLE } from '../../ui/TableConstants';
 import convertBuildNumDotDelimToHyphen from '@dxatscale/sfpowerscripts.core/lib/utils/VersionNumberConverter';
 import ReleaseConfig from '../release/ReleaseConfig';
 import { ValidateStreamService } from '@dxatscale/sfpowerscripts.core/lib/eventStream/validate';
-
+import { ReleaseStreamService } from '@dxatscale/sfpowerscripts.core/lib/eventStream/release';
 
 const Table = require('cli-table');
 const retry = require('async-retry');
@@ -54,8 +54,8 @@ export interface DeployProps {
     devhubUserName?: string;
     disableArtifactCommit?: boolean;
     selectiveComponentDeployment?: boolean;
-    maxRetryCount?:number;
-    releaseConfigPath?:string;
+    maxRetryCount?: number;
+    releaseConfigPath?: string;
 }
 
 export default class DeployImpl {
@@ -64,10 +64,8 @@ export default class DeployImpl {
     private targetOrg: SFPOrg;
 
     constructor(private props: DeployProps) {
-
         //Set defaults
-        if(!this.props.maxRetryCount)
-         this.props.maxRetryCount = 1;
+        if (!this.props.maxRetryCount) this.props.maxRetryCount = 1;
     }
 
     public set postDeployHook(hook: PostDeployHook) {
@@ -94,11 +92,13 @@ export default class DeployImpl {
             //Convert artifacts to SfpPackages
             let sfpPackages = await this.generateSfpPackageFromArtifacts(artifacts);
 
-
-
             //Filter artifacts based on release config
-            sfpPackages = this.filterSfPPackagesBasedOnReleaseConfig(sfpPackages,this.props.releaseConfigPath,this.props.logger);
- 
+            sfpPackages = this.filterSfPPackagesBasedOnReleaseConfig(
+                sfpPackages,
+                this.props.releaseConfigPath,
+                this.props.logger
+            );
+
             //Grab the latest projectConfig from Packages
             let sfpPackageInquirer: SfpPackageInquirer = new SfpPackageInquirer(sfpPackages, this.props.logger);
             let sfdxProjectConfig = sfpPackageInquirer.getLatestProjectConfig();
@@ -111,11 +111,7 @@ export default class DeployImpl {
 
             packagesToPackageInfo = await this.getPackagesToPackageInfo(sfpPackages);
 
-            SFPLogger.log(
-                'Packages' + JSON.stringify(packagesToPackageInfo),
-                LoggerLevel.TRACE,
-                this.props.logger
-            );
+            SFPLogger.log('Packages' + JSON.stringify(packagesToPackageInfo), LoggerLevel.TRACE, this.props.logger);
 
             queue = this.getPackagesToDeploy(sfdxProjectConfig, packagesToPackageInfo);
 
@@ -149,9 +145,10 @@ export default class DeployImpl {
             }
 
             for (let i = 0; i < queue.length; i++) {
-                ValidateStreamService.buildStatusProgress(queue[i].packageName);
                 let packageInfo = packagesToPackageInfo[queue[i].packageName];
                 let sfpPackage: SfpPackage = packageInfo.sfpPackage;
+                ValidateStreamService.buildStatusProgress(sfpPackage);
+                ReleaseStreamService.buildStatusProgress(sfpPackage);
 
                 let packageType: string = sfpPackage.packageType;
 
@@ -184,11 +181,21 @@ export default class DeployImpl {
                 );
                 if (preHookStatus?.isToFailDeployment) {
                     ValidateStreamService.buildDeployErrorsPkg(sfpPackage.packageName);
+                    ReleaseStreamService.buildDeployErrorsPkg(sfpPackage.packageName);
                     failed = queue.slice(i).map((pkg) => {
-                        ValidateStreamService.sendPackageError(pkg.packageName, preHookStatus.message
-                            ? preHookStatus.message
-                            : 'Hook Failed to execute, but didnt provide proper message');
-                        return packagesToPackageInfo[pkg.packageName]
+                        ValidateStreamService.sendPackageError(
+                            pkg.packageName,
+                            preHookStatus.message
+                                ? preHookStatus.message
+                                : 'Hook Failed to execute, but didnt provide proper message'
+                        );
+                        ReleaseStreamService.sendPackageError(
+                            pkg.packageName,
+                            preHookStatus.message
+                                ? preHookStatus.message
+                                : 'Hook Failed to execute, but didnt provide proper message'
+                        );
+                        return packagesToPackageInfo[pkg.packageName];
                     });
                     throw new Error(
                         preHookStatus.message
@@ -205,7 +212,7 @@ export default class DeployImpl {
                                 await this.promotePackagesBeforeInstallation(packageInfo.sourceDirectory, sfpPackage);
                             } catch (error) {
                                 //skip packages already promoted
-                                SFPLogger.log(`Package already promoted .. skipping`,LoggerLevel.INFO);
+                                SFPLogger.log(`Package already promoted .. skipping`, LoggerLevel.INFO);
                             }
 
                             this.displayRetryHeader(isToBeRetried, attemptCount);
@@ -223,7 +230,12 @@ export default class DeployImpl {
                             );
 
                             //Handle specific error condition which need a retry, overriding the set value
-                            isToBeRetried = handleRetryOnSpecificConditions(isToBeRetried, installPackageResult, attemptCount,this.props.maxRetryCount);
+                            isToBeRetried = handleRetryOnSpecificConditions(
+                                isToBeRetried,
+                                installPackageResult,
+                                attemptCount,
+                                this.props.maxRetryCount
+                            );
                             if (isToBeRetried) {
                                 throw new Error(installPackageResult.message);
                             } else return installPackageResult;
@@ -244,16 +256,13 @@ export default class DeployImpl {
                             isToBeRetried: boolean,
                             installPackageResult: PackageInstallationResult,
                             retryCount: number,
-                            maxRetryCount:number
+                            maxRetryCount: number
                         ): boolean {
                             //override current value when encountering such issue
                             if (installPackageResult.result === PackageInstallationStatus.Failed) {
-                                if (installPackageResult.message?.includes('ongoing background job'))
-                                    return true;
-                                else if (isToBeRetried && retryCount <= maxRetryCount )
-                                   return true;
-                                else 
-                                   return false;
+                                if (installPackageResult.message?.includes('ongoing background job')) return true;
+                                else if (isToBeRetried && retryCount <= maxRetryCount) return true;
+                                else return false;
                             } else return false;
                         }
                     },
@@ -266,9 +275,9 @@ export default class DeployImpl {
                     continue;
                 } else if (packageInstallationResult.result === PackageInstallationStatus.Failed) {
                     ValidateStreamService.buildDeployErrorsPkg(sfpPackage.packageName);
+                    ReleaseStreamService.buildDeployErrorsPkg(sfpPackage.packageName);
                     failed = queue.slice(i).map((pkg) => {
-                        ValidateStreamService.sendPackageError(pkg.packageName, packageInstallationResult.message);
-                        return packagesToPackageInfo[pkg.packageName]
+                        return packagesToPackageInfo[pkg.packageName];
                     });
                 }
 
@@ -283,11 +292,21 @@ export default class DeployImpl {
 
                 if (postHookStatus?.isToFailDeployment) {
                     ValidateStreamService.buildDeployErrorsPkg(sfpPackage.packageName);
+                    ReleaseStreamService.buildDeployErrorsPkg(sfpPackage.packageName);
                     failed = queue.slice(i).map((pkg) => {
-                        ValidateStreamService.sendPackageError(pkg.packageName, postHookStatus.message
-                            ? postHookStatus.message
-                            : 'Hook Failed to execute, but didnt provide proper message')
-                        return packagesToPackageInfo[pkg.packageName]
+                        ValidateStreamService.sendPackageError(
+                            pkg.packageName,
+                            postHookStatus.message
+                                ? postHookStatus.message
+                                : 'Hook Failed to execute, but didnt provide proper message'
+                        );
+                        ReleaseStreamService.sendPackageError(
+                            pkg.packageName,
+                            postHookStatus.message
+                                ? postHookStatus.message
+                                : 'Hook Failed to execute, but didnt provide proper message'
+                        );
+                        return packagesToPackageInfo[pkg.packageName];
                     });
                     throw new Error(
                         postHookStatus.message
@@ -298,14 +317,17 @@ export default class DeployImpl {
 
                 if (packageInstallationResult.result === PackageInstallationStatus.Failed) {
                     ValidateStreamService.buildDeployErrorsPkg(sfpPackage.packageName);
+                    ReleaseStreamService.buildDeployErrorsPkg(sfpPackage.packageName);
                     failed = queue.slice(i).map((pkg) => {
-                        ValidateStreamService.sendPackageError(pkg.packageName, packageInstallationResult.message)
-                        return packagesToPackageInfo[pkg.packageName]
+                        ValidateStreamService.sendPackageError(pkg.packageName, packageInstallationResult.message);
+                        ReleaseStreamService.sendPackageError(pkg.packageName, packageInstallationResult.message);
+                        return packagesToPackageInfo[pkg.packageName];
                     });
                     throw new Error(packageInstallationResult.message);
                 }
 
                 ValidateStreamService.sendPackageSuccess(packageInfo.sfpPackage);
+                ReleaseStreamService.sendPackageSuccess(packageInfo.sfpPackage);
 
                 groupSection.end();
             }
@@ -331,27 +353,33 @@ export default class DeployImpl {
             };
         }
     }
-    private filterSfPPackagesBasedOnReleaseConfig(sfpPackages: SfpPackage[], releaseConfigPath: string,logger:Logger): SfpPackage[] {
-       if(!releaseConfigPath)
-       return sfpPackages;
-       else
-       {
-          SFPLogger.log(COLOR_KEY_MESSAGE(`Filtering packages to be deployed based on release config ${COLOR_KEY_VALUE(releaseConfigPath)}`),LoggerLevel.INFO,logger);
-          let releaseConfig:ReleaseConfig = new ReleaseConfig(logger,releaseConfigPath);
-          let packages = releaseConfig.getPackagesAsPerReleaseConfig();
-          //Filter artifacts based on packages
-            let filteredSfPPackages:SfpPackage[] = [];
-        
+    private filterSfPPackagesBasedOnReleaseConfig(
+        sfpPackages: SfpPackage[],
+        releaseConfigPath: string,
+        logger: Logger
+    ): SfpPackage[] {
+        if (!releaseConfigPath) return sfpPackages;
+        else {
+            SFPLogger.log(
+                COLOR_KEY_MESSAGE(
+                    `Filtering packages to be deployed based on release config ${COLOR_KEY_VALUE(releaseConfigPath)}`
+                ),
+                LoggerLevel.INFO,
+                logger
+            );
+            let releaseConfig: ReleaseConfig = new ReleaseConfig(logger, releaseConfigPath);
+            let packages = releaseConfig.getPackagesAsPerReleaseConfig();
+            //Filter artifacts based on packages
+            let filteredSfPPackages: SfpPackage[] = [];
+
             for (const sfpPackage of sfpPackages) {
                 if (packages.includes(sfpPackage.packageName)) {
                     filteredSfPPackages.push(sfpPackage);
                 }
-             }
-         return filteredSfPPackages;
-       }
-
+            }
+            return filteredSfPPackages;
+        }
     }
-
 
     private async generateSfpPackageFromArtifacts(artifacts: Artifact[]): Promise<SfpPackage[]> {
         let sfpPackages: SfpPackage[] = [];
@@ -420,12 +448,8 @@ export default class DeployImpl {
         );
         this.displayTestInfoHeader(sfpPackage);
         if (pkgDescriptor.aliasfy)
-            SFPLogger.log(
-                `Aliasified Package: ${COLOR_KEY_MESSAGE(`True`)}`,
-                LoggerLevel.INFO,
-                this.props.logger
-            );
-        if(sfpPackage.isApexFound)
+            SFPLogger.log(`Aliasified Package: ${COLOR_KEY_MESSAGE(`True`)}`, LoggerLevel.INFO, this.props.logger);
+        if (sfpPackage.isApexFound)
             SFPLogger.log(
                 `Contains Apex Classes/Triggers: ${COLOR_KEY_MESSAGE(sfpPackage.isApexFound)}`,
                 LoggerLevel.INFO,
@@ -433,11 +457,11 @@ export default class DeployImpl {
             );
         if (sfpPackage.packageType == PackageType.Source || sfpPackage.packageType == PackageType.Unlocked) {
             if (!pkgDescriptor.aliasfy) {
-                    SFPLogger.log(
-                        `Metadata to be deployed: ${COLOR_KEY_MESSAGE(sfpPackage.metadataCount)}`,
-                        LoggerLevel.INFO,
-                        this.props.logger
-                    );
+                SFPLogger.log(
+                    `Metadata to be deployed: ${COLOR_KEY_MESSAGE(sfpPackage.metadataCount)}`,
+                    LoggerLevel.INFO,
+                    this.props.logger
+                );
             }
         }
 
@@ -470,12 +494,7 @@ export default class DeployImpl {
                     LoggerLevel.INFO,
                     this.props.logger
                 );
-            else
-                SFPLogger.log(
-                    `Trigger All Tests: ${COLOR_KEY_MESSAGE(`true`)}`,
-                    LoggerLevel.INFO,
-                    this.props.logger
-                );
+            else SFPLogger.log(`Trigger All Tests: ${COLOR_KEY_MESSAGE(`true`)}`, LoggerLevel.INFO, this.props.logger);
         }
     }
 
@@ -513,7 +532,7 @@ export default class DeployImpl {
         });
 
         queue.forEach((pkg) => {
-            if (!packagesToPackageInfo[pkg.packageName].isPackageInstalled){
+            if (!packagesToPackageInfo[pkg.packageName].isPackageInstalled) {
                 minTable.push([
                     COLOR_KEY_MESSAGE(pkg.packageName),
                     COLOR_KEY_MESSAGE(pkg.versionNumber),
@@ -521,41 +540,49 @@ export default class DeployImpl {
                         ? COLOR_KEY_MESSAGE(packagesToPackageInfo[pkg.packageName].versionInstalledInOrg)
                         : COLOR_KEY_MESSAGE('N/A'),
                 ]);
-                ValidateStreamService.buildPackageInitialitation(pkg.packageName,pkg.versionNumber,packagesToPackageInfo[pkg.packageName].versionInstalledInOrg
-                    ? COLOR_KEY_MESSAGE(packagesToPackageInfo[pkg.packageName].versionInstalledInOrg)
-                    : COLOR_KEY_MESSAGE('N/A'),pkg.package_type)
+                ValidateStreamService.buildPackageInitialitation(
+                    pkg.packageName,
+                    pkg.versionNumber,
+                    packagesToPackageInfo[pkg.packageName].versionInstalledInOrg
+                        ? COLOR_KEY_MESSAGE(packagesToPackageInfo[pkg.packageName].versionInstalledInOrg)
+                        : COLOR_KEY_MESSAGE('N/A'),
+                    pkg.package_type
+                );
+                ReleaseStreamService.buildPackageInitialitation(
+                    pkg.packageName,
+                    pkg.versionNumber,
+                    packagesToPackageInfo[pkg.packageName].versionInstalledInOrg
+                        ? COLOR_KEY_MESSAGE(packagesToPackageInfo[pkg.packageName].versionInstalledInOrg)
+                        : COLOR_KEY_MESSAGE('N/A'),
+                    pkg.package_type
+                );
             }
         });
         SFPLogger.log(minTable.toString(), LoggerLevel.INFO, this.props.logger);
         groupSection.end();
 
-
-
         function processColoursForAllPackages(pkg) {
             const pkgInfo = packagesToPackageInfo[pkg.packageName];
-          
+
             let packageName = pkg.packageName;
             let versionNumber = pkg.versionNumber;
             let versionInstalledInOrg = pkgInfo.versionInstalledInOrg ? pkgInfo.versionInstalledInOrg : 'N/A';
             let isPackageInstalled = pkgInfo.isPackageInstalled ? 'No' : 'Yes';
-          
+
             if (pkgInfo.isPackageInstalled) {
-              packageName = COLOR_SUCCESS(packageName);
-              versionNumber = COLOR_SUCCESS(versionNumber);
-              versionInstalledInOrg = COLOR_SUCCESS(versionInstalledInOrg);
-              isPackageInstalled = COLOR_SUCCESS(isPackageInstalled);
-            }
-            else
-            {
+                packageName = COLOR_SUCCESS(packageName);
+                versionNumber = COLOR_SUCCESS(versionNumber);
+                versionInstalledInOrg = COLOR_SUCCESS(versionInstalledInOrg);
+                isPackageInstalled = COLOR_SUCCESS(isPackageInstalled);
+            } else {
                 packageName = COLOR_ERROR(packageName);
                 versionNumber = COLOR_ERROR(versionNumber);
                 versionInstalledInOrg = COLOR_ERROR(versionInstalledInOrg);
                 isPackageInstalled = COLOR_ERROR(isPackageInstalled);
-
             }
-          
+
             return [packageName, versionNumber, versionInstalledInOrg, isPackageInstalled];
-          }
+        }
     }
 
     private printArtifactVersions(queue: SfpPackage[], packagesToPackageInfo: { [p: string]: PackageInfo }) {
@@ -567,7 +594,18 @@ export default class DeployImpl {
 
         queue.forEach((pkg) => {
             table.push([pkg.packageName, pkg.versionNumber]);
-            ValidateStreamService.buildPackageInitialitation(pkg.packageName,pkg.versionNumber,'N/A',pkg.package_type);
+            ValidateStreamService.buildPackageInitialitation(
+                pkg.packageName,
+                pkg.versionNumber,
+                'N/A',
+                pkg.package_type
+            );
+            ReleaseStreamService.buildPackageInitialitation(
+                pkg.packageName,
+                pkg.versionNumber,
+                'N/A',
+                pkg.package_type
+            );
         });
         SFPLogger.log(table.toString(), LoggerLevel.INFO, this.props.logger);
         groupSection.end();
@@ -590,10 +628,7 @@ export default class DeployImpl {
                 clonedQueue[i].packageName,
                 packageManifest
             );
-            let packageInstalledInTheOrg = await targetOrg.isArtifactInstalledInOrg(
-                this.props.logger,
-                sfpPackage
-            );
+            let packageInstalledInTheOrg = await targetOrg.isArtifactInstalledInOrg(this.props.logger, sfpPackage);
             if (packageInstalledInTheOrg.versionNumber)
                 packageInfo.versionInstalledInOrg = packageInstalledInTheOrg.versionNumber;
             if (packageInstalledInTheOrg.isInstalled) {
@@ -654,12 +689,12 @@ export default class DeployImpl {
         //Compute Deployment Type
         let deploymentType =
             this.props.deploymentMode === DeploymentMode.SOURCEPACKAGES_PUSH
-                ? DeploymentType.SOURCE_PUSH : DeploymentType.MDAPI_DEPLOY;
+                ? DeploymentType.SOURCE_PUSH
+                : DeploymentType.MDAPI_DEPLOY;
 
         //Add Installation Options
         let installationOptions = new SfpPackageInstallationOptions();
-        installationOptions.installationkey = null, 
-        installationOptions.apexcompile = 'package';
+        (installationOptions.installationkey = null), (installationOptions.apexcompile = 'package');
         installationOptions.waitTime = waitTime;
         installationOptions.apiVersion = apiVersion;
         installationOptions.publishWaitTime = 60;

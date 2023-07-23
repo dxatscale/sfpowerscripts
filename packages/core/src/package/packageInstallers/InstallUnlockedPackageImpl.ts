@@ -5,6 +5,7 @@ import { PackageInstallCreateRequest, PackagingSObjects, SubscriberPackageVersio
 import { delay } from '../../utils/Delay';
 import { SfpPackageInstallationOptions } from './InstallPackage';
 import { ValidateStreamService } from '../../eventStream/validate';
+import { ReleaseStreamService } from '../../eventStream/release';
 
 
 export default class InstallUnlockedPackageImpl {
@@ -89,6 +90,7 @@ export default class InstallUnlockedPackageImpl {
                 for (let i = 0; i < errors.length; i++) {
                     errorMessage += `\n${i + 1}) ${errors[i].message}`;
                     ValidateStreamService.buildDeployErrorsMsg(pkgName, '', 'Installation Error', errors[i].message);
+                    ReleaseStreamService.buildDeployErrorsMsg(pkgName, '', 'Installation Error', errors[i].message);
                 }
             }
             throw new Error(`Unable to install ${pkgName} due to \n` + errorMessage);

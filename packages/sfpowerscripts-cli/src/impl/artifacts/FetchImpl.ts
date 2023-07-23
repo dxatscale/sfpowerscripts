@@ -5,8 +5,8 @@ import ReleaseDefinitionSchema from '../release/ReleaseDefinitionSchema';
 import FetchArtifactsError from './FetchArtifactsError';
 import * as rimraf from 'rimraf';
 import FetchArtifactSelector from './FetchArtifactSelector';
-import _ from 'lodash';
-import path from 'path';
+import * as _ from 'lodash';
+import * as path from 'path';
 import FileUtils from '@dxatscale/sfpowerscripts.core/lib/utils/Fileutils';
 import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 

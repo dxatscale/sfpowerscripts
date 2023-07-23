@@ -78,6 +78,8 @@ export default class Prepare extends SfpowerscriptsCommand {
     public async execute(): Promise<any> {
         let executionStartTime = Date.now();
 
+        PrepareStreamService.startServer();
+
         SFPLogger.log(COLOR_HEADER(`command: ${COLOR_KEY_MESSAGE(`prepare`)}`));
 
         //Read pool config

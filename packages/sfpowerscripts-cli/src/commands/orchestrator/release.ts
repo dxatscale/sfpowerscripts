@@ -16,6 +16,7 @@ import SFPLogger, {
     ConsoleLogger,
 } from '@dxatscale/sfp-logger';
 import ReleaseDefinitionSchema from '../../impl/release/ReleaseDefinitionSchema';
+import { ReleaseStreamService } from '@dxatscale/sfpowerscripts.core/lib/eventStream/release';
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'release');
@@ -97,10 +98,10 @@ export default class Release extends SfpowerscriptsCommand {
         allowunpromotedpackages: flags.boolean({
             description: messages.getMessage('allowUnpromotedPackagesFlagDescription'),
             hidden: true,
-            deprecated: { 
+            deprecated: {
                 message: '--allowunpromotedpackages is deprecated, All packages are allowed',
-                messageOverride: '--allowunpromotedpackages is deprecated, All packages are allowed'
-             },
+                messageOverride: '--allowunpromotedpackages is deprecated, All packages are allowed',
+            },
         }),
         devhubalias: flags.string({
             char: 'v',
@@ -129,6 +130,7 @@ export default class Release extends SfpowerscriptsCommand {
 
     public async execute() {
         this.validateFlags();
+        ReleaseStreamService.startServer();
 
         let tags = {
             targetOrg: this.flags.targetorg,
@@ -151,11 +153,11 @@ export default class Release extends SfpowerscriptsCommand {
 
         let releaseDefinitions: ReleaseDefinitionSchema[] = [];
         for (const pathToReleaseDefintion of this.flags.releasedefinition) {
-            let releaseDefinition = (await ReleaseDefinition.loadReleaseDefinition(pathToReleaseDefintion)).releaseDefinition;
+            let releaseDefinition = (await ReleaseDefinition.loadReleaseDefinition(pathToReleaseDefintion))
+                .releaseDefinition;
 
             //Support Legacy by taking the existing single workItemFilter and pushing it to the new model
-            if(releaseDefinition.changelog?.workItemFilter)
-            {
+            if (releaseDefinition.changelog?.workItemFilter) {
                 releaseDefinition.changelog.workItemFilters = new Array<string>();
                 releaseDefinition.changelog.workItemFilters.push(releaseDefinition.changelog?.workItemFilter);
             }
@@ -190,10 +192,12 @@ export default class Release extends SfpowerscriptsCommand {
                 isGenerateChangelog: this.flags.generatechangelog,
                 devhubUserName: this.flags.devhubalias,
                 branch: this.flags.branchname,
-                directory:this.flags.directory,
+                directory: this.flags.directory,
             };
 
-            let releaseImpl: ReleaseImpl = new ReleaseImpl(props,new ConsoleLogger());
+            ReleaseStreamService.buildProps(props);
+
+            let releaseImpl: ReleaseImpl = new ReleaseImpl(props, new ConsoleLogger());
 
             releaseResult = await releaseImpl.exec();
 
@@ -201,12 +205,15 @@ export default class Release extends SfpowerscriptsCommand {
         } catch (err) {
             if (err instanceof ReleaseError) {
                 releaseResult = err.data;
-            } else SFPLogger.log(err.message);
+                ReleaseStreamService.buildCommandError(err.message);
+            } else {
+                SFPLogger.log(err.message);
+                ReleaseStreamService.buildCommandError(err.message);
+                SFPStatsSender.logCount('release.failed', tags);
 
-            SFPStatsSender.logCount('release.failed', tags);
-
-            // Fail the task when an error occurs
-            process.exitCode = 1;
+                // Fail the task when an error occurs
+                process.exitCode = 1;
+            }
         } finally {
             let totalElapsedTime: number = Date.now() - executionStartTime;
 
@@ -214,6 +221,7 @@ export default class Release extends SfpowerscriptsCommand {
                 this.printReleaseSummary(releaseResult, totalElapsedTime);
                 this.sendMetrics(releaseResult, tags, totalElapsedTime);
             }
+            ReleaseStreamService.closeServer();
         }
     }
 
@@ -236,6 +244,8 @@ export default class Release extends SfpowerscriptsCommand {
             packagesSucceeded += deploymentResults.result.deployed.length;
             packagesFailed += deploymentResults.result.failed.length;
         }
+
+        ReleaseStreamService.buildStatistik(totalElapsedTime, packagesFailed, packagesSucceeded, packagesScheduled);
 
         SFPStatsSender.logGauge('release.packages.scheduled', packagesScheduled, tags);
         SFPStatsSender.logGauge('release.packages.succeeded', packagesSucceeded, tags);
@@ -285,6 +295,5 @@ export default class Release extends SfpowerscriptsCommand {
 
     protected validateFlags() {
         if (this.flags.npm && !this.flags.scope) throw new Error('--scope parameter is required for NPM');
-
     }
 }

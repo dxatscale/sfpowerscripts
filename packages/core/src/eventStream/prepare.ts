@@ -45,6 +45,10 @@ export class PrepareStreamService {
         PrepareLoggerBuilder.getInstance().buildOrgInfo(index, orgInfo);
     }
 
+    public static startServer(): void {
+        EventService.getInstance();
+    }
+
     public static closeServer(): void {
         const file = PrepareLoggerBuilder.getInstance().build();
         HookService.getInstance().logEvent(file);
