@@ -134,26 +134,23 @@ importers:
         specifier: ^0.6.0
         version: 0.6.0
       '@salesforce/apex-node':
-        specifier: 1.1.0
-        version: 1.1.0
-      '@salesforce/command':
-        specifier: 5.2.43
-        version: 5.2.43(@types/node@20.4.4)(typescript@5.0.2)
+        specifier: 1.6.2
+        version: 1.6.2
       '@salesforce/core':
-        specifier: 3.34.1
-        version: 3.34.1
+        specifier: 4.3.11
+        version: 4.3.11
       '@salesforce/kit':
-        specifier: 1.9.2
-        version: 1.9.2
+        specifier: 3.0.6
+        version: 3.0.6
       '@salesforce/packaging':
-        specifier: 1.2.2
-        version: 1.2.2
+        specifier: 2.2.7
+        version: 2.2.7(@types/node@20.4.4)(typescript@5.0.2)
       '@salesforce/source-deploy-retrieve':
-        specifier: 7.7.6
-        version: 7.7.6
+        specifier: 9.4.6
+        version: 9.4.6
       '@salesforce/source-tracking':
-        specifier: 2.2.17
-        version: 2.2.17
+        specifier: 4.2.8
+        version: 4.2.8
       adm-zip:
         specifier: ^0.5.6
         version: 0.5.6
@@ -197,8 +194,8 @@ importers:
         specifier: 4.1.0
         version: 4.1.0
       jsforce:
-        specifier: 2.0.0-beta.19
-        version: 2.0.0-beta.19
+        specifier: ^2.0.0-beta.27
+        version: 2.0.0-beta.27
       lodash:
         specifier: ^4.17.21
         version: 4.17.21
@@ -523,8 +520,8 @@ importers:
         specifier: 4.3.11
         version: 4.3.11
       '@salesforce/source-deploy-retrieve':
-        specifier: ^7.7.6
-        version: 7.7.6
+        specifier: 9.4.6
+        version: 9.4.6
       '@salesforce/ts-types':
         specifier: 2.0.5
         version: 2.0.5
@@ -2488,20 +2485,6 @@ packages:
       - typescript
     dev: false
 
-  /@oclif/test@2.3.33(@types/node@20.4.4)(typescript@5.0.2):
-    resolution: {integrity: sha512-AmhsxZRDDqJHTk1mDQ+Rl3mNUvb7GIXNcNdP7G7r5l3fRYBUsbzflSy3M760WZfAW4r85rnB+SNG5OBvmajWow==}
-    engines: {node: '>=12.0.0'}
-    dependencies:
-      '@oclif/core': 2.9.4(@types/node@20.4.4)(typescript@5.0.2)
-      fancy-test: 2.0.32
-    transitivePeerDependencies:
-      - '@swc/core'
-      - '@swc/wasm'
-      - '@types/node'
-      - supports-color
-      - typescript
-    dev: false
-
   /@octokit/auth-token@2.5.0:
     resolution: {integrity: sha512-r5FVUJCOLl19AxiuZD2VRZ/ORjp/4IN98Of6YJoJOkY75CIBuYfmiNHGrDwXr+aLGG55igl9QrxX3hbiXlLb+g==}
     dependencies:
@@ -2752,11 +2735,12 @@ packages:
     requiresBuild: true
     optional: true
 
-  /@salesforce/apex-node@1.1.0:
-    resolution: {integrity: sha512-wDqAwOfWF8YkfLjnzL8pZ6ADAXk1fWfFjOgM9xxMimnhpHTR4z5mfWnkk9FKt904Ly4rw8tU2ny1kAuCmfCWzQ==}
-    engines: {node: '>=14.14.0'}
+  /@salesforce/apex-node@1.6.2:
+    resolution: {integrity: sha512-EeBdfkVd6nA6MK8gdkNgk+aVuoxc8KzQvMIBzP1hBYNP0SDGOmq3bSINV3cyiAGCuBgt4VbYTznb/+iPdWRr/w==}
+    engines: {node: '>=16.13.0'}
     dependencies:
-      '@salesforce/core': 3.34.1
+      '@salesforce/core': 4.3.11
+      '@types/istanbul-reports': 3.0.1
       faye: 1.4.0
       glob: 8.1.0
       istanbul-lib-coverage: 3.2.0
@@ -2818,26 +2802,6 @@ packages:
       - typescript
     dev: false
 
-  /@salesforce/command@5.2.43(@types/node@20.4.4)(typescript@5.0.2):
-    resolution: {integrity: sha512-FIG5VjY5WSyB8oVUxS7/ow69EwD8fweHCU7oO9SJf6zlM2D+Vd/zJf8hw3aX+j/whb28runX5rDAtI6oelQ8rg==}
-    engines: {node: '>=14.0.0'}
-    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
-    dependencies:
-      '@oclif/core': 1.26.2
-      '@oclif/test': 2.3.33(@types/node@20.4.4)(typescript@5.0.2)
-      '@salesforce/core': 3.34.1
-      '@salesforce/kit': 1.9.2
-      '@salesforce/ts-types': 1.7.3
-      chalk: 2.4.2
-    transitivePeerDependencies:
-      - '@swc/core'
-      - '@swc/wasm'
-      - '@types/node'
-      - encoding
-      - supports-color
-      - typescript
-    dev: false
-
   /@salesforce/core@2.37.1:
     resolution: {integrity: sha512-Jyppt6fc8uEBQgfD2uIvZlUVSTSkhgU4i+N0B4mQJ+0yeAu5foiGJnn7u6/GPkpLSgof8IZKC6f4crsi/9xyLA==}
     dependencies:
@@ -2880,7 +2844,30 @@ packages:
       form-data: 4.0.0
       graceful-fs: 4.2.11
       js2xmlparser: 4.0.2
-      jsforce: 2.0.0-beta.20
+      jsforce: 2.0.0-beta.27
+      jsonwebtoken: 9.0.0
+      ts-retry-promise: 0.7.0
+    transitivePeerDependencies:
+      - encoding
+      - supports-color
+    dev: false
+
+  /@salesforce/core@3.36.2:
+    resolution: {integrity: sha512-IS1rR6Y0tMJYx/+TOAUQ9Gs+Vtum0MHLGfodT7ZJMQZQHEp1S4o0BJ8676uq5sASAnVL64GA+Et/LWCCOWWEuw==}
+    dependencies:
+      '@salesforce/bunyan': 2.0.0
+      '@salesforce/kit': 1.9.2
+      '@salesforce/schemas': 1.6.0
+      '@salesforce/ts-types': 1.7.3
+      '@types/semver': 7.5.0
+      ajv: 8.12.0
+      archiver: 5.3.1
+      change-case: 4.1.2
+      debug: 3.2.7
+      faye: 1.4.0
+      form-data: 4.0.0
+      js2xmlparser: 4.0.2
+      jsforce: 2.0.0-beta.27
       jsonwebtoken: 9.0.0
       ts-retry-promise: 0.7.0
     transitivePeerDependencies:
@@ -2931,15 +2918,16 @@ packages:
       tslib: 2.6.1
     dev: false
 
-  /@salesforce/packaging@1.2.2:
-    resolution: {integrity: sha512-XvUDh2VwdBN0XxrJhejb6DHz0Y4dsNkY7Cw+4XB+kCOzAJbIyI5xaNMpo5iH/LOiC4+8Ui8NbxA156jNytVJhQ==}
+  /@salesforce/packaging@2.2.7(@types/node@20.4.4)(typescript@5.0.2):
+    resolution: {integrity: sha512-InKVfekn1w2Zc8Qa5peHQEKVl98es8bj+Pfrf5hx4C+eZWFmg3Gz+ukTL5Ae+f02iPDRm03pNmVzavmfbhjBPg==}
+    engines: {node: '>=16.0.0'}
     dependencies:
-      '@oclif/core': 1.26.2
-      '@salesforce/core': 3.34.1
-      '@salesforce/kit': 1.9.2
+      '@oclif/core': 2.9.4(@types/node@20.4.4)(typescript@5.0.2)
+      '@salesforce/core': 4.3.11
+      '@salesforce/kit': 3.0.6
       '@salesforce/schemas': 1.6.0
-      '@salesforce/source-deploy-retrieve': 7.7.6
-      '@salesforce/ts-types': 1.7.3
+      '@salesforce/source-deploy-retrieve': 8.6.0
+      '@salesforce/ts-types': 2.0.5
       '@xmldom/xmldom': 0.8.10
       debug: 4.3.4(supports-color@7.2.0)
       globby: 11.1.0
@@ -2947,14 +2935,17 @@ packages:
       graphology-traversal: 0.3.1(graphology-types@0.24.7)
       graphology-types: 0.24.7
       js2xmlparser: 4.0.2
-      jsforce: 2.0.0-beta.19
+      jsforce: 2.0.0-beta.27
       jszip: 3.10.1
-      mkdirp: 1.0.4
       ts-retry-promise: 0.7.0
-      xml2js: 0.4.23
+      xml2js: 0.6.0
     transitivePeerDependencies:
+      - '@swc/core'
+      - '@swc/wasm'
+      - '@types/node'
       - encoding
       - supports-color
+      - typescript
     dev: false
 
   /@salesforce/plugin-command-reference@1.3.16:
@@ -2976,15 +2967,16 @@ packages:
   /@salesforce/schemas@1.6.0:
     resolution: {integrity: sha512-SwhDTLucj/GRbPpxlEoDZeqlX22o+G6fiebTXTu1cZKmd1oE0W2L7SlTTgJnWck8bhTeBIgQi9cpD8c2t5ISKA==}
 
-  /@salesforce/source-deploy-retrieve@7.7.6:
-    resolution: {integrity: sha512-AIMMxGXnzFmuoUnnM0Kum6Av9vMtX9Yq7qkBMVaFFubjAj29vU4pv+JJ1CIsITVrqNNd9Hi09TVQtw3rQvsqyQ==}
+  /@salesforce/source-deploy-retrieve@8.6.0:
+    resolution: {integrity: sha512-ooPFEq8aKIy67VLugwhIWrOv4+9GJHdMlBOklqW6ZluTSfkfB9vJOBxuD2wVKzUHTV/+3mKNoYl363Ql8KgXkQ==}
     engines: {node: '>=14.0.0'}
     dependencies:
-      '@salesforce/core': 3.34.1
+      '@salesforce/core': 3.36.2
       '@salesforce/kit': 1.9.2
       '@salesforce/ts-types': 1.7.3
       archiver: 5.3.1
-      fast-xml-parser: 3.21.1
+      fast-levenshtein: 3.0.0
+      fast-xml-parser: 4.2.6
       got: 11.8.6
       graceful-fs: 4.2.11
       ignore: 5.2.4
@@ -2992,20 +2984,44 @@ packages:
       minimatch: 5.1.6
       proxy-agent: 5.0.0
       proxy-from-env: 1.1.0
-      unzipper: 0.10.11
+      unzipper: 0.10.14
     transitivePeerDependencies:
       - encoding
       - supports-color
     dev: false
 
-  /@salesforce/source-tracking@2.2.17:
-    resolution: {integrity: sha512-19izbERlhBPvbfEFfkES1mX+2peSldFvDWkmKYbEfOaJMb4V3TrDs+1ggKTiAoovDm1rkCfubZyKmDDwXgxtwQ==}
+  /@salesforce/source-deploy-retrieve@9.4.6:
+    resolution: {integrity: sha512-C+rirKm77KJjxxFzfcxcBZF1mo3j+etalD7ZIZjDBr41FxRwv2mp0HuykNly/9hmnc72zxB38NiX5YqK82jmzQ==}
+    engines: {node: '>=16.0.0'}
     dependencies:
-      '@salesforce/core': 3.34.1
-      '@salesforce/kit': 1.9.2
-      '@salesforce/source-deploy-retrieve': 7.7.6
+      '@salesforce/core': 4.3.11
+      '@salesforce/kit': 3.0.6
+      '@salesforce/ts-types': 2.0.5
+      fast-levenshtein: 3.0.0
+      fast-xml-parser: 4.2.6
+      got: 11.8.6
       graceful-fs: 4.2.11
-      isomorphic-git: 1.17.0
+      ignore: 5.2.4
+      jszip: 3.10.1
+      mime: 2.6.0
+      minimatch: 5.1.6
+      proxy-agent: 6.3.0
+      unzipper: 0.10.14
+    transitivePeerDependencies:
+      - encoding
+      - supports-color
+    dev: false
+
+  /@salesforce/source-tracking@4.2.8:
+    resolution: {integrity: sha512-KmPhKK9nBlusPC5Tijv/cJhj5fOMxL6JwS0worf2ddm+5uE7dDoLIr92hj8GVksR7MVKvPrzUotU9sbRread7A==}
+    engines: {node: '>=16.0.0'}
+    dependencies:
+      '@salesforce/core': 4.3.11
+      '@salesforce/kit': 3.0.6
+      '@salesforce/source-deploy-retrieve': 9.4.6
+      fast-xml-parser: 4.2.6
+      graceful-fs: 4.2.11
+      isomorphic-git: 1.23.0
       ts-retry-promise: 0.7.0
     transitivePeerDependencies:
       - encoding
@@ -3140,6 +3156,10 @@ packages:
     resolution: {integrity: sha512-XCuKFP5PS55gnMVu3dty8KPatLqUoy/ZYzDzAGCQ8JNFCkLXzmI7vNHCR+XpbZaMWQK/vQubr7PkYq8g470J/A==}
     engines: {node: '>= 10'}
     dev: true
+
+  /@tootallnate/quickjs-emscripten@0.23.0:
+    resolution: {integrity: sha512-C5Mc6rdnsaJDjO3UpGW/CQTHtCKaYlScZTly4JIu97Jxo/odCiH0ITnDXSJPTOrEKk/ycSZ0AOgTmkDtkOsvIA==}
+    dev: false
 
   /@tsconfig/node10@1.0.9:
     resolution: {integrity: sha512-jNsYVVxU8v5g43Erja32laIDHXeoNvFEpX33OK4d6hljo3jDhCBDhx5dhCCTMWUojscpAagGiRkBKxpdl9fxqA==}
@@ -3301,19 +3321,16 @@ packages:
 
   /@types/istanbul-lib-coverage@2.0.4:
     resolution: {integrity: sha512-z/QT1XN4K4KYuslS23k62yDIDLwLFkzxOuMplDtObz0+y7VqJCaO2o+SPwHCvLFZh7xazvvoor2tA/hPz9ee7g==}
-    dev: true
 
   /@types/istanbul-lib-report@3.0.0:
     resolution: {integrity: sha512-plGgXAPfVKFoYfa9NpYDAkseG+g6Jr294RqeqcqDixSbU34MZVJRi/P+7Y8GDpzkEwLaGZZOpKIEmeVZNtKsrg==}
     dependencies:
       '@types/istanbul-lib-coverage': 2.0.4
-    dev: true
 
   /@types/istanbul-reports@3.0.1:
     resolution: {integrity: sha512-c3mAZEuK0lvBp8tmuL74XRKn1+y2dcwOUpH7x4WrF6gk1GIgiluDRgMYQtw2OFcBvAJWlt6ASU3tSqxp0Uu0Aw==}
     dependencies:
       '@types/istanbul-lib-report': 3.0.0
-    dev: true
 
   /@types/jest@29.5.3:
     resolution: {integrity: sha512-1Nq7YrO/vJE/FYnqYyw0FS8LdrjExSgIiHyKg7xPpn+yi8Q4huZryKnkJatN1ZRH89Kw2v33/8ZMB7DuZeSLlA==}
@@ -3831,6 +3848,15 @@ packages:
     transitivePeerDependencies:
       - supports-color
 
+  /agent-base@7.1.0:
+    resolution: {integrity: sha512-o/zjMZRhJxny7OyEF+Op8X+efiELC7k7yOjMzgfzVqOzXqkBkWI79YoTdOtsuWd5BWhAGAuOY/Xa6xpiaWXiNg==}
+    engines: {node: '>= 14'}
+    dependencies:
+      debug: 4.3.4(supports-color@7.2.0)
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
+
   /agentkeepalive@4.3.0:
     resolution: {integrity: sha512-7Epl1Blf4Sy37j4v9f9FjICCh4+KAQOyXgHEwlyBiAQLbhKdq/i2QQU3amQalS/wPhdPzDXPL5DMR5bkn+YeWg==}
     engines: {node: '>= 8.0.0'}
@@ -4243,6 +4269,11 @@ packages:
     engines: {node: '>=6.0.0'}
     dev: false
 
+  /basic-ftp@5.0.3:
+    resolution: {integrity: sha512-QHX8HLlncOLpy54mh+k/sWIFd0ThmRqwe9ZjELybGZK+tZ8rUb9VO0saKJUROTbE+KhzDUT7xziGpGrW8Kmd+g==}
+    engines: {node: '>=10.0.0'}
+    dev: false
+
   /bcrypt-pbkdf@1.0.2:
     resolution: {integrity: sha512-qeFIXtP4MSoi6NLqO12WfqARWWuCKi2Rn/9hJLEmtB5yTNr9DqFWkJRCf2qShWzPeAMRnOgCrq0sg/KLv5ES9w==}
     dependencies:
@@ -4379,7 +4410,7 @@ packages:
     resolution: {integrity: sha512-xq+q3SRMOxGivLhBNaUdC64hDTQwejJ+H0T/NB1XMtTVEwNTrfFF3gAxiyW0Bu/xWEGhjVKgUcMhCrUy2+uCWg==}
     dependencies:
       base64-js: 1.5.1
-      ieee754: 1.1.13
+      ieee754: 1.2.1
       isarray: 1.0.0
     dev: true
 
@@ -5331,6 +5362,11 @@ packages:
     engines: {node: '>= 6'}
     dev: false
 
+  /data-uri-to-buffer@5.0.1:
+    resolution: {integrity: sha512-a9l6T1qqDogvvnw0nKlfZzqsyikEBZBClF39V3TFoKhDtGBqHu2HkuomJc02j5zft8zrUaXEuoicLeW54RkzPg==}
+    engines: {node: '>= 14'}
+    dev: false
+
   /datadog-metrics@0.9.3:
     resolution: {integrity: sha512-BVsBX2t+4yA3tHs7DnB5H01cHVNiGJ/bHA8y6JppJDyXG7s2DLm6JaozPGpgsgVGd42Is1CHRG/yMDQpt877Xg==}
     dependencies:
@@ -5471,6 +5507,15 @@ packages:
       escodegen: 1.14.3
       esprima: 4.0.1
       vm2: 3.9.19
+    dev: false
+
+  /degenerator@5.0.1:
+    resolution: {integrity: sha512-TllpMR/t0M5sqCXfj85i4XaAzxmS5tVA16dqvdkMwGmzI+dXLXnw3J+3Vdv7VKw+ThlTMboK6i9rnZ6Nntj5CQ==}
+    engines: {node: '>= 14'}
+    dependencies:
+      ast-types: 0.13.4
+      escodegen: 2.1.0
+      esprima: 4.0.1
     dev: false
 
   /delayed-stream@1.0.0:
@@ -5740,6 +5785,18 @@ packages:
       source-map: 0.6.1
     dev: false
 
+  /escodegen@2.1.0:
+    resolution: {integrity: sha512-2NlIDTwUWJN0mRPQOdtQBzbUHvdGY2P1VXSyU83Q3xKxM7WHX2Ql8dKq782Q9TgQUNOLEzEYu9bzLNj1q88I5w==}
+    engines: {node: '>=6.0'}
+    hasBin: true
+    dependencies:
+      esprima: 4.0.1
+      estraverse: 5.3.0
+      esutils: 2.0.3
+    optionalDependencies:
+      source-map: 0.6.1
+    dev: false
+
   /eslint-scope@5.1.1:
     resolution: {integrity: sha512-2NxwbF/hZ0KpepYN0cNbo+FN6XoK7GaHlQhgx/hIZl6Va0bF45RQOOwhLIy8lQDbuCiadSLCBnH2CFYquit5bw==}
     engines: {node: '>=8.0.0'}
@@ -5859,7 +5916,6 @@ packages:
   /estraverse@5.3.0:
     resolution: {integrity: sha512-MMdARuVEQziNTeJD8DgMqmhwR11BRQ/cBP+pLtYdSTnf3MIO8fFeiINEbX36ZdNlfU/7A9f3gUw49B3oQsvwBA==}
     engines: {node: '>=4.0'}
-    dev: true
 
   /esutils@2.0.3:
     resolution: {integrity: sha512-kVscqXk4OCp68SZ0dkgEKVi6/8ij300KBWTJq32P/dYeWTSwK41WyTxalN1eRmA5Z9UU/LX9D7FWSmV9SAYx6g==}
@@ -6061,18 +6117,10 @@ packages:
     resolution: {integrity: sha512-hKKNajm46uNmTlhHSyZkmToAc56uZJwYq7yrciZjqOxnlfQwERDQJmHPUp7m1m9wx8vgOe8IaCKZ5Kv2k1DdCQ==}
     dependencies:
       fastest-levenshtein: 1.0.16
-    dev: true
 
   /fast-xml-parser@3.18.0:
     resolution: {integrity: sha512-tRrwShhppv0K5GKEtuVs92W0VGDaVltZAwtHbpjNF+JOT7cjIFySBGTEOmdBslXYyWYaZwEX/g4Su8ZeKg0LKQ==}
     hasBin: true
-    dev: false
-
-  /fast-xml-parser@3.21.1:
-    resolution: {integrity: sha512-FTFVjYoBOZTJekiUsawGsSYV9QL0A+zDYCRj7y34IO6Jg+2IMYEtQa+bbictpdpV8dHxXywqU7C0gRDEOFtBFg==}
-    hasBin: true
-    dependencies:
-      strnum: 1.0.5
     dev: false
 
   /fast-xml-parser@4.0.8:
@@ -6082,10 +6130,16 @@ packages:
       strnum: 1.0.5
     dev: false
 
+  /fast-xml-parser@4.2.6:
+    resolution: {integrity: sha512-Xo1qV++h/Y3Ng8dphjahnYe+rGHaaNdsYOBWL9Y9GCPKpNKilJtilvWkLcI9f9X2DoKTLsZsGYAls5+JL5jfLA==}
+    hasBin: true
+    dependencies:
+      strnum: 1.0.5
+    dev: false
+
   /fastest-levenshtein@1.0.16:
     resolution: {integrity: sha512-eRnCtTTtGZFpQCwhJiUOuxPQWRXVKYDn0b2PeHfXL6/Zi53SLAzAHfVhVWK2AryC/WH05kGfxhFIPvTF0SXQzg==}
     engines: {node: '>= 4.9.1'}
-    dev: true
 
   /fastq@1.15.0:
     resolution: {integrity: sha512-wBrocU2LCXXa+lWBt8RoIRD89Fi8OdABODa/kEnyeyjS5aZO5/GNvI5sEINADqP/h8M29UHTHUb53sUu5Ihqdw==}
@@ -6490,6 +6544,18 @@ packages:
       file-uri-to-path: 2.0.0
       fs-extra: 8.1.0
       ftp: 0.3.10
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
+
+  /get-uri@6.0.1:
+    resolution: {integrity: sha512-7ZqONUVqaabogsYNWlYj0t3YZaL6dhuEueZXGF+/YVmf6dHmaFg8/6psJKqhx9QykIDKzpGcy2cn4oV4YC7V/Q==}
+    engines: {node: '>= 14'}
+    dependencies:
+      basic-ftp: 5.0.3
+      data-uri-to-buffer: 5.0.1
+      debug: 4.3.4(supports-color@7.2.0)
+      fs-extra: 8.1.0
     transitivePeerDependencies:
       - supports-color
     dev: false
@@ -6966,6 +7032,16 @@ packages:
       - supports-color
     dev: true
 
+  /http-proxy-agent@7.0.0:
+    resolution: {integrity: sha512-+ZT+iBxVUQ1asugqnD6oWoRiS25AkjNfG085dKJGtGxkdwLQrMKU5wJr2bOOFAXzKcTuqq+7fZlTMgG3SRfIYQ==}
+    engines: {node: '>= 14'}
+    dependencies:
+      agent-base: 7.1.0
+      debug: 4.3.4(supports-color@7.2.0)
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
+
   /http-signature@1.2.0:
     resolution: {integrity: sha512-CAbnr6Rz4CYQkLYUtSNXxQPUH2gK8f3iWexVlsnMeD+GjlsQ0Xsy1cOX+mN3dtxYomRy21CiOzU8Uhw6OwncEQ==}
     engines: {node: '>=0.8', npm: '>=1.3.7'}
@@ -6990,6 +7066,16 @@ packages:
       debug: 4.3.4(supports-color@7.2.0)
     transitivePeerDependencies:
       - supports-color
+
+  /https-proxy-agent@7.0.1:
+    resolution: {integrity: sha512-Eun8zV0kcYS1g19r78osiQLEFIRspRUDd9tIfBCTBPBeMieF/EsJNL8VI3xOIdYRDEkjQnqOYPsZ2DsWsVsFwQ==}
+    engines: {node: '>= 14'}
+    dependencies:
+      agent-base: 7.1.0
+      debug: 4.3.4(supports-color@7.2.0)
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
 
   /human-signals@2.1.0:
     resolution: {integrity: sha512-B4FFZ6q/T2jhhksgkbEW3HBvWIfDW85snkQgawt07S7J5QXTk6BkNV+0yAeZrM5QpMAdYlocGoljn0sJ/WQkFw==}
@@ -7402,8 +7488,8 @@ packages:
     engines: {node: '>=0.10.0'}
     dev: true
 
-  /isomorphic-git@1.17.0:
-    resolution: {integrity: sha512-8ToEVqYLeTE1Ys3UQ21yAxQf0rW7GYRvsENhvXNDONAHgNks1fsgUJH3mVzgbsGf4LpW3kuJI6e/e3VIeaTW3w==}
+  /isomorphic-git@1.23.0:
+    resolution: {integrity: sha512-7mQlnZivFwrU6B3CswvmoNtVN8jqF9BcLf80uk7yh4fNA8PhFjAfQigi2Hu/Io0cmIvpOc7vn0/Rq3KtL5Ph8g==}
     engines: {node: '>=12'}
     hasBin: true
     dependencies:
@@ -8307,36 +8393,6 @@ packages:
       - supports-color
     dev: false
 
-  /jsforce@2.0.0-beta.20:
-    resolution: {integrity: sha512-5TpdU0MEUN34M0mSKmBwOMKaI8dllTYF8NzpJn0/9akrwqKEERK6K2jGiMWcs85Vx1HCHEcwU2n+5ij6z6zr2g==}
-    engines: {node: '>=8.0'}
-    hasBin: true
-    dependencies:
-      '@babel/runtime': 7.22.6
-      '@babel/runtime-corejs3': 7.22.6
-      '@types/node': 12.20.55
-      abort-controller: 3.0.0
-      base64url: 3.0.1
-      commander: 4.1.1
-      core-js: 3.31.1
-      csv-parse: 4.16.3
-      csv-stringify: 5.6.5
-      faye: 1.4.0
-      form-data: 4.0.0
-      fs-extra: 8.1.0
-      https-proxy-agent: 5.0.1
-      inquirer: 7.3.3
-      multistream: 3.1.0
-      node-fetch: 2.6.12
-      open: 7.4.2
-      regenerator-runtime: 0.13.11
-      strip-ansi: 6.0.1
-      xml2js: 0.4.23
-    transitivePeerDependencies:
-      - encoding
-      - supports-color
-    dev: false
-
   /jsforce@2.0.0-beta.27:
     resolution: {integrity: sha512-d9dDWWeHwayRKPo8FJBAIUyk8sNXGSHwdUjR6al3yK0YKci27Jc1XfNaQTxEAuymHQJVaCb1gxTKqmA4uznFdQ==}
     engines: {node: '>=8.0'}
@@ -8905,7 +8961,6 @@ packages:
   /lru-cache@7.18.3:
     resolution: {integrity: sha512-jumlc0BIUrS3qJGgIkWZsyfAM7NCWiBcCDhnd+3NNM5KbBmLTgHVfWBcg6W+rLUsIpzpERPsvwUP7CckAQSOoA==}
     engines: {node: '>=12'}
-    dev: true
 
   /make-dir@2.1.0:
     resolution: {integrity: sha512-LS9X+dc8KLxXCb8dni79fLIIUA5VyZoyjSMCwTluaXA0o27cCK0bhXkpgw+sTXVpPy/lSO57ilRixqk0vDmtRA==}
@@ -10187,11 +10242,36 @@ packages:
       - supports-color
     dev: false
 
+  /pac-proxy-agent@7.0.0:
+    resolution: {integrity: sha512-t4tRAMx0uphnZrio0S0Jw9zg3oDbz1zVhQ/Vy18FjLfP1XOLNUEjaVxYCYRI6NS+BsMBXKIzV6cTLOkO9AtywA==}
+    engines: {node: '>= 14'}
+    dependencies:
+      '@tootallnate/quickjs-emscripten': 0.23.0
+      agent-base: 7.1.0
+      debug: 4.3.4(supports-color@7.2.0)
+      get-uri: 6.0.1
+      http-proxy-agent: 7.0.0
+      https-proxy-agent: 7.0.1
+      pac-resolver: 7.0.0
+      socks-proxy-agent: 8.0.1
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
+
   /pac-resolver@5.0.1:
     resolution: {integrity: sha512-cy7u00ko2KVgBAjuhevqpPeHIkCIqPe1v24cydhWjmeuzaBfmUWFCZJ1iAh5TuVzVZoUzXIW7K8sMYOZ84uZ9Q==}
     engines: {node: '>= 8'}
     dependencies:
       degenerator: 3.0.4
+      ip: 1.1.8
+      netmask: 2.0.2
+    dev: false
+
+  /pac-resolver@7.0.0:
+    resolution: {integrity: sha512-Fd9lT9vJbHYRACT8OhCbZBbxr6KRSawSovFpy8nDGshaK99S/EBhVIHp9+crhxrsZOuvLpgL1n23iyPg6Rl2hg==}
+    engines: {node: '>= 14'}
+    dependencies:
+      degenerator: 5.0.1
       ip: 1.1.8
       netmask: 2.0.2
     dev: false
@@ -10593,6 +10673,22 @@ packages:
       pac-proxy-agent: 5.0.0
       proxy-from-env: 1.1.0
       socks-proxy-agent: 5.0.1
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
+
+  /proxy-agent@6.3.0:
+    resolution: {integrity: sha512-0LdR757eTj/JfuU7TL2YCuAZnxWXu3tkJbg4Oq3geW/qFNT/32T0sp2HnZ9O0lMR4q3vwAt0+xCA8SR0WAD0og==}
+    engines: {node: '>= 14'}
+    dependencies:
+      agent-base: 7.1.0
+      debug: 4.3.4(supports-color@7.2.0)
+      http-proxy-agent: 7.0.0
+      https-proxy-agent: 7.0.1
+      lru-cache: 7.18.3
+      pac-proxy-agent: 7.0.0
+      proxy-from-env: 1.1.0
+      socks-proxy-agent: 8.0.1
     transitivePeerDependencies:
       - supports-color
     dev: false
@@ -11439,6 +11535,17 @@ packages:
     transitivePeerDependencies:
       - supports-color
     dev: true
+
+  /socks-proxy-agent@8.0.1:
+    resolution: {integrity: sha512-59EjPbbgg8U3x62hhKOFVAmySQUcfRQ4C7Q/D5sEHnZTQRrQlNKINks44DMR1gwXp0p4LaVIeccX2KHTTcHVqQ==}
+    engines: {node: '>= 14'}
+    dependencies:
+      agent-base: 7.1.0
+      debug: 4.3.4(supports-color@7.2.0)
+      socks: 2.7.1
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
 
   /socks@2.7.1:
     resolution: {integrity: sha512-7maUZy1N7uo6+WVEX6psASxtNlKaNVMlGQKkG/63nEDdLOWNbiUMoLK7X4uYoLhQstau72mLgfEWcXcwsaHbYQ==}
@@ -12557,8 +12664,8 @@ packages:
     engines: {node: '>=8'}
     dev: true
 
-  /unzipper@0.10.11:
-    resolution: {integrity: sha512-+BrAq2oFqWod5IESRjL3S8baohbevGcVA+teAIOYWM3pDVdseogqbzhhvvmiyQrUNKFUnDMtELW3X8ykbyDCJw==}
+  /unzipper@0.10.14:
+    resolution: {integrity: sha512-ti4wZj+0bQTiX2KmKWuwj7lhV+2n//uXEotUmGuQqrbVZSEGFMbI68+c6JCQ8aAmUWYvtHEz2A8K6wXvueR/6g==}
     dependencies:
       big-integer: 1.6.51
       binary: 0.3.0
@@ -13050,6 +13157,14 @@ packages:
     dependencies:
       sax: 1.2.4
       xmlbuilder: 11.0.1
+
+  /xml2js@0.6.0:
+    resolution: {integrity: sha512-eLTh0kA8uHceqesPqSE+VvO1CDDJWMwlQfB6LuN6T8w6MaDJ8Txm8P7s5cHD0miF0V+GGTZrDQfxPZQVsur33w==}
+    engines: {node: '>=4.0.0'}
+    dependencies:
+      sax: 1.2.4
+      xmlbuilder: 11.0.1
+    dev: false
 
   /xmlbuilder@11.0.1:
     resolution: {integrity: sha512-fDlsI/kFEx7gLvbecc0/ohLG50fugQp8ryHzMTuW9vSa1GJ0XYWKnhsUx7oie3G98+r56aTQIUB4kht42R3JvA==}

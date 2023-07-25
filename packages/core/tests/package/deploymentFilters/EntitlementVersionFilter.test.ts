@@ -1,21 +1,20 @@
 import { jest, expect } from '@jest/globals';
-import { MockTestOrgData, testSetup } from '@salesforce/core/lib/testSetup';
+import { MockTestOrgData, TestContext,  } from '@salesforce/core/lib/testSetup';
 import { ConsoleLogger } from '@dxatscale/sfp-logger';
 import { AnyJson } from '@salesforce/ts-types';
 import SFPOrg from '../../../src/org/SFPOrg';
 import { ComponentSet, VirtualDirectory, VirtualTreeContainer } from '@salesforce/source-deploy-retrieve';
 import EntitlementVersionFilter from '../../../src/package/deploymentFilters/EntitlementVersionFilter';
+import { OrgConfigProperties } from '@salesforce/core';
 
 const fs = require('fs-extra');
 
 
-const $$ = testSetup();
+const $$ = new TestContext();
 const createOrg = async () => {
     const testData = new MockTestOrgData();
 
-    $$.setConfigStubContents('AuthInfoConfig', {
-        contents: await testData.getConfig(),
-    });
+    await $$.stubConfig({ [OrgConfigProperties.TARGET_ORG]: testData.username });
 
     return await SFPOrg.create({ aliasOrUsername: testData.username });
 };
