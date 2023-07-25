@@ -1,20 +1,19 @@
 import { jest, expect } from '@jest/globals';
-import { MockTestOrgData, testSetup } from '@salesforce/core/lib/testSetup';
-import { Connection, AuthInfo } from '@salesforce/core';
+import { MockTestOrgData, TestContext } from '@salesforce/core/lib/testSetup';
+import { Connection, AuthInfo, OrgConfigProperties, ConfigAggregator } from '@salesforce/core';
 import PackageDependencyResolver from '../../../src/package/dependencies/PackageDependencyResolver';
-const $$ = testSetup();
+const $$ = new TestContext();
 
 const setupFakeConnection = async () => {
   const testData = new MockTestOrgData();
   testData.makeDevHub();
-
-  $$.setConfigStubContents('AuthInfoConfig', {
-      contents: await testData.getConfig(),
-  });
-
-$$.fakeConnectionRequest = (request: any): Promise<any> => {
+  await $$.stubConfig({ [OrgConfigProperties.TARGET_ORG]: testData.username });
+  const { value } = (await ConfigAggregator.create()).getInfo(OrgConfigProperties.TARGET_ORG);
+  await $$.stubAuths(testData);
+  await $$.stubAliases({ myAlias: testData.username });
+  $$.fakeConnectionRequest = (request) => {
     return Promise.resolve(response);
-};
+  };
 
   const conn = await Connection.create({
     authInfo: await AuthInfo.create({username: testData.username})

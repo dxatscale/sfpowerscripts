@@ -1,10 +1,10 @@
 import { expect } from '@jest/globals';
-import { MockTestOrgData, testSetup } from '@salesforce/core/lib/testSetup';
+import { MockTestOrgData, TestContext } from '@salesforce/core/lib/testSetup';
 import { Connection, AuthInfo } from '@salesforce/core';
 import Package2VersionFetcher from '../../src/package/version/Package2VersionFetcher';
 import { AnyJson } from '@salesforce/ts-types';
 
-const $$ = testSetup();
+const $$ = new TestContext();
 
 let conn: Connection;
 

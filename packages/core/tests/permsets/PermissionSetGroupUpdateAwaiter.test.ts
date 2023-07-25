@@ -1,7 +1,7 @@
-import { MockTestOrgData, testSetup } from '@salesforce/core/lib/testSetup';
-import { AuthInfo, Connection } from '@salesforce/core';
+import { MockTestOrgData, TestContext } from '@salesforce/core/lib/testSetup';
+import { AuthInfo, Connection, OrgConfigProperties } from '@salesforce/core';
 import { AnyJson } from '@salesforce/ts-types';
-const $$ = testSetup();
+const $$ = new TestContext();
 import PermissionSetGroupUpdateAwaiter from '../../src/permsets/PermissionSetGroupUpdateAwaiter';
 import { expect } from '@jest/globals';
 
@@ -9,6 +9,8 @@ describe('Await till permissionsets groups are updated', () => {
     it('should return if all permsets groups are updated', async () => {
         const testData = new MockTestOrgData();
 
+        await $$.stubConfig({ [OrgConfigProperties.TARGET_ORG]: testData.username });
+        await $$.stubAuths(testData);
         $$.setConfigStubContents('AuthInfoConfig', {
             contents: await testData.getConfig(),
         });
