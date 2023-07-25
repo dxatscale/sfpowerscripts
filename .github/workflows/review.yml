@@ -21,7 +21,12 @@ jobs:
             with:
               node-version: '16.x'
               registry-url: 'https://registry.npmjs.org'
-          - run: npm ci
+          - uses: pnpm/action-setup@v2
+            with:
+             version: 8
+             
+          - name: 'Install Dependencies'
+            run: pnpm i              
           - run: npx lerna run build
           - run: npx lerna run test -- --colors
           - run: bash <(curl -s https://codecov.io/bash) -v
