@@ -2,7 +2,7 @@
 import { AuthInfo, Org } from '@salesforce/core';
 import request from 'request-promise-native';
 import SFPLogger, {LoggerLevel } from '@dxatscale/sfp-logger';
-import retry from 'async-retry';
+import retry = require('async-retry');
 import Passwordgenerateimpl from '@impl/user/passwordgenerateimpl';
 import queryApi from '../utils/queryExecutor';
 import child_process from 'child_process';
@@ -315,6 +315,7 @@ export default class ScratchOrgUtils {
     public static async deleteScratchOrg(hubOrg: Org, scratchOrgIds: string[]) {
         let hubConn = hubOrg.getConnection();
 
+      
         await retry(
             async (bail) => {
                 await hubConn.sobject('ActiveScratchOrg').del(scratchOrgIds);

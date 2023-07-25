@@ -9,8 +9,8 @@
         "noImplicitAny": false,
         "esModuleInterop": true,
         "module": "commonjs",
-        "target": "es6",
-        "lib": ["es6"],
+        "target": "ES2018",
+        "lib": ["ES2018"],
         "resolveJsonModule": true
     },
     "exclude": ["node_modules", "lib"]

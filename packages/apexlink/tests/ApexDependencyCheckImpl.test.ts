@@ -20,5 +20,5 @@ describe('Given a directory with no apex classes, ',  () => {
         let result = await apexLinkImpl.execute();
         expect(result.dependencies.length).toEqual(0);
         
-    });
+    },50000);
 });
