@@ -337,7 +337,8 @@ export default class TriggerApexTests {
                     if (
                         test.message.includes(`Your request exceeded the time limit for processing`) ||
                         test.message.includes(`UNABLE_TO_LOCK_ROW`) ||
-                        test.message.includes(`Internal Salesforce Error`)
+                        test.message.includes(`Internal Salesforce Error`) ||
+                        test.message.includes(`Salesforce System Error`)
                     ) {
                         if (!testToBeTriggered.includes(test.apexClass.fullName)) {
                             parallelFailedTestClasses.push(test.apexClass.fullName);
@@ -435,7 +436,7 @@ export default class TriggerApexTests {
                 if (isCoverageToBeFetched) {
                     const mergedCodecoverage: CodeCoverageResult[] = modifiedTestResult.codecoverage;
                     for (const codeCoverageObject of secondTestResult.codecoverage){
-                    
+
                         const index = mergedCodecoverage.findIndex((codeCoverage) => codeCoverage.name === codeCoverageObject.name);
                         if (index !== -1) {
                             mergedCodecoverage[index] = codeCoverageObject;
