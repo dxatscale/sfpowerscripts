@@ -1,4 +1,4 @@
-import child_process = require('child_process');
+const child_process = require('child_process');
 import AssignPermissionSetsImpl from '../../src/permsets/AssignPermissionSetsImpl';
 import { jest, expect } from '@jest/globals';
 import { VoidLogger } from '@dxatscale/sfp-logger';

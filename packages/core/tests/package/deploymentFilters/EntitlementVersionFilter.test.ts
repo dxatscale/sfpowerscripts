@@ -14,6 +14,8 @@ const $$ = new TestContext();
 const createOrg = async () => {
     const testData = new MockTestOrgData();
 
+    await $$.stubAuths(testData);
+    await $$.stubAliases({ myAlias: testData.username });
     await $$.stubConfig({ [OrgConfigProperties.TARGET_ORG]: testData.username });
 
     return await SFPOrg.create({ aliasOrUsername: testData.username });
