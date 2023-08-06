@@ -8,7 +8,7 @@ import SFPLogger, { ConsoleLogger, LoggerLevel } from '@dxatscale/sfp-logger';
 import { COLOR_KEY_MESSAGE } from '@dxatscale/sfp-logger';
 import { COLOR_WARNING } from '@dxatscale/sfp-logger';
 import { Flags } from '@oclif/core';
-import { loglevel, orgApiVersionFlagSfdxStyle, requiredDevHubFlag } from '../../flags/sfdxflags';
+import { loglevel, orgApiVersionFlagSfdxStyle, targetdevhubusername } from '../../flags/sfdxflags';
 const Table = require('cli-table');
 
 // Initialize Messages with the current plugin directory
@@ -30,7 +30,7 @@ export default class Delete extends SfpowerscriptsCommand {
     ];
 
     public static flags = {
-        requiredDevHubFlag,
+        targetdevhubusername,
         tag: Flags.string({
             char: 't',
             description: messages.getMessage('tagDescription'),

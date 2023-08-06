@@ -7,7 +7,7 @@ import ExternalDependencyDisplayer from '@dxatscale/sfpowerscripts.core/lib/disp
 import InstallUnlockedPackageCollection from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/InstallUnlockedPackageCollection';
 import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
 import { Flags } from '@oclif/core';
-import { loglevel, requiredDevHubFlag, requiredUserNameFlag } from '../../flags/sfdxflags';
+import { loglevel, targetdevhubusername, requiredUserNameFlag } from '../../flags/sfdxflags';
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -24,7 +24,7 @@ export default class Install extends SfpowerscriptsCommand {
 
     public static flags = {
         'targetusername': requiredUserNameFlag,
-        requiredDevHubFlag,
+        targetdevhubusername,
         installationkeys: Flags.string({
             char: 'k',
             required: false,

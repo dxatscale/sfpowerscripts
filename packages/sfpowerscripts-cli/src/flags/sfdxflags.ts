@@ -104,7 +104,7 @@ const devhubFlag = Flags.custom({
 });
 
 
-export const requiredDevHubFlag = devhubFlag({
+export const targetdevhubusername = devhubFlag({
   aliases: ['targetdevhubusername'],
   required: true,
 });

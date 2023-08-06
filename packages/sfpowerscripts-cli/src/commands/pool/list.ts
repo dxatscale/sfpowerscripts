@@ -6,7 +6,7 @@ import SFPLogger, { LoggerLevel } from '@dxatscale/sfp-logger';
 import { Messages } from '@salesforce/core';
 import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
 import { Flags, ux } from '@oclif/core';
-import { loglevel, orgApiVersionFlagSfdxStyle, requiredDevHubFlag } from '../../flags/sfdxflags';
+import { loglevel, orgApiVersionFlagSfdxStyle, targetdevhubusername } from '../../flags/sfdxflags';
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -28,7 +28,7 @@ export default class List extends SfpowerscriptsCommand {
     ];
 
     public static flags = {
-        requiredDevHubFlag,
+        targetdevhubusername,
         'apiversion': orgApiVersionFlagSfdxStyle,
         tag: Flags.string({
             char: 't',

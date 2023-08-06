@@ -24,7 +24,7 @@ import getFormattedTime from '@dxatscale/sfpowerscripts.core/lib/utils/GetFormat
 import SfpPackage from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
 import ReleaseConfig from './impl/release/ReleaseConfig';
 import { Flags } from '@oclif/core';
-import { loglevel, orgApiVersionFlagSfdxStyle, requiredDevHubFlag } from './flags/sfdxflags';
+import { loglevel, orgApiVersionFlagSfdxStyle, targetdevhubusername } from './flags/sfdxflags';
 
 
 // Initialize Messages with the current plugin directory
@@ -42,7 +42,7 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
     public static flags = {
         loglevel,
         'apiversion': orgApiVersionFlagSfdxStyle,
-        'devhubalias': requiredDevHubFlag,
+        'devhubalias': targetdevhubusername,
         diffcheck: Flags.boolean({
             description: messages.getMessage('diffCheckFlagDescription'),
             default: false,
