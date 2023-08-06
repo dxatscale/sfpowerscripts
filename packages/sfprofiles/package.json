@@ -70,11 +70,11 @@
         "node-cache": "^5.1.2",
         "request": "^2.88.2",
         "request-promise-native": "^1.0.9",
-        "rimraf": "^4.1.2",
+        "rimraf": "^5.0.1",
         "simple-git": "^3.16.0",
         "tslib": "2.1.0",
         "xml-formatter": "^3.4.1",
-        "xml2js": "^0.5.0",
+        "xml2js": "^0.6.0",
         "ignore": "^5.1.8",
         "glob":"10.3.3",
         "@salesforce/ts-types": "2.0.5"

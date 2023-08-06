@@ -1,5 +1,4 @@
 import { Messages } from '@salesforce/core';
-import { flags } from '@salesforce/command';
 import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
 import ReleaseDefinition from '../../impl/release/ReleaseDefinition';
 import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig';
@@ -18,6 +17,8 @@ import { COLOR_KEY_MESSAGE } from '@dxatscale/sfp-logger';
 import { EOL } from 'os';
 import { COLOR_WARNING } from '@dxatscale/sfp-logger';
 import { COLOR_HEADER } from '@dxatscale/sfp-logger';
+import { Flags } from '@oclif/core';
+import { arrayFlagSfdxStyle, loglevel, logsgroupsymbol } from '../../flags/sfdxflags';
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'patch');
@@ -30,63 +31,42 @@ export default class Patch extends SfpowerscriptsCommand {
     protected static requiresProject = true;
     protected static requiresDevhubUsername = false;
 
-    protected static flagsConfig = {
-        releasedefinitions: flags.array({
+    public static flags = {
+        releasedefinitions: arrayFlagSfdxStyle({
             char: 'p',
             required: true,
             description: messages.getMessage('releaseDefinitionFlagDescription'),
         }),
-        sourcebranchname: flags.string({
+        sourcebranchname: Flags.string({
             char: 's',
             required: true,
             description: messages.getMessage('sourcebranchNameFlagDescription'),
         }),
-        targetbranchname: flags.string({
+        targetbranchname: Flags.string({
             char: 't',
             required: true,
             description: messages.getMessage('targetbranchNameFlagDescription'),
         }),
-        scriptpath: flags.filepath({
+        scriptpath: Flags.file({
             char: 'f',
             description: messages.getMessage('scriptPathFlagDescription'),
         }),
-        npm: flags.boolean({
+        npm: Flags.boolean({
             description: messages.getMessage('npmFlagDescription'),
             exclusive: ['scriptpath'],
         }),
-        scope: flags.string({
+        scope: Flags.string({
             description: messages.getMessage('scopeFlagDescription'),
             dependsOn: ['npm'],
             parse: async (scope) => scope.replace(/@/g, '').toLowerCase(),
         }),
-        npmrcpath: flags.filepath({
+        npmrcpath: Flags.file({
             description: messages.getMessage('npmrcPathFlagDescription'),
             dependsOn: ['npm'],
             required: false,
         }),
-        logsgroupsymbol: flags.array({
-            char: 'g',
-            description: messages.getMessage('logsGroupSymbolFlagDescription'),
-        }),
-        loglevel: flags.enum({
-            description: 'logging level for this command invocation',
-            default: 'info',
-            required: false,
-            options: [
-                'trace',
-                'debug',
-                'info',
-                'warn',
-                'error',
-                'fatal',
-                'TRACE',
-                'DEBUG',
-                'INFO',
-                'WARN',
-                'ERROR',
-                'FATAL',
-            ],
-        }),
+        logsgroupsymbol,
+        loglevel
     };
 
     async execute(): Promise<any> {

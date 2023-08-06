@@ -1,12 +1,13 @@
 import SfpowerscriptsCommand from './SfpowerscriptsCommand';
 import { Messages } from '@salesforce/core';
-import { flags } from '@salesforce/command';
 import ArtifactFetcher, { Artifact } from '@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFetcher';
 import * as rimraf from 'rimraf';
 import SfpPackage from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
 import { ConsoleLogger } from '@dxatscale/sfp-logger';
 import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder';
 import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
+import { Flags } from '@oclif/core';
+import { requiredUserNameFlag } from './flags/sfdxflags';
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'install_package_command');
@@ -22,22 +23,18 @@ export default abstract class InstallPackageCommand extends SfpowerscriptsComman
     /**
      * Flags that are common/required on all package installation commands
      */
-    protected static flagsConfig = {
-        package: flags.string({
+    public static flags = {
+        package: Flags.string({
             char: 'n',
             description: messages.getMessage('packageFlagDescription'),
             required: true,
         }),
-        targetorg: flags.string({
-            char: 'u',
-            description: messages.getMessage('targetOrgFlagDescription'),
-            required: true,
-        }),
-        artifactdir: flags.directory({
+        targetorg: requiredUserNameFlag,
+        artifactdir: Flags.directory({
             description: messages.getMessage('artifactDirectoryFlagDescription'),
             default: 'artifacts',
         }),
-        skiponmissingartifact: flags.boolean({
+        skiponmissingartifact: Flags.boolean({
             char: 's',
             description: messages.getMessage('skipOnMissingArtifactFlagDescription'),
         }),

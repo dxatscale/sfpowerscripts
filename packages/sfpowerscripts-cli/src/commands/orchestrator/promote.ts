@@ -1,4 +1,3 @@
-import { flags } from '@salesforce/command';
 import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
 import { Messages } from '@salesforce/core';
 import PromoteUnlockedPackageImpl from '@dxatscale/sfpowerscripts.core/lib/package/promote/PromoteUnlockedPackageImpl'
@@ -6,6 +5,8 @@ import ArtifactFetcher from '@dxatscale/sfpowerscripts.core/lib/artifacts/Artifa
 import { ConsoleLogger } from '@dxatscale/sfp-logger';
 import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder';
 import { PackageType } from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
+import { Flags, ux } from '@oclif/core';
+import { loglevel, requiredDevHubFlag } from '../../flags/sfdxflags';
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'promote');
@@ -17,42 +18,24 @@ export default class Promote extends SfpowerscriptsCommand {
 
     protected static requiresDevhubUsername = true;
 
-    protected static flagsConfig = {
-        artifactdir: flags.directory({
+    public static flags = {
+        requiredDevHubFlag,
+        artifactdir: Flags.directory({
             required: true,
             char: 'd',
             description: messages.getMessage('artifactDirectoryFlagDescription'),
             default: 'artifacts',
         }),
-        outputdir: flags.directory({
+        outputdir: Flags.directory({
             required: false,
             char: 'o',
             description: messages.getMessage('outputDirectoryFlagDescription'),
             hidden: true,
             deprecated: {
                 message: '--outputdir is deprecated, Artifacts are no longer modified after promote',
-                messageOverride: '--outputdir is deprecated, Artifacts are no longer modified after promote',
             },
         }),
-        loglevel: flags.enum({
-            description: 'logging level for this command invocation',
-            default: 'info',
-            required: false,
-            options: [
-                'trace',
-                'debug',
-                'info',
-                'warn',
-                'error',
-                'fatal',
-                'TRACE',
-                'DEBUG',
-                'INFO',
-                'WARN',
-                'ERROR',
-                'FATAL',
-            ],
-        }),
+       loglevel
     };
 
     public async execute() {
@@ -107,7 +90,7 @@ export default class Promote extends SfpowerscriptsCommand {
 
             // Print unpromoted packages with reason for failure
             if (unpromotedPackages.length > 0) {
-                this.ux.table(unpromotedPackages, ['name', 'error']);
+                ux.table(unpromotedPackages, { name: {}, error: {} });
             }
 
             // Fail the task when an error occurs

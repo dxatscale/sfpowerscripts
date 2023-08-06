@@ -1,5 +1,3 @@
-import { flags, FlagsConfig, SfdxResult, SfdxCommand } from '@salesforce/command';
-import { AnyJson } from '@salesforce/ts-types';
 import { Messages, Org }  from '@salesforce/core';
 import * as _ from 'lodash';
 import { Sfpowerkit } from '@dxatscale/sfprofiles/lib/utils/sfpowerkit';
@@ -11,6 +9,8 @@ import MetadataFiles from '@dxatscale/sfprofiles/lib/impl/metadata/metadataFiles
 import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
 const Table = require('cli-table');
 import { ZERO_BORDER_TABLE } from '../../ui/TableConstants';
+import { Flags } from '@oclif/core';
+import { arrayFlagSfdxStyle, loglevel, orgApiVersionFlagSfdxStyle, requiredUserNameFlag } from '../../flags/sfdxflags';
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -28,56 +28,33 @@ export default class Reconcile extends SfpowerscriptsCommand {
         `$ sfpowerscripts profile:reconcile  -u myscratchorg -d destfolder`,
     ];
 
-    //public static args = [{name: 'file'}];
 
-    protected static flagsConfig: FlagsConfig = {
-        // flag with a value (-n, --name=VALUE)
-        folder: flags.array({
+
+    public static flags = {
+        folder:arrayFlagSfdxStyle({
             char: 'f',
             description: messages.getMessage('folderFlagDescription'),
             required: false,
-            map: (f: string) => f.trim(),
         }),
-        profilelist: flags.array({
+        profilelist: arrayFlagSfdxStyle({
             char: 'n',
             description: messages.getMessage('nameFlagDescription'),
             required: false,
-            map: (n: string) => n.trim(),
         }),
-        destfolder: flags.directory({
+        destfolder: Flags.directory({
             char: 'd',
             description: messages.getMessage('destFolderFlagDescription'),
             required: false,
         }),
-        sourceonly: flags.boolean({
+        sourceonly: Flags.boolean({
             char: 's',
             description: messages.getMessage('sourceonlyFlagDescription'),
             required: false,
         }),
-        targetorg: flags.string({
-            char: 'u',
-            description: messages.getMessage('targetorgFlagDescription'),
-            required: false,
-        }),
-        loglevel: flags.enum({
-            description: 'logging level for this command invocation',
-            default: 'info',
-            required: false,
-            options: [
-                'trace',
-                'debug',
-                'info',
-                'warn',
-                'error',
-                'fatal',
-                'TRACE',
-                'DEBUG',
-                'INFO',
-                'WARN',
-                'ERROR',
-                'FATAL',
-            ],
-        }),
+        targetorg: requiredUserNameFlag,
+        'apiversion': orgApiVersionFlagSfdxStyle,
+        loglevel,
+        
     };
 
     // Comment this out if your command does not require an org username

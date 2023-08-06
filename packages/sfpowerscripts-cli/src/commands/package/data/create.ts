@@ -1,10 +1,11 @@
-import { flags } from '@salesforce/command';
 import { Messages } from '@salesforce/core';
 import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig';
 import { COLOR_SUCCESS, ConsoleLogger } from '@dxatscale/sfp-logger';
 import PackageCreateCommand from '../../../PackageCreateCommand';
 import SfpPackage, { PackageType } from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
 import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder';
+import { Flags } from '@oclif/core';
+import { loglevel } from '../../../flags/sfdxflags';
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'create_data_package');
@@ -22,56 +23,38 @@ export default class CreateDataPackage extends PackageCreateCommand {
         `<refname>_sfpowerscripts_package_version_number`,
     ];
 
-    protected static flagsConfig = {
-        package: flags.string({
+    public static flags = {
+        package: Flags.string({
             required: true,
             char: 'n',
             description: messages.getMessage('packageFlagDescription'),
         }),
-        versionnumber: flags.string({
+        versionnumber: Flags.string({
             required: true,
             char: 'v',
             description: messages.getMessage('versionNumberFlagDescription'),
         }),
-        artifactdir: flags.directory({
+        artifactdir: Flags.directory({
             description: messages.getMessage('artifactDirectoryFlagDescription'),
             default: 'artifacts',
         }),
-        diffcheck: flags.boolean({
+        diffcheck: Flags.boolean({
             description: messages.getMessage('diffCheckFlagDescription'),
         }),
-        branch: flags.string({
+        branch: Flags.string({
             description: messages.getMessage('branchFlagDescription'),
         }),
-        gittag: flags.boolean({
+        gittag: Flags.boolean({
             description: messages.getMessage('gitTagFlagDescription'),
         }),
-        repourl: flags.string({
+        repourl: Flags.string({
             char: 'r',
             description: messages.getMessage('repoUrlFlagDescription'),
         }),
-        refname: flags.string({
+        refname: Flags.string({
             description: messages.getMessage('refNameFlagDescription'),
         }),
-        loglevel: flags.enum({
-            description: 'logging level for this command invocation',
-            default: 'info',
-            required: false,
-            options: [
-                'trace',
-                'debug',
-                'info',
-                'warn',
-                'error',
-                'fatal',
-                'TRACE',
-                'DEBUG',
-                'INFO',
-                'WARN',
-                'ERROR',
-                'FATAL',
-            ],
-        }),
+        loglevel
     };
 
     protected async create(): Promise<SfpPackage> {
