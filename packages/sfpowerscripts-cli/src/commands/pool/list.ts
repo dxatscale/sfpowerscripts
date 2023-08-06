@@ -19,7 +19,8 @@ export default class List extends SfpowerscriptsCommand {
     public static description = messages.getMessage('commandDescription');
 
     protected static requiresDevhubUsername = true;
-
+    public static enableJsonFlag = true
+    
     public static examples = [
         `$ sfpowerscripts pool:list -t core `,
         `$ sfpowerscripts pool:list -t core -v devhub`,
