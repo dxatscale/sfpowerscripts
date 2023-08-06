@@ -3,7 +3,7 @@ import PackageCreateCommand from '../../../PackageCreateCommand';
 import { COLOR_SUCCESS, ConsoleLogger } from '@dxatscale/sfp-logger';
 import SfpPackage from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
 import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder';
-import { loglevel, requiredDevHubFlag } from '../../../flags/sfdxflags';
+import { loglevel, targetdevhubusername } from '../../../flags/sfdxflags';
 import { Flags } from '@oclif/core';
 
 // Initialize Messages with the current plugin directory
@@ -56,7 +56,7 @@ export default class CreateUnlockedPackage extends PackageCreateCommand {
         gittag: Flags.boolean({
             description: messages.getMessage('gitTagFlagDescription'),
         }),
-        requiredDevHubFlag,
+        targetdevhubusername,
         repourl: Flags.string({
             char: 'r',
             description: messages.getMessage('repoUrlFlagDescription'),

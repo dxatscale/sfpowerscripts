@@ -14,7 +14,7 @@ import { COLOR_TIME } from '@dxatscale/sfp-logger';
 import getFormattedTime from '@dxatscale/sfpowerscripts.core/lib/utils/GetFormattedTime';
 import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
 import { Flags, ux } from '@oclif/core';
-import { loglevel, orgApiVersionFlagSfdxStyle, requiredDevHubFlag } from '../../flags/sfdxflags';
+import { loglevel, orgApiVersionFlagSfdxStyle, targetdevhubusername } from '../../flags/sfdxflags';
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -37,7 +37,7 @@ export default class Fetch extends SfpowerscriptsCommand {
     ];
 
     public static flags = {
-        requiredDevHubFlag,
+        targetdevhubusername,
         tag: Flags.string({
             char: 't',
             description: messages.getMessage('tagDescription'),

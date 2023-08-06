@@ -3,7 +3,7 @@ import SfpowerscriptsCommand from '../../../SfpowerscriptsCommand';
 import PoolOrgDeleteImpl from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolOrgDeleteImpl';
 import SFPLogger from '@dxatscale/sfp-logger';
 import { Messages } from '@salesforce/core';
-import { loglevel, orgApiVersionFlagSfdxStyle, requiredDevHubFlag, requiredUserNameFlag } from '../../../flags/sfdxflags';
+import { loglevel, orgApiVersionFlagSfdxStyle, targetdevhubusername, requiredUserNameFlag } from '../../../flags/sfdxflags';
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -22,7 +22,7 @@ export default class Delete extends SfpowerscriptsCommand {
     public static flags = {
         'apiversion': orgApiVersionFlagSfdxStyle,
         requiredUserNameFlag,
-        requiredDevHubFlag,
+        targetdevhubusername,
         loglevel
     };
 

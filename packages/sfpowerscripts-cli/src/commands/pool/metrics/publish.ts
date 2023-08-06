@@ -6,7 +6,7 @@ import LimitsFetcher from '@dxatscale/sfpowerscripts.core/lib/limits/LimitsFetch
 const Table = require('cli-table');
 import SFPLogger, { LoggerLevel, COLOR_KEY_MESSAGE } from '@dxatscale/sfp-logger';
 import { Messages } from '@salesforce/core';
-import { loglevel, requiredDevHubFlag } from '../../../flags/sfdxflags';
+import { loglevel, targetdevhubusername } from '../../../flags/sfdxflags';
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -24,7 +24,7 @@ export default class Publish extends SfpowerscriptsCommand {
     public static examples = ['$ sfpowerscripts pool:metrics:publish -v <myDevHub>'];
 
     public static flags = {
-       requiredDevHubFlag,
+       targetdevhubusername,
        loglevel
     };
 

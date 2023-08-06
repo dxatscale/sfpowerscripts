@@ -6,7 +6,7 @@ import { ConsoleLogger } from '@dxatscale/sfp-logger';
 import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder';
 import { PackageType } from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
 import { Flags, ux } from '@oclif/core';
-import { loglevel, requiredDevHubFlag } from '../../flags/sfdxflags';
+import { loglevel, targetdevhubusername } from '../../flags/sfdxflags';
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'promote');
@@ -19,7 +19,7 @@ export default class Promote extends SfpowerscriptsCommand {
     protected static requiresDevhubUsername = true;
 
     public static flags = {
-        requiredDevHubFlag,
+        targetdevhubusername,
         artifactdir: Flags.directory({
             required: true,
             char: 'd',

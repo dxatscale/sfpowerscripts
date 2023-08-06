@@ -6,7 +6,7 @@ import * as fs from 'fs-extra';
 import path = require('path');
 import SFPLogger, { LoggerLevel, Logger } from '@dxatscale/sfp-logger';
 import { Flags } from '@oclif/core';
-import { loglevel, requiredDevHubFlag } from '../../flags/sfdxflags';
+import { loglevel, targetdevhubusername } from '../../flags/sfdxflags';
 
 
 // Initialize Messages with the current plugin directory
@@ -28,7 +28,7 @@ export default class Shrink extends SfpowerscriptsCommand {
             description: messages.getMessage('overWriteProjectConfigFlagDescription'),
             default: false,
         }),
-        requiredDevHubFlag,
+        targetdevhubusername,
        loglevel
     };
 

@@ -22,7 +22,7 @@ import { COLOR_WARNING } from '@dxatscale/sfp-logger';
 import PoolSchema from '@dxatscale/sfpowerscripts.core/resources/pooldefinition.schema.json';
 import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
 import { Flags } from '@oclif/core';
-import { arrayFlagSfdxStyle, loglevel, logsgroupsymbol, requiredDevHubFlag } from '../../flags/sfdxflags';
+import { loglevel, logsgroupsymbol, targetdevhubusername } from '../../flags/sfdxflags';
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'prepare');
@@ -32,7 +32,7 @@ export default class Prepare extends SfpowerscriptsCommand {
     protected static requiresProject = true;
 
     public static flags = {
-        requiredDevHubFlag,
+        targetdevhubusername,
         poolconfig: Flags.file({
             required: false,
             default: 'config/poolconfig.json',

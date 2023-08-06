@@ -7,7 +7,7 @@ import * as fs from 'fs-extra';
 import path = require('path');
 import UserDefinedExternalDependency from "@dxatscale/sfpowerscripts.core/lib/project/UserDefinedExternalDependency";
 import { Flags } from '@oclif/core';
-import { loglevel, requiredDevHubFlag } from '../../flags/sfdxflags';
+import { loglevel, targetdevhubusername } from '../../flags/sfdxflags';
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -24,7 +24,7 @@ export default class Expand extends SfpowerscriptsCommand {
     protected static requiresProject = true;
 
     public static Flags = {
-        requiredDevHubFlag,
+        targetdevhubusername,
         overwrite: Flags.boolean({
             char: 'o',
             description: messages.getMessage('overWriteProjectConfigFlagDescription'),
