@@ -1,6 +1,6 @@
 {
     "name": "@dxatscale/apexlink",
-    "version": "0.3.1",
+    "version": "1.0.0",
     "description": "Wrappers around @nawforce's apexlink java pom ",
     "author": "dxatscale",
     "homepage": "https://github.com/dxatscale/sfpowerscripts",
@@ -12,8 +12,8 @@
         "/jars"
     ],
     "dependencies": {
-        "@dxatscale/sfdx-process-wrapper": "0.1.0",
-        "@dxatscale/sfp-logger": "1.2.0",
+        "@dxatscale/sfdx-process-wrapper": "^1.0.0",
+        "@dxatscale/sfp-logger": "^2.0.0",
         "find-java-home": "2.0.0",
         "fs-extra": "11.1.1"
     },
