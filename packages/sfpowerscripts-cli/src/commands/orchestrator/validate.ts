@@ -152,8 +152,6 @@ export default class Validate extends SfpowerscriptsCommand {
                 isDeleteScratchOrg: this.flags.deletescratchorg,
                 keys: this.flags.keys,
                 baseBranch: this.flags.basebranch,
-                isImpactAnalysis: this.flags.enableimpactanalysis,
-                isDependencyAnalysis: this.flags.enabledependencyvalidation,
                 diffcheck: !this.flags.disablediffcheck,
                 disableArtifactCommit: this.flags.disableartifactupdate,
                 orgInfo: this.flags.orginfo,

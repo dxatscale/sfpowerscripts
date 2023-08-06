@@ -32,20 +32,13 @@ import { COLOR_TIME } from "@dxatscale/sfp-logger";
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender";
 import ScratchOrgInfoFetcher from "@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/services/fetchers/ScratchOrgInfoFetcher";
 import ScratchOrgInfoAssigner from "@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/services/updaters/ScratchOrgInfoAssigner";
-import Component from "@dxatscale/sfpowerscripts.core/lib/dependency/Component";
 import ValidateResult from "./ValidateResult";
 import PoolOrgDeleteImpl from "@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolOrgDeleteImpl";
 import SFPOrg from "@dxatscale/sfpowerscripts.core/lib/org/SFPOrg";
 import SfpPackage, {
 	PackageType,
 } from "@dxatscale/sfpowerscripts.core/lib/package/SfpPackage";
-import { TestOptions } from "@dxatscale/sfpowerscripts.core/lib/apextest/TestOptions";
-import {
-	RunAllTestsInPackageOptions,
-	RunSpecifiedTestsOption,
-} from "@dxatscale/sfpowerscripts.core/lib/apextest/TestOptions";
-import { CoverageOptions } from "@dxatscale/sfpowerscripts.core/lib/apex/coverage/IndividualClassCoverage";
-import TriggerApexTests from "@dxatscale/sfpowerscripts.core/lib/apextest/TriggerApexTests";
+
 import getFormattedTime from "@dxatscale/sfpowerscripts.core/lib/utils/GetFormattedTime";
 import { PostDeployHook } from "../deploy/PostDeployHook";
 import * as rimraf from "rimraf";
@@ -55,13 +48,11 @@ import ExternalPackage2DependencyResolver from "@dxatscale/sfpowerscripts.core/l
 import ExternalDependencyDisplayer from "@dxatscale/sfpowerscripts.core/lib/display/ExternalDependencyDisplayer";
 import { PreDeployHook } from "../deploy/PreDeployHook";
 import GroupConsoleLogs from "../../ui/GroupConsoleLogs";
-import { COLON_MIDDLE_BORDER_TABLE } from "../../ui/TableConstants";
 import ReleaseConfig from "../release/ReleaseConfig";
 import { mapInstalledArtifactstoPkgAndCommits } from "../../utils/FetchArtifactsFromOrg";
 import { ApexTestValidator } from "./ApexTestValidator";
-import { DependencyAnalzer } from "./DependencyAnalyzer";
 import OrgInfoDisplayer from "../../ui/OrgInfoDisplayer";
-const Table = require("cli-table");
+
 
 export enum ValidateAgainst {
 	PROVIDED_ORG = "PROVIDED_ORG",
@@ -89,8 +80,6 @@ export interface ValidateProps {
 	isDeleteScratchOrg?: boolean;
 	keys?: string;
 	baseBranch?: string;
-	isImpactAnalysis?: boolean;
-	isDependencyAnalysis?: boolean;
 	diffcheck?: boolean;
 	disableArtifactCommit?: boolean;
 	orgInfo?: boolean;
@@ -164,18 +153,6 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
 
 			if (deploymentResult.failed.length > 0 || deploymentResult.error)
 				throw new ValidateError("Validation failed", { deploymentResult });
-			else {
-				//Do dependency analysis
-				if (this.props.isDependencyAnalysis) {
-					let dependencyAnalzer = new DependencyAnalzer(this.props.baseBranch, this.orgAsSFPOrg, deploymentResult);
-					await dependencyAnalzer.dependencyAnalysis();
-				}
-
-				if (this.props.isDependencyAnalysis) {
-					let dependencyAnalzer = new DependencyAnalzer(this.props.baseBranch, this.orgAsSFPOrg, deploymentResult);
-					await dependencyAnalzer.dependencyAnalysis();
-				}
-			}
 
 			return {
 				deploymentResult
