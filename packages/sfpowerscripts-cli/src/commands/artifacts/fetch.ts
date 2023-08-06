@@ -1,10 +1,11 @@
-import { flags } from '@salesforce/command';
 import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
 import { Messages } from '@salesforce/core';
 import FetchImpl, { ArtifactVersion } from '../../impl/artifacts/FetchImpl';
 import ReleaseDefinition from '../../impl/release/ReleaseDefinition';
 import FetchArtifactsError from '../../impl/artifacts/FetchArtifactsError';
 import { ConsoleLogger } from '@dxatscale/sfp-logger';
+import { Flags } from '@oclif/core';
+import { loglevel } from '../../flags/sfdxflags';
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'fetch');
@@ -13,61 +14,43 @@ export default class Fetch extends SfpowerscriptsCommand {
     public static description = messages.getMessage('commandDescription');
 
     public static examples = [
-        `$ sfpowerscripts artifacts:fetch -p myreleasedefinition.yaml -f myscript.sh`,
-        `$ sfpowerscripts artifacts:fetch -p myreleasedefinition.yaml --npm --scope myscope --npmrcpath path/to/.npmrc`,
+        `$ sfp artifacts:fetch -p myreleasedefinition.yaml -f myscript.sh`,
+        `$ sfp artifacts:fetch -p myreleasedefinition.yaml --npm --scope myscope --npmrcpath path/to/.npmrc`,
     ];
 
     protected static requiresUsername = false;
     protected static requiresDevhubUsername = false;
 
-    protected static flagsConfig = {
-        releasedefinition: flags.filepath({
+    public static flags = {
+        releasedefinition: Flags.file({
             char: 'p',
             description: messages.getMessage('releaseDefinitionFlagDescription'),
         }),
-        artifactdir: flags.directory({
+        artifactdir: Flags.directory({
             required: true,
             char: 'd',
             description: messages.getMessage('artifactDirectoryFlagDescription'),
             default: 'artifacts',
         }),
-        scriptpath: flags.filepath({
+        scriptpath: Flags.file({
             char: 'f',
             description: messages.getMessage('scriptPathFlagDescription'),
         }),
-        npm: flags.boolean({
+        npm: Flags.boolean({
             description: messages.getMessage('npmFlagDescription'),
             exclusive: ['scriptpath'],
         }),
-        scope: flags.string({
+        scope: Flags.string({
             description: messages.getMessage('scopeFlagDescription'),
             dependsOn: ['npm'],
             parse: async (scope) => scope.replace(/@/g, '').toLowerCase()
         }),
-        npmrcpath: flags.filepath({
+        npmrcpath: Flags.file({
             description: messages.getMessage('npmrcPathFlagDescription'),
             dependsOn: ['npm'],
             required: false,
         }),
-        loglevel: flags.enum({
-            description: 'logging level for this command invocation',
-            default: 'info',
-            required: false,
-            options: [
-                'trace',
-                'debug',
-                'info',
-                'warn',
-                'error',
-                'fatal',
-                'TRACE',
-                'DEBUG',
-                'INFO',
-                'WARN',
-                'ERROR',
-                'FATAL',
-            ],
-        }),
+        loglevel
     };
 
     public async execute() {

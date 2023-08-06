@@ -1,9 +1,9 @@
 import { ConsoleLogger } from '@dxatscale/sfp-logger';
-import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
-import { flags } from '@salesforce/command';
 import { Messages } from '@salesforce/core';
 import ReleaseDefinitionGenerator from '../../impl/release/ReleaseDefinitionGenerator';
 import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
+import { Flags } from '@oclif/core';
+import { loglevel } from '../../flags/sfdxflags';
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'releasedefinition_generate');
@@ -18,57 +18,39 @@ export default class Generate extends SfpowerscriptsCommand {
     protected static requiresProject = true;
     protected static requiresDevhubUsername = false;
 
-    protected static flagsConfig = {
-        gitref: flags.string({
+    public static flags = {
+        gitref: Flags.string({
             char: 'c',
             description: messages.getMessage('commitFlagDescription'),
             required:true
         }),
-        configfile: flags.string({
+        configfile: Flags.string({
             char: 'f',
             required: true,
             description: messages.getMessage('configFileFlagDescription'),
         }),
-        releasename: flags.string({
+        releasename: Flags.string({
             char: 'n',
             required: true,
             description: messages.getMessage('releaseNameFlagDescription'),
         }),
-        branchname: flags.string({
+        branchname: Flags.string({
             char: 'b',
             description: messages.getMessage('branchNameFlagDescription'),
         }),
-        directory: flags.string({
+        directory: Flags.string({
             char: 'd',
             description: messages.getMessage('directoryFlagDescription'),
         }),
-        nopush: flags.boolean({
+        nopush: Flags.boolean({
             description: messages.getMessage('noPushFlagDescription'),
             default:false
         }),
-        forcepush: flags.boolean({
+        forcepush: Flags.boolean({
             description: messages.getMessage('forcePushFlagDescription'),
             dependsOn: ['push'],
         }),
-        loglevel: flags.enum({
-            description: 'logging level for this command invocation',
-            default: 'info',
-            required: false,
-            options: [
-                'trace',
-                'debug',
-                'info',
-                'warn',
-                'error',
-                'fatal',
-                'TRACE',
-                'DEBUG',
-                'INFO',
-                'WARN',
-                'ERROR',
-                'FATAL',
-            ],
-        }),
+        loglevel
     };
 
     async execute(): Promise<any> {
