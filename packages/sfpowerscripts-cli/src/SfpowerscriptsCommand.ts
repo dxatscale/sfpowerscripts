@@ -70,7 +70,7 @@ export default abstract class SfpowerscriptsCommand extends Command {
 
         if(this.statics.flags.targetdevhubusername && this.statics.requiresDevhubUsername)
         {
-            this.hubOrg = await Org.create({aliasOrUsername:this.flags.devhubalias});
+            this.hubOrg = await Org.create({aliasOrUsername:this.flags.targetdevhubusername});
         }
 
 
