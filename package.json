@@ -22,7 +22,6 @@
         "semver": "7.5.2",
         "ts-loader": "~9.4.2",
         "ts-node": "^9",
-        "tslint": "^5",
         "typescript": "^5"
     },
     "dependencies": {
