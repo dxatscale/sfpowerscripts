@@ -239,7 +239,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
             have dependency to components in the manifest. \
             Please check whether this manifest works! \
             Acutal Error Observed: \
-            ----------------------------------------------------------------------- \
+            -------------------------------------- \
             ${COLOR_ERROR(error.message)}`,
                 LoggerLevel.INFO,
                 this.logger

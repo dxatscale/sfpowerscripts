@@ -3,41 +3,41 @@ import { EOL } from 'os';
 import chalk = require('chalk');
 
 export enum LoggerLevel {
-    TRACE = 10,
-    DEBUG = 20,
-    INFO = 30,
-    WARN = 40,
-    ERROR = 50,
-    FATAL = 60,
-    HIDE = 70,
+  TRACE = 10,
+  DEBUG = 20,
+  INFO = 30,
+  WARN = 40,
+  ERROR = 50,
+  FATAL = 60,
+  HIDE = 70,
 }
 
 const enum LoggerType {
-    console = 1,
-    file = 2,
-    void = 3,
+  console = 1,
+  file = 2,
+  void = 3,
 }
 export class ConsoleLogger implements Logger {
-    public logType: LoggerType;
-    constructor() {
-        this.logType = LoggerType.console;
-    }
+  public logType: LoggerType;
+  constructor() {
+    this.logType = LoggerType.console;
+  }
 }
 export class VoidLogger implements Logger {
-    public logType: LoggerType;
-    constructor() {
-        this.logType = LoggerType.void;
-    }
+  public logType: LoggerType;
+  constructor() {
+    this.logType = LoggerType.void;
+  }
 }
 export class FileLogger implements Logger {
-    public logType: LoggerType;
-    constructor(public path: string) {
-        this.logType = LoggerType.file;
-    }
+  public logType: LoggerType;
+  constructor(public path: string) {
+    this.logType = LoggerType.file;
+  }
 }
 export interface Logger {
-    logType: LoggerType;
-    path?: string;
+  logType: LoggerType;
+  path?: string;
 }
 
 export const COLOR_ERROR = chalk.bold.red;
@@ -52,67 +52,94 @@ export const COLOR_KEY_MESSAGE = chalk.magentaBright.bold;
 export const COLOR_KEY_VALUE = chalk.black.bold.bgGreenBright;
 
 export default class SFPLogger {
-    public static logLevel: LoggerLevel = LoggerLevel.INFO;
-    public static isLogsDisabled: boolean = false;
+  public static logLevel: LoggerLevel = LoggerLevel.INFO;
+  public static isLogsDisabled: boolean = false;
 
-    static enableColor() {
-        chalk.level = 2;
+  static enableColor() {
+    chalk.level = 2;
+  }
+
+  static disableColor() {
+    chalk.level = 0;
+  }
+
+  static log(message: string, logLevel = LoggerLevel.INFO, logger?: Logger) {
+    if (SFPLogger.isLogsDisabled) return;
+    if (logLevel == null) logLevel = LoggerLevel.INFO;
+
+    if (logLevel < this.logLevel) return;
+
+    // Split message into lines of 90 characters
+    const maxLineLength = 120;
+    const lines = [];
+    for (let i = 0; i < message.length; i += maxLineLength) {
+      lines.push(message.substring(i, i + maxLineLength));
     }
 
-    static disableColor() {
-        chalk.level = 0;
+    //Todo: Proper fix
+    if (logger && logger.logType === LoggerType.console) {
+      logger = null; // Make it nullable, so it goes to console
     }
 
-    static log(message: string, logLevel = LoggerLevel.INFO, logger?: Logger) {
-        if (SFPLogger.isLogsDisabled)
-            return;
-            if (logLevel == null) logLevel = LoggerLevel.INFO;
+    if (logger) {
+      if (logger.logType === LoggerType.void) {
+        return;
+      } else if (logger.logType === LoggerType.file) {
+        let fileLogger = logger as FileLogger;
+        lines.forEach(line => {
+          line = line.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, '');
+          fs.appendFileSync(fileLogger.path, line + EOL, 'utf8');
+        });
+      }
+    } else {
+      lines.forEach(line => {
+        switch (logLevel) {
+          case LoggerLevel.TRACE:
+            console.log(COLOR_TRACE(line));
+            break;
 
-            if (logLevel < this.logLevel) return;
+          case LoggerLevel.DEBUG:
+            console.log(COLOR_DEBUG(line));
+            break;
 
-            //Todo: Proper fix
-            if (logger && logger.logType === LoggerType.console) {
-                logger = null; //Make it nullable, so it goes to console
-            }
+          case LoggerLevel.INFO:
+            console.log(line);
+            break;
 
-            if (logger) {
-                if (logger.logType === LoggerType.void) {
-                    return;
-                } else if (logger.logType === LoggerType.file) {
-                    let fileLogger = logger as FileLogger;
-                    message = message
-                        ?.toString()
-                        .replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, '');
-                    fs.appendFileSync(fileLogger.path, message + EOL, 'utf8');
-                }
-            } else {
-                switch (logLevel) {
-                    case LoggerLevel.TRACE:
-                        console.log(COLOR_TRACE(message));
-                        break;
+          case LoggerLevel.WARN:
+            console.log(COLOR_WARNING(line));
+            break;
 
-                    case LoggerLevel.DEBUG:
-                        console.log(COLOR_DEBUG(message));
-                        break;
-
-                    case LoggerLevel.INFO:
-                        console.log(message);
-                        break;
-
-                    case LoggerLevel.WARN:
-                        console.log(COLOR_WARNING(message));
-                        break;
-
-                    case LoggerLevel.ERROR:
-                        console.log(COLOR_ERROR(message));
-                        break;
-                }
-
-            }
-
+          case LoggerLevel.ERROR:
+            console.log(COLOR_ERROR(line));
+            break;
+        }
+      });
     }
+  }
 
-    static disableLogs() {
-        SFPLogger.isLogsDisabled = true;
+  static disableLogs() {
+    SFPLogger.isLogsDisabled = true;
+  }
+
+  static printHeaderLine(header, color: chalk.Chalk, logLevel, logger?: Logger) {
+    if (header == null)
+      header = '';
+    const lineLength = 90;
+    const leftPadLength = Math.floor((lineLength - header.length) / 2);
+    const rightPadLength = lineLength - leftPadLength - header.length;
+    const line = '-'.repeat(leftPadLength) + `${header}` + '-'.repeat(rightPadLength);
+    if (logger) {
+      if (logger.logType === LoggerType.void) {
+        return;
+      } else if (logger.logType === LoggerType.file) {
+        return;
+      }
+      else
+        console.log(color(line));
     }
+    else
+      console.log(color(line));
+
+  }
 }

@@ -22,6 +22,7 @@ import PackageVersionUpdater from './version/PackageVersionUpdater';
 import { AnalyzerRegistry } from './analyser/AnalyzerRegistry';
 import { ComponentSet } from '@salesforce/source-deploy-retrieve';
 import CreateDiffPackageImp from './packageCreators/CreateDiffPackageImpl';
+import { COLOR_WARNING } from '@dxatscale/sfp-logger';
 
 export default class SfpPackageBuilder {
     public static async buildPackageFromProjectDirectory(
@@ -238,16 +239,16 @@ export default class SfpPackageBuilder {
                 sfpPackage.isApexFound == true &&
                 sfpPackage.apexTestClassses == null)
         ) {
+            SFPLogger.printHeaderLine('WARNING!  NON OPTIMAL DEPLOYMENT',COLOR_WARNING,LoggerLevel.INFO,logger);
             SFPLogger.log(
-                ` ----------------------------------WARNING!  NON OPTIMAL DEPLOYMENT--------------------------------------------${EOL}` +
-                    `This package has apex classes/triggers, In order to deploy optimally, each class need to have a minimum ${EOL}` +
-                    `75% test coverage,We are unable to find any test classes in the given package, hence will be deploying ${EOL}` +
+                    `This package has apex classes/triggers, In order to deploy optimally, each class need to have a minimum` +
+                    `75% test coverage,We are unable to find any test classes in the given package, hence will be deploying` +
                     `via triggering all local tests,This definitely is not optimal approach on large orgs` +
-                    `Please consider adding test classes for the classes in the package ${EOL}` +
-                    `-------------------------------------------------------------------------------------------------------------`,
+                    `Please consider adding test classes for the classes in the package` +
                 LoggerLevel.INFO,
                 logger
             );
+            SFPLogger.printHeaderLine('',COLOR_WARNING,LoggerLevel.INFO,logger);
             return true;
         } else return false;
     }
