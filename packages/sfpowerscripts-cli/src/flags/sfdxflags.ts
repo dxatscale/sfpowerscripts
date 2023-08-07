@@ -14,7 +14,6 @@
 import { Flags } from '@oclif/core';
 import { Lifecycle, Messages, Org, OrgConfigProperties } from '@salesforce/core';
 import { orgApiVersionFlag } from './orgApiVersion';
-import { getHubOrThrow, getOrgOrThrow, maybeGetHub, maybeGetOrg, optionalHubFlag, optionalOrgFlag, requiredHubFlag, requiredOrgFlag } from './orgFlags';
 import { AliasAccessor } from '@salesforce/core/lib/stateAggregator';
 
 /**
@@ -27,13 +26,7 @@ export const orgApiVersionFlagSfdxStyle = orgApiVersionFlag({
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'core-messages');
-/**
- * Use only for commands that maintain sfdx compatibility.
- * Flag will be hidden and will show a warning if used.
- * Flag does *not* set the loglevel
- *
- *
- */
+
 export const loglevel = Flags.string({
   description: 'logging level for this command invocation',
   default: 'info',
@@ -89,17 +82,16 @@ export const requiredUserNameFlag = userNameFlag({
 const devhubFlag = Flags.custom({
   char: 'v',
   summary: messages.getMessage('flags.targetDevHubOrg.summary'),
-  parse: async (input: string | undefined) => (await getHubOrThrow(input)).getUsername(),
-  default: async () => (await getHubOrThrow()).getUsername(),
-  defaultHelp: async (context, isWritingManifest) => {
-    if (isWritingManifest) {
-      return undefined;
-    }
-    if (context.options instanceof Org) {
-      const org = context.options as Org;
-      return org.getUsername();
-    }
-    return (await maybeGetHub())?.getUsername();
+  parse: async (input: string | undefined) =>  {
+    let aliasAccessor = (await AliasAccessor.create());
+    let resolvedAliasOrUserName;
+    if(aliasAccessor.resolveAlias(input))
+      resolvedAliasOrUserName=aliasAccessor.resolveAlias(input);
+    else
+      resolvedAliasOrUserName=aliasAccessor.resolveUsername(input);
+     //Check if its devhub
+     const org = await Org.create({ aliasOrUsername: resolvedAliasOrUserName, isDevHub: true });
+     return resolvedAliasOrUserName;
   },
 });
 
