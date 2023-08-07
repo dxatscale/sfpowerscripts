@@ -54,7 +54,7 @@ export default class Promote extends SfpowerscriptsCommand {
             description: messages.getMessage('publishPromotedOnlyFlagDescription'),
             dependsOn: ['devhubalias'],
         }),
-        'devhubalias':optionalDevHubFlag,
+       'devhubalias':optionalDevHubFlag,
         scriptpath: Flags.file({
             char: 'f',
             description: messages.getMessage('scriptPathFlagDescription'),
