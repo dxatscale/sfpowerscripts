@@ -7,6 +7,9 @@ import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPac
 import { PackageType } from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
 import { Flags, ux } from '@oclif/core';
 import { loglevel, targetdevhubusername } from '../../flags/sfdxflags';
+import { LoggerLevel } from '@dxatscale/sfp-logger';
+import { COLOR_HEADER } from '@dxatscale/sfp-logger';
+import SFPLogger from '@dxatscale/sfp-logger';
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'promote');
@@ -39,10 +42,9 @@ export default class Promote extends SfpowerscriptsCommand {
     };
 
     public async execute() {
-        console.log('-----------sfpowerscripts orchestrator ------------------');
-        console.log('command: promote');
-        console.log(`Artifact Directory: ${this.flags.artifactdir}`);
-        console.log('---------------------------------------------------------');
+        SFPLogger.log(COLOR_HEADER('command: promote'));
+        SFPLogger.log(COLOR_HEADER(`Artifact Directory: ${this.flags.artifactdir}`));
+        SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
 
         //Refresh HubOrg Authentication
         await this.hubOrg.refreshAuth();

@@ -1,5 +1,5 @@
 import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
-import { Messages } from '@salesforce/core';
+import { LoggerLevel, Messages } from '@salesforce/core';
 import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender';
 import ReleaseImpl, { ReleaseProps, ReleaseResult } from '../../impl/release/ReleaseImpl';
 import ReleaseDefinition from '../../impl/release/ReleaseDefinition';
@@ -116,9 +116,7 @@ export default class Release extends SfpowerscriptsCommand {
         SFPLogger.log(COLOR_HEADER(`Release Definitions: ${this.flags.releasedefinition}`));
         SFPLogger.log(COLOR_HEADER(`Artifact Directory: ${path.resolve('artifacts')}`));
 
-        SFPLogger.log(
-            COLOR_HEADER(`-------------------------------------------------------------------------------------------`)
-        );
+        SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
 
         let releaseDefinitions: ReleaseDefinitionSchema[] = [];
         for (const pathToReleaseDefintion of this.flags.releasedefinition) {
@@ -216,12 +214,8 @@ export default class Release extends SfpowerscriptsCommand {
     private printReleaseSummary(releaseResult: ReleaseResult, totalElapsedTime: number): void {
         if (this.flags.logsgroupsymbol?.[0])
             SFPLogger.log(COLOR_HEADER(this.flags.logsgroupsymbol[0], 'Release Summary'));
-
-        SFPLogger.log(
-            COLOR_HEADER(
-                `----------------------------------------------------------------------------------------------------`
-            )
-        );
+        
+        SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
         if (releaseResult.installDependenciesResult) {
             SFPLogger.log(COLOR_HEADER(`\nPackage Dependencies`));
             SFPLogger.log(COLOR_SUCCESS(`   ${releaseResult.installDependenciesResult.success.length} succeeded`));
@@ -247,11 +241,7 @@ export default class Release extends SfpowerscriptsCommand {
         }
 
         SFPLogger.log(COLOR_TIME(`\nElapsed Time: ${new Date(totalElapsedTime).toISOString().substr(11, 8)}`));
-        SFPLogger.log(
-            COLOR_HEADER(
-                `----------------------------------------------------------------------------------------------------`
-            )
-        );
+        SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
     }
 
     protected validateFlags() {

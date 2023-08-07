@@ -96,11 +96,7 @@ export default class Prepare extends SfpowerscriptsCommand {
             let results = await prepareImpl.exec();
             if (results.isOk()) {
                 let totalElapsedTime = Date.now() - executionStartTime;
-                SFPLogger.log(
-                    COLOR_HEADER(
-                        `-----------------------------------------------------------------------------------------------------------`
-                    )
-                );
+                SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
                 SFPLogger.log(
                     COLOR_SUCCESS(
                         `Provisioned {${results.value.scratchOrgs.length}}  scratchorgs out of ${
@@ -110,11 +106,7 @@ export default class Prepare extends SfpowerscriptsCommand {
                         )} `
                     )
                 );
-                SFPLogger.log(
-                    COLOR_HEADER(
-                        `----------------------------------------------------------------------------------------------------------`
-                    )
-                );
+                SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
 
                 await this.getCurrentRemainingNumberOfOrgsInPoolAndReport(poolConfig);
 
@@ -122,17 +114,9 @@ export default class Prepare extends SfpowerscriptsCommand {
                 if (results.value.scratchOrgs.length > 0)
                     SFPStatsSender.logGauge('prepare.duration', Date.now() - executionStartTime, tags);
             } else if (results.isErr()) {
-                SFPLogger.log(
-                    COLOR_HEADER(
-                        `-----------------------------------------------------------------------------------------------------------`
-                    )
-                );
+                SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
                 SFPLogger.log(COLOR_ERROR(results.error.message), LoggerLevel.ERROR);
-                SFPLogger.log(
-                    COLOR_HEADER(
-                        `-----------------------------------------------------------------------------------------------------------`
-                    )
-                );
+                SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
 
                 switch (results.error.errorCode) {
                     case PoolErrorCodes.Max_Capacity:
@@ -190,9 +174,7 @@ export default class Prepare extends SfpowerscriptsCommand {
             }
         }
 
-        SFPLogger.log(
-            COLOR_HEADER(`-------------------------------------------------------------------------------------------`)
-        );
+        SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
     }
 
     private async getCurrentRemainingNumberOfOrgsInPoolAndReport(poolConfig: PoolConfig) {

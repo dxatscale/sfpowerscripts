@@ -1,4 +1,4 @@
-import { Messages, Org } from '@salesforce/core';
+import { LoggerLevel, Messages, Org } from '@salesforce/core';
 import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
 import ValidateImpl, { ValidateAgainst, ValidateProps, ValidationMode } from '../../impl/validate/ValidateImpl';
 import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender';
@@ -95,10 +95,7 @@ export default class ValidateAgainstOrg extends SfpowerscriptsCommand {
         }
       
 
-        SFPLogger.log(
-            COLOR_HEADER(`-------------------------------------------------------------------------------------------`)
-        );
-
+        SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
 
         
         let validateResult: ValidateResult;

@@ -8,6 +8,7 @@ import ValidateResult from '../../impl/validate/ValidateResult';
 import * as fs from 'fs-extra';
 import { arrayFlagSfdxStyle, loglevel, logsgroupsymbol, targetdevhubusername } from '../../flags/sfdxflags';
 import { Flags } from '@oclif/core';
+import { LoggerLevel } from '@dxatscale/sfp-logger';
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'validate');
@@ -130,9 +131,7 @@ export default class Validate extends SfpowerscriptsCommand {
         );
        
 
-        SFPLogger.log(
-            COLOR_HEADER(`-------------------------------------------------------------------------------------------`)
-        );
+        SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
 
         let validateResult: ValidateResult;
         try {

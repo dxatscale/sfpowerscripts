@@ -13,6 +13,7 @@ import { COLOR_TIME } from '@dxatscale/sfp-logger';
 import getFormattedTime from '@dxatscale/sfpowerscripts.core/lib/utils/GetFormattedTime';
 import { Flags } from '@oclif/core';
 import { arrayFlagSfdxStyle, loglevel, logsgroupsymbol, requiredUserNameFlag } from '../../flags/sfdxflags';
+import { LoggerLevel } from '@dxatscale/sfp-logger';
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -85,9 +86,7 @@ export default class Deploy extends SfpowerscriptsCommand {
         SFPLogger.log(COLOR_HEADER(`Target Environment: ${this.flags.targetorg}`));
         if(this.flags.releaseconfig) SFPLogger.log(COLOR_HEADER(`Filter according to: ${this.flags.releaseconfig}`));
         if (this.flags.baselineorg) SFPLogger.log(COLOR_HEADER(`Baselined Against Org: ${this.flags.baselineorg}`));
-        SFPLogger.log(
-            COLOR_HEADER(`-------------------------------------------------------------------------------------------`)
-        );
+        SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
 
         let deploymentResult: DeploymentResult;
 
@@ -129,11 +128,7 @@ export default class Deploy extends SfpowerscriptsCommand {
             let totalElapsedTime: number = Date.now() - executionStartTime;
 
         
-            SFPLogger.log(
-                COLOR_HEADER(
-                    `----------------------------------------------------------------------------------------------------`
-                )
-            );
+            SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
             SFPLogger.log(
                 COLOR_SUCCESS(
                     `${deploymentResult.deployed.length} packages deployed in ${COLOR_TIME(
@@ -150,11 +145,7 @@ export default class Deploy extends SfpowerscriptsCommand {
                     )
                 );
             }
-            SFPLogger.log(
-                COLOR_HEADER(
-                    `----------------------------------------------------------------------------------------------------`
-                )
-            );
+            SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
 
           
             SFPStatsSender.logCount('deploy.scheduled', tags);

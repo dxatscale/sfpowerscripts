@@ -146,11 +146,7 @@ export default class Fetch extends SfpowerscriptsCommand {
     }
 
     private printFetchSummary(isSourceTrackingEnabled: boolean, totalElapsedTime: number): void {
-        SFPLogger.log(
-            COLOR_HEADER(
-                `----------------------------------------------------------------------------------------------------`
-            )
-        );
+        SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
         if (!isSourceTrackingEnabled) {
             SFPLogger.log(
                 COLOR_SUCCESS(`Succesfully fetched a scratch org in ${COLOR_TIME(getFormattedTime(totalElapsedTime))}`)
@@ -164,10 +160,6 @@ export default class Fetch extends SfpowerscriptsCommand {
                 )
             );
         }
-        console.log(
-            COLOR_HEADER(
-                `----------------------------------------------------------------------------------------------------`
-            )
-        );
+        SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
     }
 }

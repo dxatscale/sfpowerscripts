@@ -128,11 +128,7 @@ export default class Promote extends SfpowerscriptsCommand {
             SFPLogger.log(
                 COLOR_HEADER(`Publish promoted artifacts only: ${this.flags.publishpromotedonly ? true : false}`)
             );
-            SFPLogger.log(
-                COLOR_HEADER(
-                    `-------------------------------------------------------------------------------------------`
-                )
-            );
+            SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
             let packageVersionList: any;
             if (this.flags.publishpromotedonly) {
                 let hubOrg = await SFPOrg.create({ aliasOrUsername: this.flags.devhubalias });
@@ -229,11 +225,7 @@ export default class Promote extends SfpowerscriptsCommand {
 
             let totalElapsedTime: number = Date.now() - executionStartTime;
 
-            SFPLogger.log(
-                COLOR_HEADER(
-                    `----------------------------------------------------------------------------------------------------`
-                )
-            );
+            SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
             SFPLogger.log(
                 COLOR_SUCCESS(
                     `${nPublishedArtifacts} artifacts published in ${COLOR_TIME(
@@ -245,12 +237,7 @@ export default class Promote extends SfpowerscriptsCommand {
             if (failedArtifacts.length > 0) {
                 SFPLogger.log(COLOR_ERROR(`Packages Failed to Publish`, failedArtifacts));
             }
-            SFPLogger.log(
-                COLOR_HEADER(
-                    `----------------------------------------------------------------------------------------------------`
-                )
-            );
-
+            SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
             let tags = {
                 publish_promoted_only: this.flags.publishpromotedonly ? 'true' : 'false',
             };

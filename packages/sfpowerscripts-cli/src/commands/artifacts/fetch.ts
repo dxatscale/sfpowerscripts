@@ -1,11 +1,13 @@
 import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
-import { Messages } from '@salesforce/core';
+import { LoggerLevel, Messages } from '@salesforce/core';
 import FetchImpl, { ArtifactVersion } from '../../impl/artifacts/FetchImpl';
 import ReleaseDefinition from '../../impl/release/ReleaseDefinition';
 import FetchArtifactsError from '../../impl/artifacts/FetchArtifactsError';
 import { ConsoleLogger } from '@dxatscale/sfp-logger';
 import { Flags } from '@oclif/core';
 import { loglevel } from '../../flags/sfdxflags';
+import SFPLogger from '@dxatscale/sfp-logger';
+import { COLOR_HEADER } from '@dxatscale/sfp-logger';
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'fetch');
@@ -92,17 +94,13 @@ export default class Fetch extends SfpowerscriptsCommand {
         result: { success: ArtifactVersion[]; failed:ArtifactVersion[] },
         totalElapsedTime: number
     ) {
-        console.log(
-            `----------------------------------------------------------------------------------------------------`
-        );
-        console.log(`Fetched ${result.success.length} artifacts`);
+        SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
+        SFPLogger.log(`Fetched ${result.success.length} artifacts`);
 
         if (result.failed.length > 0) console.log(`Failed to fetch ${result.failed.length} artifacts`);
 
-        console.log(`Elapsed Time: ${new Date(totalElapsedTime).toISOString().substr(11, 8)}`);
-        console.log(
-            `----------------------------------------------------------------------------------------------------`
-        );
+        SFPLogger.log(`Elapsed Time: ${new Date(totalElapsedTime).toISOString().substr(11, 8)}`);
+        SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
     }
 
     protected validateFlags() {

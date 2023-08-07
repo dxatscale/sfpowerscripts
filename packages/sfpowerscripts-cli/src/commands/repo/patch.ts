@@ -89,9 +89,7 @@ export default class Patch extends SfpowerscriptsCommand {
                 LoggerLevel.INFO,
                 logger
             );
-            SFPLogger.log(
-                COLOR_HEADER(`-------------------------------------------------------------------------------------------`)
-            );
+            SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
 
             //Load release definition
             let releaseDefinitions = await this.loadReleaseDefintions(this.flags.releasedefinitions);
