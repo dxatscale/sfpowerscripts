@@ -6,7 +6,7 @@ import SFPLogger, { COLOR_HEADER, COLOR_KEY_MESSAGE } from '@dxatscale/sfp-logge
 import * as fs from 'fs-extra';
 import ValidateError from '../../errors/ValidateError';
 import ValidateResult from '../../impl/validate/ValidateResult';
-import { loglevel, logsgroupsymbol, requiredUserNameFlag } from '../../flags/sfdxflags';
+import { loglevel, logsgroupsymbol, requiredUserNameFlag, targetdevhubusername } from '../../flags/sfdxflags';
 import { Flags } from '@oclif/core';
 
 
@@ -53,10 +53,7 @@ export default class ValidateAgainstOrg extends SfpowerscriptsCommand {
             description: messages.getMessage('installDepsFlagDescription'),
             default: false,
         }),
-        devhubalias: Flags.string({
-            char: 'v',
-            description: messages.getMessage('devhubAliasFlagDescription')
-        }),
+        devhubalias: targetdevhubusername,
         disablesourcepkgoverride: Flags.boolean({
             description: messages.getMessage('disableSourcePackageOverride'),
             dependsOn:['devhubalias']
