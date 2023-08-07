@@ -354,12 +354,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
 			totalElapsedTime: number,
 		): void {
 			let groupSection = new GroupConsoleLogs(`Deployment Summary`).begin();
-
-			SFPLogger.log(
-				COLOR_HEADER(
-					`----------------------------------------------------------------------------------------------------`,
-				),
-			);
+			SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
 			SFPLogger.log(
 				COLOR_SUCCESS(
 					`${deploymentResult.deployed.length
@@ -382,11 +377,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
 				);
 			}
 
-			SFPLogger.log(
-				COLOR_HEADER(
-					`----------------------------------------------------------------------------------------------------`,
-				),
-			);
+			SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
 			groupSection.end();
 		}
 	}
@@ -559,11 +550,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
 			failedPackages: string[],
 			totalElapsedTime: number,
 		): void {
-			SFPLogger.log(
-				COLOR_HEADER(
-					`----------------------------------------------------------------------------------------------------`,
-				),
-			);
+			SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
 			SFPLogger.log(
 				COLOR_SUCCESS(
 					`${generatedPackages.length} packages created in ${COLOR_TIME(
@@ -575,11 +562,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
 			if (failedPackages.length > 0) {
 				SFPLogger.log(COLOR_ERROR(`Packages Failed To Build`, failedPackages));
 			}
-			SFPLogger.log(
-				COLOR_HEADER(
-					`----------------------------------------------------------------------------------------------------`,
-				),
-			);
+			SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
 		}
 
 		function printIncludeOnlyPackages(includeOnlyPackages: string[]) {

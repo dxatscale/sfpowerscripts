@@ -100,22 +100,14 @@ export default abstract class SfpowerscriptsCommand extends Command {
 
        
         if (!this.jsonEnabled()) {
-            SFPLogger.log(
-                COLOR_HEADER(
-                    `-------------------------------------------------------------------------------------------`
-                )
-            );
+            SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
             SFPLogger.log(
                 COLOR_HEADER(
                     `sfpowerscripts  -- The DX@Scale CI/CD Orchestrator -Version:${this.config.version} -Release:${this.config.pjson.release}`
                 )
             );
 
-            SFPLogger.log(
-                COLOR_HEADER(
-                    `-------------------------------------------------------------------------------------------`
-                )
-            );
+            SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
         }
         else
         {

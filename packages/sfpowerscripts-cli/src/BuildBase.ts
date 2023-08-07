@@ -121,12 +121,7 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
                 SFPLogger.log(COLOR_HEADER(`Config File Path: ${flags.configfilepath}`));
             }
             SFPLogger.log(COLOR_HEADER(`Artifact Directory: ${flags.artifactdir}`));
-            SFPLogger.log(
-                COLOR_HEADER(
-                    `-------------------------------------------------------------------------------------------`
-                )
-            );
-
+            SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
             let executionStartTime = Date.now();
 
 
@@ -151,11 +146,7 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
             ) {
                 SFPLogger.log(`${EOL}${EOL}`);
                 SFPLogger.log(COLOR_INFO('No packages found to be built.. Exiting.. '));
-                SFPLogger.log(
-                    COLOR_HEADER(
-                        `----------------------------------------------------------------------------------------------------`
-                    )
-                );
+                SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
                 throw new Error('No packages to be found to be built');
             }
 
@@ -185,11 +176,7 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
             process.exitCode = 1;
         } finally {
             if (buildExecResult?.generatedPackages?.length > 0 || buildExecResult?.failedPackages?.length > 0) {
-                SFPLogger.log(
-                    COLOR_HEADER(
-                        `----------------------------------------------------------------------------------------------------`
-                    )
-                );
+                SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
                 SFPLogger.log(
                     COLOR_SUCCESS(
                         `${buildExecResult.generatedPackages.length} packages created in ${COLOR_TIME(
@@ -204,11 +191,7 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
                 if (artifactCreationErrors.length > 0)
                     SFPLogger.log(COLOR_ERROR(`Failed To Create Artifacts`, artifactCreationErrors));
 
-                SFPLogger.log(
-                    COLOR_HEADER(
-                        `----------------------------------------------------------------------------------------------------`
-                    )
-                );
+                SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
 
                 const buildResult: BuildResult = {
                     packages: [],
