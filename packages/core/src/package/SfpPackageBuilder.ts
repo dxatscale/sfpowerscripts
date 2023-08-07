@@ -244,7 +244,7 @@ export default class SfpPackageBuilder {
                     `This package has apex classes/triggers, In order to deploy optimally, each class need to have a minimum` +
                     `75% test coverage,We are unable to find any test classes in the given package, hence will be deploying` +
                     `via triggering all local tests,This definitely is not optimal approach on large orgs` +
-                    `Please consider adding test classes for the classes in the package` +
+                    `Please consider adding test classes for the classes in the package`,
                 LoggerLevel.INFO,
                 logger
             );
