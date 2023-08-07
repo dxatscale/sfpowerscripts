@@ -6,7 +6,7 @@ import SFPLogger, { COLOR_HEADER, COLOR_KEY_MESSAGE } from '@dxatscale/sfp-logge
 import ValidateError from '../../errors/ValidateError';
 import ValidateResult from '../../impl/validate/ValidateResult';
 import * as fs from 'fs-extra';
-import { arrayFlagSfdxStyle, loglevel, logsgroupsymbol } from '../../flags/sfdxflags';
+import { arrayFlagSfdxStyle, loglevel, logsgroupsymbol, targetdevhubusername } from '../../flags/sfdxflags';
 import { Flags } from '@oclif/core';
 
 Messages.importMessagesDirectory(__dirname);
@@ -20,17 +20,17 @@ export default class Validate extends SfpowerscriptsCommand {
     protected static requiresDevhubUsername = true;
 
     public static examples = [
-        `$ sfpowerscripts orchestrator:validate -p "POOL_TAG_1,POOL_TAG_2" -v <devHubUsername>`,
+        `$ sfp orchestrator:validate -p "POOL_TAG_1,POOL_TAG_2" -v <devHubUsername>`,
     ];
 
-    static aliases = ['sfpowerscripts:orchestrator:validateAgainstPool'];
-
+   //Fix Typo
     public static flags = {
         pools: arrayFlagSfdxStyle({
             char: 'p',
             description: messages.getMessage('poolsFlagDescription'),
             required: true,
         }),
+        targetdevhubusername,
         mode: Flags.string({
             description: 'validation mode',
             default: 'thorough',
