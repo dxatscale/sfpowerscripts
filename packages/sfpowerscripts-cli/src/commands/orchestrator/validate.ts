@@ -25,7 +25,7 @@ export default class Validate extends SfpowerscriptsCommand {
 
     static aliases = ['sfpowerscripts:orchestrator:validateAgainstPool'];
 
-    public static Flags = {
+    public static flags = {
         pools: arrayFlagSfdxStyle({
             char: 'p',
             description: messages.getMessage('poolsFlagDescription'),
