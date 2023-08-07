@@ -319,7 +319,7 @@ importers:
                 specifier: ^2.1.0
                 version: link:../sfplogger
             '@dxatscale/sfpowerscripts.core':
-                specifier: ^36.0.2
+                specifier: ^36.0.3
                 version: link:../core
             '@dxatscale/sfprofiles':
                 specifier: ^2.0.1
