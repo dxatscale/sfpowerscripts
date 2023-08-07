@@ -12,7 +12,7 @@ import SFPLogger, {
 import { COLOR_TIME } from '@dxatscale/sfp-logger';
 import getFormattedTime from '@dxatscale/sfpowerscripts.core/lib/utils/GetFormattedTime';
 import { Flags } from '@oclif/core';
-import { arrayFlagSfdxStyle, loglevel, logsgroupsymbol } from '../../flags/sfdxflags';
+import { arrayFlagSfdxStyle, loglevel, logsgroupsymbol, requiredUserNameFlag } from '../../flags/sfdxflags';
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -30,13 +30,8 @@ export default class Deploy extends SfpowerscriptsCommand {
     protected static requiresDevhubUsername = false;
     protected static requiresProject = false;
 
-    public static Flags = {
-        targetorg: Flags.string({
-            char: 'u',
-            description: messages.getMessage('targetOrgFlagDescription'),
-            default: 'scratchorg',
-            required: true,
-        }),
+    public static flags = {
+        targetorg: requiredUserNameFlag,
         artifactdir: Flags.directory({
             description: messages.getMessage('artifactDirectoryFlagDescription'),
             default: 'artifacts',
