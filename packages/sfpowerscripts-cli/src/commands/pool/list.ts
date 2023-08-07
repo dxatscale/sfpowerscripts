@@ -49,7 +49,7 @@ export default class List extends SfpowerscriptsCommand {
         loglevel
     };
 
-    public async execute(): Promise<AnyJson> {
+    public async execute(): Promise<any> {
         await this.hubOrg.refreshAuth();
         const hubConn = this.hubOrg.getConnection();
 
@@ -98,7 +98,7 @@ export default class List extends SfpowerscriptsCommand {
             }
         }
 
-        let output: any = {
+        let output = {
             total: scratchOrgInuse.length + scratchOrgNotInuse.length + scratchOrgInProvision.length,
             inuse: scratchOrgInuse.length,
             unused: scratchOrgNotInuse.length,

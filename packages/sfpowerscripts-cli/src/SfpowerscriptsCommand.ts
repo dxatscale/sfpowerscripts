@@ -4,7 +4,7 @@ import ProjectValidation from './ProjectValidation';
 import * as fs from 'fs-extra';
 import SFPLogger, { COLOR_HEADER, ConsoleLogger, LoggerLevel } from '@dxatscale/sfp-logger';
 import GroupConsoleLogs from './ui/GroupConsoleLogs';
-import { Command, Flags } from '@oclif/core';
+import { Command, Flags, ux } from '@oclif/core';
 import { FlagOutput } from '@oclif/core/lib/interfaces/parser';
 import { Org } from '@salesforce/core';
 
@@ -116,6 +116,12 @@ export default abstract class SfpowerscriptsCommand extends Command {
                     `-------------------------------------------------------------------------------------------`
                 )
             );
+        }
+        else
+        {
+            //Disable pretty printing in json mode
+            const chalk = require('chalk')
+            chalk.level = 0;
         }
 
         if (this.statics.requiresProject) {
