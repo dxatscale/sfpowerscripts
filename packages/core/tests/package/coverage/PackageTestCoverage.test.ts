@@ -5,11 +5,11 @@ import ApexClassFetcher from '../../../src/apex/ApexClassFetcher';
 import ApexTriggerFetcher from '../../../src/apex/ApexTriggerFetcher';
 import ApexCodeCoverageAggregateFetcher from '../../../src/apex/coverage/ApexCodeCoverageAggregateFetcher';
 
-import { Org } from '@salesforce/core';
-import { MockTestOrgData, testSetup } from '@salesforce/core/lib/testSetup';
+import { AuthInfo, ConfigAggregator, Connection, Org, OrgConfigProperties } from '@salesforce/core';
+import { MockTestOrgData, TestContext } from '@salesforce/core/lib/testSetup';
 import SfpPackage, { PackageType } from '../../../src/package/SfpPackage';
 import SfpPackageBuilder from '../../../src/package/SfpPackageBuilder';
-const $$ = testSetup();
+const $$ =  new TestContext();
 
 let packageType = PackageType.Unlocked;
 
@@ -40,16 +40,23 @@ jest.mock('../../../src/package/SfpPackageBuilder', () => {
 });
 
 
-
 const setupConnection = async () => {
     const testData = new MockTestOrgData();
-
-    $$.setConfigStubContents('AuthInfoConfig', {
-        contents: await testData.getConfig(),
+    testData.makeDevHub();
+    await $$.stubConfig({ [OrgConfigProperties.TARGET_ORG]: testData.username });
+    const { value } = (await ConfigAggregator.create()).getInfo(OrgConfigProperties.TARGET_ORG);
+    await $$.stubAuths(testData);
+    await $$.stubAliases({ myAlias: testData.username });
+    
+  
+    const conn = await Connection.create({
+      authInfo: await AuthInfo.create({username: testData.username})
     });
+  
+    return conn;
+  }
 
-    return (await Org.create({ aliasOrUsername: testData.username })).getConnection();
-};
+
 
 describe('Given a sfpowerscripts package and code coverage report, a package coverage calculator', () => {
     it('should be able to provide the coverage of a provided unlocked package', async () => {

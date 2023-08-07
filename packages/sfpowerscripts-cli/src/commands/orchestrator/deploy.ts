@@ -1,4 +1,3 @@
-import { flags } from '@salesforce/command';
 import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
 import { Messages } from '@salesforce/core';
 import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender';
@@ -12,6 +11,8 @@ import SFPLogger, {
 } from '@dxatscale/sfp-logger';
 import { COLOR_TIME } from '@dxatscale/sfp-logger';
 import getFormattedTime from '@dxatscale/sfpowerscripts.core/lib/utils/GetFormattedTime';
+import { Flags } from '@oclif/core';
+import { arrayFlagSfdxStyle, loglevel, logsgroupsymbol } from '../../flags/sfdxflags';
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -29,76 +30,55 @@ export default class Deploy extends SfpowerscriptsCommand {
     protected static requiresDevhubUsername = false;
     protected static requiresProject = false;
 
-    protected static flagsConfig = {
-        targetorg: flags.string({
+    public static Flags = {
+        targetorg: Flags.string({
             char: 'u',
             description: messages.getMessage('targetOrgFlagDescription'),
             default: 'scratchorg',
             required: true,
         }),
-        artifactdir: flags.directory({
+        artifactdir: Flags.directory({
             description: messages.getMessage('artifactDirectoryFlagDescription'),
             default: 'artifacts',
         }),
-        waittime: flags.number({
+        waittime: Flags.integer({
             description: messages.getMessage('waitTimeFlagDescription'),
             default: 120,
         }),
-        tag: flags.string({
+        tag: Flags.string({
             char: 't',
             description: messages.getMessage('tagFlagDescription'),
         }),
-        skipifalreadyinstalled: flags.boolean({
+        skipifalreadyinstalled: Flags.boolean({
             required: false,
             default: false,
             description: messages.getMessage('skipIfAlreadyInstalled'),
         }),
-        baselineorg: flags.string({
+        baselineorg: Flags.string({
             char: 'b',
             description: messages.getMessage('baselineorgFlagDescription'),
             required: false,
             dependsOn: ['skipifalreadyinstalled'],
         }),
-        allowunpromotedpackages: flags.boolean({
+        allowunpromotedpackages: Flags.boolean({
             description: messages.getMessage('allowUnpromotedPackagesFlagDescription'),
             deprecated: { 
-                message: '--allowunpromotedpackages is deprecated, All packages are allowed',
-                messageOverride: '--allowunpromotedpackages is deprecated, All packages are allowed' },
+                message: '--allowunpromotedpackages is deprecated, All packages are allowed'
+            },
             hidden: true,
         }),
-        retryonfailure: flags.boolean({
+        retryonfailure: Flags.boolean({
             description: messages.getMessage('retryOnFailureFlagDescription'),
             hidden: true,
         }),
-        logsgroupsymbol: flags.array({
-            char: 'g',
-            description: messages.getMessage('logsGroupSymbolFlagDescription'),
-        }),
-        releaseconfig: flags.string({
+        releaseconfig: Flags.string({
             description: messages.getMessage('configFileFlagDescription'),
         }),
-        enablesourcetracking: flags.boolean({
+        enablesourcetracking: Flags.boolean({
             description: messages.getMessage('enableSourceTrackingFlagDescription'),
         }),
-        loglevel: flags.enum({
-            description: 'logging level for this command invocation',
-            default: 'info',
-            required: false,
-            options: [
-                'trace',
-                'debug',
-                'info',
-                'warn',
-                'error',
-                'fatal',
-                'TRACE',
-                'DEBUG',
-                'INFO',
-                'WARN',
-                'ERROR',
-                'FATAL',
-            ],
-        }),
+        logsgroupsymbol,
+        loglevel
     };
 
     public async execute() {

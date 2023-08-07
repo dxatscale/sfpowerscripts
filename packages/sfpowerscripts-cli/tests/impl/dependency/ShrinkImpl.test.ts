@@ -1,16 +1,17 @@
 import { jest, expect } from '@jest/globals';
-import { MockTestOrgData, testSetup } from '@salesforce/core/lib/testSetup';
-import { Connection, AuthInfo } from '@salesforce/core';
+import { MockTestOrgData, TestContext } from '@salesforce/core/lib/testSetup';
+import { Connection, AuthInfo, OrgConfigProperties } from '@salesforce/core';
 import ShrinkImpl from '../../../src/impl/dependency/ShrinkImpl';
-const $$ = testSetup();
+const $$ =new TestContext();
 
 const setupFakeConnection = async () => {
   const testData = new MockTestOrgData();
   testData.makeDevHub();
 
-  $$.setConfigStubContents('AuthInfoConfig', {
-      contents: await testData.getConfig(),
-  });
+  await $$.stubAuths(testData);
+  await $$.stubAliases({ myAlias: testData.username });
+  await $$.stubConfig({ [OrgConfigProperties.TARGET_ORG]: testData.username });
+
   $$.fakeConnectionRequest = (request) => {
     return Promise.resolve(response);
   };

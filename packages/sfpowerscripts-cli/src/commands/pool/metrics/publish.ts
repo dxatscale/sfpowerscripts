@@ -1,4 +1,3 @@
-import { flags } from '@salesforce/command';
 import SfpowerscriptsCommand from '../../../SfpowerscriptsCommand';
 import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender';
 import PoolListImpl from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolListImpl';
@@ -7,6 +6,7 @@ import LimitsFetcher from '@dxatscale/sfpowerscripts.core/lib/limits/LimitsFetch
 const Table = require('cli-table');
 import SFPLogger, { LoggerLevel, COLOR_KEY_MESSAGE } from '@dxatscale/sfp-logger';
 import { Messages } from '@salesforce/core';
+import { loglevel, requiredDevHubFlag } from '../../../flags/sfdxflags';
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -23,26 +23,9 @@ export default class Publish extends SfpowerscriptsCommand {
 
     public static examples = ['$ sfpowerscripts pool:metrics:publish -v <myDevHub>'];
 
-    protected static flagsConfig = {
-        loglevel: flags.enum({
-            description: 'logging level for this command invocation',
-            default: 'info',
-            required: false,
-            options: [
-                'trace',
-                'debug',
-                'info',
-                'warn',
-                'error',
-                'fatal',
-                'TRACE',
-                'DEBUG',
-                'INFO',
-                'WARN',
-                'ERROR',
-                'FATAL',
-            ],
-        }),
+    public static flags = {
+       requiredDevHubFlag,
+       loglevel
     };
 
     public async execute(): Promise<void> {

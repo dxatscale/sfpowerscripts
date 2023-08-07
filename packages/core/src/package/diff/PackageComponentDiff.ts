@@ -113,8 +113,6 @@ export default class PackageComponentDiff {
                             await this.gitDiffUtils.copyFile(sourceComponent.xml, outputFolder, this.logger);
                         } else if (sourceComponent.type.strategies?.adapter == AdapterId.Bundle) {
                             await this.gitDiffUtils.copyFolder(sourceComponent.content, outputFolder, this.logger);
-                        } else if (sourceComponent.type.strategies?.adapter == AdapterId.Default) {
-                            await this.gitDiffUtils.copyFile(sourceComponent.xml, outputFolder, this.logger);
                         } else {
                             await this.gitDiffUtils.copyFile(sourceComponent.xml, outputFolder, this.logger);
                         }

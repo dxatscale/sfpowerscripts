@@ -1,4 +1,3 @@
-import { flags } from '@salesforce/command';
 import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
 import { Messages } from '@salesforce/core';
 import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender';
@@ -16,6 +15,8 @@ import SFPLogger, {
     ConsoleLogger,
 } from '@dxatscale/sfp-logger';
 import ReleaseDefinitionSchema from '../../impl/release/ReleaseDefinitionSchema';
+import { arrayFlagSfdxStyle, loglevel, logsgroupsymbol, optionalDevHubFlag, requiredUserNameFlag } from '../../flags/sfdxflags';
+import { Flags } from '@oclif/core';
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'release');
@@ -31,100 +32,70 @@ export default class Release extends SfpowerscriptsCommand {
     protected static requiresDevhubUsername = false;
     protected static requiresProject = false;
 
-    protected static flagsConfig = {
-        releasedefinition: flags.array({
+    public static flags = {
+        releasedefinition: arrayFlagSfdxStyle({
             char: 'p',
             description: messages.getMessage('releaseDefinitionFlagDescription'),
         }),
-        targetorg: flags.string({
-            char: 'u',
-            description: messages.getMessage('targetOrgFlagDescription'),
-            default: 'scratchorg',
-            required: true,
-        }),
-        scriptpath: flags.filepath({
+        targetorg: requiredUserNameFlag,
+        scriptpath: Flags.file({
             char: 'f',
             description: messages.getMessage('scriptPathFlagDescription'),
         }),
-        npm: flags.boolean({
+        npm: Flags.boolean({
             description: messages.getMessage('npmFlagDescription'),
             exclusive: ['scriptpath'],
         }),
-        scope: flags.string({
+        scope: Flags.string({
             description: messages.getMessage('scopeFlagDescription'),
             dependsOn: ['npm'],
             parse: async (scope) => scope.replace(/@/g, '').toLowerCase(),
         }),
-        npmrcpath: flags.filepath({
+        npmrcpath: Flags.file({
             description: messages.getMessage('npmrcPathFlagDescription'),
             dependsOn: ['npm'],
             required: false,
         }),
-        logsgroupsymbol: flags.array({
-            char: 'g',
-            description: messages.getMessage('logsGroupSymbolFlagDescription'),
-        }),
-        tag: flags.string({
+        logsgroupsymbol,
+        tag: Flags.string({
             char: 't',
             description: messages.getMessage('tagFlagDescription'),
         }),
-        dryrun: flags.boolean({
+        dryrun: Flags.boolean({
             description: messages.getMessage('dryRunFlagDescription'),
             default: false,
             hidden: true,
         }),
-        waittime: flags.number({
+        waittime: Flags.integer({
             description: messages.getMessage('waitTimeFlagDescription'),
             default: 120,
         }),
-        keys: flags.string({
+        keys: Flags.string({
             required: false,
             description: messages.getMessage('keysFlagDescription'),
         }),
-        generatechangelog: flags.boolean({
+        generatechangelog: Flags.boolean({
             default: false,
             description: messages.getMessage('generateChangelogFlagDescription'),
         }),
-        directory: flags.string({
+        directory: Flags.string({
             char: 'd',
             description: messages.getMessage('directoryFlagDescription'),
         }),
-        branchname: flags.string({
+        branchname: Flags.string({
             dependsOn: ['generatechangelog'],
             char: 'b',
             description: messages.getMessage('branchNameFlagDescription'),
         }),
-        allowunpromotedpackages: flags.boolean({
+        allowunpromotedpackages: Flags.boolean({
             description: messages.getMessage('allowUnpromotedPackagesFlagDescription'),
             hidden: true,
             deprecated: { 
                 message: '--allowunpromotedpackages is deprecated, All packages are allowed',
-                messageOverride: '--allowunpromotedpackages is deprecated, All packages are allowed'
              },
         }),
-        devhubalias: flags.string({
-            char: 'v',
-            description: messages.getMessage('devhubAliasFlagDescription'),
-        }),
-        loglevel: flags.enum({
-            description: 'logging level for this command invocation',
-            default: 'info',
-            required: false,
-            options: [
-                'trace',
-                'debug',
-                'info',
-                'warn',
-                'error',
-                'fatal',
-                'TRACE',
-                'DEBUG',
-                'INFO',
-                'WARN',
-                'ERROR',
-                'FATAL',
-            ],
-        }),
+        devhubalias: optionalDevHubFlag,
+        loglevel
     };
 
     public async execute() {

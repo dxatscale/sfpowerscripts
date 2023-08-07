@@ -1,15 +1,17 @@
 import { expect } from '@jest/globals';
-import { MockTestOrgData, testSetup } from '@salesforce/core/lib/testSetup';
+import { MockTestOrgData, TestContext } from '@salesforce/core/lib/testSetup';
 import { AnyJson } from '@salesforce/ts-types';
 import SFPOrg from '../../lib/org/SFPOrg';
+import { OrgConfigProperties } from '@salesforce/core';
 
-const $$ = testSetup();
+const $$ = new TestContext();
 
 describe('Retrieve all packages from devhub', () => {
     it('should return all the packages provided a devhub', async () => {
-        const testData = new MockTestOrgData();
 
+        const testData = new MockTestOrgData();
         testData.makeDevHub();
+        await $$.stubConfig({ [OrgConfigProperties.TARGET_ORG]: testData.username });
         $$.setConfigStubContents('AuthInfoConfig', {
             contents: await testData.getConfig(),
         });

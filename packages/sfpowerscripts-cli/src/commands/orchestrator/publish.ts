@@ -1,4 +1,3 @@
-import { flags } from '@salesforce/command';
 import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
 import { Messages } from '@salesforce/core';
 import * as fs from 'fs-extra';
@@ -24,6 +23,8 @@ import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
 import ExecuteCommand from '@dxatscale/sfdx-process-wrapper/lib/commandExecutor/ExecuteCommand';
 import { LoggerLevel } from '@dxatscale/sfp-logger';
 import GitTags from '@dxatscale/sfpowerscripts.core/lib/git/GitTags';
+import { arrayFlagSfdxStyle, loglevel, logsgroupsymbol, optionalDevHubFlag } from '../../flags/sfdxflags';
+import { Flags } from '@oclif/core';
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'publish');
@@ -41,92 +42,66 @@ export default class Promote extends SfpowerscriptsCommand {
     protected static requiresUsername = false;
     protected static requiresDevhubUsername = false;
 
-    protected static flagsConfig = {
-        artifactdir: flags.directory({
+    public static flags = {
+        artifactdir: Flags.directory({
             required: true,
             char: 'd',
             description: messages.getMessage('artifactDirectoryFlagDescription'),
             default: 'artifacts',
         }),
-        publishpromotedonly: flags.boolean({
+        publishpromotedonly: Flags.boolean({
             char: 'p',
             description: messages.getMessage('publishPromotedOnlyFlagDescription'),
             dependsOn: ['devhubalias'],
         }),
-        devhubalias: flags.string({
-            char: 'v',
-            description: messages.getMessage('devhubAliasFlagDescription'),
-        }),
-        scriptpath: flags.filepath({
+        'devhubalias':optionalDevHubFlag,
+        scriptpath: Flags.file({
             char: 'f',
             description: messages.getMessage('scriptPathFlagDescription'),
         }),
-        tag: flags.string({
+        tag: Flags.string({
             char: 't',
             description: messages.getMessage('tagFlagDescription'),
         }),
-        gittag: flags.boolean({
+        gittag: Flags.boolean({
             description: messages.getMessage('gitTagFlagDescription'),
             default: false,
         }),
-        gittaglimit: flags.number({
+        gittaglimit: Flags.integer({
             description: messages.getMessage('gitTagLimitFlagDescription'),
         }),
-        gittagage: flags.number({
+        gittagage: Flags.integer({
             description: messages.getMessage('gitTagAgeFlagDescription'),
         }),
-        pushgittag: flags.boolean({
+        pushgittag: Flags.boolean({
             description: messages.getMessage('gitPushTagFlagDescription'),
             default: false,
         }),
-        npm: flags.boolean({
+        npm: Flags.boolean({
             description: messages.getMessage('npmFlagDescription'),
             exclusive: ['scriptpath'],
         }),
-        scope: flags.string({
+        scope: Flags.string({
             description: messages.getMessage('scopeFlagDescription'),
             dependsOn: ['npm'],
             parse: async (scope) => scope.replace(/@/g, '').toLowerCase(),
         }),
-        npmtag: flags.string({
+        npmtag: Flags.string({
             description: messages.getMessage('npmTagFlagDescription'),
             dependsOn: ['npm'],
             required: false,
             deprecated: {
                 message:
                     '--npmtag is deprecated, sfpowerscripts will automatically tag the artifact with the branch name',
-                messageOverride:
-                    '--npmtag is deprecated, sfpowerscripts will automatically tag the artifact with the branch name',
             },
         }),
-        npmrcpath: flags.filepath({
+        npmrcpath: Flags.file({
             description: messages.getMessage('npmrcPathFlagDescription'),
             dependsOn: ['npm'],
             required: false,
         }),
-        logsgroupsymbol: flags.array({
-            char: 'g',
-            description: messages.getMessage('logsGroupSymbolFlagDescription'),
-        }),
-        loglevel: flags.enum({
-            description: 'logging level for this command invocation',
-            default: 'info',
-            required: false,
-            options: [
-                'trace',
-                'debug',
-                'info',
-                'warn',
-                'error',
-                'fatal',
-                'TRACE',
-                'DEBUG',
-                'INFO',
-                'WARN',
-                'ERROR',
-                'FATAL',
-            ],
-        }),
+       logsgroupsymbol,
+       loglevel
     };
     private git: Git;
 

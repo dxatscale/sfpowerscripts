@@ -11,14 +11,14 @@ export default class ObjectCRUDHelper {
                 let result = await conn.update(sObject, record);
                 if (isArray(result)) {
                     let isAllRecordsSucceeded = true;
-                    for (const individualResult of result) {
+                    for (const individualResult of result as SaveResult[]) {
                         if (!individualResult.success) {
                             isAllRecordsSucceeded = false;
                         }
                     }
                     if (isAllRecordsSucceeded) return 'All records updated';
                     else throw new Error('Some records have been failed to update');
-                } else if (result.success) return result.id;
+                } else if ((result as SaveResult).success) return (result as SaveResult).id;
                 else bail();
             },
             { retries: 3, minTimeout: 2000 }

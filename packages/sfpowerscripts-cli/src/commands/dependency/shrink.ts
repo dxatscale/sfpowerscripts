@@ -2,10 +2,11 @@ import ShrinkImpl from '../../impl/dependency/ShrinkImpl';
 import { Messages } from '@salesforce/core';
 import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
 import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig';
-import { flags } from '@salesforce/command';
 import * as fs from 'fs-extra';
 import path = require('path');
 import SFPLogger, { LoggerLevel, Logger } from '@dxatscale/sfp-logger';
+import { Flags } from '@oclif/core';
+import { loglevel, requiredDevHubFlag } from '../../flags/sfdxflags';
 
 
 // Initialize Messages with the current plugin directory
@@ -21,31 +22,14 @@ export default class Shrink extends SfpowerscriptsCommand {
     protected static requiresDevhubUsername = true;
     protected static requiresProject = true;
 
-    protected static flagsConfig = {
-        overwrite: flags.boolean({
+    public static flags = {
+        overwrite: Flags.boolean({
             char: 'o',
             description: messages.getMessage('overWriteProjectConfigFlagDescription'),
             default: false,
         }),
-        loglevel: flags.enum({
-            description: 'logging level for this command invocation',
-            default: 'info',
-            required: false,
-            options: [
-                'trace',
-                'debug',
-                'info',
-                'warn',
-                'error',
-                'fatal',
-                'TRACE',
-                'DEBUG',
-                'INFO',
-                'WARN',
-                'ERROR',
-                'FATAL',
-            ],
-        }),
+        requiredDevHubFlag,
+       loglevel
     };
 
     public async execute() {

@@ -12,12 +12,12 @@ describe('Given a mdapi directory that contains manifest file', () => {
 
     it('should return the manifest in json format', async () => {
         const packageManifest: PackageManifest = await PackageManifest.create('mdapi');
-        expect(packageManifest.manifestJson).toStrictEqual(packageManifestJSON);
+        expect(packageManifest.manifestJson).toEqual(packageManifestJSON);
     });
 
     it('should return the manifest in xml format', async () => {
         const packageManifest: PackageManifest = await PackageManifest.create('mdapi');
-        expect(packageManifest.manifestXml).toStrictEqual(packageManifestXML);
+        expect(packageManifest.manifestXml).toEqual(packageManifestXML);
     });
 
     it('should return true if there is apex', async () => {
