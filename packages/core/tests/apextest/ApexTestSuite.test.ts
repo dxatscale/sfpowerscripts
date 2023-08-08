@@ -1,14 +1,18 @@
 import { jest, expect } from '@jest/globals';
 const fs = require('fs-extra');
 import ApexTestSuite from '../../src/apextest/ApexTestSuite';
-const glob = require('glob');
+import * as globSync from 'glob';
+
+
 
 describe('Provided an apex test suite from a source directory', () => {
     it('should return all the apexclasses', () => {
-        const globMock = jest.spyOn(glob, 'sync');
-        globMock.mockImplementation(() => {
+
+
+        jest.spyOn(globSync, 'globSync').mockImplementationOnce((pattern: string | string[], options: any) => {
             return new Array('/path/to/test.testSuite-meta.xml');
         });
+
 
         const fsReadMock = jest.spyOn(fs, 'readFileSync');
         fsReadMock.mockImplementationOnce(() => {
@@ -36,10 +40,12 @@ describe('Provided an apex test suite from a source directory', () => {
     });
 
     it('should throw an error if apex test suite is not avaiable in the directory', async () => {
-        const globMock = jest.spyOn(glob, 'sync');
-        globMock.mockImplementation(() => {
-            return [];
+       
+        jest.spyOn(globSync, 'globSync').mockImplementationOnce((pattern: string | string[], options: any) => {
+            return  [];
         });
+
+
 
         let apexTestSuite = new ApexTestSuite(`dir`, `test`);
 
@@ -47,9 +53,9 @@ describe('Provided an apex test suite from a source directory', () => {
     });
 
     it('should return apexclass even if there is only one', () => {
-        const globMock = jest.spyOn(glob, 'sync');
-        globMock.mockImplementation(() => {
-            return new Array('/path/to/test.testSuite-meta.xml');
+
+        jest.spyOn(globSync, 'globSync').mockImplementationOnce((pattern: string | string[], options: any) => {
+            return new Array('/path/to/test.testSuite-meta.xml');;
         });
 
         const fsReadMock = jest.spyOn(fs, 'readFileSync');
