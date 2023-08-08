@@ -4,7 +4,6 @@ import DeployDestructiveManifestToOrgImpl from '../components/DeployDestructiveM
 import SFPLogger, { COLOR_SUCCESS, COLOR_WARNING, Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 import * as fs from 'fs-extra';
 const path = require('path');
-const glob = require('glob');
 const tmp = require('tmp');
 import { InstallPackage, SfpPackageInstallationOptions } from './InstallPackage';
 import DeploySourceToOrgImpl, { DeploymentOptions } from '../../deployers/DeploySourceToOrgImpl';
@@ -19,6 +18,7 @@ import DeploymentOptionDisplayer from '../../display/DeploymentOptionDisplayer';
 import PackageComponentPrinter from '../../display/PackageComponentPrinter';
 import DeployErrorDisplayer from '../../display/DeployErrorDisplayer';
 import { COLOR_ERROR } from '@dxatscale/sfp-logger';
+import { globSync } from 'glob';
 
 export default class InstallSourcePackageImpl extends InstallPackage {
     private pathToReplacementForceIgnore: string;
@@ -268,7 +268,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                 this.logger
             );
             //copy the original profiles to temporary location
-            profileFolders = glob.sync('**/profiles', {
+            profileFolders = globSync('**/profiles', {
                 cwd: path.join(sourceDirectoryPath),
             });
             if (profileFolders.length > 0) {
@@ -327,7 +327,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
 
             //Now deploy the profies alone
 
-            const profilesDirs = glob.sync('**/profiles/', {
+            const profilesDirs = globSync('**/profiles/', {
                 cwd: path.join(sourceDirectoryPath, sourceDirectory),
                 absolute: true,
             });

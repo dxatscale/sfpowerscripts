@@ -1,6 +1,6 @@
 import * as fs from 'fs-extra';
 const path = require('path');
-const glob = require('glob');
+const { globSync } = require('glob');
 
 import ApexTypeListener from './listeners/ApexTypeListener';
 
@@ -33,7 +33,7 @@ export default class ApexTypeFetcher {
     public getClassesClassifiedByType(): ApexSortedByType {
         let clsFiles: string[];
         if (fs.existsSync(this.searchDir)) {
-            clsFiles = glob.sync(`**/*.cls`, {
+            clsFiles = globSync(`**/*.cls`, {
                 cwd: this.searchDir,
                 absolute: true,
             });

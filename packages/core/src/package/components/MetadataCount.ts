@@ -1,6 +1,4 @@
-const {
-    glob
-  } = require('glob')
+const glob = require('glob')
 import path from 'path';
 
 export default class MetadataCount {
