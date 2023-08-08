@@ -112,7 +112,7 @@ export default class SfpPackageBuilder {
             let apexFetcher: ApexTypeFetcher = new ApexTypeFetcher(sfpPackage.mdapiDir);
             sfpPackage.apexClassesSortedByTypes = apexFetcher.getClassesClassifiedByType();
             sfpPackage.apexTestClassses = apexFetcher.getTestClasses();
-            sfpPackage.metadataCount = MetadataCount.getMetadataCount(
+            sfpPackage.metadataCount = await MetadataCount.getMetadataCount(
                 sfpPackage.workingDirectory,
                 sfpPackage.packageDescriptor.path
             );
