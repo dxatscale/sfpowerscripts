@@ -13,6 +13,8 @@ export default class ApexTestSuite {
             absolute: true,
         });
 
+        console.log('testSuitePaths',testSuitePaths);
+
         if (!testSuitePaths[0]) throw new Error(`Apex Test Suite ${this.suiteName} not found`);
 
         let apex_test_suite: any = await xml2json(fs.readFileSync(path.resolve(testSuitePaths[0])));
