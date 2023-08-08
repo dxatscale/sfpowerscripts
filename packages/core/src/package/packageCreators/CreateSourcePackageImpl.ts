@@ -7,6 +7,9 @@ import SfpPackage, { PackageType, SfpPackageParams } from '../SfpPackage';
 import { CreatePackage } from './CreatePackage';
 import { PackageCreationParams } from '../SfpPackageBuilder';
 import { ZERO_BORDER_TABLE } from '../../display/TableConstants';
+import { COLOR_INFO } from '@dxatscale/sfp-logger';
+import { COLOR_HEADER } from '@dxatscale/sfp-logger';
+import { COLOR_WARNING } from '@dxatscale/sfp-logger';
 const Table = require('cli-table');
 
 export default class CreateSourcePackageImpl extends CreatePackage {
@@ -51,11 +54,7 @@ export default class CreateSourcePackageImpl extends CreatePackage {
             sfpPackage.isTriggerAllTests = true;
         } else if (sfpPackage.isApexFound && classTypes?.testClass?.length > 0) {
             if (classTypes?.parseError?.length > 0) {
-                SFPLogger.log(
-                    '---------------------------------------------------------------------------------------',
-                    LoggerLevel.INFO,
-                    this.logger
-                );
+                SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO,this.logger);
                 SFPLogger.log(
                     'Unable to parse these classes to correctly identify test classes, Its not your issue, its ours!'+
                     'Please raise a issue in our repo!',
@@ -77,11 +76,7 @@ export default class CreateSourcePackageImpl extends CreatePackage {
     }
 
     private printHintForOptimizedDeployment() {
-        SFPLogger.log(
-            `---------------- OPTION FOR DEPLOYMENT OPTIMIZATION AVAILABLE-----------------------------------`,
-            null,
-            this.logger
-        );
+        SFPLogger.printHeaderLine('OPTION FOR DEPLOYMENT OPTIMIZATION AVAILABLE',COLOR_HEADER,LoggerLevel.INFO,this.logger);
         SFPLogger.log(
             `Following apex test classes were identified and can  be used for deploying this package,${EOL}` +
             `in an optimal manner, provided each individual class meets the test coverage requirement of 75% and above${EOL}` +
@@ -89,31 +84,19 @@ export default class CreateSourcePackageImpl extends CreatePackage {
             null,
             this.logger
         );
-        SFPLogger.log(
-            `-----------------------------------------------------------------------------------------------`,
-            LoggerLevel.INFO,
-            this.logger
-        );
+        SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO,this.logger);
     }
 
     private printSlowDeploymentWarning() {
+        SFPLogger.printHeaderLine('WARNING! YOU MIGHT NOT BE ABLE TO DEPLOY OR WILL HAVE A SLOW DEPLOYMENT',COLOR_WARNING,LoggerLevel.INFO,this.logger);
         SFPLogger.log(
-            `-------WARNING! YOU MIGHT NOT BE ABLE TO DEPLOY OR WILL HAVE A SLOW DEPLOYMENT---------------`,
-            LoggerLevel.INFO,
-            this.logger
-        );
-        SFPLogger.log(
-            `This package has apex classes/triggers, however apex test classes were not found, You would not be able to deploy${EOL}` +
-            `to production org optimally if each class do not have coverage of 75% and above,We will attempt deploying${EOL}` +
-            `this package by triggering all local tests in the org which could be realy costly in terms of deployment time!${EOL}`,
+            `This package has apex classes/triggers, however apex test classes were not found, You would not be able to deploy` +
+            `to production org optimally if each class do not have coverage of 75% and above,We will attempt deploying` +
+            `this package by triggering all local tests in the org which could be realy costly in terms of deployment time!`,
             null,
             this.logger
         );
-        SFPLogger.log(
-            `---------------------------------------------------------------------------------------------`,
-            LoggerLevel.INFO,
-            this.logger
-        );
+        SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO,this.logger);
     }
 
     private printClassesIdentified(fetchedClasses: FileDescriptor[]) {

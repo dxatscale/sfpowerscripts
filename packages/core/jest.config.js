@@ -4,11 +4,14 @@ module.exports = {
     restoreMocks: true,
     clearMocks: true,
     resetMocks: true,
-    globals: {
-        'ts-jest': {
+    transform: {
+    '^.+\\.[t]sx?$': [
+        'ts-jest',
+         {
             tsconfig: 'tsconfig.json',
             babelConfig: true,
         },
+      ]
     },
     transformIgnorePatterns: ['/node_modules/(?!@salesforce/source-deploy-retrieve)(.*)'],
     moduleNameMapper: {

@@ -441,9 +441,7 @@ export default class BuildImpl {
 	}
 
 	private handlePackageError(reason: any, pkg: string): any {
-		SFPLogger.log(
-			COLOR_HEADER(`${EOL}-----------------------------------------`),
-		);
+		SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
 		SFPLogger.log(COLOR_ERROR(`Package Creation Failed for ${pkg}, Here are the datails:`));
 		try {
 			// Append error to log file
@@ -482,9 +480,7 @@ export default class BuildImpl {
 		SFPLogger.log(
 			COLOR_KEY_MESSAGE(`${EOL}Removed all childs of ${pkg} from queue`),
 		);
-		SFPLogger.log(
-			COLOR_HEADER(`${EOL}-----------------------------------------`),
-		);
+	  SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
 	}
 
 	private queueChildPackages(sfpPackage: SfpPackage): any {

@@ -28,8 +28,12 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
+      
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
 
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           node-version: '16'
           registry-url: https://registry.npmjs.org/
@@ -41,7 +45,7 @@ jobs:
 
 
       - name: 'Install Dependencies'
-        run: npm i
+        run: pnpm i
 
 
       - name: 'Build  All  Packages'

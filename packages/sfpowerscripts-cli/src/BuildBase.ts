@@ -1,7 +1,6 @@
 import ArtifactGenerator from '@dxatscale/sfpowerscripts.core/lib/artifacts/generators/ArtifactGenerator';
 
 import { EOL } from 'os';
-import { flags } from '@salesforce/command';
 import SfpowerscriptsCommand from './SfpowerscriptsCommand';
 import { Messages } from '@salesforce/core';
 import fs = require('fs');
@@ -24,6 +23,8 @@ import SFPLogger, {
 import getFormattedTime from '@dxatscale/sfpowerscripts.core/lib/utils/GetFormattedTime';
 import SfpPackage from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
 import ReleaseConfig from './impl/release/ReleaseConfig';
+import { Flags } from '@oclif/core';
+import { loglevel, orgApiVersionFlagSfdxStyle, targetdevhubusername } from './flags/sfdxflags';
 
 
 // Initialize Messages with the current plugin directory
@@ -38,85 +39,60 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
     protected static requiresDevhubUsername = false;
     protected static requiresProject = true;
 
-    protected static flagsConfig = {
-        diffcheck: flags.boolean({
+    public static flags = {
+        loglevel,
+        'apiversion': orgApiVersionFlagSfdxStyle,
+        'devhubalias': targetdevhubusername,
+        diffcheck: Flags.boolean({
             description: messages.getMessage('diffCheckFlagDescription'),
             default: false,
         }),
-        gittag: flags.boolean({
+        gittag: Flags.boolean({
             description: messages.getMessage('gitTagFlagDescription'),
             hidden: true,
             deprecated: {
                 message:'--gittag is deprecated, Please utilize git tags on publish stage',
-                messageOverride: '--gittag is deprecated, Please utilize git tags on publish stage',
             },
         }),
-        repourl: flags.string({
+        repourl: Flags.string({
             char: 'r',
             description: messages.getMessage('repoUrlFlagDescription'),
         }),
-        configfilepath: flags.filepath({
+        configfilepath: Flags.file({
             char: 'f',
             description: messages.getMessage('configFilePathFlagDescription'),
             default: 'config/project-scratch-def.json',
         }),
-        artifactdir: flags.directory({
+        artifactdir: Flags.directory({
             description: messages.getMessage('artifactDirectoryFlagDescription'),
             default: 'artifacts',
         }),
-        waittime: flags.number({
+        waittime: Flags.integer({
             description: messages.getMessage('waitTimeFlagDescription'),
             default: 120,
         }),
-        buildnumber: flags.number({
+        buildnumber: Flags.integer({
             description: messages.getMessage('buildNumberFlagDescription'),
             default: 1,
         }),
-        executorcount: flags.number({
+        executorcount: Flags.integer({
             description: messages.getMessage('executorCountFlagDescription'),
             default: 5,
         }),
-        branch: flags.string({
+        branch: Flags.string({
             description: messages.getMessage('branchFlagDescription'),
             required: true,
         }),
-        tag: flags.string({
+        tag: Flags.string({
             description: messages.getMessage('tagFlagDescription'),
         }),
-        devhubalias: flags.string({
-            char: 'v',
-            description: messages.getMessage('devhubAliasFlagDescription'),
-            default: 'HubOrg',
-        }),
-        logsgroupsymbol: flags.array({
-            char: 'g',
-            description: messages.getMessage('logsGroupSymbolFlagDescription'),
-        }),
-        releaseconfig: flags.string({
+        releaseconfig: Flags.string({
             description: messages.getMessage('releaseConfigFileFlagDescription'),
-        }),
-        loglevel: flags.enum({
-            description: 'logging level for this command invocation',
-            default: 'info',
-            required: false,
-            options: [
-                'trace',
-                'debug',
-                'info',
-                'warn',
-                'error',
-                'fatal',
-                'TRACE',
-                'DEBUG',
-                'INFO',
-                'WARN',
-                'ERROR',
-                'FATAL',
-            ],
-        }),
+        })
     };
 
     public async execute() {
+        const {flags} = await this.parse();
         let buildExecResult: {
             generatedPackages: SfpPackage[];
             failedPackages: string[];
@@ -125,37 +101,32 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
         let artifactCreationErrors: string[] = [];
 
         let tags = {
-            is_diffcheck_enabled: String(this.flags.diffcheck),
+            is_diffcheck_enabled: String(flags.diffcheck),
             stage: this.getStage(),
-            branch: this.flags.branch,
+            branch: flags.branch,
         };
         
         try {
-            const artifactDirectory: string = this.flags.artifactdir;
-            const diffcheck: boolean = this.flags.diffcheck;
-            const branch: string = this.flags.branch;
+            const artifactDirectory: string = flags.artifactdir;
+            const diffcheck: boolean = flags.diffcheck;
+            const branch: string = flags.branch;
             // Read Manifest
             let projectConfig = ProjectConfig.getSFDXProjectConfig(process.cwd());
 
             SFPLogger.log(COLOR_HEADER(`command: ${COLOR_KEY_MESSAGE(this.getStage())}`));
-            SFPLogger.log(COLOR_HEADER(`Build Packages Only Changed: ${this.flags.diffcheck}`));
+            SFPLogger.log(COLOR_HEADER(`Build Packages Only Changed: ${flags.diffcheck}`));
             if(projectConfig?.plugins?.sfpowerscripts?.scratchOrgDefFilePaths?.enableMultiDefinitionFiles){
                 SFPLogger.log(COLOR_HEADER(`Multiple Config Files Mode: enabled`));
             }else{
-                SFPLogger.log(COLOR_HEADER(`Config File Path: ${this.flags.configfilepath}`));
+                SFPLogger.log(COLOR_HEADER(`Config File Path: ${flags.configfilepath}`));
             }
-            SFPLogger.log(COLOR_HEADER(`Artifact Directory: ${this.flags.artifactdir}`));
-            SFPLogger.log(
-                COLOR_HEADER(
-                    `-------------------------------------------------------------------------------------------`
-                )
-            );
-
+            SFPLogger.log(COLOR_HEADER(`Artifact Directory: ${flags.artifactdir}`));
+            SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
             let executionStartTime = Date.now();
 
 
-            if (!(this.flags.tag == null || this.flags.tag == undefined)) {
-                tags['tag'] = this.flags.tag;
+            if (!(flags.tag == null || flags.tag == undefined)) {
+                tags['tag'] = flags.tag;
             }
 
 
@@ -165,7 +136,7 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
             let buildProps = this.getBuildProps();
 
             //Filter Build Props by ReleaseConfig
-            buildProps = this.includeOnlyPackagesAsPerReleaseConfig(this.flags.releaseconfig, buildProps, new ConsoleLogger());
+            buildProps = this.includeOnlyPackagesAsPerReleaseConfig(flags.releaseconfig, buildProps, new ConsoleLogger());
             buildExecResult = await this.getBuildImplementer(buildProps).exec();
 
             if (
@@ -175,11 +146,7 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
             ) {
                 SFPLogger.log(`${EOL}${EOL}`);
                 SFPLogger.log(COLOR_INFO('No packages found to be built.. Exiting.. '));
-                SFPLogger.log(
-                    COLOR_HEADER(
-                        `----------------------------------------------------------------------------------------------------`
-                    )
-                );
+                SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
                 throw new Error('No packages to be found to be built');
             }
 
@@ -209,11 +176,7 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
             process.exitCode = 1;
         } finally {
             if (buildExecResult?.generatedPackages?.length > 0 || buildExecResult?.failedPackages?.length > 0) {
-                SFPLogger.log(
-                    COLOR_HEADER(
-                        `----------------------------------------------------------------------------------------------------`
-                    )
-                );
+                SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
                 SFPLogger.log(
                     COLOR_SUCCESS(
                         `${buildExecResult.generatedPackages.length} packages created in ${COLOR_TIME(
@@ -228,11 +191,7 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
                 if (artifactCreationErrors.length > 0)
                     SFPLogger.log(COLOR_ERROR(`Failed To Create Artifacts`, artifactCreationErrors));
 
-                SFPLogger.log(
-                    COLOR_HEADER(
-                        `----------------------------------------------------------------------------------------------------`
-                    )
-                );
+                SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
 
                 const buildResult: BuildResult = {
                     packages: [],

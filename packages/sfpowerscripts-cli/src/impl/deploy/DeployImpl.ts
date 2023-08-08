@@ -357,18 +357,10 @@ export default class DeployImpl {
 
     private displayRetryHeader(isRetryOnFailure: boolean, count: number) {
         if (isRetryOnFailure && count > 1) {
-            SFPLogger.log(
-                `-------------------------------------------------------------------------------${EOL}`,
-                LoggerLevel.INFO,
-                this.props.logger
-            );
-
+            SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
             SFPLogger.log(`Retrying On Failure Attempt: ${count}`, LoggerLevel.INFO, this.props.logger);
-            SFPLogger.log(
-                `-------------------------------------------------------------------------------${EOL}`,
-                LoggerLevel.INFO,
-                this.props.logger
-            );
+            SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
+           
         }
     }
 
@@ -381,13 +373,7 @@ export default class DeployImpl {
         } else alwaysDeployMessage = undefined;
 
         //Display header
-        SFPLogger.log(
-            COLOR_HEADER(
-                `----------------------------------Installing Package---------------------------------------------`
-            ),
-            LoggerLevel.INFO,
-            this.props.logger
-        );
+        SFPLogger.printHeaderLine('Installing Package',COLOR_HEADER,LoggerLevel.INFO);
         SFPLogger.log(COLOR_HEADER(`Name: ${COLOR_KEY_MESSAGE(pkg)}`), LoggerLevel.INFO, this.props.logger);
         SFPLogger.log(`Type: ${COLOR_KEY_MESSAGE(sfpPackage.packageType)}`, LoggerLevel.INFO, this.props.logger);
         SFPLogger.log(
@@ -427,14 +413,7 @@ export default class DeployImpl {
         }
 
         if (alwaysDeployMessage) SFPLogger.log(alwaysDeployMessage, LoggerLevel.INFO, this.props.logger);
-
-        SFPLogger.log(
-            COLOR_HEADER(
-                `-------------------------------------------------------------------------------------------------`
-            ),
-            LoggerLevel.INFO,
-            this.props.logger
-        );
+        SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
     }
 
     private displayTestInfoHeader(sfpPackage: SfpPackage) {

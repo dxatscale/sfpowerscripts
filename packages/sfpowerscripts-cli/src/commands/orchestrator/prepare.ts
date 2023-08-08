@@ -1,6 +1,5 @@
-import { Messages, SfdxError } from '@salesforce/core';
+import { Messages } from '@salesforce/core';
 import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
-import { flags } from '@salesforce/command';
 import PrepareImpl from '../../impl/prepare/PrepareImpl';
 import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender';
 import { Stage } from '../../impl/Stage';
@@ -22,6 +21,8 @@ import { PoolConfig } from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/P
 import { COLOR_WARNING } from '@dxatscale/sfp-logger';
 import PoolSchema from '@dxatscale/sfpowerscripts.core/resources/pooldefinition.schema.json';
 import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
+import { Flags } from '@oclif/core';
+import { loglevel, logsgroupsymbol, targetdevhubusername } from '../../flags/sfdxflags';
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'prepare');
@@ -30,44 +31,24 @@ export default class Prepare extends SfpowerscriptsCommand {
     protected static requiresDevhubUsername = true;
     protected static requiresProject = true;
 
-    protected static flagsConfig = {
-        poolconfig: flags.filepath({
+    public static flags = {
+        targetdevhubusername,
+        poolconfig: Flags.file({
             required: false,
             default: 'config/poolconfig.json',
             char: 'f',
             description: messages.getMessage('poolConfigFlagDescription'),
         }),
-        npmrcpath: flags.filepath({
+        npmrcpath: Flags.file({
             description: messages.getMessage('npmrcPathFlagDescription'),
             required: false,
         }),
-        keys: flags.string({
+        keys: Flags.string({
             required: false,
             description: messages.getMessage('keysDescription'),
         }),
-        logsgroupsymbol: flags.array({
-            char: 'g',
-            description: messages.getMessage('logsGroupSymbolFlagDescription'),
-        }),
-        loglevel: flags.enum({
-            description: 'logging level for this command invocation',
-            default: 'info',
-            required: false,
-            options: [
-                'trace',
-                'debug',
-                'info',
-                'warn',
-                'error',
-                'fatal',
-                'TRACE',
-                'DEBUG',
-                'INFO',
-                'WARN',
-                'ERROR',
-                'FATAL',
-            ],
-        }),
+        logsgroupsymbol,
+        loglevel
     };
 
     public static description = messages.getMessage('commandDescription');
@@ -115,11 +96,7 @@ export default class Prepare extends SfpowerscriptsCommand {
             let results = await prepareImpl.exec();
             if (results.isOk()) {
                 let totalElapsedTime = Date.now() - executionStartTime;
-                SFPLogger.log(
-                    COLOR_HEADER(
-                        `-----------------------------------------------------------------------------------------------------------`
-                    )
-                );
+                SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
                 SFPLogger.log(
                     COLOR_SUCCESS(
                         `Provisioned {${results.value.scratchOrgs.length}}  scratchorgs out of ${
@@ -129,11 +106,7 @@ export default class Prepare extends SfpowerscriptsCommand {
                         )} `
                     )
                 );
-                SFPLogger.log(
-                    COLOR_HEADER(
-                        `----------------------------------------------------------------------------------------------------------`
-                    )
-                );
+                SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
 
                 await this.getCurrentRemainingNumberOfOrgsInPoolAndReport(poolConfig);
 
@@ -141,17 +114,9 @@ export default class Prepare extends SfpowerscriptsCommand {
                 if (results.value.scratchOrgs.length > 0)
                     SFPStatsSender.logGauge('prepare.duration', Date.now() - executionStartTime, tags);
             } else if (results.isErr()) {
-                SFPLogger.log(
-                    COLOR_HEADER(
-                        `-----------------------------------------------------------------------------------------------------------`
-                    )
-                );
+                SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
                 SFPLogger.log(COLOR_ERROR(results.error.message), LoggerLevel.ERROR);
-                SFPLogger.log(
-                    COLOR_HEADER(
-                        `-----------------------------------------------------------------------------------------------------------`
-                    )
-                );
+                SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
 
                 switch (results.error.errorCode) {
                     case PoolErrorCodes.Max_Capacity:
@@ -170,7 +135,7 @@ export default class Prepare extends SfpowerscriptsCommand {
                 }
             }
         } catch (err) {
-            throw new SfdxError('Unable to execute command .. ' + err);
+            throw new Error('Unable to execute command .. ' + err);
         }
     }
 
@@ -209,9 +174,7 @@ export default class Prepare extends SfpowerscriptsCommand {
             }
         }
 
-        SFPLogger.log(
-            COLOR_HEADER(`-------------------------------------------------------------------------------------------`)
-        );
+        SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
     }
 
     private async getCurrentRemainingNumberOfOrgsInPoolAndReport(poolConfig: PoolConfig) {

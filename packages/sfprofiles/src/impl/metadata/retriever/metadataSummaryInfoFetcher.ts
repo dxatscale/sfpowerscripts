@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { Logger, SfdxError } from '@salesforce/core';
 import getDefaults from '@utils/getDefaults';
 import SFPLogger, {LoggerLevel } from '@dxatscale/sfp-logger';
 import { FileProperties, DescribeMetadataResult } from 'jsforce/lib/api/metadata';
@@ -154,7 +153,7 @@ export default class MetadataSummaryInfoFetcher {
                     );
                 } else {
 
-                    throw new SfdxError(error);
+                    throw new Error(error);
                 }
             }
         }
