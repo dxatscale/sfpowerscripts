@@ -14,7 +14,8 @@
     },
     "dependencies": {
         "chalk": "^4.1.2",
-        "fs-extra": "^9.1.0"
+        "fs-extra": "^9.1.0",
+        "strip-ansi": "^6.0.0"
     },
     "devDependencies": {
         "@types/node": "^14.14.7",
