@@ -4,9 +4,9 @@ import FileUtils from 'utils/fileutils';
 import _ from 'lodash';
 import ignore from 'ignore';
 import * as fs from 'fs-extra';
-import * as glob from 'glob';
 import { Sfpowerkit } from 'utils/sfpowerkit';
 import SFPLogger, {LoggerLevel } from '@dxatscale/sfp-logger';
+import { globSync } from 'glob';
 
 const SEP = /\/|\\/;
 
@@ -265,7 +265,7 @@ export default class MetadataFiles {
             let extension = path.parse(filePath).ext;
             associatedFilePattern = filePath.replace(extension, '.*');
         }
-        let files = glob.sync(associatedFilePattern);
+        let files = globSync(associatedFilePattern);
         for (let i = 0; i < files.length; i++) {
             if (fs.lstatSync(files[i]).isDirectory() == false) {
                 let oneFilePath = path.join('.', files[i]);
