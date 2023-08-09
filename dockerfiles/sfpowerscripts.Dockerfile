@@ -1,4 +1,4 @@
-FROM node:18-bookworm
+FROM node:20.4-bookworm-slim
 
 ARG PMD_VERSION=6.48.0
 ARG SFPOWERSCRIPTS_VERSION=alpha
