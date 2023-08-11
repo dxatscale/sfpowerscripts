@@ -36,6 +36,7 @@ export default class Release extends SfpowerscriptsCommand {
         releasedefinition: arrayFlagSfdxStyle({
             char: 'p',
             description: messages.getMessage('releaseDefinitionFlagDescription'),
+            required: true,
         }),
         targetorg: requiredUserNameFlag,
         scriptpath: Flags.file({
