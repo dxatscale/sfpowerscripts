@@ -1,8 +1,6 @@
 import * as fs from 'fs-extra';
 import { EOL } from 'os';
-import chalk from 'chalk';
-import stripAnsi = require('strip-ansi');
-
+import chalk = require('chalk');
 
 export enum LoggerLevel {
   TRACE = 10,
@@ -66,68 +64,53 @@ export default class SFPLogger {
   }
 
   static log(message: string, logLevel = LoggerLevel.INFO, logger?: Logger) {
-
-
-    if (SFPLogger.isLogsDisabled) return;
-    if (logLevel == null) logLevel = LoggerLevel.INFO;
-  
-    if (logLevel < this.logLevel) return;
-  
-    const maxLineLength = 100;
-    const originalLines = message.split('\n');
-    const lines = [];
-  
-    originalLines.forEach(line => {
-      while (stripAnsi(line).length > maxLineLength) {
-        let subLine = line.substring(0, maxLineLength);
-        line = line.substring(maxLineLength);
-        lines.push(subLine);
-      }
-      lines.push(line);
-    });
-  
-    //Todo: Proper fix
-    if (logger && logger.logType === LoggerType.console) {
-      logger = null; // Make it nullable, so it goes to console
-    }
-  
-    if (logger) {
-      if (logger.logType === LoggerType.void) {
+    if (SFPLogger.isLogsDisabled)
         return;
-      } else if (logger.logType === LoggerType.file) {
-        let fileLogger = logger as FileLogger;
-        lines.forEach(line => {
-          line = stripAnsi(line);
-          fs.appendFileSync(fileLogger.path, line + EOL, 'utf8');
-        });
-      }
-    } else {
-      lines.forEach(line => {
-        switch (logLevel) {
-          case LoggerLevel.TRACE:
-            console.log(COLOR_TRACE(line));
-            break;
-  
-          case LoggerLevel.DEBUG:
-            console.log(COLOR_DEBUG(line));
-            break;
-  
-          case LoggerLevel.INFO:
-            console.log(line);
-            break;
-  
-          case LoggerLevel.WARN:
-            console.log(COLOR_WARNING(line));
-            break;
-  
-          case LoggerLevel.ERROR:
-            console.log(COLOR_ERROR(line));
-            break;
-        }
-      });
-    }
-  }
+        if (logLevel == null) logLevel = LoggerLevel.INFO;
 
+        if (logLevel < this.logLevel) return;
+
+        //Todo: Proper fix
+        if (logger && logger.logType === LoggerType.console) {
+            logger = null; //Make it nullable, so it goes to console
+        }
+
+        if (logger) {
+            if (logger.logType === LoggerType.void) {
+                return;
+            } else if (logger.logType === LoggerType.file) {
+                let fileLogger = logger as FileLogger;
+                message = message
+                    ?.toString()
+                    .replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, '');
+                fs.appendFileSync(fileLogger.path, message + EOL, 'utf8');
+            }
+        } else {
+            switch (logLevel) {
+                case LoggerLevel.TRACE:
+                    console.log(COLOR_TRACE(message));
+                    break;
+
+                case LoggerLevel.DEBUG:
+                    console.log(COLOR_DEBUG(message));
+                    break;
+
+                case LoggerLevel.INFO:
+                    console.log(message);
+                    break;
+
+                case LoggerLevel.WARN:
+                    console.log(COLOR_WARNING(message));
+                    break;
+
+                case LoggerLevel.ERROR:
+                    console.log(COLOR_ERROR(message));
+                    break;
+            }
+
+        }
+
+}
   static disableLogs() {
     SFPLogger.isLogsDisabled = true;
   }
