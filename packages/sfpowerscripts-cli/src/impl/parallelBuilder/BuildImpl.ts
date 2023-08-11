@@ -441,7 +441,7 @@ export default class BuildImpl {
 	}
 
 	private handlePackageError(reason: any, pkg: string): any {
-		SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
+		SFPLogger.printHeaderLine('', COLOR_HEADER, LoggerLevel.INFO);
 		SFPLogger.log(COLOR_ERROR(`Package Creation Failed for ${pkg}, Here are the datails:`));
 		try {
 			// Append error to log file
@@ -468,17 +468,18 @@ export default class BuildImpl {
 		SFPStatsSender.logCount("build.failed.packages", { package: pkg });
 		this.packagesToBeBuilt = this.packagesToBeBuilt.filter((pkgBuild) => {
 			if (this.childs[pkg].includes(pkgBuild)) {
-					SFPStatsSender.logCount("build.failed.packages", {
-						package: pkgBuild,
-					});
+				SFPStatsSender.logCount("build.failed.packages", {
+					package: pkgBuild,
+				});
 				this.failedPackages.push(pkgBuild);
 				return false;
-			} return true
+			}
+			return true
 		});
 		SFPLogger.log(
 			COLOR_KEY_MESSAGE(`${EOL}Removed all childs of ${pkg} from queue`),
 		);
-	  SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
+		SFPLogger.printHeaderLine('', COLOR_HEADER, LoggerLevel.INFO);
 	}
 
 	private queueChildPackages(sfpPackage: SfpPackage): any {
@@ -564,20 +565,20 @@ export default class BuildImpl {
 			(dir) => dir.package === completedPackage.packageName,
 		).branch;
 		const dependency = pkgDescriptor.dependencies.find(
-            (dependency) => (dependency.package === completedPackage.packageName) || (dependency.package.includes(`${completedPackage.packageName}@`))
-        );
-        if( dependency.package.includes(`${completedPackage.packageName}@`)){
-					if(packageBranch){
-						const [packageName, version, branch] = this.extractPackageVersionAndBranch(dependency.package);
-            SFPLogger.log(`New branched package is created for dependency: ${packageName}, update the package version id`, LoggerLevel.INFO);
-            dependency.package = `${packageName}@${completedPackage.package_version_number}-${branch}`;
-            this.projectConfig.packageAliases[dependency.package] = completedPackage.package_version_id;
-					}
-        }else{
-						dependency.versionNumber = completedPackage.versionNumber;
-        }
-        
-    }
+			(dependency) => (dependency.package === completedPackage.packageName) || (dependency.package.includes(`${completedPackage.packageName}@`))
+		);
+		if (dependency.package.includes(`${completedPackage.packageName}@`)) {
+			if (packageBranch) {
+				const [packageName, version, branch] = this.extractPackageVersionAndBranch(dependency.package);
+				SFPLogger.log(`New branched package is created for dependency: ${packageName}, update the package version id`, LoggerLevel.INFO);
+				dependency.package = `${packageName}@${completedPackage.package_version_number}-${branch}`;
+				this.projectConfig.packageAliases[dependency.package] = completedPackage.package_version_id;
+			}
+		} else {
+			dependency.versionNumber = completedPackage.versionNumber;
+		}
+
+	}
 
 	private getPriorityandTypeOfAPackage(projectConfig: any, pkg: string) {
 		let priority = 0;
@@ -658,8 +659,7 @@ export default class BuildImpl {
 				COLOR_KEY_MESSAGE(sfpPackage.isProfilesFound ? "Yes" : "No"),
 			]);
 
-			if(sfpPackage.packageType==PackageType.Diff)
-		  {
+			if (sfpPackage.packageType == PackageType.Diff) {
 				table.push([
 					COLOR_HEADER(`Source Version From`),
 					COLOR_KEY_MESSAGE(sfpPackage.commitSHAFrom),
@@ -668,7 +668,7 @@ export default class BuildImpl {
 					COLOR_HEADER(`Source Version To`),
 					COLOR_KEY_MESSAGE(sfpPackage.commitSHATo),
 				]);
-			
+
 				table.push([
 					COLOR_HEADER(`Invalidated Test Classes`),
 					COLOR_KEY_MESSAGE(
@@ -680,7 +680,7 @@ export default class BuildImpl {
 				COLOR_HEADER(`Source Version`),
 				COLOR_KEY_MESSAGE(sfpPackage.sourceVersion),
 			]);
-			
+
 			SFPLogger.log(table.toString());
 
 			const packageDependencies = this.projectConfig.packageDirectories.find(
@@ -727,14 +727,14 @@ export default class BuildImpl {
 
 		//let package itself create revisions 
 		if (packageType == PackageType.Diff) {
-			revisionFrom=undefined;
-			revisionTo=undefined;
+			revisionFrom = undefined;
+			revisionTo = undefined;
 		} else {
 			revisionFrom = this.props.diffOptions
 				?.packagesMappedToLastKnownCommitId?.[sfdx_package]
 				? this.props.diffOptions?.packagesMappedToLastKnownCommitId[
-						sfdx_package
-				  ]
+				sfdx_package
+				]
 				: undefined;
 			revisionTo = this.props.diffOptions?.packagesMappedToLastKnownCommitId?.[
 				sfdx_package
@@ -743,15 +743,15 @@ export default class BuildImpl {
 				: undefined;
 		}
 
-	
-		
+
+
 
 		return SfpPackageBuilder.buildPackageFromProjectDirectory(
 			new FileLogger(`.sfpowerscripts/logs/${sfdx_package}`),
 			this.props.projectDirectory,
 			sfdx_package,
 			{
-				overridePackageTypeWith: this.props.overridePackageTypes?this.props.overridePackageTypes[sfdx_package]:undefined,
+				overridePackageTypeWith: this.props.overridePackageTypes ? this.props.overridePackageTypes[sfdx_package] : undefined,
 				branch: this.props.branch,
 				sourceVersion: this.commit_id,
 				repositoryUrl: this.repository_url,
@@ -760,8 +760,8 @@ export default class BuildImpl {
 					this.projectConfig,
 					this.props.currentStage,
 				),
-                revisionFrom: revisionFrom,
-                revisionTo:revisionTo
+				revisionFrom: revisionFrom,
+				revisionTo: revisionTo
 			},
 			{
 				devHub: this.props.devhubAlias,
@@ -849,23 +849,23 @@ export default class BuildImpl {
 			return projectConfig;
 		}
 	}
-	
+
 	private extractPackageVersionAndBranch(packageAlias: string): [string, string, string] {
-            const parts = packageAlias.split('@');
-  
+		const parts = packageAlias.split('@');
+
 		if (parts.length === 2) {
-		    const packageName = parts[0];
-		    const versionAndFeature = parts[1].split('-');
-            
-		    if (versionAndFeature.length === 2) {
-		    const version = versionAndFeature[0];
-		    const branch = versionAndFeature[1];
-            
-		    return [packageName, version, branch];
-		    }
+			const packageName = parts[0];
+			const versionAndFeature = parts[1].split('-');
+
+			if (versionAndFeature.length === 2) {
+				const version = versionAndFeature[0];
+				const branch = versionAndFeature[1];
+
+				return [packageName, version, branch];
+			}
 		}
-        
+
 		return ['', '', ''];
-		}
+	}
 
 }
