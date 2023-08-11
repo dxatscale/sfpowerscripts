@@ -1,5 +1,5 @@
 import ArtifactFetcher, { Artifact } from '@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFetcher';
-import SFPLogger, { COLOR_ERROR, COLOR_SUCCESS, Logger, LoggerLevel } from '@dxatscale/sfp-logger';
+import SFPLogger, { COLOR_ERROR, COLOR_SUCCESS, FileLogger, Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 import { EOL } from 'os';
 import { Stage } from '../Stage';
 import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig';
@@ -24,6 +24,8 @@ import GroupConsoleLogs from '../../ui/GroupConsoleLogs';
 import { ZERO_BORDER_TABLE } from '../../ui/TableConstants';
 import convertBuildNumDotDelimToHyphen from '@dxatscale/sfpowerscripts.core/lib/utils/VersionNumberConverter';
 import ReleaseConfig from '../release/ReleaseConfig';
+import fs from 'fs-extra';
+import { Align, getMarkdownTable } from 'markdown-table-ts';
 
 
 const Table = require('cli-table');
@@ -452,10 +454,21 @@ export default class DeployImpl {
         });
 
         queue.forEach((pkg) => {
+            
             maxTable.push(processColoursForAllPackages(pkg));
         });
 
         SFPLogger.log(maxTable.toString(), LoggerLevel.INFO, this.props.logger);
+
+
+        //Insane Hack
+        //TODO: Export the value to the caller
+        if(this.props.isDryRun)
+        {
+            printDeploymentBreakDownInMarkdown();
+        }
+
+
         groupSection.end();
 
         groupSection = new GroupConsoleLogs(`Packages to be deployed`, this.props.logger).begin();
@@ -483,6 +496,28 @@ export default class DeployImpl {
 
 
 
+        function printDeploymentBreakDownInMarkdown() {
+            let tableData = {
+                table: {
+                    head:  [
+                        'Package',
+                        'Incoming Version',
+                         isBaselinOrgModeActivated ? 'Version in baseline org' : 'Version in org',
+                        'To be installed?',
+                    ],
+                    body: []
+                },
+                alignment: [Align.Left, Align.Left, Align.Left,Align.Right],
+            };
+            for (const pkg of queue) {
+                tableData.table.body.push(getRowForMarkdownTable(pkg));
+            }
+            const table = getMarkdownTable(tableData);
+            const pathToDeploymentBreakDownFile = `.sfpowerscripts/logs/deployment-breakdown.md`;
+            fs.createFileSync(pathToDeploymentBreakDownFile);
+            fs.writeFileSync(pathToDeploymentBreakDownFile, table);
+        }
+
         function processColoursForAllPackages(pkg) {
             const pkgInfo = packagesToPackageInfo[pkg.packageName];
           
@@ -505,6 +540,18 @@ export default class DeployImpl {
                 isPackageInstalled = COLOR_ERROR(isPackageInstalled);
 
             }
+          
+            return [packageName, versionNumber, versionInstalledInOrg, isPackageInstalled];
+          }
+
+          
+        function getRowForMarkdownTable(pkg) {
+            const pkgInfo = packagesToPackageInfo[pkg.packageName];
+          
+            let packageName = pkg.packageName;
+            let versionNumber = pkg.versionNumber;
+            let versionInstalledInOrg = pkgInfo.versionInstalledInOrg ? pkgInfo.versionInstalledInOrg : 'N/A';
+            let isPackageInstalled = pkgInfo.isPackageInstalled ? 'No' : 'Yes';
           
             return [packageName, versionNumber, versionInstalledInOrg, isPackageInstalled];
           }
