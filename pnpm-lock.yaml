@@ -66,10 +66,10 @@ importers:
     packages/apexlink:
         dependencies:
             '@dxatscale/sfdx-process-wrapper':
-                specifier: 1.0.1
+                specifier: ^1.0.2
                 version: link:../sfdx-process-wrapper
             '@dxatscale/sfp-logger':
-                specifier: 2.1.1
+                specifier: ^2.1.2
                 version: link:../sfplogger
             find-java-home:
                 specifier: 2.0.0
@@ -112,16 +112,16 @@ importers:
     packages/core:
         dependencies:
             '@dxatscale/apexlink':
-                specifier: 1.0.1
+                specifier: ^1.0.2
                 version: link:../apexlink
             '@dxatscale/sfdx-process-wrapper':
-                specifier: 1.0.1
+                specifier: ^1.0.2
                 version: link:../sfdx-process-wrapper
             '@dxatscale/sfp-logger':
-                specifier: 2.1.1
+                specifier: ^2.1.2
                 version: link:../sfplogger
             '@dxatscale/sfprofiles':
-                specifier: ^2.0.3
+                specifier: ^2.0.4
                 version: link:../sfprofiles
             '@newrelic/telemetry-sdk':
                 specifier: ^0.6.0
@@ -278,7 +278,7 @@ importers:
     packages/sfdx-process-wrapper:
         dependencies:
             '@dxatscale/sfp-logger':
-                specifier: 2.1.1
+                specifier: ^2.1.2
                 version: link:../sfplogger
             fs-extra:
                 specifier: ^9.1.0
@@ -316,16 +316,16 @@ importers:
     packages/sfpowerscripts-cli:
         dependencies:
             '@dxatscale/sfdx-process-wrapper':
-                specifier: 1.0.1
+                specifier: ^1.0.2
                 version: link:../sfdx-process-wrapper
             '@dxatscale/sfp-logger':
-                specifier: 2.1.1
+                specifier: ^2.1.2
                 version: link:../sfplogger
             '@dxatscale/sfpowerscripts.core':
-                specifier: ^36.0.7
+                specifier: ^36.0.8
                 version: link:../core
             '@dxatscale/sfprofiles':
-                specifier: ^2.0.3
+                specifier: ^2.0.4
                 version: link:../sfprofiles
             '@oclif/core':
                 specifier: 2.9.4
@@ -461,7 +461,7 @@ importers:
     packages/sfprofiles:
         dependencies:
             '@dxatscale/sfp-logger':
-                specifier: 2.1.1
+                specifier: ^2.1.2
                 version: link:../sfplogger
             '@salesforce/core':
                 specifier: 4.3.11

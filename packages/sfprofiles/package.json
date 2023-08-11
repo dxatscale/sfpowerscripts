@@ -1,6 +1,6 @@
 {
     "name": "@dxatscale/sfprofiles",
-    "version": "2.0.3",
+    "version": "2.0.4",
     "description": "Salesforce Profile management",
     "keywords": [
         "sfdx-plugin",
@@ -58,7 +58,7 @@
         "typescript": "^5"
     },
     "dependencies": {
-        "@dxatscale/sfp-logger": "2.1.1",
+        "@dxatscale/sfp-logger": "^2.1.2",
         "@salesforce/core": "4.3.11",
         "@salesforce/source-deploy-retrieve": "9.4.6",
         "@salesforce/ts-types": "2.0.5",
