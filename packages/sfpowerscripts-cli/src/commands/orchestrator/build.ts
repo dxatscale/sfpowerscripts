@@ -34,6 +34,7 @@ export default class Build extends BuildBase {
                 useLatestGitTags: true,
                 skipPackageDescriptorChange: false,
             },
+            jobId: this.flags.jobid ?? Date.now().toString(),
         };
         return buildProps;
     }

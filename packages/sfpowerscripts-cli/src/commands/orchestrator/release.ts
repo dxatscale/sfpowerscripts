@@ -107,6 +107,10 @@ export default class Release extends SfpowerscriptsCommand {
             char: 'v',
             description: messages.getMessage('devhubAliasFlagDescription'),
         }),
+        jobid: flags.string({
+            char: 'j',
+            description: messages.getMessage('jobIdFlagDescription'),
+        }),
         loglevel: flags.enum({
             description: 'logging level for this command invocation',
             default: 'info',
@@ -196,6 +200,7 @@ export default class Release extends SfpowerscriptsCommand {
             };
 
             ReleaseStreamService.buildProps(props);
+            ReleaseStreamService.buildJobId(this.flags.jobid ?? Date.now().toString());
 
             let releaseImpl: ReleaseImpl = new ReleaseImpl(props, new ConsoleLogger());
 

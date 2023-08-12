@@ -14,7 +14,8 @@ export class BuildStreamService {
 
     public static sendPackageError(sfpPackage: SfpPackage, message: string): void {
         const file = BuildLoggerBuilder.getInstance().buildPackageError(sfpPackage, message).build();
-        EventService.getInstance().logEvent(file.payload.events[sfpPackage.package_name]);
+        //EventService.getInstance().logEvent(file.payload.events[sfpPackage.package_name]);
+        HookService.getInstance().logEvent(file.payload.events[sfpPackage.package_name]);
     }
 
     public static buildPackageErrorList(pck: string): void {
@@ -33,9 +34,10 @@ export class BuildStreamService {
         BuildLoggerBuilder.getInstance().buildPackageCurrentlyProcessedList(pck);
     }
 
-    public static sendPackageCompletedInfos(sfpPackage: SfpPackage): void {
+    public static async sendPackageCompletedInfos(sfpPackage: SfpPackage): Promise<void> {
         const file = BuildLoggerBuilder.getInstance().buildPackageCompletedInfos(sfpPackage).build();
-        EventService.getInstance().logEvent(file.payload.events[sfpPackage.package_name]);
+        //EventService.getInstance().logEvent(file.payload.events[sfpPackage.package_name]);
+        await HookService.getInstance().logEvent(file.payload.events[sfpPackage.package_name]);
     }
 
     public static buildPackageDependencies(pck: string, dependencies: BuildPackageDependencies): void {
@@ -52,7 +54,6 @@ export class BuildStreamService {
 
     public static sendStatistics(scheduled: number, success: number, failed: number, elapsedTime: number): void {
         const file = BuildLoggerBuilder.getInstance().buildStatistics(scheduled, success, failed, elapsedTime).build();
-        HookService.getInstance().logEvent(file);
     }
 
     public static buildReleaseConfig(pcks: string[]): void {
@@ -63,12 +64,16 @@ export class BuildStreamService {
         BuildLoggerBuilder.getInstance().buildPackageStatus(pck, status, elapsedTime);
     }
 
+    public static buildJobAndOrgId(jobId: string,orgId: string, ): void {
+        BuildLoggerBuilder.getInstance().buildOrgAndJobId(orgId, jobId);
+    }
+
     public static startServer(): void {
-        EventService.getInstance();
+        //EventService.getInstance();
     }
 
     public static closeServer(): void {
-        EventService.getInstance().closeServer();
+        //EventService.getInstance().closeServer();
     }
 }
 
@@ -79,22 +84,23 @@ class BuildLoggerBuilder {
     private constructor() {
         this.file = {
             payload: {
-            processName: PROCESSNAME.BUILD,
-            scheduled: 0,
-            success: 0,
-            failed: 0,
-            elapsedTime: 0,
-            status: 'inprogress',
-            message: '',
-            releaseConfig: [],
-            awaitingDependencies: [],
-            currentlyProcessed: [],
-            successfullyProcessed: [],
-            failedToProcess: [],
-            events: {},
+                processName: PROCESSNAME.BUILD,
+                scheduled: 0,
+                success: 0,
+                failed: 0,
+                elapsedTime: 0,
+                status: 'inprogress',
+                message: '',
+                releaseConfig: [],
+                awaitingDependencies: [],
+                currentlyProcessed: [],
+                successfullyProcessed: [],
+                failedToProcess: [],
+                instanceUrl: '',
+                events: {},
             },
             eventType: 'sfpowerscripts.build',
-            eventId: process.env.EVENT_STREAM_WEBHOOK_EVENTID,
+            jobId: '',
         };
     }
 
@@ -106,10 +112,22 @@ class BuildLoggerBuilder {
         return BuildLoggerBuilder.instance;
     }
 
+    buildOrgAndJobId(orgId: string, jobId: string): BuildLoggerBuilder {
+        this.file.jobId = jobId;
+        this.file.payload.instanceUrl = orgId;
+        return this;
+    }
+
     buildPackageInitialitation(pck: string, reason: string, tag: string): BuildLoggerBuilder {
         this.file.payload.events[pck] = {
             event: 'sfpowerscripts.build.awaiting',
-            context: { command: 'sfpowerscript:orchestrator:build', eventId: process.env.EVENT_STREAM_WEBHOOK_EVENTID, timestamp: new Date() },
+            context: {
+                command: 'sfpowerscript:orchestrator:build',
+                eventId: `${this.file.jobId}_${Date.now().toString()}`,
+                jobId: this.file.jobId,
+                timestamp: new Date(),
+                instanceUrl: this.file.payload.instanceUrl,
+            },
             metadata: {
                 package: pck,
                 message: [],
@@ -127,7 +145,6 @@ class BuildLoggerBuilder {
                 sourceVersion: '',
                 packageDependencies: [],
             },
-            orgId: '',
         };
         return this;
     }

@@ -61,6 +61,7 @@ export interface BuildProps {
 	baseBranch?: string;
 	diffOptions?: PackageDiffOptions;
 	includeOnlyPackages?: string[];
+	jobId?: string;
 }
 export default class BuildImpl {
 	private limiter: Bottleneck;
@@ -108,6 +109,7 @@ export default class BuildImpl {
 			});
         BuildStreamService.startServer();
 		BuildStreamService.buildProps(this.props);
+		BuildStreamService.buildJobAndOrgId(this.props.jobId, this.sfpOrg?.getConnection().getAuthInfoFields().instanceUrl);
 		let git = await Git.initiateRepo(new ConsoleLogger());
 		this.repository_url = await git.getRemoteOriginUrl(this.props.repourl);
 		this.commit_id = await git.getHeadCommit();

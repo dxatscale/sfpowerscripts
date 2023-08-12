@@ -129,7 +129,9 @@ class ValidateLoggerBuilder {
             context: {
                 command: 'sfpowerscript:orchestrator:validate',
                 eventId: process.env.EVENT_STREAM_WEBHOOK_EVENTID,
+                instanceUrl: '',
                 timestamp: new Date(),
+                jobId: '',
             },
             metadata: {
                 package: pck,

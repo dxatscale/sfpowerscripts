@@ -27,12 +27,15 @@ export class ReleaseStreamService {
 
     public static sendPackageError(pck: string, message: string): void {
         const file = ReleaseLoggerBuilder.getInstance().buildPackageError(pck, message).build();
-        EventService.getInstance().logEvent(file.payload.events[pck]);
+        HookService.getInstance().logEvent(file.payload.events[pck]);
+        //EventService.getInstance().logEvent(file.payload.events[pck]);
     }
 
     public static sendPackageSuccess(sfpPackage: SfpPackage): void {
         const file = ReleaseLoggerBuilder.getInstance().buildPackageCompleted(sfpPackage).build();
-        EventService.getInstance().logEvent(file.payload.events[sfpPackage.packageName]);
+        //EventService.getInstance().logEvent(file.payload.events[sfpPackage.packageName]);
+        HookService.getInstance().logEvent(file.payload.events[sfpPackage.packageName])
+
     }
 
     public static buildDeployErrorsMsg(
@@ -73,15 +76,23 @@ export class ReleaseStreamService {
         ReleaseLoggerBuilder.getInstance().buildStatistik(elapsedTime,failed,success, scheduled);
     }
 
+    public static buildOrgInfo(orgInfo: string): void {
+        ReleaseLoggerBuilder.getInstance().buildOrgInfo(orgInfo);
+    }
+
+    public static buildJobId(jobId: string): void {
+        ReleaseLoggerBuilder.getInstance().buildJobId(jobId);
+    }
+
     public static startServer(): void {
-        EventService.getInstance();
+        //EventService.getInstance();
     }
 
 
     public static closeServer(): void {
         const file = ReleaseLoggerBuilder.getInstance().build();
-        HookService.getInstance().logEvent(file);
-        EventService.getInstance().closeServer();
+        //HookService.getInstance().logEvent(file);
+        //EventService.getInstance().closeServer();
     }
 }
 
@@ -100,10 +111,11 @@ class ReleaseLoggerBuilder {
                 status: 'inprogress',
                 message: '',
                 releaseConfig: [],
+                instanceUrl: '',
                 events: {},
             },
             eventType: 'sfpowerscripts.release',
-            eventId: process.env.EVENT_STREAM_WEBHOOK_EVENTID,
+            jobId: '',
         };
     }
 
@@ -125,8 +137,10 @@ class ReleaseLoggerBuilder {
             event: 'sfpowerscripts.release.awaiting',
             context: {
                 command: 'sfpowerscript:orchestrator:release',
-                eventId: process.env.EVENT_STREAM_WEBHOOK_EVENTID,
+                instanceUrl: this.file.payload.instanceUrl,
                 timestamp: new Date(),
+                jobId: '',
+                eventId: `${this.file.jobId}_${Date.now().toString()}`
             },
             metadata: {
                 package: pck,
@@ -160,6 +174,16 @@ class ReleaseLoggerBuilder {
 
     buildProps(props: ReleaseProps): ReleaseLoggerBuilder {
         this.file.payload.releaseProps = props;
+        return this;
+    }
+
+    buildOrgInfo(orgInfo: string): ReleaseLoggerBuilder {
+        this.file.payload.instanceUrl = orgInfo;
+        return this;
+    }
+
+    buildJobId(jobId: string): ReleaseLoggerBuilder {
+        this.file.jobId = jobId;
         return this;
     }
 

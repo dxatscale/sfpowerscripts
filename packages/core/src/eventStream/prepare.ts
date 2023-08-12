@@ -110,7 +110,9 @@ class PrepareLoggerBuilder {
             context: {
                 command: 'sfpowerscripts:orchestrator:prepare',
                 eventId: process.env.EVENT_STREAM_WEBHOOK_EVENTID,
+                instanceUrl: '',
                 timestamp: new Date(),
+                jobId: '',
             },
             metadata: orgInfo,
             orgId: ''

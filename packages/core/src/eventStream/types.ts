@@ -12,6 +12,8 @@ export enum PROCESSNAME {
 export interface Context {
     command: string;
     eventId: string;
+    jobId: string;
+    instanceUrl: string;
     timestamp: Date;
  }
 
@@ -92,7 +94,7 @@ export interface PoolDefinition {
 
 export interface BuildHookSchema {
     eventType: string;
-    eventId: string;
+    jobId: string;
     payload: BuildFile;
 }
 
@@ -110,6 +112,7 @@ export interface BuildFile {
     currentlyProcessed: string[];
     successfullyProcessed: string[];
     failedToProcess: string[];
+    instanceUrl: string;
     events: BuildPackage;
 }
 
@@ -121,7 +124,6 @@ export interface BuildPackageDetails {
     event: 'sfpowerscripts.build.success' | 'sfpowerscripts.build.failed' |  'sfpowerscripts.build.progress' | 'sfpowerscripts.build.awaiting';
     context: Context;
     metadata: BuildPackageMetadata;
-    orgId: string;
 }
 
 export interface BuildPackageDependencies {
@@ -285,7 +287,7 @@ export interface ValidateProps {
 
 export interface ReleaseHookSchema {
     eventType: string;
-    eventId: string;
+    jobId: string;
     payload: ReleaseFile;
 }
 
@@ -299,6 +301,7 @@ export interface ReleaseFile {
     message: string;
     releaseProps?: ReleaseProps;
     releaseConfig?: string[];
+    instanceUrl: string;
     events: ReleasePackage;
 }
 

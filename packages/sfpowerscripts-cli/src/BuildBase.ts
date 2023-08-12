@@ -96,6 +96,10 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
         releaseconfig: flags.string({
             description: messages.getMessage('releaseConfigFileFlagDescription'),
         }),
+        jobid: flags.string({
+            char: 'j',
+            description: messages.getMessage('jobIdFlagDescription'),
+        }),
         loglevel: flags.enum({
             description: 'logging level for this command invocation',
             default: 'info',
