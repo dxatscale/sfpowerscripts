@@ -279,7 +279,7 @@ export default class ReleaseImpl {
             }
             let sfpOrg = await SFPOrg.create({ aliasOrUsername: targetOrg });
             ReleaseStreamService.buildOrgInfo(sfpOrg.getConnection().getAuthInfoFields().instanceUrl);
-            let packageCollectionInstaller = new InstallUnlockedPackageCollection(sfpOrg, new ConsoleLogger());
+            let packageCollectionInstaller = new InstallUnlockedPackageCollection(sfpOrg, new ConsoleLogger(),this.props.isDryRun);
             await packageCollectionInstaller.install(externalPackage2s, true, true);
 
             groupSection.end();
@@ -320,9 +320,7 @@ export default class ReleaseImpl {
     }
 
     private displayReleaseInfo(releaseDefinition: ReleaseDefinitionSchema, props: ReleaseProps) {
-        SFPLogger.log(
-            COLOR_HEADER(`-------------------------------------------------------------------------------------------`)
-        );
+        SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
 
         SFPLogger.log(COLOR_KEY_MESSAGE(`Release: ${releaseDefinition.release}`));
 
@@ -341,9 +339,7 @@ export default class ReleaseImpl {
         )
             SFPLogger.log(COLOR_KEY_MESSAGE(`Promte Packages Before Deployment Activated?: true`));
 
-        SFPLogger.log(
-            COLOR_HEADER(`-------------------------------------------------------------------------------------------`)
-        );
+         SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
     }
 }
 

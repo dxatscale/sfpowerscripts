@@ -1,5 +1,5 @@
 import ArtifactFetcher, { Artifact } from '@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFetcher';
-import SFPLogger, { COLOR_ERROR, COLOR_SUCCESS, Logger, LoggerLevel } from '@dxatscale/sfp-logger';
+import SFPLogger, { COLOR_ERROR, COLOR_SUCCESS, FileLogger, Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 import { EOL } from 'os';
 import { Stage } from '../Stage';
 import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig';
@@ -26,6 +26,9 @@ import convertBuildNumDotDelimToHyphen from '@dxatscale/sfpowerscripts.core/lib/
 import ReleaseConfig from '../release/ReleaseConfig';
 import { ValidateStreamService } from '@dxatscale/sfpowerscripts.core/lib/eventStream/validate';
 import { ReleaseStreamService } from '@dxatscale/sfpowerscripts.core/lib/eventStream/release';
+import fs from 'fs-extra';
+import { Align, getMarkdownTable } from 'markdown-table-ts';
+
 
 const Table = require('cli-table');
 const retry = require('async-retry');
@@ -408,18 +411,10 @@ export default class DeployImpl {
 
     private displayRetryHeader(isRetryOnFailure: boolean, count: number) {
         if (isRetryOnFailure && count > 1) {
-            SFPLogger.log(
-                `-------------------------------------------------------------------------------${EOL}`,
-                LoggerLevel.INFO,
-                this.props.logger
-            );
-
+            SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
             SFPLogger.log(`Retrying On Failure Attempt: ${count}`, LoggerLevel.INFO, this.props.logger);
-            SFPLogger.log(
-                `-------------------------------------------------------------------------------${EOL}`,
-                LoggerLevel.INFO,
-                this.props.logger
-            );
+            SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
+           
         }
     }
 
@@ -432,13 +427,7 @@ export default class DeployImpl {
         } else alwaysDeployMessage = undefined;
 
         //Display header
-        SFPLogger.log(
-            COLOR_HEADER(
-                `----------------------------------Installing Package---------------------------------------------`
-            ),
-            LoggerLevel.INFO,
-            this.props.logger
-        );
+        SFPLogger.printHeaderLine('Installing Package',COLOR_HEADER,LoggerLevel.INFO);
         SFPLogger.log(COLOR_HEADER(`Name: ${COLOR_KEY_MESSAGE(pkg)}`), LoggerLevel.INFO, this.props.logger);
         SFPLogger.log(`Type: ${COLOR_KEY_MESSAGE(sfpPackage.packageType)}`, LoggerLevel.INFO, this.props.logger);
         SFPLogger.log(
@@ -474,14 +463,7 @@ export default class DeployImpl {
         }
 
         if (alwaysDeployMessage) SFPLogger.log(alwaysDeployMessage, LoggerLevel.INFO, this.props.logger);
-
-        SFPLogger.log(
-            COLOR_HEADER(
-                `-------------------------------------------------------------------------------------------------`
-            ),
-            LoggerLevel.INFO,
-            this.props.logger
-        );
+        SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
     }
 
     private displayTestInfoHeader(sfpPackage: SfpPackage) {
@@ -515,10 +497,21 @@ export default class DeployImpl {
         });
 
         queue.forEach((pkg) => {
+            
             maxTable.push(processColoursForAllPackages(pkg));
         });
 
         SFPLogger.log(maxTable.toString(), LoggerLevel.INFO, this.props.logger);
+
+
+        //Insane Hack
+        //TODO: Export the value to the caller
+        if(this.props.isDryRun)
+        {
+            printDeploymentBreakDownInMarkdown();
+        }
+
+
         groupSection.end();
 
         groupSection = new GroupConsoleLogs(`Packages to be deployed`, this.props.logger).begin();
@@ -561,6 +554,30 @@ export default class DeployImpl {
         SFPLogger.log(minTable.toString(), LoggerLevel.INFO, this.props.logger);
         groupSection.end();
 
+
+
+        function printDeploymentBreakDownInMarkdown() {
+            let tableData = {
+                table: {
+                    head:  [
+                        'Package',
+                        'Incoming Version',
+                         isBaselinOrgModeActivated ? 'Version in baseline org' : 'Version in org',
+                        'To be installed?',
+                    ],
+                    body: []
+                },
+                alignment: [Align.Left, Align.Left, Align.Left,Align.Right],
+            };
+            for (const pkg of queue) {
+                tableData.table.body.push(getRowForMarkdownTable(pkg));
+            }
+            const table = getMarkdownTable(tableData);
+            const pathToDeploymentBreakDownFile = `.sfpowerscripts/logs/deployment-breakdown.md`;
+            fs.createFileSync(pathToDeploymentBreakDownFile);
+            fs.writeFileSync(pathToDeploymentBreakDownFile, table);
+        }
+
         function processColoursForAllPackages(pkg) {
             const pkgInfo = packagesToPackageInfo[pkg.packageName];
 
@@ -582,7 +599,19 @@ export default class DeployImpl {
             }
 
             return [packageName, versionNumber, versionInstalledInOrg, isPackageInstalled];
-        }
+          }
+
+          
+        function getRowForMarkdownTable(pkg) {
+            const pkgInfo = packagesToPackageInfo[pkg.packageName];
+          
+            let packageName = pkg.packageName;
+            let versionNumber = pkg.versionNumber;
+            let versionInstalledInOrg = pkgInfo.versionInstalledInOrg ? pkgInfo.versionInstalledInOrg : 'N/A';
+            let isPackageInstalled = pkgInfo.isPackageInstalled ? 'No' : 'Yes';
+          
+            return [packageName, versionNumber, versionInstalledInOrg, isPackageInstalled];
+          }
     }
 
     private printArtifactVersions(queue: SfpPackage[], packagesToPackageInfo: { [p: string]: PackageInfo }) {

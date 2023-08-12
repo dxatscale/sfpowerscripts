@@ -3,7 +3,7 @@ import { convertAliasToUsername } from '../utils/AliasList';
 import SFPLogger, { LoggerLevel } from '@dxatscale/sfp-logger';
 import ScratchOrgInfoFetcher from './ScratchOrgInfoFetcher';
 import OrganizationFetcher from './OrganizationFetcher';
-import { AuthInfo, Connection, Org, sfdc } from '@salesforce/core';
+import { AuthInfo, Connection, Org, trimTo15 } from '@salesforce/core';
 
 export default class OrgDetailsFetcher {
     private static usernamesToOrgDetails: { [P: string]: OrgDetails } = {};
@@ -69,7 +69,7 @@ export default class OrgDetailsFetcher {
         ).getDevHubOrg();
 
         let scratchOrgInfo = (
-            await new ScratchOrgInfoFetcher(hubOrg).getScratchOrgInfoByOrgId([sfdc.trimTo15(orgId)])
+            await new ScratchOrgInfoFetcher(hubOrg).getScratchOrgInfoByOrgId([trimTo15(orgId)])
         )[0];
 
         if (scratchOrgInfo) {
@@ -79,7 +79,7 @@ export default class OrgDetailsFetcher {
             };
         } else {
             throw new Error(
-                `No information for scratch org with ID ${sfdc.trimTo15(
+                `No information for scratch org with ID ${trimTo15(
                     orgId
                 )} found in Dev Hub ${hubOrg.getUsername()}`
             );

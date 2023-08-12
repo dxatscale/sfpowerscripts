@@ -472,6 +472,8 @@ export default class BuildImpl {
         BuildStreamService.sendPackageError(sfpPackageMain,reason.message);
 
 		SFPLogger.log(COLOR_ERROR(`Package Creation Failed for ${pkg}`));
+		SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
+		SFPLogger.log(COLOR_ERROR(`Package Creation Failed for ${pkg}, Here are the datails:`));
 		try {
 			// Append error to log file
 			fs.appendFileSync(`.sfpowerscripts/logs/${pkg}`, reason.message, "utf8");
@@ -528,9 +530,7 @@ export default class BuildImpl {
 		SFPLogger.log(
 			COLOR_KEY_MESSAGE(`${EOL}Removed all childs of ${pkg} from queue`),
 		);
-		SFPLogger.log(
-			COLOR_HEADER(`${EOL}-----------------------------------------`),
-		);
+	  SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
 	}
 
 	private queueChildPackages(sfpPackage: SfpPackage): any {

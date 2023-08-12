@@ -6,7 +6,7 @@ import * as path from 'path';
 import FileUtils from 'utils/fileutils';
 import { FileProperties } from 'jsforce/lib/api/metadata';
 import SFPLogger, {LoggerLevel } from '@dxatscale/sfp-logger';
-import { SfdxError } from '@salesforce/core';
+
 
 if (Symbol['asyncIterator'] === undefined) {
     // tslint:disable-next-line:no-any
@@ -112,7 +112,7 @@ export class Packagexml {
                 this.configs.includeFilters.includes(element)
             );
             if (conflict.length > 0) {
-                throw new SfdxError(`Unable to process the request, found ${conflict} in both include and exlude list`);
+                throw new Error(`Unable to process the request, found ${conflict} in both include and exlude list`);
             }
         }
 

@@ -1,15 +1,15 @@
 import ArtifactGenerator from '@dxatscale/sfpowerscripts.core/lib/artifacts/generators/ArtifactGenerator';
 import { COLOR_HEADER, COLOR_KEY_MESSAGE, ConsoleLogger } from '@dxatscale/sfp-logger';
 import PackageDiffImpl from '@dxatscale/sfpowerscripts.core/lib/package/diff/PackageDiffImpl';
-import { flags } from '@salesforce/command';
 import { Messages } from '@salesforce/core';
 import { EOL } from 'os';
 import SfpowerscriptsCommand from './SfpowerscriptsCommand';
-import GitIdentity from '@dxatscale/sfpowerscripts.core/lib/git/GitIdentity';
 import SfpPackage, { PackageType } from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
 import getFormattedTime from '@dxatscale/sfpowerscripts.core/lib/utils/GetFormattedTime';
 const fs = require('fs-extra');
 import Git from '@dxatscale/sfpowerscripts.core/lib/git/Git';
+import { Flags } from '@oclif/core';
+import { loglevel } from './flags/sfdxflags';
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'create-package');
@@ -19,54 +19,36 @@ export default abstract class PackageCreateCommand extends SfpowerscriptsCommand
     protected static requiresDevhubUsername = false;
     protected static requiresProject = true;
 
-    protected static flagsConfig = {
-        package: flags.string({
+    public static flags = {
+        package: Flags.string({
             required: true,
             char: 'n',
             description: messages.getMessage('packageFlagDescription'),
         }),
-        diffcheck: flags.boolean({
+        diffcheck: Flags.boolean({
             description: messages.getMessage('diffCheckFlagDescription'),
         }),
-        gittag: flags.boolean({
+        gittag: Flags.boolean({
             description: messages.getMessage('gitTagFlagDescription'),
         }),
-        repourl: flags.string({
+        repourl: Flags.string({
             char: 'r',
             description: messages.getMessage('repoUrlFlagDescription'),
         }),
-        versionnumber: flags.string({
+        versionnumber: Flags.string({
             description: messages.getMessage('versionNumberFlagDescription'),
         }),
-        artifactdir: flags.directory({
+        artifactdir: Flags.directory({
             description: messages.getMessage('artifactDirectoryFlagDescription'),
             default: 'artifacts',
         }),
-        branch: flags.string({
+        branch: Flags.string({
             description: messages.getMessage('branchFlagDescription'),
         }),
-        refname: flags.string({
+        refname: Flags.string({
             description: messages.getMessage('refNameFlagDescription'),
         }),
-        loglevel: flags.enum({
-            description: 'logging level for this command invocation',
-            default: 'info',
-            required: false,
-            options: [
-                'trace',
-                'debug',
-                'info',
-                'warn',
-                'error',
-                'fatal',
-                'TRACE',
-                'DEBUG',
-                'INFO',
-                'WARN',
-                'ERROR',
-                'FATAL',
-            ],
-        }),
+        loglevel
     };
 
     protected sfdxPackage: string;

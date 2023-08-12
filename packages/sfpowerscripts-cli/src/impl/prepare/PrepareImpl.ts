@@ -244,20 +244,11 @@ export default class PrepareImpl {
             buildArtifactsLogGroup.begin();
             //Build All Artifacts
             SFPLogger.log(`${EOL}`);
-            SFPLogger.log(
-                '-------------------------------------WARNING!!!!------------------------------------------------',
-                LoggerLevel.WARN
-            );
-            SFPLogger.log('Building packages, as script to fetch artifacts was not provided', LoggerLevel.WARN);
-            SFPLogger.log(
-                'This is not ideal, as the artifacts are  built from the current head of the provided branch',
-                LoggerLevel.WARN
-            );
-            SFPLogger.log('Pools should be prepared with previously validated packages', LoggerLevel.WARN);
-            SFPLogger.log(
-                '------------------------------------------------------------------------------------------------',
-                LoggerLevel.WARN
-            );
+            SFPLogger.printHeaderLine('WARNING!!!',COLOR_WARNING,LoggerLevel.INFO);
+            SFPLogger.log('Building packages, as script to fetch artifacts was not provided',LoggerLevel.WARN);
+            SFPLogger.log('This is not ideal, as the artifacts are  built from the current head of the provided branch',LoggerLevel.WARN);
+            SFPLogger.log('Pools should be prepared with previously validated packages',LoggerLevel.WARN);
+            SFPLogger.printHeaderLine('',COLOR_WARNING,LoggerLevel.INFO);
 
             let buildProps: BuildProps = {
                 configFilePath: this.pool.configFilePath,

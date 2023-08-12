@@ -1,7 +1,7 @@
 import path = require('path');
 import * as fs from 'fs-extra';
 import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
-const glob = require('glob');
+import { globSync } from 'glob';
 import AdmZip = require('adm-zip');
 import semver = require('semver');
 import tar = require('tar');
@@ -140,7 +140,7 @@ export default class ArtifactFetcher {
             pattern = `**/*sfpowerscripts_artifact*.@(zip|tgz)`;
         }
 
-        let artifacts: string[] = glob.sync(pattern, {
+        let artifacts: string[] = globSync(pattern, {
             cwd: artifactDirectory,
             absolute: true,
         });

@@ -1,12 +1,12 @@
 import { expect } from '@jest/globals';
-import { MockTestOrgData, testSetup } from '@salesforce/core/lib/testSetup';
+import { MockTestOrgData, TestContext } from '@salesforce/core/lib/testSetup';
 import { ConsoleLogger, VoidLogger } from '@dxatscale/sfp-logger';
 import { AnyJson, ensureJsonMap, JsonMap, ensureString } from '@salesforce/ts-types';
 import SFPOrg from '../../src/org/SFPOrg';
 import SfpPackage from '../../src/package/SfpPackage';
 
 
-const $$ = testSetup();
+const $$ = new TestContext();
 const createOrg = async () => {
 
     const testData = new MockTestOrgData();

@@ -1,4 +1,4 @@
-import { Connection, Org, SfdxProject } from '@salesforce/core';
+import { Connection, Org, SfProject } from '@salesforce/core';
 import { Sfpowerkit } from '@utils/sfpowerkit';
 import SFPLogger, {LoggerLevel } from '@dxatscale/sfp-logger';
 import { parentPort, workerData } from 'worker_threads';
@@ -41,7 +41,7 @@ export default class ReconcileWorker {
 
     private async loadAllLocalComponents() {
         const resolver = new MetadataResolver();
-        const project = await SfdxProject.resolve();
+        const project = await SfProject.resolve();
         let packageDirectories = project.getPackageDirectories();
 
         for (const packageDirectory of packageDirectories) {
@@ -95,7 +95,7 @@ export default class ReconcileWorker {
                 })
                 .catch((error) => {
                     SFPLogger.log(
-                        'Error while processing file ' + profileComponent + '. ERROR Message: ' + error.message,
+                        `Error while processing file ${profileComponent.path}.\n${error}`,
                         LoggerLevel.ERROR
                     );
                 });

@@ -23,6 +23,8 @@ import {
     ApexTestProgressValue,
     CancellationTokenSource,
     ApexTestResultOutcome,
+    ApexTestResultData,
+    CodeCoverageResult,
 } from '@salesforce/apex-node';
 import { CliJsonFormat, JsonReporter } from './JSONReporter';
 import { Duration } from '@salesforce/kit';
@@ -118,6 +120,8 @@ export default class TriggerApexTests {
                 },
                 { retries: 2, minTimeout: 3000 }
             );
+
+            testResult = this.fixBadNamespaceClassFullNames(testResult);
 
             //Collect Failed Tests only if Parallel
             testResult = await this.triggerSecondRunInSerialForParallelFailedTests(
@@ -332,7 +336,8 @@ export default class TriggerApexTests {
                     //Check for messages
                     if (
                         test.message.includes(`Your request exceeded the time limit for processing`) ||
-                        test.message.includes(`UNABLE_TO_LOCK_ROW`)
+                        test.message.includes(`UNABLE_TO_LOCK_ROW`) ||
+                        test.message.includes(`Internal Salesforce Error`)
                     ) {
                         if (!testToBeTriggered.includes(test.apexClass.fullName)) {
                             parallelFailedTestClasses.push(test.apexClass.fullName);
@@ -401,31 +406,71 @@ export default class TriggerApexTests {
                     { retries: 2, minTimeout: 3000 }
                 );
 
+                secondRuntestRunResult = this.fixBadNamespaceClassFullNames(secondRuntestRunResult);
+
                 //Fetch Test Results
-                const secondTestResult = await testService.reportAsyncResults(
-                    secondRuntestRunResult.summary.testRunId,
-                    true,
-                    this.cancellationTokenSource.token
+                const secondTestResult = this.fixBadNamespaceClassFullNames(
+                    await testService.reportAsyncResults(
+                        secondRuntestRunResult.summary.testRunId,
+                        true,
+                        this.cancellationTokenSource.token
+                    )
                 );
 
                 this.writeTestOutput(secondTestResult);
 
-                //Replace original test result
-                modifiedTestResult.tests = modifiedTestResult.tests.map(
-                    (obj) => secondTestResult.tests.find((o) => o.methodName === obj.methodName) || obj
-                );
+                //Merge original test results with second run
+                const mergedTestResults: ApexTestResultData[] = modifiedTestResult.tests;
+                for (const testObject of secondTestResult.tests){
+                    const index = mergedTestResults.findIndex((test) => test.fullName === testObject.fullName);
+                    if (index !== -1) {
+                        mergedTestResults[index] = testObject;
+                    }else{
+                        mergedTestResults.push(testObject);
+                    }
+                }
+                modifiedTestResult.tests = mergedTestResults;
 
-                //Replace original code coverage
+                //Merge original code coverage with second run
                 if (isCoverageToBeFetched) {
-                    modifiedTestResult.codecoverage = modifiedTestResult.codecoverage.map(
-                        (obj) => secondTestResult.codecoverage.find((o) => o.name === obj.name) || obj
-                    );
+                    const mergedCodecoverage: CodeCoverageResult[] = modifiedTestResult.codecoverage;
+                    for (const codeCoverageObject of secondTestResult.codecoverage){
+                    
+                        const index = mergedCodecoverage.findIndex((codeCoverage) => codeCoverage.name === codeCoverageObject.name);
+                        if (index !== -1) {
+                            mergedCodecoverage[index] = codeCoverageObject;
+                        }else{
+                            mergedCodecoverage.push(codeCoverageObject);
+                        }
+                    }
+                    modifiedTestResult.codecoverage = mergedCodecoverage;
                 }
 
                 //Now redo the math
                 modifiedTestResult = this.combineTestResult(modifiedTestResult, secondRuntestRunResult);
             }
         }
+
+        return modifiedTestResult;
+    }
+
+    private fixBadNamespaceClassFullNames(testResult: any): any {
+        let modifiedTestResult = _.cloneDeep(testResult);
+
+        modifiedTestResult.tests = modifiedTestResult.tests.map((test) => {
+            return {
+                ...test,
+                ...{
+                    fullName: test.fullName.replace('__', '.'),
+                    apexClass: {
+                        ...test.apexClass,
+                        ...{
+                            fullName: test.apexClass.fullName.replace('__', '.'),
+                        },
+                    },
+                },
+            };
+        });
 
         return modifiedTestResult;
     }

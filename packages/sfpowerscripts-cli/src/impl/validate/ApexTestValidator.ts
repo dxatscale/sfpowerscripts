@@ -181,20 +181,12 @@ export class ApexTestValidator {
 
 
   private displayTestHeader(sfpPackage: SfpPackage) {
-    SFPLogger.log(
-      COLOR_HEADER(
-        `-------------------------------------------------------------------------------------------`,
-      ),
-    );
+    SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
     SFPLogger.log(
       `Triggering Apex tests for ${this.sfpPackage.packageName}`,
       LoggerLevel.INFO,
     );
-    SFPLogger.log(
-      COLOR_HEADER(
-        `-------------------------------------------------------------------------------------------`,
-      ),
-    );
+    SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
   }
 
 }

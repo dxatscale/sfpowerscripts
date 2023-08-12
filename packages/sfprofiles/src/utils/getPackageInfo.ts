@@ -1,8 +1,9 @@
-import { SfdxProjectJson, SfdxError } from '@salesforce/core';
+
+import { SfProjectJson } from '@salesforce/core';
 import { JsonArray } from '@salesforce/ts-types';
 
 //Returns the info about a requested package
-export function getPackageInfo(packageJson: SfdxProjectJson, packageName: string) {
+export function getPackageInfo(packageJson: SfProjectJson, packageName: string) {
     //Find the default package or passed package as the parameter
     const packageDirectories = (packageJson.get('packageDirectories') as JsonArray) || [];
     let packageInfo;
@@ -12,14 +13,14 @@ export function getPackageInfo(packageJson: SfdxProjectJson, packageName: string
         })[0];
 
         if (packageInfo == undefined) {
-            throw new SfdxError('Invalid Package');
+            throw new Error('Invalid Package');
         }
-    } else throw new SfdxError('Package Name is empty');
+    } else throw new Error('Package Name is empty');
     return packageInfo;
 }
 
 //Returns the info about a requested package
-export function getDefaultPackageInfo(packageJson: SfdxProjectJson) {
+export function getDefaultPackageInfo(packageJson: SfProjectJson) {
     //Find the default package or passed package as the parameter
     const packageDirectories = (packageJson.get('packageDirectories') as JsonArray) || [];
     let packageInfo;
@@ -29,7 +30,7 @@ export function getDefaultPackageInfo(packageJson: SfdxProjectJson) {
     })[0];
 
     if (packageInfo == undefined) {
-        throw new SfdxError('Default Package not found');
+        throw new Error('Default Package not found');
     }
 
     return packageInfo;

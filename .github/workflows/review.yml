@@ -15,16 +15,20 @@ jobs:
     validate:
         runs-on: ubuntu-latest
         steps:
-          - uses: actions/checkout@v2
+          - uses: actions/checkout@v3
           - name: Use Node.js
-            uses: actions/setup-node@v1
+            uses: actions/setup-node@v3
             with:
               node-version: '16.x'
-              registry-url: 'https://registry.npmjs.org'          
-          - run: npm ci
-          - run: npx lerna bootstrap
+              registry-url: 'https://registry.npmjs.org'
+          - uses: pnpm/action-setup@v2
+            with:
+             version: 8
+
+          - name: 'Install Dependencies'
+            run: pnpm i              
           - run: npx lerna run build
           - run: npx lerna run test -- --colors
           - run: bash <(curl -s https://codecov.io/bash) -v
-    
-  
+
+

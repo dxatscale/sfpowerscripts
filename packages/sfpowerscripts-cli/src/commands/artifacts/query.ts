@@ -1,9 +1,9 @@
-import { flags } from '@salesforce/command';
 import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
 import { LoggerLevel, Messages } from '@salesforce/core';
 import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
 import SFPLogger, { ConsoleLogger } from '@dxatscale/sfp-logger';
 import { ZERO_BORDER_TABLE } from '../../ui/TableConstants';
+import { loglevel, requiredUserNameFlag } from '../../flags/sfdxflags';
 const Table = require('cli-table');
 
 Messages.importMessagesDirectory(__dirname);
@@ -12,31 +12,14 @@ const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'artifacts_q
 export default class Query extends SfpowerscriptsCommand {
     public static description = messages.getMessage('commandDescription');
 
-    public static examples = [`$ sfpowerscripts artifacts:query -u <target_org>`];
-
+    public static examples = [`$ sfp artifacts:query -u <target_org>`];
+    public static enableJsonFlag = true
     protected static requiresUsername = true;
     protected static requiresDevhubUsername = false;
 
-    protected static flagsConfig = {
-        loglevel: flags.enum({
-            description: 'logging level for this command invocation',
-            default: 'info',
-            required: false,
-            options: [
-                'trace',
-                'debug',
-                'info',
-                'warn',
-                'error',
-                'fatal',
-                'TRACE',
-                'DEBUG',
-                'INFO',
-                'WARN',
-                'ERROR',
-                'FATAL',
-            ],
-        }),
+    public static flags = {
+        loglevel,
+        'targetusername': requiredUserNameFlag,
     };
 
     public async execute() {

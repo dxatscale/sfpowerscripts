@@ -32,20 +32,13 @@ import { COLOR_TIME } from "@dxatscale/sfp-logger";
 import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender";
 import ScratchOrgInfoFetcher from "@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/services/fetchers/ScratchOrgInfoFetcher";
 import ScratchOrgInfoAssigner from "@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/services/updaters/ScratchOrgInfoAssigner";
-import Component from "@dxatscale/sfpowerscripts.core/lib/dependency/Component";
 import ValidateResult from "./ValidateResult";
 import PoolOrgDeleteImpl from "@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolOrgDeleteImpl";
 import SFPOrg from "@dxatscale/sfpowerscripts.core/lib/org/SFPOrg";
 import SfpPackage, {
 	PackageType,
 } from "@dxatscale/sfpowerscripts.core/lib/package/SfpPackage";
-import { TestOptions } from "@dxatscale/sfpowerscripts.core/lib/apextest/TestOptions";
-import {
-	RunAllTestsInPackageOptions,
-	RunSpecifiedTestsOption,
-} from "@dxatscale/sfpowerscripts.core/lib/apextest/TestOptions";
-import { CoverageOptions } from "@dxatscale/sfpowerscripts.core/lib/apex/coverage/IndividualClassCoverage";
-import TriggerApexTests from "@dxatscale/sfpowerscripts.core/lib/apextest/TriggerApexTests";
+
 import getFormattedTime from "@dxatscale/sfpowerscripts.core/lib/utils/GetFormattedTime";
 import { PostDeployHook } from "../deploy/PostDeployHook";
 import * as rimraf from "rimraf";
@@ -55,13 +48,10 @@ import ExternalPackage2DependencyResolver from "@dxatscale/sfpowerscripts.core/l
 import ExternalDependencyDisplayer from "@dxatscale/sfpowerscripts.core/lib/display/ExternalDependencyDisplayer";
 import { PreDeployHook } from "../deploy/PreDeployHook";
 import GroupConsoleLogs from "../../ui/GroupConsoleLogs";
-import { COLON_MIDDLE_BORDER_TABLE } from "../../ui/TableConstants";
 import ReleaseConfig from "../release/ReleaseConfig";
 import { mapInstalledArtifactstoPkgAndCommits } from "../../utils/FetchArtifactsFromOrg";
 import { ApexTestValidator } from "./ApexTestValidator";
-import { DependencyAnalzer } from "./DependencyAnalyzer";
 import OrgInfoDisplayer from "../../ui/OrgInfoDisplayer";
-const Table = require("cli-table");
 import { ValidateStreamService } from "@dxatscale/sfpowerscripts.core/lib/eventStream/validate";
 
 export enum ValidateAgainst {
@@ -90,8 +80,6 @@ export interface ValidateProps {
 	isDeleteScratchOrg?: boolean;
 	keys?: string;
 	baseBranch?: string;
-	isImpactAnalysis?: boolean;
-	isDependencyAnalysis?: boolean;
 	diffcheck?: boolean;
 	disableArtifactCommit?: boolean;
 	orgInfo?: boolean;
@@ -165,18 +153,6 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
 
 			if (deploymentResult.failed.length > 0 || deploymentResult.error)
 				throw new ValidateError("Validation failed", { deploymentResult });
-			else {
-				//Do dependency analysis
-				if (this.props.isDependencyAnalysis) {
-					let dependencyAnalzer = new DependencyAnalzer(this.props.baseBranch, this.orgAsSFPOrg, deploymentResult);
-					await dependencyAnalzer.dependencyAnalysis();
-				}
-
-				if (this.props.isDependencyAnalysis) {
-					let dependencyAnalzer = new DependencyAnalzer(this.props.baseBranch, this.orgAsSFPOrg, deploymentResult);
-					await dependencyAnalzer.dependencyAnalysis();
-				}
-			}
 
 			return {
 				deploymentResult
@@ -193,8 +169,8 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
 				);
 				return;
 			} else if (error instanceof ValidateError)
-				SFPLogger.log(`Error: ${error}`, LoggerLevel.DEBUG);
-			else SFPLogger.log(`Error: ${error}}`, LoggerLevel.ERROR);
+				SFPLogger.log(`Validation failed due to : ${error}`, LoggerLevel.DEBUG);
+			else SFPLogger.log(`Failure Reason: ${error}`, LoggerLevel.ERROR);
 			throw error;
 		} finally {
 			await this.handleScratchOrgStatus(
@@ -378,12 +354,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
 			totalElapsedTime: number,
 		): void {
 			let groupSection = new GroupConsoleLogs(`Deployment Summary`).begin();
-
-			SFPLogger.log(
-				COLOR_HEADER(
-					`----------------------------------------------------------------------------------------------------`,
-				),
-			);
+			SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
 			SFPLogger.log(
 				COLOR_SUCCESS(
 					`${deploymentResult.deployed.length
@@ -406,11 +377,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
 				);
 			}
 
-			SFPLogger.log(
-				COLOR_HEADER(
-					`----------------------------------------------------------------------------------------------------`,
-				),
-			);
+			SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
 			groupSection.end();
 		}
 	}
@@ -460,7 +427,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
 		const { generatedPackages, failedPackages } = await buildImpl.exec();
 
 		if (failedPackages.length > 0)
-			throw new Error(`Failed to create source packages ${failedPackages}`);
+			throw new Error(`Failed to create source1 packages ${failedPackages}`);
 
 		if (generatedPackages.length === 0) {
 			throw new Error(
@@ -584,11 +551,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
 			failedPackages: string[],
 			totalElapsedTime: number,
 		): void {
-			SFPLogger.log(
-				COLOR_HEADER(
-					`----------------------------------------------------------------------------------------------------`,
-				),
-			);
+			SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
 			SFPLogger.log(
 				COLOR_SUCCESS(
 					`${generatedPackages.length} packages created in ${COLOR_TIME(
@@ -600,11 +563,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
 			if (failedPackages.length > 0) {
 				SFPLogger.log(COLOR_ERROR(`Packages Failed To Build`, failedPackages));
 			}
-			SFPLogger.log(
-				COLOR_HEADER(
-					`----------------------------------------------------------------------------------------------------`,
-				),
-			);
+			SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
 		}
 
 		function printIncludeOnlyPackages(includeOnlyPackages: string[]) {

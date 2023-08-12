@@ -1,15 +1,11 @@
 {
-    "packages": [
-        "packages/*"
-    ],
-    "useWorkspaces": true,
+    "packages": ["packages/*"],
+    "npmClient":"pnpm",
     "version": "independent",
     "command": {
         "publish": {
             "yes": true,
-            "ignoreChanges": [
-                "*.md"
-            ],
+            "ignoreChanges": ["*.md"],
             "registry": "https://registry.npmjs.org",
             "message": "chore(publish): update versions and publish to npm"
         }

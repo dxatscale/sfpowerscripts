@@ -12,11 +12,7 @@ export default class OrgInfoDisplayer
    public static printScratchOrgInfo(scratchOrg:ScratchOrg): void {
     let groupSection = new GroupConsoleLogs(`Display Org Info`).begin();
 
-    SFPLogger.log(
-      COLOR_HEADER(
-        `----------------------------------------------------------------------------------------------`,
-      ),
-    );
+    SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
     SFPLogger.log(COLOR_KEY_VALUE(`-- Org Details:--`));
     const table = new Table({
       chars: COLON_MIDDLE_BORDER_TABLE,
@@ -64,11 +60,7 @@ export default class OrgInfoDisplayer
       LoggerLevel.INFO,
     );
 
-    SFPLogger.log(
-      COLOR_HEADER(
-        `----------------------------------------------------------------------------------------------`,
-      ),
-    );
+    SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
 
     groupSection.end();
    }
@@ -77,11 +69,7 @@ export default class OrgInfoDisplayer
    public static  printOrgInfo(org:SFPOrg): void {
     let groupSection = new GroupConsoleLogs(`Display Org Info`).begin();
 
-    SFPLogger.log(
-      COLOR_HEADER(
-        `----------------------------------------------------------------------------------------------`,
-      ),
-    );
+    SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
     SFPLogger.log(COLOR_KEY_VALUE(`-- Org Details:--`));
     const table = new Table({
       chars: COLON_MIDDLE_BORDER_TABLE,
@@ -104,11 +92,7 @@ export default class OrgInfoDisplayer
 
    
 
-    SFPLogger.log(
-      COLOR_HEADER(
-        `----------------------------------------------------------------------------------------------`,
-      ),
-    );
+    SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
 
     groupSection.end();
    }

@@ -114,10 +114,9 @@ export abstract class CreatePackage {
     abstract isEmptyPackage(projectDirectory: string, packageDirectory: string);
 
     protected printEmptyArtifactWarning() {
-        SFPLogger.log(
-            `${COLOR_WARNING(
-                `---------------------WARNING! Empty aritfact encountered-------------------------------`
-            )}`,
+        SFPLogger.printHeaderLine(
+           `WARNING! Empty aritfact encountered`,
+            COLOR_WARNING,
             LoggerLevel.INFO,
             this.logger
         );
@@ -127,13 +126,7 @@ export abstract class CreatePackage {
             this.logger
         );
         SFPLogger.log('Proceeding to create an empty artifact', LoggerLevel.INFO, this.logger);
-        SFPLogger.log(
-            `${COLOR_WARNING(
-                `---------------------------------------------------------------------------------------`
-            )}`,
-            LoggerLevel.INFO,
-            this.logger
-        );
+        SFPLogger.printHeaderLine('',COLOR_WARNING,LoggerLevel.INFO,this.logger);
     }
 
     private printHeader() {
@@ -157,13 +150,7 @@ export abstract class CreatePackage {
 
         this.printAdditionalPackageSpecificHeaders();
 
-        SFPLogger.log(
-            `${COLOR_HEADER(
-                `-------------------------------------------------------------------------------------------`
-            )}`,
-            LoggerLevel.INFO,
-            this.logger
-        );
+        SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO,this.logger);
     }
 
     abstract printAdditionalPackageSpecificHeaders();

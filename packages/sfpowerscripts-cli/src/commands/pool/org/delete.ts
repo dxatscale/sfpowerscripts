@@ -1,9 +1,9 @@
-import { flags } from '@salesforce/command';
 import { AnyJson } from '@salesforce/ts-types';
 import SfpowerscriptsCommand from '../../../SfpowerscriptsCommand';
 import PoolOrgDeleteImpl from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolOrgDeleteImpl';
 import SFPLogger from '@dxatscale/sfp-logger';
 import { Messages } from '@salesforce/core';
+import { loglevel, orgApiVersionFlagSfdxStyle, targetdevhubusername, requiredUserNameFlag } from '../../../flags/sfdxflags';
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -19,31 +19,11 @@ export default class Delete extends SfpowerscriptsCommand {
 
     public static examples = [`$ sfpowerscripts pool:org:delete -u test-xasdasd@example.com -v devhub`];
 
-    protected static flagsConfig = {
-        username: flags.string({
-            char: 'u',
-            description: messages.getMessage('userNameFlagDescription'),
-            required: true,
-        }),
-        loglevel: flags.enum({
-            description: 'logging level for this command invocation',
-            default: 'info',
-            required: false,
-            options: [
-                'trace',
-                'debug',
-                'info',
-                'warn',
-                'error',
-                'fatal',
-                'TRACE',
-                'DEBUG',
-                'INFO',
-                'WARN',
-                'ERROR',
-                'FATAL',
-            ],
-        }),
+    public static flags = {
+        'apiversion': orgApiVersionFlagSfdxStyle,
+        requiredUserNameFlag,
+        targetdevhubusername,
+        loglevel
     };
 
     public async execute(): Promise<AnyJson> {

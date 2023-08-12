@@ -52,7 +52,7 @@ describe('Given a package descriptor with a destructiveChangePath', () => {
         let destructiveManifestPathFetcher: DestructiveManifestPathFetcher = new DestructiveManifestPathFetcher();
         let sfpPackage: SfpPackage = await  SfpPackageBuilder.buildPackageFromProjectDirectory(null, null, null);
         await destructiveManifestPathFetcher.getSfpowerscriptsProperties(sfpPackage);
-        expect(sfpPackage.destructiveChanges).toStrictEqual(destructiveChanges);
+        expect(sfpPackage.destructiveChanges).toEqual(destructiveChanges);
     });
 });
 

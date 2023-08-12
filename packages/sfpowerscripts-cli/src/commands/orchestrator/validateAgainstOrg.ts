@@ -1,12 +1,13 @@
-import { Messages, Org } from '@salesforce/core';
+import { LoggerLevel, Messages, Org } from '@salesforce/core';
 import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
-import { flags } from '@salesforce/command';
 import ValidateImpl, { ValidateAgainst, ValidateProps, ValidationMode } from '../../impl/validate/ValidateImpl';
 import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender';
 import SFPLogger, { COLOR_HEADER, COLOR_KEY_MESSAGE } from '@dxatscale/sfp-logger';
 import * as fs from 'fs-extra';
 import ValidateError from '../../errors/ValidateError';
 import ValidateResult from '../../impl/validate/ValidateResult';
+import { loglevel, logsgroupsymbol, requiredUserNameFlag, targetdevhubusername } from '../../flags/sfdxflags';
+import { Flags } from '@oclif/core';
 
 
 Messages.importMessagesDirectory(__dirname);
@@ -17,79 +18,51 @@ export default class ValidateAgainstOrg extends SfpowerscriptsCommand {
 
     public static examples = [`$ sfpowerscripts orchestrator:validateAgainstOrg -u <targetorg>`];
 
-    protected static flagsConfig = {
-        targetorg: flags.string({
-            char: 'u',
-            description: messages.getMessage('targetOrgFlagDescription'),
-            required: true,
-        }),
-        mode: flags.enum({
+    public static flags = {
+        targetorg: requiredUserNameFlag,
+        mode: Flags.string({
             description: 'validation mode',
             default: 'thorough',
             required: true,
             options: ['individual', 'fastfeedback', 'thorough', 'ff-release-config', 'thorough-release-config'],
         }),
-        releaseconfig: flags.string({
+        releaseconfig: Flags.string({
             description: messages.getMessage('configFileFlagDescription'),
         }),
-        coveragepercent: flags.integer({
+        coveragepercent: Flags.integer({
             description: messages.getMessage('coveragePercentFlagDescription'),
             default: 75,
         }),
-        diffcheck: flags.boolean({
+        diffcheck: Flags.boolean({
             description: messages.getMessage('diffCheckFlagDescription'),
             default: false,
         }),
-        disableartifactupdate: flags.boolean({
+        disableartifactupdate: Flags.boolean({
             description: messages.getMessage('disableArtifactUpdateFlagDescription'),
             default: false,
         }),
-        logsgroupsymbol: flags.array({
-            char: 'g',
-            description: messages.getMessage('logsGroupSymbolFlagDescription'),
-        }),
-        basebranch: flags.string({
+        logsgroupsymbol,
+        basebranch: Flags.string({
             description: messages.getMessage('baseBranchFlagDescription'),
         }),
-        orginfo: flags.boolean({
+        orginfo: Flags.boolean({
             description: messages.getMessage('orgInfoFlagDescription'),
             default: false,
         }),
-        installdeps: flags.boolean({
+        installdeps: Flags.boolean({
             description: messages.getMessage('installDepsFlagDescription'),
             default: false,
         }),
-        devhubalias: flags.string({
-            char: 'v',
-            description: messages.getMessage('devhubAliasFlagDescription')
-        }),
-        disablesourcepkgoverride: flags.boolean({
+        devhubalias: targetdevhubusername,
+        disablesourcepkgoverride: Flags.boolean({
             description: messages.getMessage('disableSourcePackageOverride'),
             dependsOn:['devhubalias']
         }),
-        disableparalleltesting: flags.boolean({
+        disableparalleltesting: Flags.boolean({
             description: messages.getMessage('disableParallelTestingFlagDescription'),
             default: false,
         }),
-        loglevel: flags.enum({
-            description: 'logging level for this command invocation',
-            default: 'info',
-            required: false,
-            options: [
-                'trace',
-                'debug',
-                'info',
-                'warn',
-                'error',
-                'fatal',
-                'TRACE',
-                'DEBUG',
-                'INFO',
-                'WARN',
-                'ERROR',
-                'FATAL',
-            ],
-        }),
+        loglevel
     };
 
     async execute(): Promise<void> {
@@ -122,10 +95,7 @@ export default class ValidateAgainstOrg extends SfpowerscriptsCommand {
         }
       
 
-        SFPLogger.log(
-            COLOR_HEADER(`-------------------------------------------------------------------------------------------`)
-        );
-
+        SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
 
         
         let validateResult: ValidateResult;
@@ -162,7 +132,7 @@ export default class ValidateAgainstOrg extends SfpowerscriptsCommand {
         } catch (error) {
             if (error instanceof ValidateError) {
                 validateResult = error.data;
-            } else SFPLogger.log(error.message);
+            } 
 
             SFPStatsSender.logCount('validate.failed', tags);
 

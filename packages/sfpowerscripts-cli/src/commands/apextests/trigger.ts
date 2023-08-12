@@ -8,7 +8,6 @@ import {
     RunAllTestsInPackageOptions,
 } from '@dxatscale/sfpowerscripts.core/lib/apextest/TestOptions';
 import TriggerApexTests from '@dxatscale/sfpowerscripts.core/lib/apextest/TriggerApexTests';
-import { flags } from '@salesforce/command';
 import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
 import { Messages } from '@salesforce/core';
 import SfpPackage from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
@@ -17,6 +16,8 @@ import { ConsoleLogger } from '@dxatscale/sfp-logger';
 import { CoverageOptions } from '@dxatscale/sfpowerscripts.core/lib/apex/coverage/IndividualClassCoverage';
 import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder';
 import { PackageType } from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
+import { Flags } from '@oclif/core';
+import { loglevel, orgApiVersionFlagSfdxStyle, requiredUserNameFlag } from '../../flags/sfdxflags';
 const path = require('path');
 
 // Initialize Messages with the current plugin directory
@@ -30,12 +31,15 @@ export default class TriggerApexTest extends SfpowerscriptsCommand {
     public static description = messages.getMessage('commandDescription');
 
     public static examples = [
-        `$ sfpowerscripts apextests:trigger -u scratchorg -l RunLocalTests -s`,
-        `$ sfpowerscripts apextests:trigger -u scratchorg -l RunAllTestsInPackage -n <mypackage> -c`,
+        `$ sfp apextests:trigger -u scratchorg -l RunLocalTests -s`,
+        `$ sfp apextests:trigger -u scratchorg -l RunAllTestsInPackage -n <mypackage> -c`,
     ];
 
-    protected static flagsConfig = {
-        testlevel: flags.string({
+    public static flags = {
+        loglevel,
+        'apiversion': orgApiVersionFlagSfdxStyle,
+        'targetusername': requiredUserNameFlag,
+        testlevel: Flags.string({
             char: 'l',
             description: messages.getMessage('testLevelFlagDescription'),
             options: [
@@ -47,72 +51,41 @@ export default class TriggerApexTest extends SfpowerscriptsCommand {
             ],
             default: 'RunLocalTests',
         }),
-        package: flags.string({
+        package: Flags.string({
             char: 'n',
             description: messages.getMessage('packageFlagDescription'),
             required: false,
         }),
-        validateindividualclasscoverage: flags.boolean({
+        validateindividualclasscoverage: Flags.boolean({
             char: 'c',
             description: messages.getMessage('validateIndividualClassCoverageFlagDescription'),
             default: false,
         }),
-        validatepackagecoverage: flags.boolean({
+        validatepackagecoverage: Flags.boolean({
             description: messages.getMessage('validatePackageCoverageFlagDescription'),
             default: false,
         }),
-        synchronous: flags.boolean({
-            char: 's',
-            deprecated: {
-                message:
-                'synchronous mode is no longer supported, all tests are triggered asynchronously, Please use cli or disable parallel testing in the org ',
-                messageOverride:
-                    'synchronous mode is no longer supported, all tests are triggered asynchronously, Please use cli or disable parallel testing in the org ',
-            },
-            description: messages.getMessage('synchronousFlagDescription'),
-        }),
-        specifiedtests: flags.string({
+        specifiedtests: Flags.string({
             description: messages.getMessage('specifiedTestsFlagDescription'),
         }),
-        apextestsuite: flags.string({
+        apextestsuite: Flags.string({
             description: messages.getMessage('apexTestSuiteFlagDescription'),
         }),
-        coveragepercent: flags.integer({
+        coveragepercent: Flags.integer({
             char: 'p',
             description: messages.getMessage('coveragePercentFlagDescription'),
             default: 75,
         }),
-        waittime: flags.number({
+        waittime: Flags.integer({
             char: 'w',
             description: messages.getMessage('waitTimeFlagDescription'),
             default: 60,
         }),
-        loglevel: flags.enum({
-            description: 'logging level for this command invocation',
-            default: 'info',
-            required: false,
-            options: [
-                'trace',
-                'debug',
-                'info',
-                'warn',
-                'error',
-                'fatal',
-                'TRACE',
-                'DEBUG',
-                'INFO',
-                'WARN',
-                'ERROR',
-                'FATAL',
-            ],
-        }),
     };
-
-    protected static requiresUsername = true;
-    protected static requiresDevhubUsername = false;
 
     public async execute() {
         try {
+
             let testOptions: TestOptions;
             let coverageOptions: CoverageOptions;
             let outputdir = path.join('.testresults');
@@ -165,8 +138,9 @@ export default class TriggerApexTest extends SfpowerscriptsCommand {
                 };
             }
 
+
             const triggerApexTests: TriggerApexTests = new TriggerApexTests(
-                this.org.getUsername(),
+                this.flags.targetusername,
                 testOptions,
                 coverageOptions,
                 null,

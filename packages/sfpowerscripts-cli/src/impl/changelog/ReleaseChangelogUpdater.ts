@@ -15,7 +15,7 @@ export default class ReleaseChangelogUpdater {
         private packagesToChangelogFilePaths: { [p: string]: string },
         private workItemFilters: string[],
         private org: string
-    ) {}
+    ) { }
 
     update(): ReleaseChangelog {
         let buildNumber: number;
@@ -27,8 +27,11 @@ export default class ReleaseChangelogUpdater {
 
         let latestRelease: Release = this.initLatestRelease(this.releaseName, buildNumber, this.artifactsToSfpPackage);
 
-        let releaseWithMatchingHashId = this.findRelease(this.releaseChangelog.releases, latestRelease.hashId);
+        let releaseWithMatchingHashId = this.findRelease(this.releaseChangelog.releases, latestRelease);
         if (!releaseWithMatchingHashId) {
+
+
+
             let artifactsToLatestCommitId: { [P: string]: string };
             if (this.releaseChangelog.releases.length > 0) {
                 artifactsToLatestCommitId = this.getArtifactsToLatestCommitId(this.releaseChangelog, latestRelease);
@@ -94,17 +97,51 @@ export default class ReleaseChangelogUpdater {
      * @param latestRelease
      * @returns
      */
-    private findRelease(releases: Release[], hashId: string): Release {
+    private findRelease(releases: Release[], latestRelease: Release): Release | null {
+        let foundRelease: Release | null = null;
+    
         if (releases.length > 0) {
-            for (let release of releases) {
-                if (release.hashId === hashId) {
-                    return release;
+            // First level matching with hashId
+            foundRelease = releases.find(release => release.hashId === latestRelease.hashId);
+    
+            // If not found by hashId, proceed to next level matching with names and artifacts
+            if (foundRelease == null) {
+                // Create a map for constant time lookup of all release's artifacts
+                const allArtifacts = new Map<string, string[]>();
+                for (let release of releases) {
+                    for (let artifact of release.artifacts) {
+                        if (allArtifacts.has(artifact.name)) {
+                            allArtifacts.get(artifact.name).push(artifact.version);
+                        } else {
+                            allArtifacts.set(artifact.name, [artifact.version]);
+                        }
+                    }
+                }
+    
+                // Check if all artifacts in the latest release exist in previous releases
+                let isAllArtifactsAlreadyAvailablePreviously: boolean = true;
+                for (let artifact of latestRelease.artifacts) {
+                    if (!allArtifacts.has(artifact.name) || !allArtifacts.get(artifact.name).includes(artifact.version)) {
+                        isAllArtifactsAlreadyAvailablePreviously = false;
+                        break;
+                    }
+                }
+    
+                // If all artifacts match, check for names
+                if (isAllArtifactsAlreadyAvailablePreviously) {
+                    for (let release of releases) {
+                        if (release.names.includes(latestRelease.names[0])) {
+                            foundRelease = release;
+                            break;
+                        }
+                    }
                 }
             }
         }
-
-        return null;
+    
+        return foundRelease;
     }
+    
 
     /**
      * Initalise latest release

@@ -1,9 +1,10 @@
-import { flags } from '@salesforce/command';
 import { Messages } from '@salesforce/core';
 import PackageCreateCommand from '../../../PackageCreateCommand';
 import { COLOR_SUCCESS, ConsoleLogger } from '@dxatscale/sfp-logger';
 import SfpPackage from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
 import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder';
+import { loglevel, targetdevhubusername } from '../../../flags/sfdxflags';
+import { Flags } from '@oclif/core';
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -33,91 +34,66 @@ export default class CreateUnlockedPackage extends PackageCreateCommand {
         `<refname>_sfpowerscripts_package_version_number`,
     ];
 
-    protected static flagsConfig = {
-        package: flags.string({
+    public static flags = {
+        package: Flags.string({
             required: true,
             char: 'n',
             description: messages.getMessage('packageFlagDescription'),
         }),
-        buildartifactenabled: flags.boolean({
-            char: 'b',
-            description: messages.getMessage('buildArtifactEnabledFlagDescription'),
-            deprecated: {
-                message: '--buildartifactenabled is deprecated. Artifacts are always created',
-                messageOverride: '--buildartifactenabled is deprecated. Artifacts are always created',
-            },
-        }),
-        installationkey: flags.string({
+        installationkey: Flags.string({
             char: 'k',
             description: messages.getMessage('installationKeyFlagDescription'),
             exclusive: ['installationkeybypass'],
         }),
-        installationkeybypass: flags.boolean({
+        installationkeybypass: Flags.boolean({
             char: 'x',
             description: messages.getMessage('installationKeyBypassFlagDescription'),
             exclusive: ['installationkey'],
         }),
-        diffcheck: flags.boolean({
+        diffcheck: Flags.boolean({
             description: messages.getMessage('diffCheckFlagDescription'),
         }),
-        gittag: flags.boolean({
+        gittag: Flags.boolean({
             description: messages.getMessage('gitTagFlagDescription'),
         }),
-        repourl: flags.string({
+        targetdevhubusername,
+        repourl: Flags.string({
             char: 'r',
             description: messages.getMessage('repoUrlFlagDescription'),
         }),
-        versionnumber: flags.string({
+        versionnumber: Flags.string({
             description: messages.getMessage('versionNumberFlagDescription'),
         }),
-        configfilepath: flags.filepath({
+        configfilepath: Flags.file({
             char: 'f',
             description: messages.getMessage('configFilePathFlagDescription'),
             default: 'config/project-scratch-def.json',
         }),
-        artifactdir: flags.directory({
+        artifactdir: Flags.directory({
             description: messages.getMessage('artifactDirectoryFlagDescription'),
             default: 'artifacts',
         }),
-        enablecoverage: flags.boolean({
+        enablecoverage: Flags.boolean({
             description: messages.getMessage('enableCoverageFlagDescription'),
         }),
-        isvalidationtobeskipped: flags.boolean({
+        isvalidationtobeskipped: Flags.boolean({
             char: 's',
             description: messages.getMessage('isValidationToBeSkippedFlagDescription'),
         }),
-        branch: flags.string({
+        branch: Flags.string({
             description: messages.getMessage('branchFlagDescription'),
         }),
-        tag: flags.string({
+        tag: Flags.string({
             description: messages.getMessage('tagFlagDescription'),
         }),
-        waittime: flags.string({
+        waittime: Flags.string({
             description: messages.getMessage('waitTimeFlagDescription'),
             default: '120',
         }),
-        refname: flags.string({
+        refname: Flags.string({
             description: messages.getMessage('refNameFlagDescription'),
         }),
-        loglevel: flags.enum({
-            description: 'logging level for this command invocation',
-            default: 'info',
-            required: false,
-            options: [
-                'trace',
-                'debug',
-                'info',
-                'warn',
-                'error',
-                'fatal',
-                'TRACE',
-                'DEBUG',
-                'INFO',
-                'WARN',
-                'ERROR',
-                'FATAL',
-            ],
-        }),
+        loglevel
     };
 
     public async create(): Promise<SfpPackage> {
