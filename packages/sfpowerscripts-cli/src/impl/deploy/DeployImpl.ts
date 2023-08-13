@@ -551,9 +551,16 @@ export default class DeployImpl {
             let packageName = pkg.packageName;
             let versionNumber = pkg.versionNumber;
             let versionInstalledInOrg = pkgInfo.versionInstalledInOrg ? pkgInfo.versionInstalledInOrg : 'N/A';
-            let isPackageInstalled = pkgInfo.isPackageInstalled ? 'No' : 'Yes';
-          
-            return [packageName, versionNumber, versionInstalledInOrg, isPackageInstalled];
+            let isPackageToBeInstalled = pkgInfo.isPackageInstalled ? 'No' : 'Yes';
+            if(isPackageToBeInstalled=="Yes")
+            {
+                isPackageToBeInstalled = `![Yes](https://img.shields.io/badge/Yes-green.svg)`;
+                packageName = `**${packageName}**`;
+                versionNumber = `**${versionNumber}**`;
+                versionInstalledInOrg = `**${versionInstalledInOrg}**`;
+            }
+
+            return [packageName, versionNumber, versionInstalledInOrg, isPackageToBeInstalled];
           }
     }
 
