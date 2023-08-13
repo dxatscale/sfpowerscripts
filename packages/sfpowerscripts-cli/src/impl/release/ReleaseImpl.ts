@@ -328,9 +328,11 @@ export default class ReleaseImpl {
             )
         );
 
+        SFPLogger.log(COLOR_KEY_MESSAGE(`Dry-run: ${props.isDryRun}`));
+        
         if (releaseDefinition.baselineOrg)
             SFPLogger.log(COLOR_KEY_MESSAGE(`Baselined Against Org: ${releaseDefinition.baselineOrg}`));
-        SFPLogger.log(COLOR_KEY_MESSAGE(`Dry-run: ${props.isDryRun}`));
+       
         if (
             releaseDefinition.promotePackagesBeforeDeploymentToOrg &&
             releaseDefinition.promotePackagesBeforeDeploymentToOrg == props.targetOrg
