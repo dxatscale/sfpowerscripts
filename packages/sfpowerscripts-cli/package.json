@@ -30,7 +30,7 @@
         "glob": "^10.3.3",
         "handlebars": "^4.7.7",
         "js-yaml": "^4.0.0",
-        "jsforce": "2.0.0-beta.19",
+        "jsforce": "2.0.0-beta.27",
         "lodash": "^4.17.21",
         "markdown-table": "^2.0.0",
         "markdown-table-ts": "^1.0.3",
