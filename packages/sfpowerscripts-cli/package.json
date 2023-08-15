@@ -1,7 +1,7 @@
 {
     "name": "@dxatscale/sfpowerscripts",
     "description": "DX@Scale Toolkit",
-    "version": "23.3.3",
+    "version": "23.3.5",
     "license": "MIT",
     "author": "dxatscale",
     "release": "July 23",
@@ -13,8 +13,8 @@
     "dependencies": {
         "@dxatscale/sfdx-process-wrapper": "^1.0.2",
         "@dxatscale/sfp-logger": "^2.1.2",
-        "@dxatscale/sfpowerscripts.core": "^36.0.8",
-        "@dxatscale/sfprofiles": "^2.0.4",
+        "@dxatscale/sfpowerscripts.core": "36.0.9",
+        "@dxatscale/sfprofiles": "2.0.5",
         "@oclif/core": "2.9.4",
         "@oclif/plugin-help": "5.1.12",
         "@salesforce/core": "4.3.11",

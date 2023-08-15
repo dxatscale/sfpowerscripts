@@ -1,6 +1,6 @@
 {
     "name": "@dxatscale/sfprofiles",
-    "version": "2.0.4",
+    "version": "2.0.5",
     "description": "Salesforce Profile management",
     "keywords": [
         "sfdx-plugin",
@@ -71,8 +71,6 @@
         "ignore": "^5.1.8",
         "jsforce": "^2.0.0-beta.27",
         "node-cache": "^5.1.2",
-        "request": "^2.88.2",
-        "request-promise-native": "^1.0.9",
         "rimraf": "^5.0.1",
         "simple-git": "^3.16.0",
         "tslib": "2.1.0",
