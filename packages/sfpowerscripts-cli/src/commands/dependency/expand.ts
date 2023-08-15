@@ -23,7 +23,7 @@ export default class Expand extends SfpowerscriptsCommand {
     protected static requiresDevhubUsername = true;
     protected static requiresProject = true;
 
-    public static Flags = {
+    public static flags = {
         targetdevhubusername,
         overwrite: Flags.boolean({
             char: 'o',
