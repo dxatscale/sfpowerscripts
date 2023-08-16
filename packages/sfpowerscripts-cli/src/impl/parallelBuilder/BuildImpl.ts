@@ -442,7 +442,7 @@ export default class BuildImpl {
 
 	private handlePackageError(reason: any, pkg: string): any {
 		SFPLogger.printHeaderLine('', COLOR_HEADER, LoggerLevel.INFO);
-		SFPLogger.log(COLOR_ERROR(`Package Creation Failed for ${pkg}, Here are the datails:`));
+		SFPLogger.log(COLOR_ERROR(`Package Creation Failed for ${pkg}, Here are the details:`));
 		try {
 			// Append error to log file
 			fs.appendFileSync(`.sfpowerscripts/logs/${pkg}`, reason.message, "utf8");
