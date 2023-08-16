@@ -5,14 +5,15 @@ import { LoggerLevel } from "@salesforce/core";
 import GroupConsoleLogs from "./GroupConsoleLogs";
 import { COLON_MIDDLE_BORDER_TABLE } from "./TableConstants";
 import ScratchOrg from "@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg";
+import { Align, getMarkdownTable } from "markdown-table-ts";
+import fs from "fs-extra";
 
-export default class OrgInfoDisplayer
-{
+export default class OrgInfoDisplayer {
 
-   public static printScratchOrgInfo(scratchOrg:ScratchOrg): void {
+  public static printScratchOrgInfo(scratchOrg: ScratchOrg): void {
     let groupSection = new GroupConsoleLogs(`Display Org Info`).begin();
 
-    SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
+    SFPLogger.printHeaderLine('', COLOR_HEADER, LoggerLevel.INFO);
     SFPLogger.log(COLOR_KEY_VALUE(`-- Org Details:--`));
     const table = new Table({
       chars: COLON_MIDDLE_BORDER_TABLE,
@@ -60,16 +61,49 @@ export default class OrgInfoDisplayer
       LoggerLevel.INFO,
     );
 
-    SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
+    SFPLogger.printHeaderLine('', COLOR_HEADER, LoggerLevel.INFO);
+
+   
+
 
     groupSection.end();
-   }
+  }
 
+  public static writeScratchOrgInfoToMarkDown(scratchOrg: ScratchOrg): void {
+    const pathToMarkDownFile = `.sfpowerscripts/outputs/org-info.md`;
+    fs.mkdirpSync(".sfpowerscripts/outputs");
+    fs.createFileSync(pathToMarkDownFile);
+    fs.appendFileSync(pathToMarkDownFile, `Please find the validation org details below`);
+    let tableData = {
+      table: {
+          head:  [
+              'Org Details',
+              'Incoming Version',
+          ],
+          body: []
+      },
+      alignment: [Align.Left, Align.Left, Align.Left,Align.Right],
+  };
+    tableData.table.body.push([`Org Id`,scratchOrg.orgId]);
+    tableData.table.body.push([`Instance URL`,scratchOrg.instanceURL]);
+    tableData.table.body.push([`Username`,scratchOrg.username]);
+    tableData.table.body.push([`Password`,scratchOrg.password]);
+    tableData.table.body.push([`Auth URL`,scratchOrg.sfdxAuthUrl]);
+    tableData.table.body.push([`Expiry`,scratchOrg.expiryDate]);
+    fs.appendFileSync(pathToMarkDownFile, `\n\n${getMarkdownTable(tableData)}`);
 
-   public static  printOrgInfo(org:SFPOrg): void {
+    fs.appendFileSync(pathToMarkDownFile, 
+      `You may use the following commands to authenticate to the org`,);
+    fs.appendFileSync(pathToMarkDownFile,`cat ${scratchOrg.sfdxAuthUrl} > ./authfile`);
+    fs.appendFileSync(pathToMarkDownFile,`sfdx auth sfdxurl store  --sfdxurlfile authfile`);
+    fs.appendFileSync(pathToMarkDownFile,`sfdx force org open  --u ${scratchOrg.username}`);
+
+  }
+
+  public static printOrgInfo(org: SFPOrg): void {
     let groupSection = new GroupConsoleLogs(`Display Org Info`).begin();
 
-    SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
+    SFPLogger.printHeaderLine('', COLOR_HEADER, LoggerLevel.INFO);
     SFPLogger.log(COLOR_KEY_VALUE(`-- Org Details:--`));
     const table = new Table({
       chars: COLON_MIDDLE_BORDER_TABLE,
@@ -90,11 +124,33 @@ export default class OrgInfoDisplayer
     ]);
     SFPLogger.log(table.toString(), LoggerLevel.INFO);
 
-   
 
-    SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
+
+    SFPLogger.printHeaderLine('', COLOR_HEADER, LoggerLevel.INFO);
 
     groupSection.end();
-   }
+  }
+
+  public static writeOrgInfoToMarkDown(org: SFPOrg): void {
+    const pathToMarkDownFile = `.sfpowerscripts/outputs/org-info.md`;
+    fs.mkdirpSync(".sfpowerscripts/outputs");
+    fs.createFileSync(pathToMarkDownFile);
+    fs.appendFileSync(pathToMarkDownFile, `Please find the validation org details below`);
+    let tableData = {
+      table: {
+          head:  [
+              'Org Details',
+              'Incoming Version',
+          ],
+          body: []
+      },
+      alignment: [Align.Left, Align.Left, Align.Left,Align.Right],
+  };
+    tableData.table.body.push([`Org Id`,org.getOrgId()]);
+    tableData.table.body.push([`Username`,org.getUsername()]);
+    tableData.table.body.push([`Login to the org`, `[Click Here](${org.getConnection().getAuthInfo().getOrgFrontDoorUrl()})`]);
+    fs.appendFileSync(pathToMarkDownFile, `\n\n${getMarkdownTable(tableData)}`);
+
+  }
 
 }

@@ -446,8 +446,16 @@ export default class BuildImpl {
 		try {
 			// Append error to log file
 			fs.appendFileSync(`.sfpowerscripts/logs/${pkg}`, reason.message, "utf8");
-
 			let data = fs.readFileSync(`.sfpowerscripts/logs/${pkg}`, "utf8");
+
+			const pathToMarkDownFile = `.sfpowerscripts/outputs/build-error-info.md`;
+			fs.mkdirpSync(".sfpowerscripts/outputs");
+			fs.createFileSync(pathToMarkDownFile);
+			fs.appendFileSync(pathToMarkDownFile, `Please find the errors observed during build\n\n`);
+			fs.appendFileSync(pathToMarkDownFile, `## ${pkg}\n\n`);
+			fs.appendFileSync(pathToMarkDownFile, data);
+
+
 			SFPLogger.log(data);
 		} catch (e) {
 			SFPLogger.log(`Unable to display logs for pkg ${pkg}`);

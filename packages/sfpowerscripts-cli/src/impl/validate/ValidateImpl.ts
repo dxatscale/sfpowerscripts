@@ -124,8 +124,10 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
 
 			//Print Org Info for validateAgainstOrg modes
 			//TODO: Not ideal need to unify sfpOrg and scratchOrg and then make this a global method
-			if (this.props.orgInfo && this.props.validateAgainst === ValidateAgainst.PROVIDED_ORG)
+			if (this.props.orgInfo && this.props.validateAgainst === ValidateAgainst.PROVIDED_ORG){
 				OrgInfoDisplayer.printOrgInfo(this.orgAsSFPOrg);
+				OrgInfoDisplayer.writeOrgInfoToMarkDown(this.orgAsSFPOrg);
+			}
 
 
 			//Fetch Artifacts in the org
@@ -610,7 +612,10 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
 					this.logger,
 				);
 
-				if (displayOrgInfo) OrgInfoDisplayer.printScratchOrgInfo(scratchOrg);
+				if (displayOrgInfo) {
+					OrgInfoDisplayer.printScratchOrgInfo(scratchOrg);
+					OrgInfoDisplayer.writeScratchOrgInfoToMarkDown(scratchOrg);
+				}
 
 				this.getCurrentRemainingNumberOfOrgsInPoolAndReport(scratchOrg.tag);
 				break;
