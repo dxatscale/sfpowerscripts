@@ -77,8 +77,8 @@ export default class OrgInfoDisplayer {
     let tableData = {
       table: {
           head:  [
-              'Org Details',
-              'Incoming Version',
+              'Org Info',
+              '',
           ],
           body: []
       },
@@ -140,7 +140,7 @@ export default class OrgInfoDisplayer {
       table: {
           head:  [
               'Org Details',
-              'Incoming Version',
+              '',
           ],
           body: []
       },
