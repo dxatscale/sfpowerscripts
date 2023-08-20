@@ -500,6 +500,7 @@ export default class DeployImpl {
                         'Incoming Version',
                          isBaselinOrgModeActivated ? 'Version in baseline org' : 'Version in org',
                         'To be installed?',
+                        'Promotion Status'
                     ],
                     body: []
                 },
@@ -542,22 +543,37 @@ export default class DeployImpl {
         }
 
           
-        function getRowForMarkdownTable(pkg) {
+        function getRowForMarkdownTable(pkg:SfpPackage) {
             const pkgInfo = packagesToPackageInfo[pkg.packageName];
           
             let packageName = pkg.packageName;
             let versionNumber = pkg.versionNumber;
             let versionInstalledInOrg = pkgInfo.versionInstalledInOrg ? pkgInfo.versionInstalledInOrg : 'N/A';
             let isPackageToBeInstalled = pkgInfo.isPackageInstalled ? 'No' : 'Yes';
+            let promotionStatus = 'N/A';
+           
             if(isPackageToBeInstalled=="Yes")
             {
                 isPackageToBeInstalled = `![Yes](https://img.shields.io/badge/Yes-green.svg)`;
                 packageName = `**${packageName}**`;
+                if(pkg.packageType==PackageType.Unlocked)
+                {
+                    let versionInstalledInOrgConvertedToSemver = convertBuildNumDotDelimToHyphen(versionInstalledInOrg);
+                    let versionNumberConvertedToSemver = convertBuildNumDotDelimToHyphen(versionNumber);
+                    if(semver.diff(versionInstalledInOrgConvertedToSemver, versionNumberConvertedToSemver)=='prerelease')
+                    {
+                        promotionStatus = '![Already Promoted](https://img.shields.io/badge/Already%20Promoted-red.svg)';
+                    }
+                    else
+                    {
+                        promotionStatus = '![Pending](https://img.shields.io/badge/Pending-yellow.svg)';
+                    }
+                }
                 versionNumber = `**${versionNumber}**`;
                 versionInstalledInOrg = `**${versionInstalledInOrg}**`;
             }
 
-            return [packageName, versionNumber, versionInstalledInOrg, isPackageToBeInstalled];
+            return [packageName, versionNumber, versionInstalledInOrg, isPackageToBeInstalled,promotionStatus];
           }
     }
 
@@ -599,7 +615,7 @@ export default class DeployImpl {
             fs.appendFileSync(pathToDeploymentBreakDownFile, `\n\n${getMarkdownTable(tableData)}`);
         }
 
-        function getRowForMarkdownTable(pkg) {
+        function getRowForMarkdownTable(pkg:SfpPackage) {
             let packageName = pkg.packageName;
             let versionNumber = pkg.versionNumber;
             return [packageName, versionNumber];
