@@ -552,7 +552,7 @@ export default class DeployImpl {
             let isPackageToBeInstalled = pkgInfo.isPackageInstalled ? 'No' : 'Yes';
             let promotionStatus = 'N/A';
            
-            if(isPackageToBeInstalled=="Yes")
+            if(isPackageToBeInstalled=="Yes" && this.props.promotePackagesBeforeDeploymentToOrg == this.props.targetUsername)
             {
                 isPackageToBeInstalled = `![Yes](https://img.shields.io/badge/Yes-green.svg)`;
                 packageName = `**${packageName}**`;
@@ -572,6 +572,12 @@ export default class DeployImpl {
                         }
                     }
                 }
+
+            versionNumber = `**${versionNumber}**`;
+            versionInstalledInOrg = `**${versionInstalledInOrg}**`;
+            }
+            else
+            {
                 versionNumber = `**${versionNumber}**`;
                 versionInstalledInOrg = `**${versionInstalledInOrg}**`;
             }
