@@ -7,6 +7,7 @@ import { COLON_MIDDLE_BORDER_TABLE } from "./TableConstants";
 import ScratchOrg from "@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg";
 import { Align, getMarkdownTable } from "markdown-table-ts";
 import fs from "fs-extra";
+import FileOutputHandler from "../outputs/FileOutputHandler";
 
 export default class OrgInfoDisplayer {
 
@@ -70,33 +71,32 @@ export default class OrgInfoDisplayer {
   }
 
   public static writeScratchOrgInfoToMarkDown(scratchOrg: ScratchOrg): void {
-    const pathToMarkDownFile = `.sfpowerscripts/outputs/org-info.md`;
-    fs.mkdirpSync(".sfpowerscripts/outputs");
-    fs.createFileSync(pathToMarkDownFile);
-    fs.appendFileSync(pathToMarkDownFile, `Please find the validation org details below`);
+    const pathToMarkDownFile = `org-info.md`;
+    const fileOutputHandler = FileOutputHandler.getInstance();
+    fileOutputHandler.writeOutput(pathToMarkDownFile, `Please find the validation org details below`);
     let tableData = {
       table: {
-          head:  [
-              'Org Info',
-              '',
-          ],
-          body: []
+        head: [
+          'Org Info',
+          '',
+        ],
+        body: []
       },
-      alignment: [Align.Left, Align.Left, Align.Left,Align.Right],
-  };
-    tableData.table.body.push([`Org Id`,scratchOrg.orgId]);
-    tableData.table.body.push([`Instance URL`,scratchOrg.instanceURL]);
-    tableData.table.body.push([`Username`,scratchOrg.username]);
-    tableData.table.body.push([`Password`,scratchOrg.password]);
-    tableData.table.body.push([`Auth URL`,scratchOrg.sfdxAuthUrl]);
-    tableData.table.body.push([`Expiry`,scratchOrg.expiryDate]);
-    fs.appendFileSync(pathToMarkDownFile, `\n\n${getMarkdownTable(tableData)}`);
+      alignment: [Align.Left, Align.Left, Align.Left, Align.Right],
+    };
+    tableData.table.body.push([`Org Id`, scratchOrg.orgId]);
+    tableData.table.body.push([`Instance URL`, scratchOrg.instanceURL]);
+    tableData.table.body.push([`Username`, scratchOrg.username]);
+    tableData.table.body.push([`Password`, scratchOrg.password]);
+    tableData.table.body.push([`Auth URL`, scratchOrg.sfdxAuthUrl]);
+    tableData.table.body.push([`Expiry`, scratchOrg.expiryDate]);
+    fileOutputHandler.appendOutput(pathToMarkDownFile, `\n\n${getMarkdownTable(tableData)}`);
 
-    fs.appendFileSync(pathToMarkDownFile, 
+    fileOutputHandler.appendOutput(pathToMarkDownFile,
       `You may use the following commands to authenticate to the org`,);
-    fs.appendFileSync(pathToMarkDownFile,`cat ${scratchOrg.sfdxAuthUrl} > ./authfile`);
-    fs.appendFileSync(pathToMarkDownFile,`sfdx auth sfdxurl store  --sfdxurlfile authfile`);
-    fs.appendFileSync(pathToMarkDownFile,`sfdx force org open  --u ${scratchOrg.username}`);
+    fileOutputHandler.appendOutput(pathToMarkDownFile, `cat ${scratchOrg.sfdxAuthUrl} > ./authfile`);
+    fileOutputHandler.appendOutput(pathToMarkDownFile, `sfdx auth sfdxurl store  --sfdxurlfile authfile`);
+    fileOutputHandler.appendOutput(pathToMarkDownFile, `sfdx force org open  --u ${scratchOrg.username}`);
 
   }
 
@@ -132,10 +132,9 @@ export default class OrgInfoDisplayer {
   }
 
   public static writeOrgInfoToMarkDown(org: SFPOrg): void {
-    const pathToMarkDownFile = `.sfpowerscripts/outputs/org-info.md`;
-    fs.mkdirpSync(".sfpowerscripts/outputs");
-    fs.createFileSync(pathToMarkDownFile);
-    fs.appendFileSync(pathToMarkDownFile, `Please find the validation org details below`);
+    const pathToMarkDownFile = `org-info.md`;
+    const fileOutputHandler = FileOutputHandler.getInstance();
+    fileOutputHandler.appendOutput(pathToMarkDownFile, `Please find the validation org details below`);
     let tableData = {
       table: {
           head:  [
@@ -149,7 +148,7 @@ export default class OrgInfoDisplayer {
     tableData.table.body.push([`Org Id`,org.getOrgId()]);
     tableData.table.body.push([`Username`,org.getUsername()]);
     tableData.table.body.push([`Login to the org`, `[Click Here](${org.getConnection().getAuthInfo().getOrgFrontDoorUrl()})`]);
-    fs.appendFileSync(pathToMarkDownFile, `\n\n${getMarkdownTable(tableData)}`);
+    fileOutputHandler.appendOutput(pathToMarkDownFile, `\n\n${getMarkdownTable(tableData)}`);
 
   }
 

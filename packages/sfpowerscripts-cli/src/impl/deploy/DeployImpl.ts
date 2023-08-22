@@ -26,6 +26,7 @@ import convertBuildNumDotDelimToHyphen from '@dxatscale/sfpowerscripts.core/lib/
 import ReleaseConfig from '../release/ReleaseConfig';
 import fs from 'fs-extra';
 import { Align, getMarkdownTable } from 'markdown-table-ts';
+import FileOutputHandler from '../../outputs/FileOutputHandler';
 
 
 const Table = require('cli-table');
@@ -510,10 +511,8 @@ export default class DeployImpl {
                 tableData.table.body.push(getRowForMarkdownTable(pkg));
             }
             const table = getMarkdownTable(tableData);
-            const pathToDeploymentBreakDownFile = `.sfpowerscripts/outputs/deployment-breakdown.md`;
-            fs.mkdirpSync(".sfpowerscripts/outputs");
-            fs.createFileSync(pathToDeploymentBreakDownFile);
-            fs.writeFileSync(pathToDeploymentBreakDownFile, table);
+            const outputHandler:FileOutputHandler = FileOutputHandler.getInstance();
+            outputHandler.writeOutput('deployment-breakdown.md',table) ;
         }
 
         function processColoursForAllPackages(pkg) {
@@ -616,12 +615,10 @@ export default class DeployImpl {
             for (const pkg of queue) {
                 tableData.table.body.push(getRowForMarkdownTable(pkg));
             }
-           
-            const pathToDeploymentBreakDownFile = `.sfpowerscripts/outputs/deployment-breakdown.md`;
-            fs.mkdirpSync(".sfpowerscripts/outputs");
-            fs.appendFileSync(pathToDeploymentBreakDownFile, `Please find the packages that will be deployed below`);
-            fs.createFileSync(pathToDeploymentBreakDownFile);
-            fs.appendFileSync(pathToDeploymentBreakDownFile, `\n\n${getMarkdownTable(tableData)}`);
+
+            const outputHandler:FileOutputHandler = FileOutputHandler.getInstance();
+            outputHandler.writeOutput('deployment-breakdown.md',`Please find the packages that will be deployed below`);
+            outputHandler.appendOutput('deployment-breakdown.md',`\n\n${getMarkdownTable(tableData)}`) ;
         }
 
         function getRowForMarkdownTable(pkg:SfpPackage) {
