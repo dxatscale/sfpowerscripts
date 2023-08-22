@@ -17,6 +17,9 @@ export default class FileOutputHandler {
   }
 
   public writeOutput(fileName: string, output: string ) {
+    if (!fs.existsSync(path.join(this.containerFolder, fileName))) {
+      fs.createFileSync(path.join(this.containerFolder, fileName));
+    }
     fs.writeFileSync(path.join(this.containerFolder, fileName), output);
   };
 
