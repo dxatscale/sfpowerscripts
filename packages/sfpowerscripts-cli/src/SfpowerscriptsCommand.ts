@@ -23,28 +23,13 @@ export default abstract class SfpowerscriptsCommand extends Command {
     public flags: FlagOutput & { json: boolean; };
 
    
-
-
-    /**
-     * List of recognised CLI inputs that are substituted with their
-     * corresponding environment variable at runtime
-     */
-    private readonly sfpowerscripts_variable_dictionary: string[] = [
-        'sfpowerscripts_incremented_project_version',
-        'sfpowerscripts_artifact_directory',
-        'sfpowerscripts_artifact_metadata_directory',
-        'sfpowerscripts_package_version_id',
-        'sfpowerscripts_package_version_number',
-        'sfpowerscripts_pmd_output_path',
-        'sfpowerscripts_scratchorg_username',
-        'sfpowerscripts_installsourcepackage_deployment_id',
-    ];
-
     private isSfpowerkitFound: boolean;
     private sfpowerscriptsConfig;
     private isSfdmuFound: boolean;
     protected static requiresUsername: boolean=false;
     protected static requiresDevhubUsername: boolean=false;
+
+
     /**
      * Command run code goes here
      */
@@ -94,6 +79,7 @@ export default abstract class SfpowerscriptsCommand extends Command {
 
         //Clear temp directory before every run
         rimraf.sync('.sfpowerscripts');
+
 
         //Initialise StatsD
         this.initializeStatsD();
