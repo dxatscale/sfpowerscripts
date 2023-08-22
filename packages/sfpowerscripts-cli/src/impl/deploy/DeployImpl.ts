@@ -558,15 +558,18 @@ export default class DeployImpl {
                 packageName = `**${packageName}**`;
                 if(pkg.packageType==PackageType.Unlocked)
                 {
-                    let versionInstalledInOrgConvertedToSemver = convertBuildNumDotDelimToHyphen(versionInstalledInOrg);
-                    let versionNumberConvertedToSemver = convertBuildNumDotDelimToHyphen(versionNumber);
-                    if(semver.diff(versionInstalledInOrgConvertedToSemver, versionNumberConvertedToSemver)=='prerelease')
-                    {
-                        promotionStatus = '![Already Promoted](https://img.shields.io/badge/Already%20Promoted-red.svg)';
-                    }
-                    else
-                    {
+                    if (versionInstalledInOrg == "N/A") {
                         promotionStatus = '![Pending](https://img.shields.io/badge/Pending-yellow.svg)';
+                    }
+                    else {
+                        let versionInstalledInOrgConvertedToSemver = convertBuildNumDotDelimToHyphen(versionInstalledInOrg);
+                        let versionNumberConvertedToSemver = convertBuildNumDotDelimToHyphen(versionNumber);
+                        if (semver.diff(versionInstalledInOrgConvertedToSemver, versionNumberConvertedToSemver) == 'prerelease') {
+                            promotionStatus = '![Already Promoted](https://img.shields.io/badge/Already%20Promoted-red.svg)';
+                        }
+                        else {
+                            promotionStatus = '![Pending](https://img.shields.io/badge/Pending-yellow.svg)';
+                        }
                     }
                 }
                 versionNumber = `**${versionNumber}**`;
