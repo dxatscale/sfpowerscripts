@@ -441,7 +441,8 @@ export default class DeployImpl {
     private printArtifactVersionsWhenSkipped(
         queue: SfpPackage[],
         packagesToPackageInfo: { [p: string]: PackageInfo },
-        isBaselinOrgModeActivated: boolean
+        isBaselinOrgModeActivated: boolean,
+        props:DeployProps
     ) {
         let groupSection = new GroupConsoleLogs(`Full Deployment Breakdown`, this.props.logger).begin();
         let maxTable = new Table({
@@ -508,7 +509,7 @@ export default class DeployImpl {
                 alignment: [Align.Left, Align.Left, Align.Left,Align.Right],
             };
             for (const pkg of queue) {
-                tableData.table.body.push(getRowForMarkdownTable(pkg));
+                tableData.table.body.push(getRowForMarkdownTable(pkg,props));
             }
             const table = getMarkdownTable(tableData);
             const outputHandler:FileOutputHandler = FileOutputHandler.getInstance();
@@ -542,7 +543,7 @@ export default class DeployImpl {
         }
 
           
-        function getRowForMarkdownTable(pkg:SfpPackage) {
+        function getRowForMarkdownTable(pkg:SfpPackage, props:DeployProps) {
             const pkgInfo = packagesToPackageInfo[pkg.packageName];
           
             let packageName = pkg.packageName;
@@ -551,7 +552,7 @@ export default class DeployImpl {
             let isPackageToBeInstalled = pkgInfo.isPackageInstalled ? 'No' : 'Yes';
             let promotionStatus = 'N/A';
            
-            if(isPackageToBeInstalled=="Yes" && this.props.promotePackagesBeforeDeploymentToOrg == this.props.targetUsername)
+            if(isPackageToBeInstalled=="Yes" && props.promotePackagesBeforeDeploymentToOrg == props.targetUsername)
             {
                 isPackageToBeInstalled = `![Yes](https://img.shields.io/badge/Yes-green.svg)`;
                 packageName = `**${packageName}**`;
