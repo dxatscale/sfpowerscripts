@@ -144,7 +144,7 @@ export default class DeployImpl {
                     LoggerLevel.TRACE,
                     this.props.logger
                 );
-                this.printArtifactVersionsWhenSkipped(queue, packagesToPackageInfo, isBaselinOrgModeActivated);
+                this.printArtifactVersionsWhenSkipped(queue, packagesToPackageInfo, isBaselinOrgModeActivated,this.props);
                 queue = filteredDeploymentQueue;
             } else {
                 this.printArtifactVersions(queue, packagesToPackageInfo);
