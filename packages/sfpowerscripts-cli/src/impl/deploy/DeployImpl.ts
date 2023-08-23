@@ -552,16 +552,16 @@ export default class DeployImpl {
             let isPackageToBeInstalled = pkgInfo.isPackageInstalled ? 'No' : 'Yes';
             let promotionStatus = 'N/A';
            
-            if(isPackageToBeInstalled=="Yes" && props.promotePackagesBeforeDeploymentToOrg == props.targetUsername)
+            if(isPackageToBeInstalled=="Yes")
             {
                 isPackageToBeInstalled = `![Yes](https://img.shields.io/badge/Yes-green.svg)`;
                 packageName = `**${packageName}**`;
                 if(pkg.packageType==PackageType.Unlocked)
                 {
-                    if (versionInstalledInOrg == "N/A") {
+                    if (props.promotePackagesBeforeDeploymentToOrg == props.targetUsername && versionInstalledInOrg == "N/A") {
                         promotionStatus = '![Pending](https://img.shields.io/badge/Pending-yellow.svg)';
                     }
-                    else {
+                    else if(props.promotePackagesBeforeDeploymentToOrg == props.targetUsername  ) {
                         let versionInstalledInOrgConvertedToSemver = convertBuildNumDotDelimToHyphen(versionInstalledInOrg);
                         let versionNumberConvertedToSemver = convertBuildNumDotDelimToHyphen(versionNumber);
                         if (semver.diff(versionInstalledInOrgConvertedToSemver, versionNumberConvertedToSemver) == 'prerelease') {
@@ -570,6 +570,10 @@ export default class DeployImpl {
                         else {
                             promotionStatus = '![Pending](https://img.shields.io/badge/Pending-yellow.svg)';
                         }
+                    }
+                    else
+                    {
+                        promotionStatus = 'N/A';
                     }
                 }
 
