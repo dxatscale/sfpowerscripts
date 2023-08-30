@@ -49,8 +49,7 @@ RUN npm install --global --omit=dev \
 # Install sfdx plugins
 RUN echo 'y' | sf plugins:install sfdx-browserforce-plugin@${BROWSERFORCE_VERSION} \
     && echo 'y' | sf plugins:install sfdmu@${SFDMU_VERSION} \
-    && yarn cache clean --all \
-    && rm -rf ~/.cache/sf
+    && yarn cache clean --all 
 
 # Set some sane behaviour in container
 ENV SF_CONTAINER_MODE=true
