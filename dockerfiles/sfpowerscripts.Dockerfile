@@ -10,28 +10,25 @@ ARG GIT_COMMIT
 # Install all shared dependencies for chrome and fonts to support major charsets (Chinese, Japanese, Arabic, Hebrew, Thai and a few others)
 # Note: this installs the necessary libs to make the bundled version of Chromium that Puppeteer
 # installs, work.
-RUN apt-get update && apt-get install -qq software-properties-common \
-    && add-apt-repository ppa:git-core/ppa -y  \
-    &&  apt-get install -qq   \
-        git \
-        curl \
-        sudo \
-        jq \
-        zip \
-        unzip \
-	      make \
-        g++ \
-        wget \
-        gnupg \
-	    libxkbcommon-x11-0 libdigest-sha-perl  libxshmfence-dev \
-        gconf-service libappindicator1 libasound2 libatk1.0-0 \
-        libatk-bridge2.0-0 libcairo-gobject2 libdrm2 libgbm1 libgconf-2-4 \
-        libgtk-3-0 libnspr4 libnss3 libx11-xcb1 libxcb-dri3-0 libxcomposite1 libxcursor1 \
-        libxdamage1 libxfixes3 libxi6 libxinerama1 libxrandr2 libxshmfence1 libxss1 libxtst6 \
-        fonts-liberation fonts-ipafont-gothic fonts-wqy-zenhei fonts-thai-tlwg fonts-kacst fonts-freefont-ttf \
-    && apt-get autoremove --assume-yes \ 
-    && apt-get clean --assume-yes  \   
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update \
+    && apt-get upgrade -y \
+    && apt-get -y install --no-install-recommends \
+      git \
+      curl \
+      sudo \
+      jq \
+      zip \
+      unzip \
+      make \
+      g++ \
+      openjdk-17-jre-headless \
+      ca-certificates \
+      chromium \
+      chromium-driver \
+      chromium-shell \
+    && apt-get autoremove --assume-yes \
+    && apt-get clean --assume-yes \
+    && rm -rf /var/lib/apt/list/*
 
 
 # Set XDG environment variables explicitly so that GitHub Actions does not apply
@@ -66,10 +63,15 @@ RUN echo 'y' | sf plugins:install sfdmu@4.18.2
 RUN npm install --global @dxatscale/sfpowerscripts@$SFPOWERSCRIPTS_VERSION
 
 
+ENV SF_CONTAINER_MODE=true
+ENV SF_DISABLE_AUTOUPDATE=true
+ENV SF_DISABLE_TELEMETRY=true
+ENV SF_USE_GENERIC_UNIX_KEYCHAIN=true
+ENV SF_USE_PROGRESS_BAR=false
 
 
 #Add Labels
-LABEL org.opencontainers.image.description "sfpowerscripts is a build system for modular development in Salesforce, its delivered as a sfdx plugin that can be implemented in any CI/CD system of choice"
+LABEL org.opencontainers.image.description "sfpowerscripts is a build system for modular development in Salesforce, that can be implemented in any CI/CD system of choice"
 LABEL org.opencontainers.image.licenses "MIT"
 LABEL org.opencontainers.image.url "https://github.com/dxatscale/sfpowerscripts"
 LABEL org.opencontainers.image.documentation "https://docs.dxatscale.io/projects/sfpowerscripts"
