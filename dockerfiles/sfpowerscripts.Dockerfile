@@ -21,7 +21,8 @@ LABEL org.opencontainers.image.title "DX@Scale sfpowercripts docker image - July
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update \
-    && apt-get -y install --assume-yes --no-install-recommends \
+    && apt-get upgrade -y \
+    && apt-get -y install --no-install-recommends \
       git \
       curl \
       sudo \
