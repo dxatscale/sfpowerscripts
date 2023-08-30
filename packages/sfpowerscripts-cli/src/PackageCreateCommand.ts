@@ -182,6 +182,11 @@ export default abstract class PackageCreateCommand extends SfpowerscriptsCommand
                         COLOR_HEADER(`-- Package Coverage Check Passed:  `),
                         COLOR_KEY_MESSAGE(sfpPackage.has_passed_coverage_check)
                     );
+                if (sfpPackage.branch)
+                    console.log(
+                        COLOR_HEADER(`-- Branch:  `),
+                        COLOR_KEY_MESSAGE(sfpPackage.branch)
+                    );
             }
 
             console.log(

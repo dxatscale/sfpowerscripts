@@ -118,6 +118,7 @@ export default class CreateUnlockedPackageImpl extends CreatePackage {
                 versionnumber: sfpPackage.versionNumber,
                 definitionfile: path.join(this.workingDirectory, this.params.configFilePath),
                 packageId: this.sfpPackage.packageName,
+                branch: this.sfpPackage.branch,
             },
             { timeout: Duration.minutes(0), frequency: Duration.seconds(30) }
         );
