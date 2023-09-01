@@ -1,4 +1,5 @@
 import * as fs from 'fs-extra';
+import { EOL } from 'os';
 import path from 'path';
 
 export default class FileOutputHandler {
@@ -27,6 +28,7 @@ export default class FileOutputHandler {
     if (!fs.existsSync(path.join(this.containerFolder, fileName))) {
       fs.createFileSync(path.join(this.containerFolder, fileName));
     }
+    fs.appendFileSync(path.join(this.containerFolder, fileName), EOL);
     fs.appendFileSync(path.join(this.containerFolder, fileName), output);
   }
 

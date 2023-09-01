@@ -232,6 +232,13 @@ export default class DeployImpl {
                                     result: PackageInstallationStatus.Failed,
                                     message: error,
                                 };
+                                
+
+                                FileOutputHandler.getInstance().writeOutput(`deployment-error.md`,`### 💣 Deployment Failed  💣`);
+                                FileOutputHandler.getInstance().appendOutput(`deployment-error.md`,`Package Installation failed for  **${queue[i].packageName}**`);
+                                FileOutputHandler.getInstance().appendOutput(`deployment-error.md`,`Reasons:`);
+                                FileOutputHandler.getInstance().appendOutput(`deployment-error.md`,`${error}`);
+
                                 return failedPackageInstallationResult;
                             }
                         }
