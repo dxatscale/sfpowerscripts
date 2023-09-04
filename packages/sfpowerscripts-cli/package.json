@@ -15,7 +15,7 @@
         "@dxatscale/sfp-logger": "^2.1.2",
         "@dxatscale/sfpowerscripts.core": "36.0.11",
         "@dxatscale/sfprofiles": "2.0.6",
-        "@oclif/core": "2.9.4",
+        "@oclif/core": "2.11.8",
         "@oclif/plugin-help": "5.1.12",
         "@salesforce/core": "5.2.0",
         "@salesforce/kit": "3.0.9",
