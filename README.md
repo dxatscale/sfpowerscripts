@@ -1,17 +1,17 @@
-[![DeepScan grade](https://deepscan.io/api/teams/10234/projects/12959/branches/208838/badge/grade.svg)](https://deepscan.io/dashboard#view=project&tid=10234&pid=12959&bid=208838) [![CodeFactor](https://www.codefactor.io/repository/github/dxatscale/sfpowerscripts/badge/develop)](https://www.codefactor.io/repository/github/dxatscale/sfpowerscripts/overview/develop)
-
-[![npm](https://img.shields.io/npm/v/@dxatscale/sfpowerscripts)](https://www.npmjs.com/package/@dxatscale/sfpowerscripts)
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fdxatscale%2Fsfpowerscripts.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fdxatscale%2Fsfpowerscripts?ref=badge_shield) [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/5614/badge)](https://bestpractices.coreinfrastructure.org/projects/5614)
-
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-
-
-[![Join slack](https://i.imgur.com/FZZmA3g.png)](https://launchpass.com/dxatscale)
-
 <p align="center">
   <img alt="sfpowerscripts" src="https://repository-images.githubusercontent.com/248449736/448f93b4-9883-48da-a75c-330f242bbf8c" width="480" height="400">
 </p>
 
+[![Version](https://img.shields.io/npm/v/@dxatscale/sfpowerscripts.svg)](https://npmjs.org/package/@dxatscale/sfpowerscripts
+[![GitHub stars](https://img.shields.io/github/stars/dxatscale/sfpowerscripts)](https://gitHub.com/dxatscale/sfpowerscripts/stargazers/)
+[![GitHub contributors](https://img.shields.io/github/contributors/dxatscale/sfpowerscripts.svg)](https://github.com/forcedotcom/dxatscale/sfpowerscripts/graphs/contributors/)
+[![License](https://img.shields.io/badge/license-MIT-green)](https://github.com/dxatscale/sfpowerscripts/blob/master/LICENSE)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
+
+[![DeepScan grade](https://deepscan.io/api/teams/10234/projects/12959/branches/208838/badge/grade.svg)](https://deepscan.io/dashboard#view=project&tid=10234&pid=12959&bid=208838)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fdxatscale%2Fsfpowerscripts.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fdxatscale%2Fsfpowerscripts?ref=badge_shield) [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/5614/badge)](https://bestpractices.coreinfrastructure.org/projects/5614)
+
+[![Join slack](https://i.imgur.com/FZZmA3g.png)](https://launchpass.com/dxatscale)
 
 A build system for package based development in Salesforce, delivered as a node cli that can be implemented in any CI/CD system of choice.Read more about the cli and details here - https://docs.dxatscale.io
 
