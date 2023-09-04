@@ -1,7 +1,7 @@
 {
     "name": "@dxatscale/sfpowerscripts",
     "description": "DX@Scale Toolkit",
-    "version": "23.6.3",
+    "version": "24.3.0",
     "license": "MIT",
     "author": "dxatscale",
     "release": "August 23",
@@ -13,9 +13,9 @@
     "dependencies": {
         "@dxatscale/sfdx-process-wrapper": "^1.0.2",
         "@dxatscale/sfp-logger": "^2.1.2",
-        "@dxatscale/sfpowerscripts.core": "36.0.11",
+        "@dxatscale/sfpowerscripts.core": "^36.0.12",
         "@dxatscale/sfprofiles": "2.0.6",
-        "@oclif/core": "2.9.4",
+        "@oclif/core": "2.11.8",
         "@oclif/plugin-help": "5.2.17",
         "@salesforce/core": "5.2.0",
         "@salesforce/kit": "3.0.9",
@@ -34,13 +34,13 @@
         "lodash": "^4.17.21",
         "markdown-table": "^2.0.0",
         "markdown-table-ts": "^1.0.3",
-        "marked": "4.0.16",
+        "marked": "4.3.0",
         "marked-terminal": "5.1.1",
-        "neverthrow": "4.2.1",
+        "neverthrow": "4.4.2",
         "object-hash": "^2.1.1",
         "rimraf": "^5.0.1",
         "semver": "7.5.2",
-        "simple-git": "3.16.0"
+        "simple-git": "3.19.1"
     },
     "devDependencies": {
         "@babel/core": "7.18.2",

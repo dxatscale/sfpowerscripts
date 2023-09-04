@@ -52,6 +52,7 @@ import ReleaseConfig from "../release/ReleaseConfig";
 import { mapInstalledArtifactstoPkgAndCommits } from "../../utils/FetchArtifactsFromOrg";
 import { ApexTestValidator } from "./ApexTestValidator";
 import OrgInfoDisplayer from "../../ui/OrgInfoDisplayer";
+import FileOutputHandler from "../../outputs/FileOutputHandler";
 
 
 export enum ValidateAgainst {
@@ -428,7 +429,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
 		const { generatedPackages, failedPackages } = await buildImpl.exec();
 
 		if (failedPackages.length > 0)
-			throw new Error(`Failed to create source1 packages ${failedPackages}`);
+			throw new Error(`Failed to create packages ${failedPackages}`);
 
 		if (generatedPackages.length === 0) {
 			throw new Error(
@@ -478,7 +479,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
 					}
 					else {
 						if (!props.disableSourcePackageOverride) {
-							if (ProjectConfig.getPackageType(projectConfig, pkg) != PackageType.Diff)
+							if (ProjectConfig.getPackageType(projectConfig, pkg) != PackageType.Data || ProjectConfig.getPackageType(projectConfig, pkg) != PackageType.Diff)
 								overridedPackages[pkg] = PackageType.Source
 						}
 					}
@@ -650,88 +651,47 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
 	}
 
 	async preDeployPackage(
-		sfpPackage: SfpPackage,
-		targetUsername: string,
-		deployedPackages?: SfpPackage[],
-		devhubUserName?: string,
-	): Promise<{ isToFailDeployment: boolean; message?: string }> {
-		//Its a scratch org fetched from pool.. install dependencies
-		//Assume hubOrg will be available, no need to check
-		switch (this.props.validateAgainst) {
-			case ValidateAgainst.PRECREATED_POOL:
-				if (
-					this.props.validationMode == ValidationMode.THOROUGH ||
-					this.props.validationMode ==
-					ValidationMode.THOROUGH_LIMITED_BY_RELEASE_CONFIG
-				) {
-					await this.installPackageDependencies(
-						ProjectConfig.getSFDXProjectConfig(null),
-						this.orgAsSFPOrg,
-						sfpPackage,
-						deployedPackages,
-					);
-				} else if (this.props.validationMode == ValidationMode.INDIVIDUAL) {
-					await this.installPackageDependencies(
-						ProjectConfig.cleanupMPDFromProjectDirectory(
-							null,
-							sfpPackage.package_name,
-						),
-						this.orgAsSFPOrg,
-						sfpPackage,
-						deployedPackages,
-					);
-				}
-				else if (this.props.validationMode == ValidationMode.FASTFEEDBACK_LIMITED_BY_RELEASE_CONFIG 
-					|| this.props.validationMode == ValidationMode.FAST_FEEDBACK) {
-					if(this.props.installExternalDependencies)
-					await this.installPackageDependencies(
-						ProjectConfig.cleanupMPDFromProjectDirectory(
-							null,
-							sfpPackage.package_name,
-						),
-						this.orgAsSFPOrg,
-						sfpPackage,
-						deployedPackages,
-					);
-				}
-				break;
-			case ValidateAgainst.PROVIDED_ORG:
-				if (this.props.validationMode == ValidationMode.INDIVIDUAL) {
-					if (this.props.hubOrg)
-						await this.installPackageDependencies(
-							ProjectConfig.cleanupMPDFromProjectDirectory(
-								null,
-								sfpPackage.package_name,
-							),
-							this.orgAsSFPOrg,
-							sfpPackage,
-							deployedPackages,
-						);
-					else
-						SFPLogger.log(
-							`${COLOR_WARNING(
-								`DevHub was not provided, will skip installing /updating external dependencies of this package`,
-							)}`,
-							LoggerLevel.INFO,
-						);
-				}
-				else if (this.props.validationMode == ValidationMode.FASTFEEDBACK_LIMITED_BY_RELEASE_CONFIG 
-					|| this.props.validationMode == ValidationMode.FAST_FEEDBACK) {
-					if(this.props.installExternalDependencies)
-					await this.installPackageDependencies(
-						ProjectConfig.cleanupMPDFromProjectDirectory(
-							null,
-							sfpPackage.package_name,
-						),
-						this.orgAsSFPOrg,
-						sfpPackage,
-						deployedPackages,
-					);
-				}
-		}
+    sfpPackage: SfpPackage,
+    targetUsername: string,
+    deployedPackages?: SfpPackage[],
+    devhubUserName?: string,
+): Promise<{ isToFailDeployment: boolean; message?: string }> {
 
-		return { isToFailDeployment: false };
-	}
+    const shouldInstallDependencies = (mode: ValidationMode) => {
+        if (this.props.validateAgainst === ValidateAgainst.PROVIDED_ORG &&
+            !this.props.installExternalDependencies) {
+            return false;
+        }
+
+        const isThoroughValidation = mode === ValidationMode.THOROUGH ||
+            mode === ValidationMode.THOROUGH_LIMITED_BY_RELEASE_CONFIG;
+
+        const isFastFeedbackWithExternalDependencies =
+            (mode === ValidationMode.FASTFEEDBACK_LIMITED_BY_RELEASE_CONFIG ||
+                mode === ValidationMode.FAST_FEEDBACK) &&
+            this.props.installExternalDependencies;
+
+        return isThoroughValidation ||
+            mode === ValidationMode.INDIVIDUAL ||
+            isFastFeedbackWithExternalDependencies;
+    };
+
+    if (shouldInstallDependencies(this.props.validationMode)) {
+        const projectConfig = this.props.validationMode === ValidationMode.INDIVIDUAL ?
+            ProjectConfig.cleanupMPDFromProjectDirectory(null, sfpPackage.package_name) :
+            ProjectConfig.getSFDXProjectConfig(null);
+
+        await this.installPackageDependencies(
+            projectConfig,
+            this.orgAsSFPOrg,
+            sfpPackage,
+            deployedPackages,
+        );
+    }
+
+    return { isToFailDeployment: false };
+}
+
 
 	async postDeployPackage(
 		sfpPackage: SfpPackage,
@@ -748,6 +708,14 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
 				//Get Changed Components
 				const apextestValidator = new ApexTestValidator(targetUsername, sfpPackage, this.props, this.logger);
 				const testResult = await apextestValidator.validateApexTests();
+
+				if (!testResult.result) {
+					FileOutputHandler.getInstance().writeOutput(`validation-error.md`,`### 💣 Validation Failed  💣`);
+					FileOutputHandler.getInstance().appendOutput(`validation-error.md`,`Package validation failed for  **${sfpPackage.packageName}**`);
+					FileOutputHandler.getInstance().appendOutput(`validation-error.md`,`Reasons:`);
+					FileOutputHandler.getInstance().appendOutput(`validation-error.md`,`${testResult.message}`);
+				}
+
 				return {
 					isToFailDeployment: !testResult.result,
 					message: testResult.message,

@@ -5,7 +5,9 @@
     "description": "The properties and shape of the SFDX project enhanced for sfpowerscripts",
     "type": "object",
     "additionalProperties": true,
-    "required": ["packageDirectories"],
+    "required": [
+        "packageDirectories"
+    ],
     "properties": {
         "$schema": {
             "description": "Support editors like vscode to help with IntelliSense",
@@ -21,21 +23,63 @@
             "items": {
                 "type": "object",
                 "dependencies": {
-                    "ancestorId": ["package", "versionNumber"],
-                    "ancestorVersion": ["package", "versionNumber"],
-                    "apexTestAccess": ["package", "versionNumber"],
-                    "definitionFile": ["package", "versionNumber"],
-                    "dependencies": ["package", "versionNumber"],
-                    "package": ["versionNumber"],
-                    "postInstallUrl": ["package", "versionNumber"],
-                    "unpackagedMetadata": ["package", "versionNumber"],
-                    "releaseNotesUrl": ["package", "versionNumber"],
-                    "versionDescription": ["package", "versionNumber"],
-                    "versionName": ["package", "versionNumber"],
-                    "versionNumber": ["package"],
-                    "branch": ["package"]
+                    "ancestorId": [
+                        "package",
+                        "versionNumber"
+                    ],
+                    "ancestorVersion": [
+                        "package",
+                        "versionNumber"
+                    ],
+                    "apexTestAccess": [
+                        "package",
+                        "versionNumber"
+                    ],
+                    "definitionFile": [
+                        "package",
+                        "versionNumber"
+                    ],
+                    "dependencies": [
+                        "package",
+                        "versionNumber"
+                    ],
+                    "package": [
+                        "versionNumber"
+                    ],
+                    "postInstallUrl": [
+                        "package",
+                        "versionNumber"
+                    ],
+                    "unpackagedMetadata": [
+                        "package",
+                        "versionNumber"
+                    ],
+                    "releaseNotesUrl": [
+                        "package",
+                        "versionNumber"
+                    ],
+                    "seedMetadata": [
+                        "package",
+                        "versionNumber"
+                    ],
+                    "versionDescription": [
+                        "package",
+                        "versionNumber"
+                    ],
+                    "versionName": [
+                        "package",
+                        "versionNumber"
+                    ],
+                    "versionNumber": [
+                        "package"
+                    ],
+                    "branch": [
+                        "package"
+                    ]
                 },
-                "required": ["path"],
+                "required": [
+                    "path"
+                ],
                 "additionalProperties": false,
                 "properties": {
                     "ancestorId": {
@@ -70,9 +114,12 @@
                     },
                     "unpackagedMetadata": {
                         "$ref": "#/definitions/packageDirectory.unpackagedMetadata"
-                    } ,
+                    },
                     "releaseNotesUrl": {
                         "$ref": "#/definitions/packageDirectory.releaseNotesUrl"
+                    },
+                    "seedMetadata": {
+                        "$ref": "#/definitions/packageDirectory.seedMetadata"
                     },
                     "versionDescription": {
                         "$ref": "#/definitions/packageDirectory.versionDescription"
@@ -122,7 +169,7 @@
                     "skipCoverageValidation": {
                         "$ref": "#/definitions/packageDirectory.skipCoverageValidation"
                     },
-                    "tags":{
+                    "tags": {
                         "$ref": "#/definitions/packageDirectory.tags"
                     },
                     "testSynchronous": {
@@ -146,7 +193,6 @@
                     "branch": {
                         "$ref": "#/definitions/packageDirectory.branch"
                     }
-                    
                 }
             }
         },
@@ -248,7 +294,9 @@
             "description": "To specify dependencies for 2GP within the same Dev Hub, use either the package version alias or a combination of the package name and the version number.",
             "items": {
                 "type": "object",
-                "required": ["package"],
+                "required": [
+                    "package"
+                ],
                 "properties": {
                     "package": {
                         "type": "string"
@@ -282,19 +330,36 @@
             "title": "Post Install Url",
             "description": "The post install url."
         },
-        "packageDirectory.unpackagedMetadata": {
+        "packageDirectory.seedMetadata": {
             "type": "object",
-            "title": "Unpackaged Metadata",
-            "description": "Metadata not meant to be packaged, but deployed when testing packaged metadata",
-            "required": ["path"],
+            "title": "Seed Metadata",
+            "description": "Metadata not meant to be packaged, but deployed before deploying packaged metadata",
+            "required": [
+              "path"
+            ],
             "properties": {
               "path": {
                 "type": "string",
                 "title": "Path",
-                "description": "The path name of the package directory containing the unpackaged metadata"
+                "description": "The path name of the package directory containing the seed metadata"
               }
             }
           },
+        "packageDirectory.unpackagedMetadata": {
+            "type": "object",
+            "title": "Unpackaged Metadata",
+            "description": "Metadata not meant to be packaged, but deployed when testing packaged metadata",
+            "required": [
+                "path"
+            ],
+            "properties": {
+                "path": {
+                    "type": "string",
+                    "title": "Path",
+                    "description": "The path name of the package directory containing the unpackaged metadata"
+                }
+            }
+        },
         "packageDirectory.includeProfileUserLicenses": {
             "type": "boolean",
             "title": "Include Profile User Licenses",
@@ -399,7 +464,14 @@
             "description": "Ignore this package on any provided stage",
             "items": {
                 "type": "string",
-                "enum": ["prepare", "build", "deploy", "validate", "release", "quickbuild"]
+                "enum": [
+                    "prepare",
+                    "build",
+                    "deploy",
+                    "validate",
+                    "release",
+                    "quickbuild"
+                ]
             }
         },
         "packageDirectory.postDeploymentScript": {
@@ -420,7 +492,12 @@
         "packageDirectory.type": {
             "type": "string",
             "title": "Type of the Package",
-            "enum": ["unlocked", "source", "data","diff"],
+            "enum": [
+                "unlocked",
+                "source",
+                "data",
+                "diff"
+            ],
             "description": "Denotes the type of the package,  accepted values are \"source\",\"data\",\"unlocked\" and \"diff\""
         },
         "packageDirectory.skipCoverageValidation": {
@@ -462,19 +539,19 @@
         },
         "packageDirectory.enableFHT": {
             "type": "boolean",
-            "default" : true,
+            "default": true,
             "title": "Enable Field History Tracking support?",
             "description": "Enable automated update of field history tracking in the target org upon deployment"
         },
         "packageDirectory.enableFT": {
             "type": "boolean",
-            "default" : true,
+            "default": true,
             "title": "Enable Feed Tracking support?",
             "description": "Enable automated update of feed tracking in the target org upon deployment"
         },
         "packageDirectory.enablePicklist": {
             "type": "boolean",
-            "default":true,
+            "default": true,
             "title": "Enable Picklist patching for Unlocked Packages",
             "description": "Enable automated patching of picklist for unlocked packages as unlocked packages ignore changes"
         },
@@ -548,26 +625,27 @@
                 },
                 "externalDependencyMap": {
                     "title": "Map of external package and its dependencies",
-                    "type":"object",
+                    "type": "object",
                     "description": "Use this map to define dependencies of unlocked packages built elsewhere, This information will be used by sfpowerscripts while expanding package dependencies",
-                   "patternProperties": {
-                                ".*": {
-                                      "type": "array",
-                                       "items": {
-                                          "type": "object",
-                                          "additionalProperties": false,
-                                          "required": ["package"],
-                                          "properties": {
-                                              "package": {
-                                                  "type": "string"
-                                              },
-                                              "versionNumber": {
-                                                  "type": "string"
-                                              }
-                                          }
-                                      
-                                      }
-                                  }
+                    "patternProperties": {
+                        ".*": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "required": [
+                                    "package"
+                                ],
+                                "properties": {
+                                    "package": {
+                                        "type": "string"
+                                    },
+                                    "versionNumber": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }

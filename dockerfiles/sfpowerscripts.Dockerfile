@@ -1,4 +1,4 @@
-FROM  salesforce/cli:2.5.4-full
+FROM  salesforce/cli:2.5.8-full
 
 
 

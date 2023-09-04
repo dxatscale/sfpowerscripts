@@ -40,8 +40,8 @@ export default class InstallUnlockedPackage extends InstallPackageCommand {
         }),
         securitytype: Flags.string({
             description: messages.getMessage('securityTypeFlagDescription'),
-            options: ['AllUsers', 'AdminsOnly'],
-            default: 'AllUsers',
+            options: ['Custom', 'Full', 'None'],
+            default: 'Full',
         }),
         skipifalreadyinstalled: Flags.boolean({
             char: 'f',
@@ -54,8 +54,8 @@ export default class InstallUnlockedPackage extends InstallPackageCommand {
         }),
         upgradetype: Flags.string({
             description: messages.getMessage('upgradeTypeFlagDescription'),
-            options: ['DeprecateOnly', 'Mixed', 'Delete'],
-            default: 'Mixed',
+            options: ['delete-only', 'deprecate-only', 'mixed-mode'],
+            default: 'mixed-mode',
         }),
         waittime: Flags.string({
             description: messages.getMessage('waitTimeFlagDescription'),

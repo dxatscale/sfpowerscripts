@@ -145,7 +145,7 @@ export default class ChangelogImpl {
             if(this.isDryRun)
             {
                 const outputHandler:FileOutputHandler = FileOutputHandler.getInstance();
-                outputHandler.writeOutput('release-changelog.md',marked(new ChangelogMarkdownGenerator(releaseChangelog, this.workItemUrl, 1, false).generate()));
+                outputHandler.writeOutput('release-changelog.md',marked(new ChangelogMarkdownGenerator(releaseChangelog, this.workItemUrl, 1, false,true).generate()));
             }
 
 

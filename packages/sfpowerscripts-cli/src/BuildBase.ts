@@ -147,7 +147,7 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
                 SFPLogger.log(`${EOL}${EOL}`);
                 SFPLogger.log(COLOR_INFO('No packages found to be built.. Exiting.. '));
                 SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
-                throw new Error('No packages to be found to be built');
+                return;
             }
 
             SFPLogger.log(`${EOL}${EOL}`);
