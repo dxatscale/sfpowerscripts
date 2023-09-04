@@ -8,7 +8,8 @@ export default class ChangelogMarkdownGenerator {
         private releaseChangelog: ReleaseChangelog,
         private workItemURL: string,
         private limit: number,
-        private showAllArtifacts: boolean
+        private showAllArtifacts: boolean,
+        private isForWorkItemOnlyOutput:boolean=false
     ) {}
 
     /**
@@ -18,7 +19,7 @@ export default class ChangelogMarkdownGenerator {
     generate(): string {
         let payload: string = '';
 
-        if (this.releaseChangelog.orgs) {
+        if (this.releaseChangelog.orgs && ! this.isForWorkItemOnlyOutput ) {
             payload = this.generateOrgs(this.releaseChangelog.orgs, payload);
         }
 
@@ -49,10 +50,13 @@ export default class ChangelogMarkdownGenerator {
 
             }
 
-            payload = this.generateArtifacts(payload, release);
+            if(!this.isForWorkItemOnlyOutput)
+             payload = this.generateArtifacts(payload, release);
 
             payload = this.generateWorkItems(payload, release);
 
+            if(!this.isForWorkItemOnlyOutput)
+            {
             let versionChangeOnly: string[] = [];
             let noChangeInVersion: string[] = [];
             payload = this.generateCommits(payload, release, versionChangeOnly, noChangeInVersion);
@@ -69,6 +73,7 @@ export default class ChangelogMarkdownGenerator {
                 payload += '\nArtifacts with no changes:\n';
                 noChangeInVersion.forEach((artifactName) => (payload += `  - ${artifactName}\n`));
             }
+          }
         }
         return payload;
     }

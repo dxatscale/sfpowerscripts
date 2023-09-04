@@ -318,9 +318,7 @@ export default class ReleaseImpl {
     }
 
     private displayReleaseInfo(releaseDefinition: ReleaseDefinitionSchema, props: ReleaseProps) {
-        SFPLogger.log(
-            COLOR_HEADER(`-------------------------------------------------------------------------------------------`)
-        );
+        SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
 
         SFPLogger.log(COLOR_KEY_MESSAGE(`Release: ${releaseDefinition.release}`));
 
@@ -330,18 +328,18 @@ export default class ReleaseImpl {
             )
         );
 
+        SFPLogger.log(COLOR_KEY_MESSAGE(`Dry-run: ${props.isDryRun}`));
+        
         if (releaseDefinition.baselineOrg)
             SFPLogger.log(COLOR_KEY_MESSAGE(`Baselined Against Org: ${releaseDefinition.baselineOrg}`));
-        SFPLogger.log(COLOR_KEY_MESSAGE(`Dry-run: ${props.isDryRun}`));
+       
         if (
             releaseDefinition.promotePackagesBeforeDeploymentToOrg &&
             releaseDefinition.promotePackagesBeforeDeploymentToOrg == props.targetOrg
         )
             SFPLogger.log(COLOR_KEY_MESSAGE(`Promte Packages Before Deployment Activated?: true`));
 
-        SFPLogger.log(
-            COLOR_HEADER(`-------------------------------------------------------------------------------------------`)
-        );
+         SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
     }
 }
 

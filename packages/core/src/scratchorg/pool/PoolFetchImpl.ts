@@ -1,11 +1,10 @@
 import SFPLogger from '@dxatscale/sfp-logger';
-import { AuthInfo, LoggerLevel, Org, SfdxError, SfError } from '@salesforce/core';
+import { AuthInfo, LoggerLevel, Org } from '@salesforce/core';
 import { PoolBaseImpl } from './PoolBaseImpl';
 import ScratchOrg from '../ScratchOrg';
 import { getUserEmail } from './services/fetchers/GetUserEmail';
 import ScratchOrgInfoFetcher from './services/fetchers/ScratchOrgInfoFetcher';
 import ScratchOrgInfoAssigner from './services/updaters/ScratchOrgInfoAssigner';
-import * as fs from 'fs-extra';
 import ClientSourceTracking from './ClientSourceTracking';
 import isValidSfdxAuthUrl from './prequisitecheck/IsValidSfdxAuthUrl';
 import ScratchOrgOperator from '../ScratchOrgOperator';
@@ -55,7 +54,7 @@ export default class PoolFetchImpl extends PoolBaseImpl {
             availableSo = results.records.filter((soInfo) => soInfo.Allocation_status__c === 'Available');
         }
         if (availableSo.length == 0) {
-            throw new SfError(`No scratch org available at the moment for ${this.tag}, try again in sometime.`);
+            throw new Error(`No scratch org available at the moment for ${this.tag}, try again in sometime.`);
         }
 
         if (this.fetchAllScratchOrgs) {
@@ -166,7 +165,7 @@ export default class PoolFetchImpl extends PoolBaseImpl {
         }
 
         if (availableSo.length == 0 || !soDetail) {
-            throw new SfdxError(`No scratch org available at the moment for ${this.tag}, try again in sometime.`);
+            throw new Error(`No scratch org available at the moment for ${this.tag}, try again in sometime.`);
         }
 
         if (this.sendToUser) {
@@ -179,7 +178,7 @@ export default class PoolFetchImpl extends PoolBaseImpl {
                     'Unable to fetch details of the specified user, Check whether the user exists in the org ',
                     LoggerLevel.ERROR
                 );
-                throw new SfdxError('Failed to fetch user details');
+                throw new Error('Failed to fetch user details');
             }
 
             try {
@@ -190,7 +189,7 @@ export default class PoolFetchImpl extends PoolBaseImpl {
                     'Unable to send the scratchorg details to specified user. Check whether the user exists in the org',
                     LoggerLevel.ERROR
                 );
-                throw new SfdxError(
+                throw new Error(
                     'Unable to send the scratchorg details to specified user. Check whether the user exists in the org'
                 );
             }

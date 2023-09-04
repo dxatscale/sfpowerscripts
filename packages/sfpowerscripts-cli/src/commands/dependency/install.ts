@@ -1,12 +1,13 @@
 import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
 import { Messages } from '@salesforce/core';
-import { flags } from '@salesforce/command';
 import ExternalPackage2DependencyResolver from '@dxatscale/sfpowerscripts.core/lib/package/dependencies/ExternalPackage2DependencyResolver';
 import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig';
 import SFPLogger, { COLOR_KEY_MESSAGE, ConsoleLogger, LoggerLevel } from '@dxatscale/sfp-logger';
 import ExternalDependencyDisplayer from '@dxatscale/sfpowerscripts.core/lib/display/ExternalDependencyDisplayer';
 import InstallUnlockedPackageCollection from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/InstallUnlockedPackageCollection';
 import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
+import { Flags } from '@oclif/core';
+import { loglevel, targetdevhubusername, requiredUserNameFlag } from '../../flags/sfdxflags';
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -21,31 +22,15 @@ export default class Install extends SfpowerscriptsCommand {
     protected static requiresDevhubUsername = true;
     protected static requiresProject = true;
 
-    protected static flagsConfig = {
-        installationkeys: flags.string({
+    public static flags = {
+        'targetusername': requiredUserNameFlag,
+        targetdevhubusername,
+        installationkeys: Flags.string({
             char: 'k',
             required: false,
             description: messages.getMessage('installationkeysFlagDescription'),
         }),
-        loglevel: flags.enum({
-            description: 'logging level for this command invocation',
-            default: 'info',
-            required: false,
-            options: [
-                'trace',
-                'debug',
-                'info',
-                'warn',
-                'error',
-                'fatal',
-                'TRACE',
-                'DEBUG',
-                'INFO',
-                'WARN',
-                'ERROR',
-                'FATAL',
-            ],
-        }),
+        loglevel
     };
 
     public async execute(): Promise<any> {

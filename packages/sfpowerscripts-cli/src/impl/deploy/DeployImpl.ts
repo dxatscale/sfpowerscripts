@@ -1,5 +1,5 @@
 import ArtifactFetcher, { Artifact } from '@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFetcher';
-import SFPLogger, { COLOR_ERROR, COLOR_SUCCESS, Logger, LoggerLevel } from '@dxatscale/sfp-logger';
+import SFPLogger, { COLOR_ERROR, COLOR_SUCCESS, FileLogger, Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 import { EOL } from 'os';
 import { Stage } from '../Stage';
 import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig';
@@ -24,6 +24,9 @@ import GroupConsoleLogs from '../../ui/GroupConsoleLogs';
 import { ZERO_BORDER_TABLE } from '../../ui/TableConstants';
 import convertBuildNumDotDelimToHyphen from '@dxatscale/sfpowerscripts.core/lib/utils/VersionNumberConverter';
 import ReleaseConfig from '../release/ReleaseConfig';
+import fs from 'fs-extra';
+import { Align, getMarkdownTable } from 'markdown-table-ts';
+import FileOutputHandler from '../../outputs/FileOutputHandler';
 
 
 const Table = require('cli-table');
@@ -141,7 +144,7 @@ export default class DeployImpl {
                     LoggerLevel.TRACE,
                     this.props.logger
                 );
-                this.printArtifactVersionsWhenSkipped(queue, packagesToPackageInfo, isBaselinOrgModeActivated);
+                this.printArtifactVersionsWhenSkipped(queue, packagesToPackageInfo, isBaselinOrgModeActivated,this.props);
                 queue = filteredDeploymentQueue;
             } else {
                 this.printArtifactVersions(queue, packagesToPackageInfo);
@@ -229,6 +232,13 @@ export default class DeployImpl {
                                     result: PackageInstallationStatus.Failed,
                                     message: error,
                                 };
+                                
+
+                                FileOutputHandler.getInstance().writeOutput(`deployment-error.md`,`### 💣 Deployment Failed  💣`);
+                                FileOutputHandler.getInstance().appendOutput(`deployment-error.md`,`Package Installation failed for  **${queue[i].packageName}**`);
+                                FileOutputHandler.getInstance().appendOutput(`deployment-error.md`,`Reasons:`);
+                                FileOutputHandler.getInstance().appendOutput(`deployment-error.md`,`${error}`);
+
                                 return failedPackageInstallationResult;
                             }
                         }
@@ -357,18 +367,10 @@ export default class DeployImpl {
 
     private displayRetryHeader(isRetryOnFailure: boolean, count: number) {
         if (isRetryOnFailure && count > 1) {
-            SFPLogger.log(
-                `-------------------------------------------------------------------------------${EOL}`,
-                LoggerLevel.INFO,
-                this.props.logger
-            );
-
+            SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
             SFPLogger.log(`Retrying On Failure Attempt: ${count}`, LoggerLevel.INFO, this.props.logger);
-            SFPLogger.log(
-                `-------------------------------------------------------------------------------${EOL}`,
-                LoggerLevel.INFO,
-                this.props.logger
-            );
+            SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
+           
         }
     }
 
@@ -381,13 +383,7 @@ export default class DeployImpl {
         } else alwaysDeployMessage = undefined;
 
         //Display header
-        SFPLogger.log(
-            COLOR_HEADER(
-                `----------------------------------Installing Package---------------------------------------------`
-            ),
-            LoggerLevel.INFO,
-            this.props.logger
-        );
+        SFPLogger.printHeaderLine('Installing Package',COLOR_HEADER,LoggerLevel.INFO);
         SFPLogger.log(COLOR_HEADER(`Name: ${COLOR_KEY_MESSAGE(pkg)}`), LoggerLevel.INFO, this.props.logger);
         SFPLogger.log(`Type: ${COLOR_KEY_MESSAGE(sfpPackage.packageType)}`, LoggerLevel.INFO, this.props.logger);
         SFPLogger.log(
@@ -427,14 +423,7 @@ export default class DeployImpl {
         }
 
         if (alwaysDeployMessage) SFPLogger.log(alwaysDeployMessage, LoggerLevel.INFO, this.props.logger);
-
-        SFPLogger.log(
-            COLOR_HEADER(
-                `-------------------------------------------------------------------------------------------------`
-            ),
-            LoggerLevel.INFO,
-            this.props.logger
-        );
+        SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
     }
 
     private displayTestInfoHeader(sfpPackage: SfpPackage) {
@@ -459,7 +448,8 @@ export default class DeployImpl {
     private printArtifactVersionsWhenSkipped(
         queue: SfpPackage[],
         packagesToPackageInfo: { [p: string]: PackageInfo },
-        isBaselinOrgModeActivated: boolean
+        isBaselinOrgModeActivated: boolean,
+        props:DeployProps
     ) {
         let groupSection = new GroupConsoleLogs(`Full Deployment Breakdown`, this.props.logger).begin();
         let maxTable = new Table({
@@ -473,10 +463,17 @@ export default class DeployImpl {
         });
 
         queue.forEach((pkg) => {
+            
             maxTable.push(processColoursForAllPackages(pkg));
         });
 
         SFPLogger.log(maxTable.toString(), LoggerLevel.INFO, this.props.logger);
+
+
+        //Insane Hack
+        //TODO: Export the value to the caller
+        printDeploymentBreakDownInMarkdown();
+        
         groupSection.end();
 
         groupSection = new GroupConsoleLogs(`Packages to be deployed`, this.props.logger).begin();
@@ -504,6 +501,28 @@ export default class DeployImpl {
 
 
 
+        function printDeploymentBreakDownInMarkdown() {
+            let tableData = {
+                table: {
+                    head:  [
+                        'Package',
+                        'Incoming Version',
+                         isBaselinOrgModeActivated ? 'Version in baseline org' : 'Version in org',
+                        'To be installed?',
+                        'Promotion Status'
+                    ],
+                    body: []
+                },
+                alignment: [Align.Left, Align.Left, Align.Left,Align.Right],
+            };
+            for (const pkg of queue) {
+                tableData.table.body.push(getRowForMarkdownTable(pkg,props));
+            }
+            const table = getMarkdownTable(tableData);
+            const outputHandler:FileOutputHandler = FileOutputHandler.getInstance();
+            outputHandler.writeOutput('deployment-breakdown.md',table) ;
+        }
+
         function processColoursForAllPackages(pkg) {
             const pkgInfo = packagesToPackageInfo[pkg.packageName];
           
@@ -528,6 +547,53 @@ export default class DeployImpl {
             }
           
             return [packageName, versionNumber, versionInstalledInOrg, isPackageInstalled];
+        }
+
+          
+        function getRowForMarkdownTable(pkg:SfpPackage, props:DeployProps) {
+            const pkgInfo = packagesToPackageInfo[pkg.packageName];
+          
+            let packageName = pkg.packageName;
+            let versionNumber = pkg.versionNumber;
+            let versionInstalledInOrg = pkgInfo.versionInstalledInOrg ? pkgInfo.versionInstalledInOrg : 'N/A';
+            let isPackageToBeInstalled = pkgInfo.isPackageInstalled ? 'No' : 'Yes';
+            let promotionStatus = 'N/A';
+           
+            if(isPackageToBeInstalled=="Yes")
+            {
+                isPackageToBeInstalled = `![Yes](https://img.shields.io/badge/Yes-green.svg)`;
+                packageName = `**${packageName}**`;
+                if(pkg.packageType==PackageType.Unlocked)
+                {
+                    if (props.promotePackagesBeforeDeploymentToOrg == props.targetUsername && versionInstalledInOrg == "N/A") {
+                        promotionStatus = '![Pending](https://img.shields.io/badge/Pending-yellow.svg)';
+                    }
+                    else if(props.promotePackagesBeforeDeploymentToOrg == props.targetUsername  ) {
+                        let versionInstalledInOrgConvertedToSemver = convertBuildNumDotDelimToHyphen(versionInstalledInOrg);
+                        let versionNumberConvertedToSemver = convertBuildNumDotDelimToHyphen(versionNumber);
+                        if (semver.diff(versionInstalledInOrgConvertedToSemver, versionNumberConvertedToSemver) == 'prerelease') {
+                            promotionStatus = '![Already Promoted](https://img.shields.io/badge/Already%20Promoted-red.svg)';
+                        }
+                        else {
+                            promotionStatus = '![Pending](https://img.shields.io/badge/Pending-yellow.svg)';
+                        }
+                    }
+                    else
+                    {
+                        promotionStatus = 'N/A';
+                    }
+                }
+
+            versionNumber = `**${versionNumber}**`;
+            versionInstalledInOrg = `**${versionInstalledInOrg}**`;
+            }
+            else
+            {
+                versionNumber = `**${versionNumber}**`;
+                versionInstalledInOrg = `**${versionInstalledInOrg}**`;
+            }
+
+            return [packageName, versionNumber, versionInstalledInOrg, isPackageToBeInstalled,promotionStatus];
           }
     }
 
@@ -543,6 +609,35 @@ export default class DeployImpl {
         });
         SFPLogger.log(table.toString(), LoggerLevel.INFO, this.props.logger);
         groupSection.end();
+       
+        printDeploymentBreakDownInMarkdown();
+
+        
+        function printDeploymentBreakDownInMarkdown() {
+            let tableData = {
+                table: {
+                    head:  [
+                        'Package',
+                        'Version to be installed'
+                    ],
+                    body: []
+                },
+                alignment: [Align.Left, Align.Left, Align.Left,Align.Right],
+            };
+            for (const pkg of queue) {
+                tableData.table.body.push(getRowForMarkdownTable(pkg));
+            }
+
+            const outputHandler:FileOutputHandler = FileOutputHandler.getInstance();
+            outputHandler.writeOutput('deployment-breakdown.md',`Please find the packages that will be deployed below`);
+            outputHandler.appendOutput('deployment-breakdown.md',`\n\n${getMarkdownTable(tableData)}`) ;
+        }
+
+        function getRowForMarkdownTable(pkg:SfpPackage) {
+            let packageName = pkg.packageName;
+            let versionNumber = pkg.versionNumber;
+            return [packageName, versionNumber];
+          }
     }
 
     private async filterByPackagesInstalledInTheOrg(

@@ -232,7 +232,7 @@ export default class CreateDiffPackageImp extends CreateSourcePackageImpl {
             sfpPackage.isPayLoadContainTypesSupportedByProfiles = packageManifest.isPayLoadContainTypesSupportedByProfiles();
 
 
-            sfpPackage.metadataCount = MetadataCount.getMetadataCount(
+            sfpPackage.metadataCount = await MetadataCount.getMetadataCount(
                 workingDirectory,
                 sfpPackage.packageDescriptor.path
             );

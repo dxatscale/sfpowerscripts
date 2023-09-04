@@ -12,6 +12,7 @@ import SfpPackage from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
 import SFPLogger, { LoggerLevel, ConsoleLogger, Logger } from '@dxatscale/sfp-logger';
 import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder';
 import Git from '@dxatscale/sfpowerscripts.core/lib/git/Git';
+import FileOutputHandler from '../../outputs/FileOutputHandler';
 
 
 
@@ -139,6 +140,14 @@ export default class ChangelogImpl {
                 LoggerLevel.INFO,
                 this.logger
             );
+
+
+            if(this.isDryRun)
+            {
+                const outputHandler:FileOutputHandler = FileOutputHandler.getInstance();
+                outputHandler.writeOutput('release-changelog.md',marked(new ChangelogMarkdownGenerator(releaseChangelog, this.workItemUrl, 1, false,true).generate()));
+            }
+
 
             fs.writeFileSync(
                 path.join(pathToChangelogDirectory, `releasechangelog.json`),

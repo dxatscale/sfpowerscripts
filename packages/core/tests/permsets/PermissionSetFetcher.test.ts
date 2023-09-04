@@ -1,17 +1,15 @@
 import { expect } from '@jest/globals';
 import PermissionSetFetcher from '../../src/permsets/PermissionSetFetcher';
-import { MockTestOrgData, testSetup } from '@salesforce/core/lib/testSetup';
+import { MockTestOrgData, TestContext } from '@salesforce/core/lib/testSetup';
 import { AnyJson } from '@salesforce/ts-types';
-import { AuthInfo, Connection } from '@salesforce/core';
-const $$ = testSetup();
+import { AuthInfo, Connection, OrgConfigProperties } from '@salesforce/core';
+const $$ = new TestContext();
 
 describe('Retrieve assigned permsets provided username and a target org', () => {
     it('should return all the permsets for the provided username', async () => {
         const testData = new MockTestOrgData();
-
-        $$.setConfigStubContents('AuthInfoConfig', {
-            contents: await testData.getConfig(),
-        });
+        await $$.stubConfig({ [OrgConfigProperties.TARGET_ORG]: testData.username });
+        await $$.stubAuths(testData);
 
         let records: AnyJson = {
             records: [
@@ -73,9 +71,8 @@ describe('Retrieve assigned permsets provided username and a target org', () => 
 
     it('should return an empty array, if no permsets are assigned', async () => {
         const testData = new MockTestOrgData();
-        $$.setConfigStubContents('AuthInfoConfig', {
-            contents: await testData.getConfig(),
-        });
+        await $$.stubConfig({ [OrgConfigProperties.TARGET_ORG]: testData.username });
+        await $$.stubAuths(testData);
 
         let records: AnyJson = { records: [] };
         $$.fakeConnectionRequest = (request: AnyJson): Promise<AnyJson> => {

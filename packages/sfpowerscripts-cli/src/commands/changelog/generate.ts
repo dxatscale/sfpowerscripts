@@ -1,8 +1,9 @@
 import { ConsoleLogger } from '@dxatscale/sfp-logger';
-import { flags, SfdxCommand } from '@salesforce/command';
 import { Messages } from '@salesforce/core';
 import ChangelogImpl from '../../impl/changelog/ChangelogImpl';
 import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
+import { Flags } from '@oclif/core';
+import { loglevel } from '../../flags/sfdxflags';
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'generate_changelog');
@@ -18,78 +19,60 @@ export default class GenerateChangelog extends SfpowerscriptsCommand {
     protected static requiresUsername = false;
     protected static requiresDevhubUsername = false;
 
-    protected static flagsConfig = {
-        limit: flags.integer({
+    public static flags = {
+        limit: Flags.integer({
             description: messages.getMessage('limitFlagDescription'),
         }),
-        artifactdir: flags.directory({
+        artifactdir: Flags.directory({
             required: true,
             char: 'd',
             description: messages.getMessage('artifactDirectoryFlagDescription'),
             default: 'artifacts',
         }),
-        releasename: flags.string({
+        releasename: Flags.string({
             required: true,
             char: 'n',
             description: messages.getMessage('releaseNameFlagDescription'),
         }),
-        workitemfilter: flags.string({
+        workitemfilter: Flags.string({
             required: true,
             char: 'w',
             description: messages.getMessage('workItemFilterFlagDescription'),
         }),
-        workitemurl: flags.string({
+        workitemurl: Flags.string({
             required: false,
             description: messages.getMessage('workItemUrlFlagDescription'),
         }),
-        repourl: flags.string({
+        repourl: Flags.string({
             required: false,
             char: 'r',
             description: messages.getMessage('repoUrlFlagDescription'),
-            deprecated: {message:'--repourl has been deprecated',messageOverride: '--repourl has been deprecated'}
+            deprecated: {message:'--repourl has been deprecated'}
         }),
-        directory: flags.string({
+        directory: Flags.string({
             required: false,
             description: messages.getMessage('directoryFlagDescription'),
         }),
-        branchname: flags.string({
+        branchname: Flags.string({
             required: true,
             char: 'b',
             description: messages.getMessage('branchNameFlagDescription'),
         }),
-        nopush: flags.boolean({
+        nopush: Flags.boolean({
             description: messages.getMessage('noPushFlagDescription'),
             dependsOn: ['branchname'],
             default: false
         }),
-        showallartifacts: flags.boolean({
+        showallartifacts: Flags.boolean({
             required: false,
             description: messages.getMessage('showAllArtifactsFlagDescription'),
         }),
-        forcepush: flags.boolean({
+        forcepush: Flags.boolean({
             description: messages.getMessage('forcePushFlagDescription'),
             hidden: true,
             default: false,
         }),
-        loglevel: flags.enum({
-            description: 'logging level for this command invocation',
-            default: 'info',
-            required: false,
-            options: [
-                'trace',
-                'debug',
-                'info',
-                'warn',
-                'error',
-                'fatal',
-                'TRACE',
-                'DEBUG',
-                'INFO',
-                'WARN',
-                'ERROR',
-                'FATAL',
-            ],
-        }),
+        loglevel,
     };
 
     async execute() {

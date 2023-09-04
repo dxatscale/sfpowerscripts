@@ -80,13 +80,16 @@ export default class PicklistEnabler implements DeploymentCustomizer {
                     let picklistValueInOrg = [];
 
                     for (const value of picklistInOrg.Metadata.valueSet.valueSetDefinition.value) {
-                        if (value.isActive == 'false') {
+                        //ignore inactive values from org
+                        if (value.isActive == false) {
                             continue;
                         }
 
                         let valueInfo: { [key: string]: string } = {};
                         valueInfo.fullName = value['valueName'];
+                        decodeURIComponent(valueInfo.fullName);
                         valueInfo.label = value['label'];
+                        decodeURIComponent(valueInfo.label);
                         valueInfo.default = value['default'] && value['default'] === true ? 'true' : 'false';
                         picklistValueInOrg.push(valueInfo);
                     }
@@ -146,9 +149,17 @@ export default class PicklistEnabler implements DeploymentCustomizer {
         let values = customField.valueSet?.valueSetDefinition?.value;
         //only push values when picklist > 1 or exactly 1 value
         if (Array.isArray(values)) {
-            picklistValueSet.push(...values);
+            for (const value of values) {
+                //ignore inactive values from source
+                if(!value?.isActive || value?.isActive == 'true'){
+                picklistValueSet.push({fullName: value['fullName'] ? decodeURI(value['fullName']) : value['fullName'] , default: value.default, label: value['label'] ? decodeURI(value['label']) : value['label']});
+                }
+            }
         } else if (typeof values === 'object' && 'fullName' in values) {
-            picklistValueSet.push(values);
+            //ignore inactive values from source
+            if(!values?.isActive || values?.isActive == 'true'){
+                picklistValueSet.push({fullName: values['fullName'] ? decodeURI(values['fullName']) : values['fullName'] , default: values.default, label: values['label'] ? decodeURI(values['label']) : values['label']});
+                }
         }
         return picklistValueSet;
     }

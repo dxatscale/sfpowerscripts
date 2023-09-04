@@ -2,10 +2,12 @@ import TransitiveDependencyResolver from '@dxatscale/sfpowerscripts.core/lib/pac
 import { Messages } from '@salesforce/core';
 import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
 import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig';
-import { flags } from '@salesforce/command';
-import SFPLogger, { LoggerLevel, Logger } from '@dxatscale/sfp-logger';import * as fs from 'fs-extra';
+import SFPLogger, { LoggerLevel, Logger } from '@dxatscale/sfp-logger';
+import * as fs from 'fs-extra';
 import path = require('path');
 import UserDefinedExternalDependency from "@dxatscale/sfpowerscripts.core/lib/project/UserDefinedExternalDependency";
+import { Flags } from '@oclif/core';
+import { loglevel, targetdevhubusername } from '../../flags/sfdxflags';
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -21,31 +23,14 @@ export default class Expand extends SfpowerscriptsCommand {
     protected static requiresDevhubUsername = true;
     protected static requiresProject = true;
 
-    protected static flagsConfig = {
-        overwrite: flags.boolean({
+    public static flags = {
+        targetdevhubusername,
+        overwrite: Flags.boolean({
             char: 'o',
             description: messages.getMessage('overWriteProjectConfigFlagDescription'),
             default: false,
         }),
-        loglevel: flags.enum({
-            description: 'logging level for this command invocation',
-            default: 'info',
-            required: false,
-            options: [
-                'trace',
-                'debug',
-                'info',
-                'warn',
-                'error',
-                'fatal',
-                'TRACE',
-                'DEBUG',
-                'INFO',
-                'WARN',
-                'ERROR',
-                'FATAL',
-            ],
-        }),
+        loglevel
     };
 
     public async execute() {

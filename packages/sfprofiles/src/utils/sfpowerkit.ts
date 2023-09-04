@@ -1,5 +1,4 @@
 import { SfProject } from '@salesforce/core';
-import { UX } from '@salesforce/command';
 import chalk from 'chalk';
 import * as fs from 'fs-extra';
 import SQLITEKeyValue from './sqlitekv';
@@ -13,7 +12,6 @@ export class Sfpowerkit {
     private static projectDirectories: string[];
     private static pluginConfig;
     public static isJsonFormatEnabled: boolean;
-    private static ux: UX;
     private static sourceApiVersion: any;
     private static cache;
 
@@ -119,11 +117,5 @@ export class Sfpowerkit {
         if (this.isJsonFormatEnabled) return;
         SFPLogger.log(message, logLevel);
     }
-    public static setUx(ux: UX) {
-        this.ux = ux;
-    }
-
-    public static setStatus(status: string) {
-        this.ux.setSpinnerStatus(status);
-    }
+    
 }

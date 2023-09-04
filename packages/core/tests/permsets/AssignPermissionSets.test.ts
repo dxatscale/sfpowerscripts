@@ -1,11 +1,11 @@
-import child_process = require('child_process');
+const child_process = require('child_process');
 import AssignPermissionSetsImpl from '../../src/permsets/AssignPermissionSetsImpl';
 import { jest, expect } from '@jest/globals';
 import { VoidLogger } from '@dxatscale/sfp-logger';
-import { AuthInfo, Connection } from '@salesforce/core';
-import { MockTestOrgData, testSetup } from '@salesforce/core/lib/testSetup';
+import { AuthInfo, Connection, OrgConfigProperties } from '@salesforce/core';
+import { MockTestOrgData, TestContext } from '@salesforce/core/lib/testSetup';
 
-const $$ = testSetup();
+const $$ = new TestContext();
 
 jest.mock('../../src/permsets/PermissionSetFetcher', () => {
     class PermissionSetFetcher {
@@ -62,10 +62,10 @@ jest.mock('../../src/permsets/PermissionSetFetcher', () => {
 
 describe('Given a set of permsets, assign it to the user who is deploying the packages', () => {
     it('should assign a set of  permset, if its not previously assigned', async () => {
+
         const testData = new MockTestOrgData();
-        $$.setConfigStubContents('AuthInfoConfig', {
-            contents: await testData.getConfig(),
-        });
+        await $$.stubConfig({ [OrgConfigProperties.TARGET_ORG]: testData.username });
+        await $$.stubAuths(testData);
         const connection: Connection = await Connection.create({
             authInfo: await AuthInfo.create({ username: testData.username }),
         });
@@ -108,12 +108,12 @@ describe('Given a set of permsets, assign it to the user who is deploying the pa
 
     it('should assign a partial set  of  permset, if any of them fails', async () => {
         const testData = new MockTestOrgData();
-        $$.setConfigStubContents('AuthInfoConfig', {
-            contents: await testData.getConfig(),
-        });
+        await $$.stubConfig({ [OrgConfigProperties.TARGET_ORG]: testData.username });
+        await $$.stubAuths(testData);
         const connection: Connection = await Connection.create({
             authInfo: await AuthInfo.create({ username: testData.username }),
         });
+
 
         let assignPermSetImpl: AssignPermissionSetsImpl = new AssignPermissionSetsImpl(
             connection,

@@ -1,10 +1,11 @@
-import { flags } from '@salesforce/command';
 import { Messages } from '@salesforce/core';
 import InstallPackageCommand from '../../../InstallPackageCommand';
 import { PackageInstallationStatus } from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/PackageInstallationResult';
 import { ConsoleLogger } from '@dxatscale/sfp-logger';
 import { SfpPackageInstallationOptions } from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/InstallPackage';
 import SfpPackageInstaller from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageInstaller';
+import { Flags } from '@oclif/core';
+import { loglevel, requiredUserNameFlag } from '../../../flags/sfdxflags';
 
 
 // Initialize Messages with the current plugin directory
@@ -19,99 +20,55 @@ export default class InstallUnlockedPackage extends InstallPackageCommand {
 
     public static examples = [`$ sfpowerscripts package:unlocked:install -n packagename -u sandboxalias -i`];
 
-    protected static flagsConfig = {
-        package: flags.string({
+    public static flags = {
+        package: Flags.string({
             char: 'n',
             description: messages.getMessage('packageFlagDescription'),
         }),
-        targetorg: flags.string({
-            char: 'u',
-            description: messages.getMessage('targetOrgFlagDescription'),
-        }),
-        packageinstalledfrom: flags.boolean({
-            char: 'i',
-            description: messages.getMessage('packageInstalledFromFlagDescription'),
-            hidden: true,
-            deprecated: {
-                message:
-                '--packageinstalledfrom is deprecated, Please utilize sfdx force package install commands directly',
-                messageOverride:
-                    '--packageinstalledfrom is deprecated, Please utilize sfdx force package install commands directly',
-            },
-        }),
-        packageversionid: flags.string({
-            char: 'v',
-            description: messages.getMessage('packageVersionIdFlagDescription'),
-            exclusive: ['packageinstalledfrom'],
-            hidden: true,
-            deprecated: {
-                message:
-                '--packageversionid is deprecated, Please utilize sfdx force package install commands directly',
-                messageOverride:
-                    '--packageversionid is deprecated, Please utilize sfdx force package install commands directly',
-            },
-        }),
-        installationkey: flags.string({
+        targetorg: requiredUserNameFlag,
+        installationkey: Flags.string({
             char: 'k',
             description: messages.getMessage('installationKeyFlagDescription'),
         }),
-        apexcompileonlypackage: flags.boolean({
+        apexcompileonlypackage: Flags.boolean({
             char: 'a',
             description: messages.getMessage('apexCompileOnlyPackageFlagDescription'),
         }),
-        artifactdir: flags.directory({
+        artifactdir: Flags.directory({
             description: messages.getMessage('artifactDirectoryFlagDescription'),
             default: 'artifacts',
         }),
-        securitytype: flags.string({
+        securitytype: Flags.string({
             description: messages.getMessage('securityTypeFlagDescription'),
-            options: ['AllUsers', 'AdminsOnly'],
-            default: 'AllUsers',
+            options: ['Custom', 'Full', 'None'],
+            default: 'Full',
         }),
-        skipifalreadyinstalled: flags.boolean({
+        skipifalreadyinstalled: Flags.boolean({
             char: 'f',
             description: messages.getMessage('skipIfAlreadyInstalled'),
         }),
-        skiponmissingartifact: flags.boolean({
+        skiponmissingartifact: Flags.boolean({
             char: 's',
             description: messages.getMessage('skipOnMissingArtifactFlagDescription'),
             dependsOn: ['packageinstalledfrom'],
         }),
-        upgradetype: flags.string({
+        upgradetype: Flags.string({
             description: messages.getMessage('upgradeTypeFlagDescription'),
-            options: ['DeprecateOnly', 'Mixed', 'Delete'],
-            default: 'Mixed',
+            options: ['delete-only', 'deprecate-only', 'mixed-mode'],
+            default: 'mixed-mode',
         }),
-        waittime: flags.string({
+        waittime: Flags.string({
             description: messages.getMessage('waitTimeFlagDescription'),
             default: '120',
         }),
-        publishwaittime: flags.string({
+        publishwaittime: Flags.string({
             description: messages.getMessage('publishWaitTimeFlagDescription'),
             default: '10',
         }),
-        loglevel: flags.enum({
-            description: 'logging level for this command invocation',
-            default: 'info',
-            required: false,
-            options: [
-                'trace',
-                'debug',
-                'info',
-                'warn',
-                'error',
-                'fatal',
-                'TRACE',
-                'DEBUG',
-                'INFO',
-                'WARN',
-                'ERROR',
-                'FATAL',
-            ],
-        }),
+        loglevel
     };
 
-    protected static requiresUsername = false;
+    protected static requiresUsername = true;
     protected static requiresDevhubUsername = false;
 
     public async install() {

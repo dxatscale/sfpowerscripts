@@ -1,11 +1,8 @@
-FROM  salesforce/salesforcedx:7.194.1-full
+FROM  salesforce/cli:2.5.8-full
 
 
 
 ENV DEBIAN_FRONTEND=noninteractive
-ARG SFPOWERSCRIPTS_VERSION=alpha
-
-ARG PMD_VERSION=${PMD_VERSION:-6.48.0}
 ARG SFPOWERSCRIPTS_VERSION=alpha
 ARG GIT_COMMIT
 
@@ -22,7 +19,7 @@ RUN apt-get update && apt-get install -qq software-properties-common \
         jq \
         zip \
         unzip \
-	    make \
+	      make \
         g++ \
         wget \
         gnupg \
@@ -62,8 +59,8 @@ RUN ln -sf bash /bin/sh && \
 
 
 # Install sfdx plugins
-RUN echo 'y' | sfdx plugins:install sfdx-browserforce-plugin@2.9.1
-RUN echo 'y' | sfdx plugins:install sfdmu@4.18.2
+RUN echo 'y' | sf plugins:install sfdx-browserforce-plugin@2.9.1
+RUN echo 'y' | sf plugins:install sfdmu@4.18.2
 
 # install sfpowerscripts
 RUN npm install --global @dxatscale/sfpowerscripts@$SFPOWERSCRIPTS_VERSION
@@ -79,4 +76,4 @@ LABEL org.opencontainers.image.documentation "https://docs.dxatscale.io/projects
 LABEL org.opencontainers.image.revision $GIT_COMMIT
 LABEL org.opencontainers.image.vendor "DX@Scale"
 LABEL org.opencontainers.image.source "https://github.com/dxatscale/sfpowerscripts"
-LABEL org.opencontainers.image.title "DX@Scale sfpowercripts docker image - July 23"
+LABEL org.opencontainers.image.title "DX@Scale sfpowercripts docker image - August 23"

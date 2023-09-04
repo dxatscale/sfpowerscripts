@@ -2,7 +2,7 @@ import { Connection } from 'jsforce';
 import { RetrieveResult } from 'jsforce/lib/api/metadata';
 import { delay } from './delay';
 import SFPLogger, {LoggerLevel } from '@dxatscale/sfp-logger';
-import { SfdxError } from '@salesforce/core';
+
 
 export async function checkRetrievalStatus(conn: Connection, retrievedId: string, isToBeLoggedToConsole = true): Promise<RetrieveResult> {
     let metadata_result;
@@ -11,7 +11,7 @@ export async function checkRetrievalStatus(conn: Connection, retrievedId: string
         try {
             metadata_result = await conn.metadata.checkRetrieveStatus(retrievedId);
         } catch (error) {
-            throw new SfdxError(error.message);
+            throw new Error(error.message);
         }
 
         if (metadata_result.done === 'false') {

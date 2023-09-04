@@ -6,7 +6,7 @@ import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
 export default class PicklistAnalyzer implements PackageAnalyzer {
 
     public getName() {
-        return "Field History Tracking Analyzer"
+        return "Picklist Analyzer"
      }
 
      
@@ -18,6 +18,8 @@ export default class PicklistAnalyzer implements PackageAnalyzer {
 
             for (const sourceComponent of sourceComponents) {
                 if (sourceComponent.type.name == registry.types.customobject.name) {
+                    //issues/1367
+                    //this can add child elements that are not custom fields..
                     components.push(...sourceComponent.getChildren());
                 }
 
@@ -29,8 +31,9 @@ export default class PicklistAnalyzer implements PackageAnalyzer {
             if (components) {
                 for (const fieldComponent of components) {
                     let customField = fieldComponent.parseXmlSync().CustomField;
-
-                    if (customField['type'] == 'Picklist') {
+                    //issues/1367
+                    //if the component isn't a field customField will be undefined..so check
+                    if (customField && customField['type'] == 'Picklist') {
                         sfpPackage.isPickListsFound= true;
                         break;
                     }
