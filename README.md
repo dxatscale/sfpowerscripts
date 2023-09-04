@@ -2,7 +2,7 @@
   <img alt="sfpowerscripts" src="https://repository-images.githubusercontent.com/248449736/448f93b4-9883-48da-a75c-330f242bbf8c" width="480" height="400">
 </p>
 
-[![Version](https://img.shields.io/npm/v/@dxatscale/sfpowerscripts.svg)](https://npmjs.org/package/@dxatscale/sfpowerscripts
+![Version](https://img.shields.io/npm/v/@dxatscale/sfpowerscripts.svg)
 [![GitHub stars](https://img.shields.io/github/stars/dxatscale/sfpowerscripts)](https://gitHub.com/dxatscale/sfpowerscripts/stargazers/)
 [![GitHub contributors](https://img.shields.io/github/contributors/dxatscale/sfpowerscripts.svg)](https://github.com/forcedotcom/dxatscale/sfpowerscripts/graphs/contributors/)
 [![License](https://img.shields.io/badge/license-MIT-green)](https://github.com/dxatscale/sfpowerscripts/blob/master/LICENSE)
