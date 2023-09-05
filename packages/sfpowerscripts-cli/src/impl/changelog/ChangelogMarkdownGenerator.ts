@@ -130,7 +130,7 @@ export default class ChangelogMarkdownGenerator {
                         specificWorkItemURL = this.workItemURL.concat(`/${workItem}`);
                     }
                 }
-                payload += `  - [${workItem}](${specificWorkItemURL})\n`;
+                payload += `[${workItem}](${specificWorkItemURL})\n`;
             }
         } else {
             payload += `N/A\n`;
