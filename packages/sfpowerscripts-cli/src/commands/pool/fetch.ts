@@ -28,6 +28,7 @@ export default class Fetch extends SfpowerscriptsCommand {
 
     protected static requiresDevhubUsername = true;
     protected static requiresProject = true;
+    public static enableJsonFlag = true;
 
     public static examples = [
         `$ sfdx sfpowerkit:pool:fetch -t core `,
@@ -76,6 +77,8 @@ export default class Fetch extends SfpowerscriptsCommand {
         await this.hubOrg.refreshAuth();
         const hubConn = this.hubOrg.getConnection();
 
+        if (this.flags.json) SFPLogger.logLevel = LoggerLevel.HIDE;
+
         SFPLogger.log(
             COLOR_KEY_MESSAGE(`Fetching a scratch org from pool ${this.flags.tag} in Org ${this.hubOrg.getOrgId()}`),
             LoggerLevel.INFO
@@ -99,8 +102,6 @@ export default class Fetch extends SfpowerscriptsCommand {
             );
             fetchImpl.setSourceTrackingOnFetch();
         }
-
-        if (this.flags.json) SFPLogger.logLevel = LoggerLevel.HIDE;
 
         let result = (await fetchImpl.execute()) as ScratchOrg;
 
