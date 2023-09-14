@@ -722,7 +722,7 @@ export class ProgressReporter implements Progress<ApexTestProgressValue> {
             if (Date.now() - this.lastExecutedTime > Duration.seconds(30).milliseconds) {
                 if (value.type == 'TestQueueProgress') {
                     for (const elem of value.value.records) {
-                        if (elem.Status) {
+                        if (elem?.Status) {
                             if (!count[elem.Status]) {
                                 count[elem.Status] = 1;
                             } else count[elem.Status]++;
