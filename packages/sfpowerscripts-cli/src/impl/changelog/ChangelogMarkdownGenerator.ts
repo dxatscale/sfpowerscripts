@@ -45,7 +45,7 @@ export default class ChangelogMarkdownGenerator {
                 payload += `\n<a id=${release.hashId}></a>\n`; // Create anchor from release hash Id
                 payload += `# ${release.names.join(`/`)}\n `;
                 payload += `Cumulative Release Number: <b>${release.buildNumber}</b> \n\n`;
-                if(release.date)
+                if(release.date && !this.isForWorkItemOnlyOutput)
                   payload += `Matching defintion first created or deployed to an org on: ${release.date}\n `
 
             }
@@ -130,7 +130,7 @@ export default class ChangelogMarkdownGenerator {
                         specificWorkItemURL = this.workItemURL.concat(`/${workItem}`);
                     }
                 }
-                payload += `  - [${workItem}](${specificWorkItemURL})\n`;
+                payload += `[${workItem}](${specificWorkItemURL})\n`;
             }
         } else {
             payload += `N/A\n`;

@@ -378,6 +378,14 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
 						),
 					),
 				);
+
+				FileOutputHandler.getInstance().appendOutput(`validation-error.md`,`### 💣 Deployment Failed  💣`);
+				deploymentResult.failed.map(
+					(packageInfo) => {
+						FileOutputHandler.getInstance().appendOutput(`validation-error.md`,`Package validation failed for  **${packageInfo.sfpPackage.packageName}**`);    
+					}
+				);
+			
 			}
 
 			SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
@@ -710,7 +718,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
 				const testResult = await apextestValidator.validateApexTests();
 
 				if (!testResult.result) {
-					FileOutputHandler.getInstance().writeOutput(`validation-error.md`,`### 💣 Validation Failed  💣`);
+					FileOutputHandler.getInstance().appendOutput(`validation-error.md`,`### 💣 Validation Failed  💣`);
 					FileOutputHandler.getInstance().appendOutput(`validation-error.md`,`Package validation failed for  **${sfpPackage.packageName}**`);
 					FileOutputHandler.getInstance().appendOutput(`validation-error.md`,`Reasons:`);
 					FileOutputHandler.getInstance().appendOutput(`validation-error.md`,`${testResult.message}`);
