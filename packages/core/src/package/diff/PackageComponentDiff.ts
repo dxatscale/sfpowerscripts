@@ -108,7 +108,10 @@ export default class PackageComponentDiff {
                             await this.gitDiffUtils.copyFile(sourceComponent.content, outputFolder, this.logger);
                         } else if (sourceComponent.type.strategies?.adapter == AdapterId.MixedContent) {
                             await this.gitDiffUtils.copyFile(sourceComponent.xml, outputFolder, this.logger);
-                            await this.gitDiffUtils.copyFolder(sourceComponent.content, outputFolder, this.logger);
+                            if(path.extname(sourceComponent.content))
+                              await this.gitDiffUtils.copyFile(sourceComponent.content, outputFolder, this.logger);
+                            else
+                              await this.gitDiffUtils.copyFolder(sourceComponent.content, outputFolder, this.logger);
                         } else if (sourceComponent.type.strategies?.adapter == AdapterId.Decomposed) {
                             await this.gitDiffUtils.copyFile(sourceComponent.xml, outputFolder, this.logger);
                         } else if (sourceComponent.type.strategies?.adapter == AdapterId.Bundle) {
