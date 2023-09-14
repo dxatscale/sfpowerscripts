@@ -47,6 +47,14 @@ used by using the [docker image](https://github.com/dxatscale/sfpowerscripts/pkg
 
 Getting started guides for popular CI/CD platforms along with reference pipelines are available [here](https://docs.dxatscale.io/reference-implementation/github)
 
+#### Installing sfpowerscripts locally
+
+sfpowerscripts can be installed on your local device using npm
+
+``` 
+npm i -g  @dxatscale/sfpowerscripts 
+```
+
 
 #### Docker
 

@@ -457,20 +457,31 @@ export default class TriggerApexTests {
     private fixBadNamespaceClassFullNames(testResult: any): any {
         let modifiedTestResult = _.cloneDeep(testResult);
 
+        try
+        {
         modifiedTestResult.tests = modifiedTestResult.tests.map((test) => {
             return {
                 ...test,
                 ...{
-                    fullName: test.fullName.replace('__', '.'),
+                    fullName: test.fullName?.replace('__', '.'),
                     apexClass: {
                         ...test.apexClass,
                         ...{
-                            fullName: test.apexClass.fullName.replace('__', '.'),
+                            fullName: test.apexClass?.fullName?.replace('__', '.'),
                         },
                     },
                 },
             };
         });
+        }catch(error)
+        {
+            SFPLogger.log(
+                `Unable to fix bad namespace class full names due to ${error}`,
+                LoggerLevel.DEBUG,
+                this.fileLogger
+            );
+            modifiedTestResult = _.cloneDeep(testResult);
+        }
 
         return modifiedTestResult;
     }
@@ -711,7 +722,7 @@ export class ProgressReporter implements Progress<ApexTestProgressValue> {
             if (Date.now() - this.lastExecutedTime > Duration.seconds(30).milliseconds) {
                 if (value.type == 'TestQueueProgress') {
                     for (const elem of value.value.records) {
-                        if (elem.Status) {
+                        if (elem?.Status) {
                             if (!count[elem.Status]) {
                                 count[elem.Status] = 1;
                             } else count[elem.Status]++;
