@@ -457,20 +457,31 @@ export default class TriggerApexTests {
     private fixBadNamespaceClassFullNames(testResult: any): any {
         let modifiedTestResult = _.cloneDeep(testResult);
 
+        try
+        {
         modifiedTestResult.tests = modifiedTestResult.tests.map((test) => {
             return {
                 ...test,
                 ...{
-                    fullName: test.fullName.replace('__', '.'),
+                    fullName: test.fullName?.replace('__', '.'),
                     apexClass: {
                         ...test.apexClass,
                         ...{
-                            fullName: test.apexClass.fullName.replace('__', '.'),
+                            fullName: test.apexClass?.fullName?.replace('__', '.'),
                         },
                     },
                 },
             };
         });
+        }catch(error)
+        {
+            SFPLogger.log(
+                `Unable to fix bad namespace class full names due to ${error}`,
+                LoggerLevel.DEBUG,
+                this.fileLogger
+            );
+            modifiedTestResult = _.cloneDeep(testResult);
+        }
 
         return modifiedTestResult;
     }
