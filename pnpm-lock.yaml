@@ -322,7 +322,7 @@ importers:
                 specifier: ^2.1.2
                 version: link:../sfplogger
             '@dxatscale/sfpowerscripts.core':
-                specifier: 36.0.13
+                specifier: 36.0.14
                 version: link:../core
             '@dxatscale/sfprofiles':
                 specifier: 2.0.6
@@ -9385,7 +9385,7 @@ packages:
             pretty-format: 29.6.1
             slash: 3.0.0
             strip-json-comments: 3.1.1
-            ts-node: 10.7.0(@types/node@14.14.7)(typescript@5.0.2)
+            ts-node: 10.7.0(@types/node@20.4.4)(typescript@5.0.2)
         transitivePeerDependencies:
             - supports-color
         dev: true
