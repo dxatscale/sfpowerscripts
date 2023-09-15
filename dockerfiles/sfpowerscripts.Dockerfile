@@ -1,4 +1,4 @@
-FROM node:20-bookworm
+FROM ubuntu:22.04
 
 ARG PMD_VERSION=6.48.0
 ARG SFPOWERSCRIPTS_VERSION=alpha
@@ -7,6 +7,7 @@ ARG SALESFORCE_CLI_VERSION=nightly
 ARG BROWSERFORCE_VERSION=2.9.1
 ARG SFDMU_VERSION=4.18.2
 ARG GIT_COMMIT
+ARG NODE_MAJOR=20
 
 LABEL org.opencontainers.image.description "sfpowerscripts is a build system for modular development in Salesforce."
 LABEL org.opencontainers.image.licenses "MIT"
@@ -33,12 +34,26 @@ RUN apt-get update \
       g++ \
       openjdk-17-jre-headless \
       ca-certificates \
-      chromium \
+      chromium-bsu \
       chromium-driver \
-      chromium-shell \
+      gnupg \
     && apt-get autoremove --assume-yes \
     && apt-get clean --assume-yes \
     && rm -rf /var/lib/apt/list/*
+
+# install nodejs via nodesource
+RUN mkdir -p /etc/apt/keyrings \
+    && curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg \
+    && echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_$NODE_MAJOR.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list \
+    && apt-get update \
+    && apt-get -y install --no-install-recommends nodejs \
+    && apt-get autoremove --assume-yes \
+    && apt-get clean --assume-yes \
+    && rm -rf /var/lib/apt/list/*    
+
+# install yarn
+RUN npm install --global yarn --omit-dev \
+    && npm cache clean --force
 
 # Install SF cli and sfpowerscripts
 RUN npm install --global --omit=dev \
@@ -50,7 +65,7 @@ RUN npm install --global --omit=dev \
 RUN echo 'y' | sf plugins:install sfdx-browserforce-plugin@${BROWSERFORCE_VERSION} \
     && echo 'y' | sf plugins:install sfdmu@${SFDMU_VERSION} \
     && yarn cache clean --all \
-    && rm -rf ~/.cache/sf
+    && rm -r /root/.cache/sf
 
 # Set some sane behaviour in container
 ENV SF_CONTAINER_MODE=true
