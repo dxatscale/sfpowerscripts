@@ -451,7 +451,7 @@ export default class BuildImpl {
 			const pathToMarkDownFile = `.sfpowerscripts/outputs/build-error-info.md`;
 			fs.mkdirpSync(".sfpowerscripts/outputs");
 			fs.createFileSync(pathToMarkDownFile);
-			fs.appendFileSync(pathToMarkDownFile, `Please find the errors observed during build\n\n`);
+			fs.appendFileSync(pathToMarkDownFile, `\nPlease find the errors observed during build\n\n`);
 			fs.appendFileSync(pathToMarkDownFile, `## ${pkg}\n\n`);
 			fs.appendFileSync(pathToMarkDownFile, data);
 
