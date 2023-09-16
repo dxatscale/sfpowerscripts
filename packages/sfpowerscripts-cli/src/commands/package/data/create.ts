@@ -14,13 +14,8 @@ export default class CreateDataPackage extends PackageCreateCommand {
     public static description = messages.getMessage('commandDescription');
 
     public static examples = [
-        `$ sfpowerscripts package:data:create -n mypackage -v <version>`,
-        `$ sfpowerscripts package:data:create -n <mypackage> -v <version> --diffcheck --gittag`,
-        `Output variable:`,
-        `sfpowerscripts_artifact_directory`,
-        `<refname>_sfpowerscripts_artifact_directory`,
-        `sfpowerscripts_package_version_number`,
-        `<refname>_sfpowerscripts_package_version_number`,
+        `$ sfp package:data:create -n mypackage -v <version>`,
+        `$ sfp package:data:create -n <mypackage> -v <version> --diffcheck --gittag`,
     ];
 
     public static flags = {

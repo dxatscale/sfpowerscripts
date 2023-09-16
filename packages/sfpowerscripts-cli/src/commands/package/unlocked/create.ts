@@ -21,17 +21,8 @@ export default class CreateUnlockedPackage extends PackageCreateCommand {
     protected static requiresProject = true;
 
     public static examples = [
-        `$ sfpowerscripts package:unlocked:create -n <packagealias> -b -x -v <devhubalias> --refname <name>`,
-        `$ sfpowerscripts package:unlocked:create -n <packagealias> -b -x -v <devhubalias> --diffcheck --gittag\n`,
-        `Output variable:`,
-        `sfpowerscripts_package_version_id`,
-        `<refname>_sfpowerscripts_package_version_id`,
-        `sfpowerscripts_artifact_metadata_directory`,
-        `<refname>_sfpowerscripts_artifact_metadata_directory`,
-        `sfpowerscripts_artifact_directory`,
-        `<refname>_sfpowerscripts_artifact_directory`,
-        `sfpowerscripts_package_version_number`,
-        `<refname>_sfpowerscripts_package_version_number`,
+        `$ sfp package:unlocked:create -n <packagealias> -b -x -v <devhubalias> --refname <name>`,
+        `$ sfp package:unlocked:create -n <packagealias> -b -x -v <devhubalias> --diffcheck --gittag`,
     ];
 
     public static flags = {
