@@ -31,10 +31,10 @@ export default class Fetch extends SfpowerscriptsCommand {
     public static enableJsonFlag = true;
 
     public static examples = [
-        `$ sfdx sfpowerkit:pool:fetch -t core `,
-        `$ sfdx sfpowerkit:pool:fetch -t core -v devhub`,
-        `$ sfdx sfpowerkit:pool:fetch -t core -v devhub -m`,
-        `$ sfdx sfpowerkit:pool:fetch -t core -v devhub -s testuser@test.com`,
+        `$ sfp pool:fetch  -t core `,
+        `$ sfp pool:fetch  -t core -v devhub`,
+        `$ sfp pool:fetch  -t core -v devhub -m`,
+        `$ sfp pool:fetch  -t core -v devhub -s testuser@test.com`,
     ];
 
     public static flags = {
