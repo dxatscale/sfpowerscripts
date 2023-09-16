@@ -17,7 +17,7 @@ const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'promote');
 export default class Promote extends SfpowerscriptsCommand {
     public static description = messages.getMessage('commandDescription');
 
-    public static examples = [`$ sfpowerscripts orchestrator:promote -d path/to/artifacts -v <org>`];
+    public static examples = [`$ sfp orchestrator:promote -d path/to/artifacts -v <org>`];
 
     protected static requiresDevhubUsername = true;
 

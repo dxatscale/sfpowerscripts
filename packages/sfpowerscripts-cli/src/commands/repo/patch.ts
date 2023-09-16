@@ -26,7 +26,7 @@ const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'patch');
 export default class Patch extends SfpowerscriptsCommand {
     public static description = messages.getMessage('commandDescription');
 
-    public static examples = [`$ sfpowerscripts repo:patch -n <releaseName>`];
+    public static examples = [`$ sfp repo:patch -n <releaseName>`];
 
     protected static requiresProject = true;
     protected static requiresDevhubUsername = false;

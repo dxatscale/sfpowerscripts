@@ -18,7 +18,7 @@ const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'install_unl
 export default class InstallUnlockedPackage extends InstallPackageCommand {
     public static description = messages.getMessage('commandDescription');
 
-    public static examples = [`$ sfpowerscripts package:unlocked:install -n packagename -u sandboxalias -i`];
+    public static examples = [`$ sfp package:unlocked:install -n packagename -u sandboxalias -i`];
 
     public static flags = {
         package: Flags.string({

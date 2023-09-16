@@ -12,7 +12,7 @@ export default class Generate extends SfpowerscriptsCommand {
     public static description = messages.getMessage('commandDescription');
 
     public static examples = [
-        `$ sfpowerscripts releasedefinition:generate -n <releaseName>`,
+        `$ sfp releasedefinition:generate -n <releaseName>`,
     ];
 
     protected static requiresProject = true;

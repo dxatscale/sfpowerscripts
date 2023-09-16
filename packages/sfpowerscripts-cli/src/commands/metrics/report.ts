@@ -18,7 +18,7 @@ export default class Report extends SfpowerscriptsCommand {
   protected static requiresDevhubUsername = false;
   protected static requiresProject = false;
 
-  public static examples = ['$ sfpowerscripts metrics:report -m <metric> -t <type> -v <value>'];
+  public static examples = ['$ sfp metrics:report -m <metric> -t <type> -v <value>'];
 
   public static flags = {
     metric: Flags.string({

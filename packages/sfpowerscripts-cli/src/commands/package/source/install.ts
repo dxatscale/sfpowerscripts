@@ -19,7 +19,7 @@ const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'install_sou
 export default class InstallSourcePackage extends InstallPackageCommand {
     public static description = messages.getMessage('commandDescription');
 
-    public static examples = [`$ sfpowerscripts package:source:install -n mypackage -u <org>`];
+    public static examples = [`$ sfp package:source:install -n mypackage -u <org>`];
 
     public static flags = {
         package: Flags.string({

@@ -21,7 +21,7 @@ export default class Publish extends SfpowerscriptsCommand {
     protected static requiresDevhubUsername = true;
     protected static requiresProject = false;
 
-    public static examples = ['$ sfpowerscripts pool:metrics:publish -v <myDevHub>'];
+    public static examples = ['$ sfp pool:metrics:publish -v <myDevHub>'];
 
     public static flags = {
        targetdevhubusername,
