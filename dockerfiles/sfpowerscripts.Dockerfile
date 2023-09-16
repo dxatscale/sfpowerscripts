@@ -1,9 +1,8 @@
 FROM ubuntu:22.04
 
-ARG PMD_VERSION=6.48.0
+
 ARG SFPOWERSCRIPTS_VERSION=alpha
-ARG SF_CLI_VERSION=^2
-ARG SALESFORCE_CLI_VERSION=nightly
+ARG SF_CLI_VERSION=2.8.11
 ARG BROWSERFORCE_VERSION=2.9.1
 ARG SFDMU_VERSION=4.18.2
 ARG GIT_COMMIT
@@ -64,8 +63,8 @@ RUN npm install --global --omit=dev \
 # Install sfdx plugins
 RUN echo 'y' | sf plugins:install sfdx-browserforce-plugin@${BROWSERFORCE_VERSION} \
     && echo 'y' | sf plugins:install sfdmu@${SFDMU_VERSION} \
-    && yarn cache clean --all \
-    && rm -r /root/.cache/sf
+    && echo 'y' | sf plugins:install @salesforce/plugin-packaging@1.25.0 \
+    && yarn cache clean --all 
 
 # Set some sane behaviour in container
 ENV SF_CONTAINER_MODE=true
@@ -76,6 +75,8 @@ ENV SF_USE_PROGRESS_BAR=false
 
 WORKDIR /root
 
+RUN ln -sf bash /bin/sh
+
 # clear the entrypoint for azure
 ENTRYPOINT []
-CMD ["/bin/bash"]
+CMD ["/bin/sh"]
