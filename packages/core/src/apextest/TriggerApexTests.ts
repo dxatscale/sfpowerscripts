@@ -135,7 +135,23 @@ export default class TriggerApexTests {
             testResult = this.removeDuplicateTestListing(testResult);
 
             //Write Test Results to file
-            let jsonOutput = this.writeTestOutput(testResult);
+            let jsonOutput = {};
+            try
+            {
+              jsonOutput = this.writeTestOutput(testResult);
+            }catch(error)
+            {
+                SFPLogger.log(
+                    `Unable to write test results to file due to ${error}`,
+                    LoggerLevel.DEBUG,
+                    this.fileLogger
+                );
+                return {
+                    result: false,
+                    id: testResult.summary.testRunId,
+                    message: 'Unable to fetch test execution results, Please retry',
+                };
+            }
 
             //Print tests result to screen
             let testReportDisplayer = new TestReportDisplayer(jsonOutput, this.testOptions, this.fileLogger);
