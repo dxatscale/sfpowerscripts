@@ -21,6 +21,7 @@ LABEL org.opencontainers.image.title "DX@Scale sfpowercripts docker image - Augu
 ENV DEBIAN_FRONTEND=noninteractive
 
 
+RUN ln -sf bash /bin/sh
 
 
 RUN apt-get update \
@@ -64,12 +65,21 @@ RUN npm install --global --omit=dev \
     && npm cache clean --force
 
 
+
+# Set XDG environment variables explicitly so that GitHub Actions does not apply
+# default paths that do not point to the plugins directory
+# https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html
+ENV XDG_DATA_HOME=/sf_plugins/.local/share \
+    XDG_CONFIG_HOME=/sf_plugins/.config  \
+    XDG_CACHE_HOME=/sf_plugins/.cache \
+    JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64/
+
+
 # Create symbolic link from sh to bash
 # Create isolated plugins directory with rwx permission for all users
 # Azure pipelines switches to a container-user which does not have access
 # to the root directory where plugins are normally installed
-RUN ln -sf bash /bin/sh && \
-    mkdir -p $XDG_DATA_HOME && \
+RUN mkdir -p $XDG_DATA_HOME && \
     mkdir -p $XDG_CONFIG_HOME && \
     mkdir -p $XDG_CACHE_HOME && \
     chmod -R 777 sfdx_plugins && \
