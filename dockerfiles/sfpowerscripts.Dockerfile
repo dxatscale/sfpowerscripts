@@ -82,7 +82,7 @@ ENV XDG_DATA_HOME=/sf_plugins/.local/share \
 RUN mkdir -p $XDG_DATA_HOME && \
     mkdir -p $XDG_CONFIG_HOME && \
     mkdir -p $XDG_CACHE_HOME && \
-    chmod -R 777 sfdx_plugins && \
+    chmod -R 777 sf_plugins && \
     export JAVA_HOME && \
     export XDG_DATA_HOME && \
     export XDG_CONFIG_HOME && \
