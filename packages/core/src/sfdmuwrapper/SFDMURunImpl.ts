@@ -14,10 +14,10 @@ export default class SFDMURunImpl extends SFDXCommand {
     }
 
     getSFDXCommand(): string {
-        return 'sfdx sfdmu:run';
+        return 'sf sfdmu run';
     }
     getCommandName(): string {
-        return 'sfdmu:run';
+        return 'sfdmu run';
     }
 
     getGeneratedParams(): string {
