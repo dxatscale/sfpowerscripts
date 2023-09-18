@@ -121,6 +121,10 @@ export default class PackageComponentDiff {
                         }
                     }
                 } catch (error) {
+                    
+                   if(error.message.includes(`Unable to find the required file`))
+                    throw error;
+
                     //Metadata resolver is not respecting forceignores at this stage
                     // So it fails on diff packages with post deploy, so lets ignore and move on
                     SFPLogger.log(
