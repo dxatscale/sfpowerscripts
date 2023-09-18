@@ -1,14 +1,75 @@
-FROM ubuntu:22.04
+FROM  salesforce/cli:2.5.8-full
 
 
+
+ENV DEBIAN_FRONTEND=noninteractive
 ARG SFPOWERSCRIPTS_VERSION=alpha
-ARG SF_CLI_VERSION=2.8.11
-ARG BROWSERFORCE_VERSION=2.9.1
-ARG SFDMU_VERSION=4.18.2
 ARG GIT_COMMIT
-ARG NODE_MAJOR=20
 
-LABEL org.opencontainers.image.description "sfpowerscripts is a build system for modular development in Salesforce."
+# update git & common packages
+# Install all shared dependencies for chrome and fonts to support major charsets (Chinese, Japanese, Arabic, Hebrew, Thai and a few others)
+# Note: this installs the necessary libs to make the bundled version of Chromium that Puppeteer
+# installs, work.
+RUN apt-get update && apt-get install -qq software-properties-common \
+    && add-apt-repository ppa:git-core/ppa -y  \
+    &&  apt-get install -qq   \
+        git \
+        curl \
+        sudo \
+        jq \
+        zip \
+        unzip \
+	      make \
+        g++ \
+        wget \
+        gnupg \
+	    libxkbcommon-x11-0 libdigest-sha-perl  libxshmfence-dev \
+        gconf-service libappindicator1 libasound2 libatk1.0-0 \
+        libatk-bridge2.0-0 libcairo-gobject2 libdrm2 libgbm1 libgconf-2-4 \
+        libgtk-3-0 libnspr4 libnss3 libx11-xcb1 libxcb-dri3-0 libxcomposite1 libxcursor1 \
+        libxdamage1 libxfixes3 libxi6 libxinerama1 libxrandr2 libxshmfence1 libxss1 libxtst6 \
+        fonts-liberation fonts-ipafont-gothic fonts-wqy-zenhei fonts-thai-tlwg fonts-kacst fonts-freefont-ttf \
+    && apt-get autoremove --assume-yes \ 
+    && apt-get clean --assume-yes  \   
+    && rm -rf /var/lib/apt/lists/*
+
+
+# Set XDG environment variables explicitly so that GitHub Actions does not apply
+# default paths that do not point to the plugins directory
+# https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html
+ENV XDG_DATA_HOME=/sfdx_plugins/.local/share \
+    XDG_CONFIG_HOME=/sfdx_plugins/.config  \
+    XDG_CACHE_HOME=/sfdx_plugins/.cache \
+    JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64/
+
+#
+# Create symbolic link from sh to bash
+# Create isolated plugins directory with rwx permission for all users
+# Azure pipelines switches to a container-user which does not have access
+# to the root directory where plugins are normally installed
+RUN ln -sf bash /bin/sh && \
+    mkdir -p $XDG_DATA_HOME && \
+    mkdir -p $XDG_CONFIG_HOME && \
+    mkdir -p $XDG_CACHE_HOME && \
+    chmod -R 777 sfdx_plugins && \
+    export JAVA_HOME && \
+    export XDG_DATA_HOME && \
+    export XDG_CONFIG_HOME && \
+    export XDG_CACHE_HOME
+
+
+# Install sfdx plugins
+RUN echo 'y' | sf plugins:install sfdx-browserforce-plugin@2.9.1
+RUN echo 'y' | sf plugins:install sfdmu@4.18.2
+
+# install sfpowerscripts
+RUN npm install --global @dxatscale/sfpowerscripts@$SFPOWERSCRIPTS_VERSION
+
+
+
+
+#Add Labels
+LABEL org.opencontainers.image.description "sfpowerscripts is a build system for modular development in Salesforce, its delivered as a sfdx plugin that can be implemented in any CI/CD system of choice"
 LABEL org.opencontainers.image.licenses "MIT"
 LABEL org.opencontainers.image.url "https://github.com/dxatscale/sfpowerscripts"
 LABEL org.opencontainers.image.documentation "https://docs.dxatscale.io/projects/sfpowerscripts"
@@ -16,67 +77,3 @@ LABEL org.opencontainers.image.revision $GIT_COMMIT
 LABEL org.opencontainers.image.vendor "DX@Scale"
 LABEL org.opencontainers.image.source "https://github.com/dxatscale/sfpowerscripts"
 LABEL org.opencontainers.image.title "DX@Scale sfpowercripts docker image - August 23"
-
-
-ENV DEBIAN_FRONTEND=noninteractive
-
-RUN apt-get update \
-    && apt-get upgrade -y \
-    && apt-get -y install --no-install-recommends \
-      git \
-      curl \
-      sudo \
-      jq \
-      zip \
-      unzip \
-      make \
-      g++ \
-      openjdk-17-jre-headless \
-      ca-certificates \
-      chromium-bsu \
-      chromium-driver \
-      gnupg \
-    && apt-get autoremove --assume-yes \
-    && apt-get clean --assume-yes \
-    && rm -rf /var/lib/apt/list/*
-
-# install nodejs via nodesource
-RUN mkdir -p /etc/apt/keyrings \
-    && curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg \
-    && echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_$NODE_MAJOR.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list \
-    && apt-get update \
-    && apt-get -y install --no-install-recommends nodejs \
-    && apt-get autoremove --assume-yes \
-    && apt-get clean --assume-yes \
-    && rm -rf /var/lib/apt/list/*    
-
-# install yarn
-RUN npm install --global yarn --omit-dev \
-    && npm cache clean --force
-
-# Install SF cli and sfpowerscripts
-RUN npm install --global --omit=dev \
-    @salesforce/cli@${SF_CLI_VERSION} \
-    @dxatscale/sfpowerscripts@${SFPOWERSCRIPTS_VERSION} \
-    && npm cache clean --force
-
-# Install sfdx plugins
-RUN echo 'y' | sf plugins:install sfdx-browserforce-plugin@${BROWSERFORCE_VERSION} \
-    && echo 'y' | sf plugins:install sfdmu@${SFDMU_VERSION} \
-    && echo 'y' | sf plugins:install @salesforce/plugin-packaging@1.25.0 \
-    && yarn cache clean --all 
-
-# Set some sane behaviour in container
-ENV SF_CONTAINER_MODE=true
-ENV SF_DISABLE_AUTOUPDATE=true
-ENV SF_DISABLE_TELEMETRY=true
-ENV SF_USE_GENERIC_UNIX_KEYCHAIN=true
-ENV SF_USE_PROGRESS_BAR=false
-
-WORKDIR /root
-
-RUN ln -sf bash /bin/sh
-
-# clear the entrypoint for azure
-ENTRYPOINT []
-CMD ["/bin/sh"]
