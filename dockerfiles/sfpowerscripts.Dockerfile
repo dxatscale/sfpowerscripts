@@ -21,7 +21,6 @@ LABEL org.opencontainers.image.title "DX@Scale sfpowercripts docker image - Augu
 ENV DEBIAN_FRONTEND=noninteractive
 
 
-RUN ln -sf bash /bin/sh
 
 
 RUN apt-get update \
@@ -63,6 +62,22 @@ RUN npm install --global --omit=dev \
     @salesforce/cli@${SF_CLI_VERSION} \
     @dxatscale/sfpowerscripts@${SFPOWERSCRIPTS_VERSION} \
     && npm cache clean --force
+
+
+# Create symbolic link from sh to bash
+# Create isolated plugins directory with rwx permission for all users
+# Azure pipelines switches to a container-user which does not have access
+# to the root directory where plugins are normally installed
+RUN ln -sf bash /bin/sh && \
+    mkdir -p $XDG_DATA_HOME && \
+    mkdir -p $XDG_CONFIG_HOME && \
+    mkdir -p $XDG_CACHE_HOME && \
+    chmod -R 777 sfdx_plugins && \
+    export JAVA_HOME && \
+    export XDG_DATA_HOME && \
+    export XDG_CONFIG_HOME && \
+    export XDG_CACHE_HOME
+
 
 
 # Install sfdx plugins
