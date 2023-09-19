@@ -1,6 +1,4 @@
-import { flags, FlagsConfig } from '@salesforce/command';
-
-import { SfdxError, Messages } from '@salesforce/core';
+import { Messages, Org }  from '@salesforce/core';
 import * as fs from 'fs-extra';
 import { isNil } from 'lodash';
 import { Sfpowerkit } from '@dxatscale/sfprofiles/lib/utils/sfpowerkit';
@@ -8,62 +6,43 @@ import ProfileSync from '@dxatscale/sfprofiles/lib/impl/source/profileSync';
 import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
 import Table from 'cli-table';
 import { ZERO_BORDER_TABLE } from '../../ui/TableConstants';
+import { arrayFlagSfdxStyle, loglevel, orgApiVersionFlagSfdxStyle, requiredUserNameFlag } from '../../flags/sfdxflags';
+import { Flags } from '@oclif/core';
+import SFPLogger, { COLOR_KEY_MESSAGE, COLOR_WARNING, LoggerLevel } from '@dxatscale/sfp-logger';
 
-// Initialize Messages with the current plugin directory
+
 Messages.importMessagesDirectory(__dirname);
-
-// Load the specific messages for this file. Messages from @salesforce/command, @salesforce/core,
-// or any library that is using the messages framework can also be loaded this way.
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'profile_retrieve');
 
 export default class Retrieve extends SfpowerscriptsCommand {
     public static description = messages.getMessage('commandDescription');
 
     public static examples = [
-        `$ sfpowerscripts source:profile:retrieve -u prod`,
-        `$ sfpowerscripts source:profile:retrieve -f force-app -n "My Profile" -u prod`,
-        `$ sfpowerscripts source:profile:retrieve -f "module1, module2, module3" -n "My Profile1, My profile2"  -u prod`,
+        `$ sfp profile:retrieve -u prod`,
+        `$ sfp profile:retrieve -f force-app -n "My Profile" -u prod`,
+        `$ sfp profile:retrieve -f "module1, module2, module3" -n "My Profile1, My profile2"  -u prod`,
     ];
 
-    //public static args = [{ name: 'file' }];
 
-    protected static flagsConfig: FlagsConfig = {
-        folder: flags.array({
+    public static flags = {
+        folder: arrayFlagSfdxStyle({
             char: 'f',
             description: messages.getMessage('folderFlagDescription'),
             required: false,
-            map: (f: string) => f.trim(),
         }),
-        profilelist: flags.array({
+        profilelist: arrayFlagSfdxStyle({
             char: 'n',
             description: messages.getMessage('profileListFlagDescription'),
             required: false,
-            map: (p: string) => p.trim(),
         }),
-        delete: flags.boolean({
+        delete: Flags.boolean({
             char: 'd',
             description: messages.getMessage('deleteFlagDescription'),
             required: false,
         }),
-        loglevel: flags.enum({
-            description: 'logging level for this command invocation',
-            default: 'info',
-            required: false,
-            options: [
-                'trace',
-                'debug',
-                'info',
-                'warn',
-                'error',
-                'fatal',
-                'TRACE',
-                'DEBUG',
-                'INFO',
-                'WARN',
-                'ERROR',
-                'FATAL',
-            ],
-        }),
+        targetorg: requiredUserNameFlag,
+        'apiversion': orgApiVersionFlagSfdxStyle,
+        loglevel,
     };
 
     // Comment this out if your command does not require an org username
@@ -80,7 +59,7 @@ export default class Retrieve extends SfpowerscriptsCommand {
         if (!isNil(argFolder) && argFolder.length !== 0) {
             for (let dir of argFolder) {
                 if (!fs.existsSync(dir)) {
-                    throw new SfdxError(`The profile path ${dir} does not exist.`);
+                    throw new Error(`The profile path ${dir} does not exist.`);
                 }
             }
             folders.push(...argFolder);
@@ -88,6 +67,10 @@ export default class Retrieve extends SfpowerscriptsCommand {
 
         Sfpowerkit.initCache();
 
+        SFPLogger.log(COLOR_WARNING(messages.getMessage('retriveDelayWarning')),LoggerLevel.INFO);
+        SFPLogger.log(COLOR_KEY_MESSAGE(`Retrieving profiles from ${this.flags.targetorg}`),LoggerLevel.INFO );
+      
+        this.org = await Org.create({ aliasOrUsername: this.flags.targetorg });
         const profileUtils = new ProfileSync(this.org);
 
         let syncProfiles = await profileUtils.sync(folders, argProfileList || [], this.flags.delete);

@@ -12,20 +12,18 @@ import { ZERO_BORDER_TABLE } from '../../ui/TableConstants';
 import { Flags } from '@oclif/core';
 import { arrayFlagSfdxStyle, loglevel, orgApiVersionFlagSfdxStyle, requiredUserNameFlag } from '../../flags/sfdxflags';
 
-// Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
 
-// Load the specific messages for this file. Messages from @salesforce/command, @salesforce/core,
-// or any library that is using the messages framework can also be loaded this way.
+
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'profile_reconcile');
 
 export default class Reconcile extends SfpowerscriptsCommand {
     public static description = messages.getMessage('commandDescription');
 
     public static examples = [
-        `$ sfpowerscripts profile:reconcile  --folder force-app -d destfolder -s`,
-        `$ sfpowerscripts profile:reconcile  --folder force-app,module2,module3 -u sandbox -d destfolder`,
-        `$ sfpowerscripts profile:reconcile  -u myscratchorg -d destfolder`,
+        `$ sfp profile:reconcile  --folder force-app -d destfolder -s`,
+        `$ sfp profile:reconcile  --folder force-app,module2,module3 -u sandbox -d destfolder`,
+        `$ sfp profile:reconcile  -u myscratchorg -d destfolder`,
     ];
 
 

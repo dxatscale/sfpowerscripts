@@ -1,6 +1,4 @@
-import { flags, FlagsConfig } from '@salesforce/command';
-
-import { Messages, SfdxError } from '@salesforce/core';
+import { Messages, Org }  from '@salesforce/core';
 import { isNil } from 'lodash';
 import { Sfpowerkit } from '@dxatscale/sfprofiles/lib/utils/sfpowerkit';
 import SFPLogger, { LoggerLevel } from '@dxatscale/sfp-logger';
@@ -9,83 +7,50 @@ import ProfileMerge from '@dxatscale/sfprofiles/lib/impl/source/profileMerge';
 import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
 import Table from 'cli-table';
 import { ZERO_BORDER_TABLE } from '../../ui/TableConstants';
+import { arrayFlagSfdxStyle, loglevel, orgApiVersionFlagSfdxStyle, requiredUserNameFlag } from '../../flags/sfdxflags';
+import { Flags } from '@oclif/core';
 
-// Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
 
-// Load the specific messages for this file. Messages from @salesforce/command, @salesforce/core,
-// or any library that is using the messages framework can also be loaded this way.
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'profile_merge');
 
 export default class Merge extends SfpowerscriptsCommand {
     public static description = messages.getMessage('commandDescription');
 
     public static examples = [
-        `$ sfpowerscripts source:profile:merge -u sandbox`,
-        `$ sfpowerscripts source:profile:merge -f force-app -n "My Profile" -u sandbox`,
-        `$ sfpowerscripts source:profile:merge -f "module1, module2, module3" -n "My Profile1, My profile2"  -u sandbox`,
+        `$ sfp profile:merge -u sandbox`,
+        `$ sfp profile:merge -f force-app -n "My Profile" -u sandbox`,
+        `$ sfp  profile:merge -f "module1, module2, module3" -n "My Profile1, My profile2"  -u sandbox`,
     ];
 
-    //public static args = [{ name: 'file' }];
-
-    protected static flagsConfig: FlagsConfig = {
-        // flag with a value (-n, --name=VALUE)
-        folder: flags.array({
+    public static flags = {
+        folder: arrayFlagSfdxStyle({
             char: 'f',
             description: messages.getMessage('folderFlagDescription'),
             required: false,
-            map: (f: string) => f.trim(),
         }),
-        profilelist: flags.array({
+        profilelist: arrayFlagSfdxStyle({
             char: 'n',
             description: messages.getMessage('profileListFlagDescription'),
             required: false,
-            map: (n: string) => n.trim(),
         }),
-        metadata: flags.array({
+        metadata: arrayFlagSfdxStyle({
             char: 'm',
             description: messages.getMessage('metadataFlagDescription'),
             required: false,
-            delimiter: ',',
-            map: (val: string) => {
-                let parts = val.split(':');
-                return {
-                    MetadataType: parts[0].trim(),
-                    ApiName: parts.length >= 2 ? parts[1].trim() : '*',
-                };
-            },
         }),
-        delete: flags.boolean({
+        delete: Flags.boolean({
             char: 'd',
             description: messages.getMessage('deleteFlagDescription'),
             required: false,
         }),
-        loglevel: flags.enum({
-            description: 'logging level for this command invocation',
-            default: 'info',
-            required: false,
-            options: [
-                'trace',
-                'debug',
-                'info',
-                'warn',
-                'error',
-                'fatal',
-                'TRACE',
-                'DEBUG',
-                'INFO',
-                'WARN',
-                'ERROR',
-                'FATAL',
-            ],
-        }),
+        targetorg: requiredUserNameFlag,
+        'apiversion': orgApiVersionFlagSfdxStyle,
+        loglevel,
     };
 
     // Comment this out if your command does not require an org username
-    protected static requiresUsername = true;
-
-    // Comment this out if your command does not support a hub org username
-    //protected static supportsDevhubUsername = true;
+    protected static requiresUsername = true
 
     // Set this to true if your command requires a project workspace; 'requiresProject' is false by default
     protected static requiresProject = true;
@@ -94,6 +59,14 @@ export default class Merge extends SfpowerscriptsCommand {
         let argFolder = this.flags.folder;
         let argProfileList = this.flags.profilelist;
         let argMetadatas = this.flags.metadata;
+
+        //  argMetadatas = (val: string) => {
+        //         let parts = val.split(':');
+        //         return {
+        //             MetadataType: parts[0].trim(),
+        //             ApiName: parts.length >= 2 ? parts[1].trim() : '*',
+        //         };
+        //     };
 
         Sfpowerkit.initCache();
 
@@ -113,9 +86,8 @@ export default class Merge extends SfpowerscriptsCommand {
                 }
             }
             if (invalidArguments.length > 0) {
-                throw new SfdxError(
-                    'Metadata(s) ' + invalidArguments.join(', ') + ' is/are not supported.',
-                    'InvalidArgumentError'
+                throw new Error(
+                    'Metadata(s) ' + invalidArguments.join(', ') + ' is/are not supported.'
                 );
             }
         }
@@ -125,6 +97,8 @@ export default class Merge extends SfpowerscriptsCommand {
         }
         ``;
 
+
+        this.org = await Org.create({ aliasOrUsername: this.flags.targetorg });
         const profileUtils = new ProfileMerge(this.org);
 
         let mergedProfiles = await profileUtils.merge(argFolder, argProfileList || [], metadatas, this.flags.delete);
