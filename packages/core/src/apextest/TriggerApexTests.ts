@@ -135,7 +135,7 @@ export default class TriggerApexTests {
             testResult = this.removeDuplicateTestListing(testResult);
 
             //Write Test Results to file
-            let jsonOutput = {};
+            let jsonOutput = undefined;
             try
             {
               jsonOutput = this.writeTestOutput(testResult);
