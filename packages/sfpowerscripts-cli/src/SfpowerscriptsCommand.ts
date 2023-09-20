@@ -89,7 +89,7 @@ export default abstract class SfpowerscriptsCommand extends Command {
             SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
             SFPLogger.log(
                 COLOR_HEADER(
-                    `sfpowerscripts  -- The DX@Scale CI/CD Orchestrator -Version:${this.config.version} -Release:${this.config.pjson.release}`
+                    `sfp  -- The DX@Scale CLI -Version:${this.config.version} -Release:${this.config.pjson.release}`
                 )
             );
 
