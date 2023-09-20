@@ -37,6 +37,12 @@ RUN apt-get update \
       g++ \
       openjdk-17-jre-headless \
       ca-certificates \
+	  libxkbcommon-x11-0 libdigest-sha-perl  libxshmfence-dev \
+       gconf-service libappindicator1 libasound2 libatk1.0-0 \
+       libatk-bridge2.0-0 libcairo-gobject2 libdrm2 libgbm1 libgconf-2-4 \
+       libgtk-3-0 libnspr4 libnss3 libx11-xcb1 libxcb-dri3-0 libxcomposite1 libxcursor1 \
+       libxdamage1 libxfixes3 libxi6 libxinerama1 libxrandr2 libxshmfence1 libxss1 libxtst6 \
+       fonts-liberation fonts-ipafont-gothic fonts-wqy-zenhei fonts-thai-tlwg fonts-kacst fonts-freefont-ttf \
       chromium-bsu \
       chromium-driver \
       gnupg \
