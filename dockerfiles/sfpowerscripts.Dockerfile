@@ -15,7 +15,7 @@ LABEL org.opencontainers.image.documentation "https://docs.dxatscale.io/projects
 LABEL org.opencontainers.image.revision $GIT_COMMIT
 LABEL org.opencontainers.image.vendor "DX@Scale"
 LABEL org.opencontainers.image.source "https://github.com/dxatscale/sfpowerscripts"
-LABEL org.opencontainers.image.title "DX@Scale sfpowercripts docker image - August 23"
+LABEL org.opencontainers.image.title "DX@Scale sfpowercripts docker image - September 23"
 
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -35,6 +35,7 @@ RUN apt-get update \
       unzip \
       make \
       g++ \
+      tzdata \
       openjdk-17-jre-headless \
       ca-certificates \
 	  libxkbcommon-x11-0 libdigest-sha-perl  libxshmfence-dev \
@@ -49,6 +50,10 @@ RUN apt-get update \
     && apt-get autoremove --assume-yes \
     && apt-get clean --assume-yes \
     && rm -rf /var/lib/apt/list/*
+
+# Set timezone to UTC
+ENV TZ=UTC
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 # install nodejs via nodesource
 RUN mkdir -p /etc/apt/keyrings \
