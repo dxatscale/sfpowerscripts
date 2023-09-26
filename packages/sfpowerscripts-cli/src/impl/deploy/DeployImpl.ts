@@ -355,12 +355,15 @@ export default class DeployImpl {
                 console.log(
                     COLOR_KEY_MESSAGE(`Attempting to promote package ${sfpPackage.packageName} before installation`)
                 );
-                let promoteUnlockedPackageImpl: PromoteUnlockedPackageImpl = new PromoteUnlockedPackageImpl(
-                    sourceDirectory,
-                    sfpPackage.package_version_id,
-                    this.props.devhubUserName
-                );
-                await promoteUnlockedPackageImpl.promote();
+                if(!this.props.isDryRun)
+                {
+                    let promoteUnlockedPackageImpl: PromoteUnlockedPackageImpl = new PromoteUnlockedPackageImpl(
+                        sourceDirectory,
+                        sfpPackage.package_version_id,
+                        this.props.devhubUserName
+                    );
+                    await promoteUnlockedPackageImpl.promote();
+                }
             }
         }
     }
