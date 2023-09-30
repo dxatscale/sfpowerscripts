@@ -102,7 +102,7 @@ RUN mkdir -p $XDG_DATA_HOME && \
 
 
 # Install sfdx plugins
-RUN echo 'y' | sf plugins:install @dxatscale/browserforce${BROWSERFORCE_VERSION} \
+RUN echo 'y' | sf plugins:install @dxatscale/browserforce@${BROWSERFORCE_VERSION} \
     && echo 'y' | sf plugins:install sfdmu@${SFDMU_VERSION} \
     && echo 'y' | sf plugins:install @salesforce/plugin-packaging@1.25.0 \
     && yarn cache clean --all 
