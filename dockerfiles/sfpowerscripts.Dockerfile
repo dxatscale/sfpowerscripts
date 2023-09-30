@@ -3,7 +3,7 @@ FROM ubuntu:22.04
 
 ARG SFPOWERSCRIPTS_VERSION=alpha
 ARG SF_CLI_VERSION=2.10.2
-ARG BROWSERFORCE_VERSION=2.11.0
+ARG BROWSERFORCE_VERSION=0.0.2
 ARG SFDMU_VERSION=4.18.2
 ARG GIT_COMMIT
 ARG NODE_MAJOR=20
@@ -102,7 +102,7 @@ RUN mkdir -p $XDG_DATA_HOME && \
 
 
 # Install sfdx plugins
-RUN echo 'y' | sf plugins:install sfdx-browserforce-plugin@${BROWSERFORCE_VERSION} \
+RUN echo 'y' | sf plugins:install @dxatscale/browserforce${BROWSERFORCE_VERSION} \
     && echo 'y' | sf plugins:install sfdmu@${SFDMU_VERSION} \
     && echo 'y' | sf plugins:install @salesforce/plugin-packaging@1.25.0 \
     && yarn cache clean --all 
