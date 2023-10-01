@@ -83,7 +83,8 @@ RUN npm install --global --omit=dev \
 ENV XDG_DATA_HOME=/sf_plugins/.local/share \
     XDG_CONFIG_HOME=/sf_plugins/.config  \
     XDG_CACHE_HOME=/sf_plugins/.cache \
-    JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64/
+    JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64/ \
+    PUPPETEER_CACHE_DIR=/root/.cache/puppeteer
 
 
 # Create symbolic link from sh to bash
