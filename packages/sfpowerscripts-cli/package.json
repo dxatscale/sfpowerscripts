@@ -76,7 +76,11 @@
     "homepage": "https://github.com/dxatscale/sfpowerscripts",
     "keywords": [
         "dxatscale",
-        "cli"
+        "sf-cli",
+        "sfdx",
+        "salesforce",
+        "sf",
+        "orchestrator"
     ],
     "oclif": {
         "commands": "./lib/commands",
