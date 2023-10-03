@@ -159,7 +159,14 @@ export default class Git {
     static async initiateRepo(logger?: Logger, projectDir?: string) {
         let git = new Git(projectDir, logger);
         if (projectDir) await git.addSafeConfig(projectDir);
-        else await git.addSafeConfig(process.cwd());
+        else {
+            try {
+                await git.addSafeConfig(process.cwd());
+            } catch (error) {
+                //Ignore if unable to set, its probably set already
+                SFPLogger.log(`Unable to add safe config, probably due to no change or something else,Please try manually`, LoggerLevel.TRACE, logger);
+            }
+        }
         await git.getRemoteOriginUrl();
         return git;
     }
