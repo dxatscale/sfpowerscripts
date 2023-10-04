@@ -200,7 +200,7 @@ export default class DeployImpl {
                                 await this.promotePackagesBeforeInstallation(packageInfo.sourceDirectory, sfpPackage);
                             } catch (error) {
                                 //skip packages already promoted
-                                SFPLogger.log(`Package already promoted .. skipping`,LoggerLevel.INFO);
+                                SFPLogger.log(`Package already promoted .. skipping`,LoggerLevel.WARN);
                             }
 
                             this.displayRetryHeader(isToBeRetried, attemptCount);
@@ -271,22 +271,25 @@ export default class DeployImpl {
                     failed = queue.slice(i).map((pkg) => packagesToPackageInfo[pkg.packageName]);
                 }
 
-                let postHookStatus = await this._postDeployHook?.postDeployPackage(
-                    sfpPackage,
-                    packageInstallationResult,
-                    this.props.targetUsername,
-                    sfpPackages,
-                    this.props.devhubUserName,
-                    this.props.logger
-                );
-
-                if (postHookStatus?.isToFailDeployment) {
-                    failed = queue.slice(i).map((pkg) => packagesToPackageInfo[pkg.packageName]);
-                    throw new Error(
-                        postHookStatus.message
-                            ? postHookStatus.message
-                            : 'Hook Failed to execute, but didnt provide proper message'
+                // Only deploy post hook when package installation is successful
+                if(packageInstallationResult.result === PackageInstallationStatus.Succeeded) {
+                    let postHookStatus = await this._postDeployHook?.postDeployPackage(
+                        sfpPackage,
+                        packageInstallationResult,
+                        this.props.targetUsername,
+                        sfpPackages,
+                        this.props.devhubUserName,
+                        this.props.logger
                     );
+
+                    if (postHookStatus?.isToFailDeployment) {
+                        failed = queue.slice(i).map((pkg) => packagesToPackageInfo[pkg.packageName]);
+                        throw new Error(
+                            postHookStatus.message
+                                ? postHookStatus.message
+                                : 'Hook Failed to execute, but didnt provide proper message'
+                        );
+                    }
                 }
 
                 if (packageInstallationResult.result === PackageInstallationStatus.Failed) {
@@ -303,7 +306,7 @@ export default class DeployImpl {
                 failed: failed,
                 queue: queue,
                 packagesToPackageInfo: packagesToPackageInfo,
-                error: null,
+                error: null 
             };
         } catch (err) {
             SFPLogger.log(err, LoggerLevel.ERROR, this.props.logger);
@@ -314,7 +317,7 @@ export default class DeployImpl {
                 failed: failed,
                 queue: queue,
                 packagesToPackageInfo: packagesToPackageInfo,
-                error: err,
+                error: err.message,
             };
         }
     }

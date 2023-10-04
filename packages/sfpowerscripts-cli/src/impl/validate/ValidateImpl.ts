@@ -380,12 +380,18 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
 				);
 
 				FileOutputHandler.getInstance().appendOutput(`validation-error.md`,`### 💣 Deployment Failed  💣`);
+				let firstPackageFailedToValdiate = deploymentResult.failed[0];
+				FileOutputHandler.getInstance().appendOutput(`validation-error.md`,`Package validation failed for  **${firstPackageFailedToValdiate.sfpPackage.packageName}** due to`);  
+				FileOutputHandler.getInstance().appendOutput(`validation-error.md`,"");  
+				FileOutputHandler.getInstance().appendOutput(`validation-error.md`,deploymentResult.error);  
+
+				FileOutputHandler.getInstance().appendOutput(`validation-error.md`,`Package that are not validated:`);  
 				deploymentResult.failed.map(
-					(packageInfo) => {
-						FileOutputHandler.getInstance().appendOutput(`validation-error.md`,`Package validation failed for  **${packageInfo.sfpPackage.packageName}**`);    
+					(packageInfo, index) => {
+						if (index!=0)
+						 FileOutputHandler.getInstance().appendOutput(`validation-error.md`,`**${packageInfo.sfpPackage.packageName}**`);    
 					}
 				);
-			
 			}
 
 			SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
