@@ -2,7 +2,7 @@ import { Messages } from '@salesforce/core';
 import InstallPackageCommand from '../../../InstallPackageCommand';
 import * as fs from 'fs-extra';
 import { PackageInstallationStatus } from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/PackageInstallationResult';
-import { ConsoleLogger } from '@dxatscale/sfp-logger';
+import SFPLogger, { ConsoleLogger, LoggerLevel } from '@dxatscale/sfp-logger';
 import { DeploymentType } from '@dxatscale/sfpowerscripts.core/lib/deployers/DeploymentExecutor';
 import { SfpPackageInstallationOptions } from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/InstallPackage';
 import SfpPackageInstaller from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageInstaller';
@@ -20,6 +20,8 @@ export default class InstallSourcePackage extends InstallPackageCommand {
     public static description = messages.getMessage('commandDescription');
 
     public static examples = [`$ sfp package:source:install -n mypackage -u <org>`];
+
+    public static deprecated:boolean = true;
 
     public static flags = {
         package: Flags.string({
@@ -62,6 +64,9 @@ export default class InstallSourcePackage extends InstallPackageCommand {
     };
 
     public async install(): Promise<any> {
+
+        SFPLogger.log(`This command is now deprecated, please proceed to use sfp package:install instead`,LoggerLevel.WARN)
+
 
         const sfdx_package: string = this.flags.package;
         const optimizeDeployment: boolean = this.flags.optimizedeployment;

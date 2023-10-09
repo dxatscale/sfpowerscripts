@@ -34,10 +34,6 @@ export default abstract class InstallPackageCommand extends SfpowerscriptsComman
             description: messages.getMessage('artifactDirectoryFlagDescription'),
             default: 'artifacts',
         }),
-        skiponmissingartifact: Flags.boolean({
-            char: 's',
-            description: messages.getMessage('skipOnMissingArtifactFlagDescription'),
-        }),
     };
 
     protected artifact: Artifact;

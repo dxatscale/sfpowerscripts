@@ -1,7 +1,7 @@
 import { Messages } from '@salesforce/core';
 import InstallPackageCommand from '../../../InstallPackageCommand';
 import { PackageInstallationStatus } from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/PackageInstallationResult';
-import { ConsoleLogger } from '@dxatscale/sfp-logger';
+import SFPLogger, { ConsoleLogger, LoggerLevel } from '@dxatscale/sfp-logger';
 import SfpPackageInstaller from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageInstaller';
 import { SfpPackageInstallationOptions } from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/InstallPackage';
 import { Flags } from '@oclif/core';
@@ -19,6 +19,8 @@ export default class InstallDataPackage extends InstallPackageCommand {
     public static description = messages.getMessage('commandDescription');
 
     public static examples = [`$ sfp package:data:install -n mypackage -u <org>`];
+
+    public static deprecated:boolean = true;
 
     public static flags = {
         package: Flags.string({
@@ -45,6 +47,9 @@ export default class InstallDataPackage extends InstallPackageCommand {
     public async install() {
         try {
           
+            SFPLogger.log(`This command is now deprecated, please proceed to use sfp package:install instead`,LoggerLevel.WARN)
+
+            
             const skipIfAlreadyInstalled = this.flags.skipifalreadyinstalled;
             let options: SfpPackageInstallationOptions = {
                 skipIfPackageInstalled: skipIfAlreadyInstalled
