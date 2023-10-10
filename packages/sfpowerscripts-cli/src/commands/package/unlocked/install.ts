@@ -1,7 +1,7 @@
 import { Messages } from '@salesforce/core';
 import InstallPackageCommand from '../../../InstallPackageCommand';
 import { PackageInstallationStatus } from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/PackageInstallationResult';
-import { ConsoleLogger } from '@dxatscale/sfp-logger';
+import SFPLogger, { ConsoleLogger, LoggerLevel } from '@dxatscale/sfp-logger';
 import { SfpPackageInstallationOptions } from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/InstallPackage';
 import SfpPackageInstaller from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageInstaller';
 import { Flags } from '@oclif/core';
@@ -20,6 +20,8 @@ export default class InstallUnlockedPackage extends InstallPackageCommand {
 
     public static examples = [`$ sfp package:unlocked:install -n packagename -u sandboxalias -i`];
 
+    public static deprecated:boolean = true;
+    
     public static flags = {
         package: Flags.string({
             char: 'n',
@@ -72,6 +74,9 @@ export default class InstallUnlockedPackage extends InstallPackageCommand {
     protected static requiresDevhubUsername = false;
 
     public async install() {
+
+       SFPLogger.log(`This command is now deprecated, please proceed to use sfp package:install instead`,LoggerLevel.WARN)
+
         try {
             const installationkey = this.flags.installationkey;
             const apexcompileonlypackage = this.flags.apexcompileonlypackage;
