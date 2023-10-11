@@ -135,7 +135,7 @@ export default class ArtifactFetcher {
     public static findArtifacts(artifactDirectory: string, sfdx_package?: string): string[] {
         let pattern: string;
         if (sfdx_package) {
-            pattern = `**/${sfdx_package}_sfpowerscripts_artifact*.@(zip|tgz)`;
+            pattern = `**/*${sfdx_package}_sfpowerscripts_artifact*.@(zip|tgz)`;
         } else {
             pattern = `**/*sfpowerscripts_artifact*.@(zip|tgz)`;
         }
