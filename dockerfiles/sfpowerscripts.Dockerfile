@@ -6,7 +6,7 @@ ARG SF_CLI_VERSION=2.10.2
 ARG BROWSERFORCE_VERSION=0.0.3
 ARG SFDMU_VERSION=4.18.2
 ARG GIT_COMMIT
-ARG NODE_MAJOR=20
+ARG NODE_MAJOR=18
 
 LABEL org.opencontainers.image.description "sfpowerscripts is a build system for modular development in Salesforce."
 LABEL org.opencontainers.image.licenses "MIT"
@@ -106,7 +106,8 @@ RUN mkdir -p $XDG_DATA_HOME && \
 RUN echo 'y' | sf plugins:install @dxatscale/browserforce@${BROWSERFORCE_VERSION} \
     && echo 'y' | sf plugins:install sfdmu@${SFDMU_VERSION} \
     && echo 'y' | sf plugins:install @salesforce/plugin-packaging@1.25.0 \
-    && yarn cache clean --all 
+    && yarn cache clean --all \
+    && rm -rf /sf_plugins/.cache/sf
 
 # Set some sane behaviour in container
 ENV SF_CONTAINER_MODE=true
