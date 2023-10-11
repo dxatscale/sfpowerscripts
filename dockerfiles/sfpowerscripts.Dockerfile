@@ -106,7 +106,8 @@ RUN mkdir -p $XDG_DATA_HOME && \
 RUN echo 'y' | sf plugins:install @dxatscale/browserforce@${BROWSERFORCE_VERSION} \
     && echo 'y' | sf plugins:install sfdmu@${SFDMU_VERSION} \
     && echo 'y' | sf plugins:install @salesforce/plugin-packaging@1.25.0 \
-    && yarn cache clean --all 
+    && yarn cache clean --all \
+    && rm -rf /sf_plugins/.cache/sf
 
 # Set some sane behaviour in container
 ENV SF_CONTAINER_MODE=true
