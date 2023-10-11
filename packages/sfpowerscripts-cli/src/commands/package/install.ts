@@ -23,10 +23,6 @@ export default class Install extends InstallPackageCommand {
       description: messages.getMessage('packageFlagDescription'),
     }),
     targetorg: requiredUserNameFlag,
-    apexcompileonlypackage: Flags.boolean({
-      char: 'a',
-      description: messages.getMessage('apexCompileOnlyPackageFlagDescription'),
-    }),
     artifactdir: Flags.directory({
       description: messages.getMessage('artifactDirectoryFlagDescription'),
       default: 'artifacts',
@@ -74,7 +70,6 @@ export default class Install extends InstallPackageCommand {
   public async install() {
     try {
       const installationkey = this.flags.installationkey;
-      const apexcompileonlypackage = this.flags.apexcompileonlypackage;
       const security_type = this.flags.securitytype;
       const upgrade_type = this.flags.upgradetype;
       const waitTime = this.flags.waittime;
@@ -97,7 +92,7 @@ export default class Install extends InstallPackageCommand {
       
         SFPLogger.log(COLOR_HEADER(`Security Type: ${this.flags.securitytype}`));
         SFPLogger.log(COLOR_HEADER(`Upgrade Type: ${this.flags.upgradetype}`));
-        SFPLogger.log(COLOR_HEADER(`Apex Compile Mode: ${ apexcompileonlypackage ? `package` : `all`}`));
+        SFPLogger.log(COLOR_HEADER(`Apex Compile Mode: package`));
       }
       else if(this.sfpPackage.packageType == PackageType.Source)
       {
@@ -111,7 +106,7 @@ export default class Install extends InstallPackageCommand {
 
       let options: SfpPackageInstallationOptions = {
         installationkey: installationkey,
-        apexcompile: apexcompileonlypackage ? `package` : `all`,
+        apexcompile: `package`,
         securitytype: security_type,
         optimizeDeployment: optimizeDeployment,
         skipTesting: skipTesting,
