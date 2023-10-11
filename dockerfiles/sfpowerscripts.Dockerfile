@@ -6,7 +6,7 @@ ARG SF_CLI_VERSION=2.10.2
 ARG BROWSERFORCE_VERSION=0.0.3
 ARG SFDMU_VERSION=4.18.2
 ARG GIT_COMMIT
-ARG NODE_MAJOR=20
+ARG NODE_MAJOR=18
 
 LABEL org.opencontainers.image.description "sfpowerscripts is a build system for modular development in Salesforce."
 LABEL org.opencontainers.image.licenses "MIT"
