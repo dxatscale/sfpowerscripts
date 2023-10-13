@@ -73,7 +73,13 @@ export default class PackageDiffImpl {
 
             // Check whether the package has been modified
             for (let filename of modified_files) {
-                if (filename.includes(path.normalize(pkgDescriptor.path))) {
+                
+                let normalizedPkgPath = path.normalize(pkgDescriptor.path);
+                let normalizedFilename = path.normalize(filename);
+            
+                let relativePath = path.relative(normalizedPkgPath, normalizedFilename);
+            
+                if (!relativePath.startsWith('..')) {
                     SFPLogger.log(`Found change(s) in ${filename}`, LoggerLevel.TRACE, this.logger);
                     return { isToBeBuilt: true, reason: `Found change(s) in package`, tag: tag };
                 }

@@ -74,6 +74,11 @@ describe('Determines whether a given package has changed', () => {
         let result = await packageDiffImpl.exec();
         expect(result.isToBeBuilt).toEqual(true);
         expect(result.reason).toEqual(`Found change(s) in package`);
+
+        packageDiffImpl = new PackageDiffImpl(new ConsoleLogger(), 'core-b', null);
+        result = await packageDiffImpl.exec();
+        expect(result.isToBeBuilt).toEqual(false);
+
     });
 
     it('should return true if package descriptor has changed', async () => {
@@ -178,6 +183,18 @@ const packageConfigJson: string = `
     {
       "path": "packages/domains/core",
       "package": "core",
+      "default": false,
+      "versionName": "covax",
+      "versionNumber": "1.0.0.0",
+      "assignPermSetsPreDeployment": [
+        "PermSetA",
+        "PermSetB",
+        "PermSetC"
+      ]
+    },
+    {
+      "path": "packages/domains/core-b",
+      "package": "core-b",
       "default": false,
       "versionName": "covax",
       "versionNumber": "1.0.0.0",
