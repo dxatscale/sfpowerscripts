@@ -75,7 +75,7 @@ export default class PicklistEnabler implements DeploymentCustomizer {
                     let picklistInOrg = await this.getPicklistInOrg(urlId, sfpOrg.getConnection());
 
                     //check for empty picklists on org and fix first deployment issue
-                    if (!picklistInOrg && picklistInOrg?.Metadata?.valueSetc?.valueSetDefinition) continue;
+                    if (!picklistInOrg && picklistInOrg?.Metadata?.valueSet?.valueSetDefinition) continue;
 
                     let picklistValueInOrg = [];
 
