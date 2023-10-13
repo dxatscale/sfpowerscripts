@@ -30,8 +30,10 @@ export class Sfpowerkit {
             fs.unlinkSync(cachePath);
     }
 
-    public static initCache() {
+    public static initCache(resetCache?:boolean) {
         try {
+             if(resetCache)
+                Sfpowerkit.resetCache();
             //Set the cache path on init,
             //TODO: Move this to a temporary directory with randomization
             Sfpowerkit.cache = new SQLITEKeyValue(FileUtils.getLocalCachePath('sfpowerkit-cache.db'));

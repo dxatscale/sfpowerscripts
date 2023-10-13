@@ -65,7 +65,7 @@ export default class Retrieve extends SfpowerscriptsCommand {
             folders.push(...argFolder);
         }
 
-        Sfpowerkit.initCache();
+        Sfpowerkit.initCache(true);
 
         SFPLogger.log(COLOR_WARNING(messages.getMessage('retriveDelayWarning')),LoggerLevel.INFO);
         SFPLogger.log(COLOR_KEY_MESSAGE(`Retrieving profiles from ${this.flags.targetorg}`),LoggerLevel.INFO );

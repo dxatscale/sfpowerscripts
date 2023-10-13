@@ -49,6 +49,10 @@ export default class Reconcile extends SfpowerscriptsCommand {
             description: messages.getMessage('sourceonlyFlagDescription'),
             required: false,
         }),
+        resetcache: Flags.boolean({
+            description: messages.getMessage('resetCacheFlagDescription'),
+            required: false,
+        }),
         targetorg: requiredUserNameFlag,
         'apiversion': orgApiVersionFlagSfdxStyle,
         loglevel,
@@ -67,6 +71,7 @@ export default class Reconcile extends SfpowerscriptsCommand {
     public async execute(): Promise<Array<{state: any, fullName: any, type: any, path: any}>> {
         let argFolder = this.flags.folder;
         let argProfileList = this.flags.profilelist;
+        Sfpowerkit.initCache(this.flags.resetcache);
 
         if (!this.flags.sourceonly) {
             if (_.isNil(this.flags.targetorg)) {
