@@ -4,7 +4,7 @@
 
 ![Version](https://img.shields.io/npm/v/@dxatscale/sfpowerscripts.svg)
 [![GitHub stars](https://img.shields.io/github/stars/dxatscale/sfpowerscripts)](https://gitHub.com/dxatscale/sfpowerscripts/stargazers/)
-[![GitHub contributors](https://img.shields.io/github/contributors/dxatscale/sfpowerscripts.svg)](https://github.com/forcedotcom/dxatscale/sfpowerscripts/graphs/contributors/)
+[![GitHub contributors](https://img.shields.io/github/contributors/dxatscale/sfpowerscripts.svg)](https://github.com/dxatscale/sfpowerscripts/graphs/contributors/)
 [![License](https://img.shields.io/badge/license-MIT-green)](https://github.com/dxatscale/sfpowerscripts/blob/master/LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
 
