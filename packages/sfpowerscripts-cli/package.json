@@ -16,6 +16,7 @@
         "@dxatscale/sfpowerscripts.core": "36.1.7",
         "@dxatscale/sfprofiles": "^2.0.8",
         "@oclif/core": "2.11.8",
+        "@oclif/plugin-commands": "^3.0.3",
         "@oclif/plugin-help": "5.2.17",
         "@salesforce/core": "5.3.9",
         "@salesforce/kit": "3.0.13",
@@ -136,10 +137,9 @@
                 }
             }
         },
-        "devPlugins": [
+        "plugins": [
             "@oclif/plugin-help",
-            "@oclif/plugin-command-snapshot",
-            "@salesforce/plugin-command-reference"
+            "@oclif/plugin-commands"
         ]
     },
     "repository": {
