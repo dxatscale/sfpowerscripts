@@ -108,9 +108,7 @@ RUN echo 'y' | sf plugins:install @dxatscale/browserforce@${BROWSERFORCE_VERSION
     && echo 'y' | sf plugins:install @salesforce/plugin-packaging@1.25.0 \
     && echo 'y' | sf plugins:install @salesforce/plugin-signups@1.5.0 \
     && echo 'y' | sf plugins:install @salesforce/sfdx-scanner@3.16.0 \
-    && yarn cache clean --all \
-    && rm -rf /sf_plugins/.cache/sf \
-    && mkdir -p /sf_plugins/.cache/sf
+    && yarn cache clean --all 
 
 # Set some sane behaviour in container
 ENV SF_CONTAINER_MODE=true
