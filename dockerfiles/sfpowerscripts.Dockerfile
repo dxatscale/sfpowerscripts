@@ -109,7 +109,7 @@ RUN echo 'y' | sf plugins:install @dxatscale/browserforce@${BROWSERFORCE_VERSION
     && echo 'y' | sf plugins:install @salesforce/plugin-signups@1.5.0 \
     && echo 'y' | sf plugins:install @salesforce/plugin-community@2.4.2 \
     && echo 'y' | sf plugins:install @salesforce/sfdx-scanner@3.16.0 \
-    && echo 'y' | sf plugins:install sfdx-plugin-lwc-test@1.1.0 \
+    && echo 'y' | sf plugins:install @salesforce/sfdx-plugin-lwc-test@1.1.0 \
     && yarn cache clean --all \
     && rm -rf /sf_plugins/.cache/sf
 
