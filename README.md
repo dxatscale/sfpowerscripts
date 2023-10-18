@@ -45,7 +45,7 @@ used by using the [docker image](https://github.com/dxatscale/sfpowerscripts/pkg
 
 #### CI/CD Reference Implementation
 
-Getting started guides for popular CI/CD platforms along with reference pipelines are available [here](https://docs.dxatscale.io/reference-implementation/github)
+Getting started guides for popular CI/CD platforms along with reference pipelines are available [here](https://docs.dxatscale.io/implementing-your-ci-cd/github)
 
 #### Installing sfpowerscripts locally
 
