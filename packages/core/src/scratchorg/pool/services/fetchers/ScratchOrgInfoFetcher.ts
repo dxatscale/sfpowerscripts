@@ -2,7 +2,7 @@ import SFPLogger, { LoggerLevel } from '@dxatscale/sfp-logger';
 import { Org } from '@salesforce/core';
 import ScratchOrg from '../../../ScratchOrg';
 const retry = require('async-retry');
-const ORDER_BY_FILTER = ' ORDER BY CreatedDate ASC';
+const ORDER_BY_FILTER = ' ORDER BY CreatedDate DESC';
 
 export default class ScratchOrgInfoFetcher {
     constructor(private hubOrg: Org) {}
