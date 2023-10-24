@@ -166,14 +166,15 @@ export default class Release extends SfpowerscriptsCommand {
             let releaseImpl: ReleaseImpl = new ReleaseImpl(props,new ConsoleLogger());
 
             releaseResult = await releaseImpl.exec();
-
-            SFPStatsSender.logCount('release.succeeded', tags);
+            if(!this.flags.dryrun)
+             SFPStatsSender.logCount('release.succeeded', tags);
         } catch (err) {
             if (err instanceof ReleaseError) {
                 releaseResult = err.data;
             } else SFPLogger.log(err.message);
 
-            SFPStatsSender.logCount('release.failed', tags);
+            if(!this.flags.dryrun)
+              SFPStatsSender.logCount('release.failed', tags);
 
             // Fail the task when an error occurs
             process.exitCode = 1;
@@ -188,28 +189,31 @@ export default class Release extends SfpowerscriptsCommand {
     }
 
     private sendMetrics(releaseResult: ReleaseResult, tags: any, totalElapsedTime: number) {
-        SFPStatsSender.logCount('release.scheduled', tags);
+        if(!this.flags.dryrun)
+        {
+            SFPStatsSender.logCount('release.scheduled', tags);
 
-        SFPStatsSender.logGauge('release.duration', totalElapsedTime, tags);
+            SFPStatsSender.logGauge('release.duration', totalElapsedTime, tags);
 
-        let packagesScheduled = 0;
-        let packagesSucceeded = 0;
-        let packagesFailed = 0;
+            let packagesScheduled = 0;
+            let packagesSucceeded = 0;
+            let packagesFailed = 0;
 
-        for (const deploymentResults of releaseResult.succeededDeployments) {
-            packagesScheduled += deploymentResults.result.scheduled;
-            packagesSucceeded += deploymentResults.result.deployed.length;
+            for (const deploymentResults of releaseResult.succeededDeployments) {
+                packagesScheduled += deploymentResults.result.scheduled;
+                packagesSucceeded += deploymentResults.result.deployed.length;
+            }
+
+            for (const deploymentResults of releaseResult.failedDeployments) {
+                packagesScheduled += deploymentResults.result.scheduled;
+                packagesSucceeded += deploymentResults.result.deployed.length;
+                packagesFailed += deploymentResults.result.failed.length;
+            }
+
+            SFPStatsSender.logGauge('release.packages.scheduled', packagesScheduled, tags);
+            SFPStatsSender.logGauge('release.packages.succeeded', packagesSucceeded, tags);
+            SFPStatsSender.logGauge('release.packages.failed', packagesFailed, tags);
         }
-
-        for (const deploymentResults of releaseResult.failedDeployments) {
-            packagesScheduled += deploymentResults.result.scheduled;
-            packagesSucceeded += deploymentResults.result.deployed.length;
-            packagesFailed += deploymentResults.result.failed.length;
-        }
-
-        SFPStatsSender.logGauge('release.packages.scheduled', packagesScheduled, tags);
-        SFPStatsSender.logGauge('release.packages.succeeded', packagesSucceeded, tags);
-        SFPStatsSender.logGauge('release.packages.failed', packagesFailed, tags);
     }
 
     private printReleaseSummary(releaseResult: ReleaseResult, totalElapsedTime: number): void {
