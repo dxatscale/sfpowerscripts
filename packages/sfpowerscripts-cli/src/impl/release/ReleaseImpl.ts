@@ -79,7 +79,9 @@ export default class ReleaseImpl {
             for (const releaseDefinition of this.props.releaseDefinitions) {
                 releaseName = releaseName.concat(releaseDefinition.release, '-');
                 if (releaseDefinition.changelog) {
-                    workitemFilters.push(releaseDefinition.changelog?.workItemFilters);
+                    if(releaseDefinition.changelog.workItemFilters) {
+                       workitemFilters.push(...releaseDefinition.changelog?.workItemFilters);
+                    }
                     if (releaseDefinition.changelog.limit > limit) limit = releaseDefinition.changelog.limit;
                     workItemUrl = releaseDefinition.changelog.workItemUrl;
                     showAllArtifacts = releaseDefinition.changelog.showAllArtifacts;
