@@ -12,7 +12,7 @@ export default class Generate extends SfpowerscriptsCommand {
     public static description = messages.getMessage('commandDescription');
 
     public static examples = [
-        `$ sfp releasedefinition:generate -n <releaseName>`,
+        `$ sfp releasedefinition:generate -n <releaseName> -c <gitref> -f <configfile>`,
     ];
 
     protected static requiresProject = true;
@@ -22,7 +22,7 @@ export default class Generate extends SfpowerscriptsCommand {
         gitref: Flags.string({
             char: 'c',
             description: messages.getMessage('commitFlagDescription'),
-            required:true
+            required: true
         }),
         configfile: Flags.string({
             char: 'f',
