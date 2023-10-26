@@ -22,8 +22,8 @@ export default class OrgInfoDisplayer {
     });
     table.push([COLOR_HEADER(`Org Id`), COLOR_KEY_MESSAGE(scratchOrg.orgId)]);
     table.push([
-      COLOR_HEADER(`Instance URL`),
-      COLOR_KEY_MESSAGE(scratchOrg.instanceURL),
+      COLOR_HEADER(`Login URL`),
+      COLOR_KEY_MESSAGE(scratchOrg.loginURL),
     ]);
     table.push([
       COLOR_HEADER(`Username`),
@@ -85,7 +85,7 @@ export default class OrgInfoDisplayer {
       alignment: [Align.Left, Align.Left, Align.Left, Align.Right],
     };
     tableData.table.body.push([`Org Id`, scratchOrg.orgId]);
-    tableData.table.body.push([`Instance URL`, scratchOrg.instanceURL]);
+    tableData.table.body.push([`Login URL`, scratchOrg.loginURL]);
     tableData.table.body.push([`Username`, scratchOrg.username]);
     tableData.table.body.push([`Password`, scratchOrg.password]);
     tableData.table.body.push([`Auth URL`, scratchOrg.sfdxAuthUrl]);
