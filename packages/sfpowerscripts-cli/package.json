@@ -1,7 +1,7 @@
 {
     "name": "@dxatscale/sfpowerscripts",
     "description": "DX@Scale Toolkit",
-    "version": "25.0.9",
+    "version": "25.1.0",
     "license": "MIT",
     "author": "dxatscale",
     "release": "December 23",
@@ -112,7 +112,7 @@
                     }
                 }
             },
-            "impact" : {
+            "impact": {
                 "description": "Figures out the impact of  various components of sfpowerscripts",
                 "external": true
             },
