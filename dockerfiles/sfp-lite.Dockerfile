@@ -34,6 +34,7 @@ RUN apt-get update \
       g++ \
       tzdata \
       ca-certificates \
+      gnupg \
     && apt-get autoremove --assume-yes \
     && apt-get clean --assume-yes \
     && rm -rf /var/lib/apt/list/*
