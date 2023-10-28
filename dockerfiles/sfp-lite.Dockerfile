@@ -33,6 +33,7 @@ RUN apt-get update \
       make \
       g++ \
       tzdata \
+      ca-certificates \
     && apt-get autoremove --assume-yes \
     && apt-get clean --assume-yes \
     && rm -rf /var/lib/apt/list/*
