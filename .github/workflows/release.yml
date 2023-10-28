@@ -178,13 +178,13 @@ jobs:
     uses: ./.github/workflows/sfpowerscripts-copy-docker.yml
     with:
       job-environment: 'sfpowerscripts-prod-docker'
+      image: sfp-lite-rc
+      image-as: sfp-lite
     secrets:
       username: ${{ secrets.DOCKER_USERNAME }}
       token: ${{ secrets.DOCKER_SECRET }}
       signing_secret: ${{ secrets.SIGNING_SECRET }}
       cosign_password:  ${{ secrets.COSIGN_PASSWORD }}
-      image: sfp-lite-rc
-      image-as: sfp-lite
     needs: [ build-docker ]
 
 
