@@ -118,7 +118,7 @@ export default class ReleaseConfig extends SfpowerscriptsCommand {
         for (const impactedReleaseConfig of impacatedReleaseConfigs) {
             let item = [
                 impactedReleaseConfig.releaseName,
-                impactedReleaseConfig.domainNameUsedForPools,
+                impactedReleaseConfig.pool,
                 impactedReleaseConfig.filePath,
             ];
             table.push(item);
