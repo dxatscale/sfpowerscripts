@@ -30,8 +30,8 @@ export default class ImpactedRelaseConfigResolver {
                         if (releaseConfig.releaseName.includes(filterBy)) {
                             impactedReleaseDefs.push({
                                 releaseName: releaseConfig.releaseName,
-                                domainNameUsedForPools: releaseConfig.domainNameUsedForPools
-                                    ? releaseConfig.domainNameUsedForPools
+                                pool: releaseConfig.pool
+                                    ? releaseConfig.pool
                                     : releaseConfig.releaseName,
                                 filePath: filePath,
                                 impactedPackages: releaseImpactedPackages, // Including the impacted packages
@@ -40,8 +40,8 @@ export default class ImpactedRelaseConfigResolver {
                     } else {
                         impactedReleaseDefs.push({
                             releaseName: releaseConfig.releaseName,
-                            domainNameUsedForPools: releaseConfig.domainNameUsedForPools
-                                ? releaseConfig.domainNameUsedForPools
+                            pool: releaseConfig.pool
+                                ? releaseConfig.pool
                                 : releaseConfig.releaseName,
                             filePath: filePath,
                             impactedPackages: releaseImpactedPackages, // Including the impacted packages
