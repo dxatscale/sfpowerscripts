@@ -80,7 +80,7 @@ lerna run test
 To debug and test plugin
 
 ```
- cd sfpowerscripts-cli
+ cd packages/sfpowerscripts-cli
  npm link
 ```
 
