@@ -67,7 +67,7 @@ To build sfpowerscripts execute the following on the terminal:
 ```
 npm i -g lerna #Install Lerna Globally
 cd <sfpowerscrips directory> # Navigate to the checked out directory 
-npm i
+pnpm i
 lerna run build
 ```
 
