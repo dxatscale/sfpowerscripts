@@ -73,7 +73,7 @@ export default class OrgInfoDisplayer {
   public static writeScratchOrgInfoToMarkDown(scratchOrg: ScratchOrg): void {
     const pathToMarkDownFile = `org-info.md`;
     const fileOutputHandler = FileOutputHandler.getInstance();
-    fileOutputHandler.writeOutput(pathToMarkDownFile, `Please find the validation org details below`);
+    fileOutputHandler.writeOutput(pathToMarkDownFile, `\nPlease find the validation org details below`);
     let tableData = {
       table: {
         head: [
@@ -133,7 +133,7 @@ export default class OrgInfoDisplayer {
   public static writeOrgInfoToMarkDown(org: SFPOrg): void {
     const pathToMarkDownFile = `org-info.md`;
     const fileOutputHandler = FileOutputHandler.getInstance();
-    fileOutputHandler.appendOutput(pathToMarkDownFile, `Please find the validation org details below`);
+    fileOutputHandler.appendOutput(pathToMarkDownFile, `\nPlease find the validation org details below`);
     let tableData = {
       table: {
           head:  [
