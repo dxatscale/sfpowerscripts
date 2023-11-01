@@ -48,7 +48,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
 
             // Apply Destructive Manifest
             await this.applyDestructiveChanges();
-            
+
 
             //Apply Reconcile if Profiles are found
             //To Reconcile we have to go for multiple deploys, first we have to reconcile profiles and deploy the metadata
@@ -118,7 +118,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                 }
 
                 //Check if there are components to be deployed after filtering
-                //Asssume its suscessfully deployed
+                //Assume its successfully deployed
                 if (componentSet.size == 0) {
                     return {
                         deploy_id: `000000`,
@@ -132,8 +132,9 @@ export default class InstallSourcePackageImpl extends InstallPackage {
                 PackageComponentPrinter.printComponentTable(components, this.logger);
 
 
-                if (!this.options.isInstallingForValidation)
+                if (!this.options.isInstallingForValidation) {
                     DeploymentOptionDisplayer.printDeploymentOptions(deploymentOptions, this.logger);
+                }
 
                 let deploySourceToOrgImpl: DeploymentExecutor = new DeploySourceToOrgImpl(
                     this.sfpOrg,
@@ -188,7 +189,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
 
 
         if (status.result == 'break') {
-            throw new Error('No compoments in the package, Please check your build again');
+            throw new Error('No components in the package, Please check your build again');
         } else if (status.result == 'skip') {
             return {
                 isToSkip: true,
@@ -238,7 +239,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
             Either the components are already deleted or there are components which \
             have dependency to components in the manifest. \
             Please check whether this manifest works! \
-            Acutal Error Observed: \
+            Actual Error Observed: \
             -------------------------------------- \
             ${COLOR_ERROR(error.message)}`,
                 LoggerLevel.INFO,
@@ -325,7 +326,7 @@ export default class InstallSourcePackageImpl extends InstallPackage {
             );
             await reconcileProfileAgainstOrg.exec();
 
-            //Now deploy the profies alone
+            //Now deploy the profiles alone
 
             const profilesDirs = globSync('**/profiles/', {
                 cwd: path.join(sourceDirectoryPath, sourceDirectory),
