@@ -88,7 +88,6 @@ export default class OrgInfoDisplayer {
     tableData.table.body.push([`Login URL`, scratchOrg.loginURL]);
     tableData.table.body.push([`Username`, scratchOrg.username]);
     tableData.table.body.push([`Password`, scratchOrg.password]);
-    tableData.table.body.push([`Auth URL`, scratchOrg.sfdxAuthUrl]);
     tableData.table.body.push([`Expiry`, scratchOrg.expiryDate]);
     fileOutputHandler.appendOutput(pathToMarkDownFile, `\n\n${getMarkdownTable(tableData)}`);
 
