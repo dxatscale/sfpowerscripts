@@ -2,7 +2,7 @@ import SFPLogger, { LoggerLevel } from '@dxatscale/sfp-logger';
 import { Org } from '@salesforce/core';
 import ScratchOrg from '../../../ScratchOrg';
 const retry = require('async-retry');
-const ORDER_BY_FILTER = ' ORDER BY CreatedDate ASC';
+const ORDER_BY_FILTER = ' ORDER BY CreatedDate DESC';
 
 export default class ScratchOrgInfoFetcher {
     constructor(private hubOrg: Org) {}
@@ -47,9 +47,9 @@ export default class ScratchOrgInfoFetcher {
                 let query;
 
                 if (tag)
-                    query = `SELECT Pooltag__c, Id, CreatedDate, ScratchOrg, ExpirationDate, SignupUsername, SignupEmail, Password__c, Allocation_status__c,LoginUrl,SfdxAuthUrl__c FROM ScratchOrgInfo WHERE Pooltag__c = '${tag}'  AND Status = 'Active' `;
+                    query = `SELECT Pooltag__c, Id, CreatedDate, ScratchOrg, ExpirationDate, SignupUsername, SignupEmail, Password__c, Allocation_status__c, LoginUrl, SfdxAuthUrl__c FROM ScratchOrgInfo WHERE Pooltag__c = '${tag}' AND Status = 'Active' `;
                 else
-                    query = `SELECT Pooltag__c, Id, CreatedDate, ScratchOrg, ExpirationDate, SignupUsername, SignupEmail, Password__c, Allocation_status__c,LoginUrl,SfdxAuthUrl__c FROM ScratchOrgInfo WHERE Pooltag__c != null  AND Status = 'Active' `;
+                    query = `SELECT Pooltag__c, Id, CreatedDate, ScratchOrg, ExpirationDate, SignupUsername, SignupEmail, Password__c, Allocation_status__c, LoginUrl, SfdxAuthUrl__c FROM ScratchOrgInfo WHERE Pooltag__c != null AND Status = 'Active' `;
 
                 if (isMyPool) {
                     query = query + ` AND createdby.username = '${this.hubOrg.getUsername()}' `;
@@ -74,7 +74,7 @@ export default class ScratchOrgInfoFetcher {
         return retry(
             async (bail) => {
                 let query;
-                    query = `SELECT Id, Pooltag__c,SignupUsername,Description,ScratchOrg FROM ScratchOrgInfo WHERE Pooltag__c = null  AND Status = 'Active'`;
+                    query = `SELECT Id, Pooltag__c, SignupUsername, Description, ScratchOrg FROM ScratchOrgInfo WHERE Pooltag__c = null AND Status = 'Active'`;
                 query = query + ORDER_BY_FILTER;
                 SFPLogger.log('QUERY:' + query, LoggerLevel.TRACE);
                 const results = (await hubConn.query(query)) as any;
@@ -104,7 +104,7 @@ export default class ScratchOrgInfoFetcher {
 
         return retry(
             async (bail) => {
-                let query = `SELECT Id, CreatedDate, ScratchOrg, ExpirationDate, SignupUsername, SignupEmail, Password__c, Allocation_status__c,LoginUrl FROM ScratchOrgInfo WHERE Pooltag__c = '${tag}' AND Status = 'Active' `;
+                let query = `SELECT Id, CreatedDate, ScratchOrg, ExpirationDate, SignupUsername, SignupEmail, Password__c, Allocation_status__c, LoginUrl FROM ScratchOrgInfo WHERE Pooltag__c = '${tag}' AND Status = 'Active' `;
                 SFPLogger.log('QUERY:' + query, LoggerLevel.TRACE);
                 const results = (await hubConn.query(query)) as any;
                 SFPLogger.log('RESULT:' + JSON.stringify(results), LoggerLevel.TRACE);
@@ -119,7 +119,7 @@ export default class ScratchOrgInfoFetcher {
 
         return retry(
             async (bail) => {
-                let query = `SELECT Id, CreatedDate, ScratchOrg, ExpirationDate, SignupUsername, SignupEmail, Password__c, Allocation_status__c,LoginUrl FROM ScratchOrgInfo WHERE Pooltag__c = '${tag}' AND Status = 'Active' `;
+                let query = `SELECT Id, CreatedDate, ScratchOrg, ExpirationDate, SignupUsername, SignupEmail, Password__c, Allocation_status__c, LoginUrl FROM ScratchOrgInfo WHERE Pooltag__c = '${tag}' AND Status = 'Active' `;
                 SFPLogger.log('QUERY:' + query, LoggerLevel.TRACE);
                 const results = (await hubConn.query(query)) as any;
                 return results.totalSize;
