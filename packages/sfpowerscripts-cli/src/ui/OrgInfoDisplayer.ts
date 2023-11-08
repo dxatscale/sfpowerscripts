@@ -93,9 +93,11 @@ export default class OrgInfoDisplayer {
 
     fileOutputHandler.appendOutput(pathToMarkDownFile,
       `\n\nYou may use the following commands to authenticate to the org`,);
+    fileOutputHandler.appendOutput(pathToMarkDownFile, `\`\`\``);  
     fileOutputHandler.appendOutput(pathToMarkDownFile, `cat ${scratchOrg.sfdxAuthUrl} > ./authfile`);
     fileOutputHandler.appendOutput(pathToMarkDownFile, `sfdx auth sfdxurl store  --sfdxurlfile authfile`);
     fileOutputHandler.appendOutput(pathToMarkDownFile, `sfdx force org open  --u ${scratchOrg.username}`);
+    fileOutputHandler.appendOutput(pathToMarkDownFile, `\`\`\``);  
 
   }
 
