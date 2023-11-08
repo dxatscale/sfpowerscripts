@@ -73,7 +73,7 @@ export default class OrgInfoDisplayer {
   public static writeScratchOrgInfoToMarkDown(scratchOrg: ScratchOrg): void {
     const pathToMarkDownFile = `org-info.md`;
     const fileOutputHandler = FileOutputHandler.getInstance();
-    fileOutputHandler.writeOutput(pathToMarkDownFile, `Please find the validation org details below`);
+    fileOutputHandler.writeOutput(pathToMarkDownFile, `\nPlease find the validation org details below`);
     let tableData = {
       table: {
         head: [
@@ -88,15 +88,16 @@ export default class OrgInfoDisplayer {
     tableData.table.body.push([`Login URL`, scratchOrg.loginURL]);
     tableData.table.body.push([`Username`, scratchOrg.username]);
     tableData.table.body.push([`Password`, scratchOrg.password]);
-    tableData.table.body.push([`Auth URL`, scratchOrg.sfdxAuthUrl]);
     tableData.table.body.push([`Expiry`, scratchOrg.expiryDate]);
     fileOutputHandler.appendOutput(pathToMarkDownFile, `\n\n${getMarkdownTable(tableData)}`);
 
     fileOutputHandler.appendOutput(pathToMarkDownFile,
-      `You may use the following commands to authenticate to the org`,);
+      `\n\nYou may use the following commands to authenticate to the org`,);
+    fileOutputHandler.appendOutput(pathToMarkDownFile, `\`\`\``);  
     fileOutputHandler.appendOutput(pathToMarkDownFile, `cat ${scratchOrg.sfdxAuthUrl} > ./authfile`);
     fileOutputHandler.appendOutput(pathToMarkDownFile, `sfdx auth sfdxurl store  --sfdxurlfile authfile`);
     fileOutputHandler.appendOutput(pathToMarkDownFile, `sfdx force org open  --u ${scratchOrg.username}`);
+    fileOutputHandler.appendOutput(pathToMarkDownFile, `\`\`\``);  
 
   }
 
@@ -134,7 +135,7 @@ export default class OrgInfoDisplayer {
   public static writeOrgInfoToMarkDown(org: SFPOrg): void {
     const pathToMarkDownFile = `org-info.md`;
     const fileOutputHandler = FileOutputHandler.getInstance();
-    fileOutputHandler.appendOutput(pathToMarkDownFile, `Please find the validation org details below`);
+    fileOutputHandler.appendOutput(pathToMarkDownFile, `\nPlease find the validation org details below`);
     let tableData = {
       table: {
           head:  [
