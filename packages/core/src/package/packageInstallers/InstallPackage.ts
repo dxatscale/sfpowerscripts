@@ -468,6 +468,15 @@ export abstract class InstallPackage {
                     deploymentOptions.testLevel = TestLevel.RunLocalTests;
                 }
             }
+        }
+        // #Issue 1417
+        // Handle the use-cases of a not optimized source package validating
+        else if (this.sfpPackage.packageType == PackageType.Source && this.sfpPackage.isApexFound && this.options.isInstallingForValidation && !optimizeDeployment ) {
+            if (skipTest) {
+                deploymentOptions.testLevel = TestLevel.RunNoTests;
+            } else {
+                deploymentOptions.testLevel = TestLevel.RunLocalTests;
+            }
         } else {
             if (orgDetails.isSandbox) {
                 deploymentOptions.testLevel = TestLevel.RunNoTests;
