@@ -18,10 +18,6 @@ import Component from '../../dependency/Component';
 import PackageComponentDiff from '../diff/PackageComponentDiff';
 
 export default class CreateDiffPackageImp extends CreateSourcePackageImpl {
-
-
-
-
     public constructor(
         protected projectDirectory: string,
         protected sfpPackage: SfpPackage,
@@ -36,104 +32,97 @@ export default class CreateDiffPackageImp extends CreateSourcePackageImpl {
         return PackageType.Diff;
     }
 
-    printAdditionalPackageSpecificHeaders() { }
+    printAdditionalPackageSpecificHeaders() {}
 
     isEmptyPackage(projectDirectory: string, packageDirectory: string) {
         return PackageEmptyChecker.isEmptyFolder(projectDirectory, packageDirectory);
     }
 
     async preCreatePackage(sfpPackage: SfpPackage) {
-
         const devhubOrg = await SFPOrg.create({ aliasOrUsername: this.packageCreationParams.devHub });
+
         //Fetch Baseline commit from DevHub
         let commitsOfPackagesInstalledInDevHub = await this.getCommitsOfPackagesInstalledInDevHub(devhubOrg);
 
         if (this.packageCreationParams.revisionFrom) {
             this.sfpPackage.commitSHAFrom = this.packageCreationParams.revisionFrom;
-        }
-        else if (commitsOfPackagesInstalledInDevHub[this.sfpPackage.packageName]) {
+        } else if (commitsOfPackagesInstalledInDevHub[this.sfpPackage.packageName]) {
             this.sfpPackage.commitSHAFrom = commitsOfPackagesInstalledInDevHub[this.sfpPackage.packageName];
         } else {
             this.sfpPackage.commitSHAFrom = this.sfpPackage.sourceVersion;
         }
 
-
         if (this.packageCreationParams.revisionTo) {
             this.sfpPackage.commitSHATo = this.packageCreationParams.revisionTo;
-        }
-        else {
+        } else {
             this.sfpPackage.commitSHATo = this.sfpPackage.sourceVersion;
         }
     }
 
-
     private async getCommitsOfPackagesInstalledInDevHub(diffTargetSfpOrg: SFPOrg) {
         let installedArtifacts = await diffTargetSfpOrg.getInstalledArtifacts();
-        let packagesInstalledInOrgMappedToCommits =
-            await this.mapInstalledArtifactstoPkgAndCommits(installedArtifacts);
+        let packagesInstalledInOrgMappedToCommits = await this.mapInstalledArtifactstoPkgAndCommits(installedArtifacts);
         return packagesInstalledInOrgMappedToCommits;
     }
 
-
     public async createPackage(sfpPackage: SfpPackage) {
-
-     
         //Unresolved SHAs can be same if the package is not installed in the org or is the same
-        if(this.sfpPackage.commitSHAFrom!=this.sfpPackage.commitSHATo)
-        {
-        try {
-            let packageComponentDiffer: PackageComponentDiff = new PackageComponentDiff(
-                this.logger,
-                this.sfpPackage.packageName,
-                this.sfpPackage.commitSHAFrom,
-                this.sfpPackage.commitSHATo,
-                true
-            );
-            await packageComponentDiffer.build(path.join(sfpPackage.workingDirectory, 'diff'));
-        } catch (error) {
-            //if both are same after git resolution.. just do nothing, treat is a normal source package
-            if (error.message.includes("Unable to compute diff, as both commits are same"))
-           {
-                SFPLogger.log(
-                 `Both commits are same, treating it as an empty package`,
-                 LoggerLevel.WARN,
-                 this.logger
+        if (this.sfpPackage.commitSHAFrom != this.sfpPackage.commitSHATo) {
+            try {
+                let packageComponentDiffer: PackageComponentDiff = new PackageComponentDiff(
+                    this.logger,
+                    this.sfpPackage.packageName,
+                    this.sfpPackage.commitSHAFrom,
+                    this.sfpPackage.commitSHATo,
+                    true
                 );
-                //Create an empty diff directory to force skip of packages
-                const diffSrcDir = path.join( sfpPackage.workingDirectory,  `diff/${sfpPackage.packageDirectory}`);
-                fs.mkdirpSync(diffSrcDir);
-           }
-            else
-                throw error;
+                await packageComponentDiffer.build(path.join(sfpPackage.workingDirectory, 'diff'));
+            } catch (error) {
+                //if both are same after git resolution.. just do nothing, treat is a normal source package
+                if (error.message.includes('Unable to compute diff, as both commits are same')) {
+                    SFPLogger.log(
+                        `Both commits are same, treating it as an empty package`,
+                        LoggerLevel.WARN,
+                        this.logger
+                    );
+                    //Create an empty diff directory to force skip of packages
+                    const diffSrcDir = path.join(sfpPackage.workingDirectory, `diff/${sfpPackage.packageDirectory}`);
+                    fs.mkdirpSync(diffSrcDir);
+                } else throw error;
+            }
+
+            await this.introspectDiffPackageCreated(sfpPackage, this.params, this.logger);
+
+            await this.replaceSourceWithDiff(
+                sfpPackage.workingDirectory,
+                sfpPackage.packageDirectory,
+                `diff/${sfpPackage.packageDirectory}`
+            );
+
+            SFPStatsSender.logGauge('package.metadatacount', sfpPackage.metadataCount, {
+                package: sfpPackage.packageName,
+                type: sfpPackage.packageType,
+            });
         }
-
-        await this.introspectDiffPackageCreated(sfpPackage, this.params, this.logger);
-
-        await this.replaceSourceWithDiff(sfpPackage.workingDirectory, sfpPackage.packageDirectory, `diff/${sfpPackage.packageDirectory}`)
-
-        SFPStatsSender.logGauge('package.metadatacount', sfpPackage.metadataCount, {
-            package: sfpPackage.packageName,
-            type: sfpPackage.packageType,
-        });
-       }
     }
 
-    postCreatePackage(sfpPackage) { }
+    postCreatePackage(sfpPackage) {}
 
-
-
-    private async replaceSourceWithDiff(workingDirectory: string, packageDirectory: string, diffPackageDirectory: string) {
+    private async replaceSourceWithDiff(
+        workingDirectory: string,
+        packageDirectory: string,
+        diffPackageDirectory: string
+    ) {
         const srcDir = path.join(workingDirectory, packageDirectory);
         const diffSrcDir = path.join(workingDirectory, diffPackageDirectory);
 
         // Check if src directories exist, if so remove them
-        if (fs.pathExistsSync(srcDir))
-            await fs.remove(srcDir);
+        if (fs.pathExistsSync(srcDir)) await fs.remove(srcDir);
 
         // Rename diff/src directory to src
-        if (fs.pathExistsSync(diffSrcDir))
-            await fs.move(diffSrcDir, srcDir);
-        else { // Ensure package directory exists
+        if (fs.pathExistsSync(diffSrcDir)) await fs.move(diffSrcDir, srcDir);
+        else {
+            // Ensure package directory exists
             await fs.mkdirpSync(diffSrcDir);
             await fs.move(diffSrcDir, srcDir);
         }
@@ -147,51 +136,52 @@ export default class CreateDiffPackageImp extends CreateSourcePackageImpl {
         //remove diffSrcDir
         if (fs.pathExistsSync(path.join(workingDirectory, 'diff')))
             fs.rmSync(path.join(workingDirectory, 'diff'), { recursive: true, force: true });
-
-
     }
 
-
-    async mapInstalledArtifactstoPkgAndCommits(
-        installedArtifacts: any,
-    ) {
+    async mapInstalledArtifactstoPkgAndCommits(installedArtifacts: any) {
         let packagesMappedToLastKnownCommitId: { [p: string]: string } = {};
-        if (installedArtifacts != null) {
-            packagesMappedToLastKnownCommitId =
-                getPackagesToCommits(installedArtifacts);
-        }
+        packagesMappedToLastKnownCommitId = await getPackagesToCommits(installedArtifacts);
+
         return packagesMappedToLastKnownCommitId;
 
-        function getPackagesToCommits(installedArtifacts: any): {
-            [p: string]: string;
-        } {
+        async function getPackagesToCommits(installedArtifacts: any): Promise<{ [p: string]: string }> {
             const packagesToCommits: { [p: string]: string } = {};
+            let jsonOverrides = {};
 
-            // Construct map of artifact and associated commit Id
-            installedArtifacts.forEach((artifact) => {
-                packagesToCommits[artifact.Name] = artifact.CommitId__c;
-                //Override for debugging purposes
-                if (process.env.VALIDATE_OVERRIDE_PKG)
-                    packagesToCommits[process.env.VALIDATE_OVERRIDE_PKG] =
-                        process.env.VALIDATE_PKG_COMMIT_ID;
+            // Add an option to override diff package from during debugging
+            // Also useful for when the record is yet to be baselined
+            try {
+                const jsonData = await fs.readFile('diffPackageOverrides.json', 'utf8');
+                jsonOverrides = JSON.parse(jsonData);
+            } catch (error) {
+                console.log('No JSON override file found or there is an error reading it');
+            }
+
+            // Merge the installedArtifacts data with the JSON overrides
+            if (installedArtifacts) {
+                installedArtifacts.forEach((artifact) => {
+                    packagesToCommits[artifact.Name] = artifact.CommitId__c;
+                });
+            }
+
+            // Add additional packages from the JSON overrides that are not in installedArtifacts
+            Object.keys(jsonOverrides).forEach((pkgName) => {
+                if (!packagesToCommits.hasOwnProperty(pkgName)) {
+                    packagesToCommits[pkgName] = jsonOverrides[pkgName];
+                }
             });
 
-            if (process.env.VALIDATE_REMOVE_PKG)
-                delete packagesToCommits[process.env.VALIDATE_REMOVE_PKG];
+            if (process.env.VALIDATE_REMOVE_PKG) delete packagesToCommits[process.env.VALIDATE_REMOVE_PKG];
 
             return packagesToCommits;
         }
     }
-
-
 
     private async introspectDiffPackageCreated(
         sfpPackage: SfpPackage,
         packageParams: SfpPackageParams,
         logger: Logger
     ): Promise<void> {
-
-
         let workingDirectory = path.join(sfpPackage.workingDirectory, 'diff');
         if (fs.existsSync(path.join(workingDirectory, sfpPackage.packageDirectory))) {
             let changedComponents = new PackageToComponent(
@@ -199,16 +189,12 @@ export default class CreateDiffPackageImp extends CreateSourcePackageImpl {
                 path.join(workingDirectory, sfpPackage.packageDirectory)
             ).generateComponents();
 
-
-
             let impactedApexTestClassFetcher: ImpactedApexTestClassFetcher = new ImpactedApexTestClassFetcher(
                 sfpPackage,
                 changedComponents,
                 logger
             );
             let impactedTestClasses = await impactedApexTestClassFetcher.getImpactedTestClasses();
-
-
 
             //Convert again for finding the values in the diff package
             let sourceToMdapiConvertor = new SourceToMDAPIConvertor(
@@ -222,24 +208,23 @@ export default class CreateDiffPackageImp extends CreateSourcePackageImpl {
 
             const packageManifest: PackageManifest = await PackageManifest.create(mdapiDirPath);
 
-
             sfpPackage.payload = packageManifest.manifestJson;
             sfpPackage.apexTestClassses = impactedTestClasses;
-            sfpPackage.apexClassWithOutTestClasses = getOnlyChangedClassesFromPackage(changedComponents, sfpPackage.apexClassesSortedByTypes);
+            sfpPackage.apexClassWithOutTestClasses = getOnlyChangedClassesFromPackage(
+                changedComponents,
+                sfpPackage.apexClassesSortedByTypes
+            );
             sfpPackage.isApexFound = packageManifest.isApexInPackage();
             sfpPackage.isProfilesFound = packageManifest.isProfilesInPackage();
             sfpPackage.isPermissionSetGroupFound = packageManifest.isPermissionSetGroupsFoundInPackage();
             sfpPackage.isPayLoadContainTypesSupportedByProfiles = packageManifest.isPayLoadContainTypesSupportedByProfiles();
-
 
             sfpPackage.metadataCount = await MetadataCount.getMetadataCount(
                 workingDirectory,
                 sfpPackage.packageDescriptor.path
             );
             rimraf.sync(mdapiDirPath);
-        }
-        else {
-
+        } else {
             //Souce Diff Directory is empty
             sfpPackage.payload = {};
             sfpPackage.apexTestClassses = [];
@@ -250,7 +235,6 @@ export default class CreateDiffPackageImp extends CreateSourcePackageImpl {
             sfpPackage.isPayLoadContainTypesSupportedByProfiles = false;
             sfpPackage.metadataCount = 0;
         }
-
 
         function getOnlyChangedClassesFromPackage(
             changedComponents: Component[],
@@ -267,25 +251,21 @@ export default class CreateDiffPackageImp extends CreateSourcePackageImpl {
             }
 
             // Get the names of all classes in the ApexSortedByType
-            let apexClassNames = apexClassesSortedByTypes.class.map(cls => cls.name);
-            let interfaces = apexClassesSortedByTypes.interface.map(cls => cls.name);
-            const apexTestClassNames = apexClassesSortedByTypes.testClass.map(cls => cls.name);
-            apexClassNames = apexClassNames.filter(name => !apexTestClassNames.includes(name));
-            apexClassNames = apexClassNames.filter(name => !interfaces.includes(name));
-
+            let apexClassNames = apexClassesSortedByTypes.class.map((cls) => cls.name);
+            let interfaces = apexClassesSortedByTypes.interface.map((cls) => cls.name);
+            const apexTestClassNames = apexClassesSortedByTypes.testClass.map((cls) => cls.name);
+            apexClassNames = apexClassNames.filter((name) => !apexTestClassNames.includes(name));
+            apexClassNames = apexClassNames.filter((name) => !interfaces.includes(name));
 
             // Filter changedComponents based on class names in ApexSortedByType and type === 'ApexClass'
-            const filteredComponents = changedComponents.filter(component =>
-                apexClassNames.includes(component.fullName) && component.type === 'ApexClass'
+            const filteredComponents = changedComponents.filter(
+                (component) => apexClassNames.includes(component.fullName) && component.type === 'ApexClass'
             );
 
             // Extract the fullName property from the filtered components
-            const filteredChangedClasses = filteredComponents.map(component => component.fullName);
+            const filteredChangedClasses = filteredComponents.map((component) => component.fullName);
 
             return filteredChangedClasses;
         }
-
     }
-
-
 }
