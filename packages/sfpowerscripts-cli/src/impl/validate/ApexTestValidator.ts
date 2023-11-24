@@ -122,6 +122,17 @@ export class ApexTestValidator {
       return { testOptions: undefined, testCoverageOptions: undefined };
     }
 
+    let isImpactedApexClassAvailable:boolean = true;
+    //Unable to find impacted apex class in the diff package
+    if(!this.sfpPackage.apexClassWithOutTestClasses || this.sfpPackage.apexClassWithOutTestClasses.length==0)
+    {
+      isImpactedApexClassAvailable = false;
+      SFPLogger.log(
+        `${COLOR_HEADER(
+          "Unable to find any impacted classses in the diff package,skipping tests, Ignoring coverage validation",
+        )}`);
+    }
+
     SFPLogger.log(
       `${COLOR_HEADER(
         "Diff package detected: triggering impacted test classes",
@@ -135,7 +146,7 @@ export class ApexTestValidator {
       true,
     );
     const testCoverageOptions = {
-      isIndividualClassCoverageToBeValidated: true,
+      isIndividualClassCoverageToBeValidated: isImpactedApexClassAvailable?true:false,
       isPackageCoverageToBeValidated: false,
       coverageThreshold: this.props.coverageThreshold || 75,
       classesToBeValidated: this.sfpPackage.apexClassWithOutTestClasses
@@ -181,20 +192,12 @@ export class ApexTestValidator {
 
 
   private displayTestHeader(sfpPackage: SfpPackage) {
-    SFPLogger.log(
-      COLOR_HEADER(
-        `-------------------------------------------------------------------------------------------`,
-      ),
-    );
+    SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
     SFPLogger.log(
       `Triggering Apex tests for ${this.sfpPackage.packageName}`,
       LoggerLevel.INFO,
     );
-    SFPLogger.log(
-      COLOR_HEADER(
-        `-------------------------------------------------------------------------------------------`,
-      ),
-    );
+    SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
   }
 
 }

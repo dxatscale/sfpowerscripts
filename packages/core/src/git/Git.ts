@@ -159,7 +159,9 @@ export default class Git {
     static async initiateRepo(logger?: Logger, projectDir?: string) {
         let git = new Git(projectDir, logger);
         if (projectDir) await git.addSafeConfig(projectDir);
-        else await git.addSafeConfig(process.cwd());
+        else {
+            await git.addSafeConfig(process.cwd());
+        }
         await git.getRemoteOriginUrl();
         return git;
     }
@@ -173,8 +175,15 @@ export default class Git {
     }
 
     async addSafeConfig(repoDir: string) {
+        try
+        {
         //add workaround for safe directory (https://github.com/actions/runner/issues/2033)
         await this._git.addConfig('safe.directory', repoDir, false, 'global');
+        }catch(error)
+        {
+            //ignore error
+            SFPLogger.log(`Unable to set safe.directory`,LoggerLevel.TRACE)
+        }
     }
 
     async pushToRemote(branch: string, isForce: boolean) {

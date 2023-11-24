@@ -1,4 +1,3 @@
-import { flags, SfdxCommand } from '@salesforce/command';
 import { Messages } from '@salesforce/core';
 import ScratchOrg from '@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg';
 import { AnyJson } from '@salesforce/ts-types';
@@ -14,6 +13,8 @@ import { COLOR_SUCCESS } from '@dxatscale/sfp-logger';
 import { COLOR_TIME } from '@dxatscale/sfp-logger';
 import getFormattedTime from '@dxatscale/sfpowerscripts.core/lib/utils/GetFormattedTime';
 import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
+import { Flags, ux } from '@oclif/core';
+import { loglevel, orgApiVersionFlagSfdxStyle, targetdevhubusername } from '../../flags/sfdxflags';
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -27,59 +28,44 @@ export default class Fetch extends SfpowerscriptsCommand {
 
     protected static requiresDevhubUsername = true;
     protected static requiresProject = true;
+    public static enableJsonFlag = true;
 
     public static examples = [
-        `$ sfdx sfpowerkit:pool:fetch -t core `,
-        `$ sfdx sfpowerkit:pool:fetch -t core -v devhub`,
-        `$ sfdx sfpowerkit:pool:fetch -t core -v devhub -m`,
-        `$ sfdx sfpowerkit:pool:fetch -t core -v devhub -s testuser@test.com`,
+        `$ sfp pool:fetch  -t core `,
+        `$ sfp pool:fetch  -t core -v devhub`,
+        `$ sfp pool:fetch  -t core -v devhub -m`,
+        `$ sfp pool:fetch  -t core -v devhub -s testuser@test.com`,
     ];
 
-    protected static flagsConfig = {
-        tag: flags.string({
+    public static flags = {
+        targetdevhubusername,
+        tag: Flags.string({
             char: 't',
             description: messages.getMessage('tagDescription'),
             required: true,
         }),
-        alias: flags.string({
+        alias: Flags.string({
             char: 'a',
             description: messages.getMessage('aliasDescription'),
             required: false,
         }),
-        sendtouser: flags.string({
+        sendtouser: Flags.string({
             char: 's',
             description: messages.getMessage('sendToUserDescription'),
             required: false,
         }),
-        setdefaultusername: flags.boolean({
+        setdefaultusername: Flags.boolean({
             char: 'd',
             description: messages.getMessage('setdefaultusernameDescription'),
             required: false,
         }),
-        nosourcetracking: flags.boolean({
+        nosourcetracking: Flags.boolean({
             default: false,
             description: messages.getMessage('noSourceTrackingDescription'),
             required: false,
         }),
-        loglevel: flags.enum({
-            description: 'logging level for this command invocation',
-            default: 'info',
-            required: false,
-            options: [
-                'trace',
-                'debug',
-                'info',
-                'warn',
-                'error',
-                'fatal',
-                'TRACE',
-                'DEBUG',
-                'INFO',
-                'WARN',
-                'ERROR',
-                'FATAL',
-            ],
-        }),
+        'apiversion': orgApiVersionFlagSfdxStyle,
+        loglevel
     };
 
     public async execute(): Promise<AnyJson> {
@@ -90,6 +76,8 @@ export default class Fetch extends SfpowerscriptsCommand {
 
         await this.hubOrg.refreshAuth();
         const hubConn = this.hubOrg.getConnection();
+
+        if (this.flags.json) SFPLogger.logLevel = LoggerLevel.HIDE;
 
         SFPLogger.log(
             COLOR_KEY_MESSAGE(`Fetching a scratch org from pool ${this.flags.tag} in Org ${this.hubOrg.getOrgId()}`),
@@ -115,14 +103,12 @@ export default class Fetch extends SfpowerscriptsCommand {
             fetchImpl.setSourceTrackingOnFetch();
         }
 
-        if (this.flags.json) SFPLogger.logLevel = LoggerLevel.HIDE;
-
         let result = (await fetchImpl.execute()) as ScratchOrg;
 
         if (!this.flags.json && !this.flags.sendtouser) {
             await this.displayOrgContents(result);
 
-            this.ux.log(`======== Scratch org details ========`);
+            ux.log(`======== Scratch org details ========`);
             let list = [];
             for (let [key, value] of Object.entries(result)) {
                 if (value) {
@@ -132,7 +118,7 @@ export default class Fetch extends SfpowerscriptsCommand {
             //add alias info
             if (this.flags.alias) list.push({ key: 'alias', value: this.flags.alias });
 
-            this.ux.table(list, ['key', 'value']);
+            ux.table(list, {key:{},value:{}});
             this.printFetchSummary(!this.flags.nosourcetracking, Date.now() - fetchStartTime);
         }
 
@@ -161,11 +147,7 @@ export default class Fetch extends SfpowerscriptsCommand {
     }
 
     private printFetchSummary(isSourceTrackingEnabled: boolean, totalElapsedTime: number): void {
-        SFPLogger.log(
-            COLOR_HEADER(
-                `----------------------------------------------------------------------------------------------------`
-            )
-        );
+        SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
         if (!isSourceTrackingEnabled) {
             SFPLogger.log(
                 COLOR_SUCCESS(`Succesfully fetched a scratch org in ${COLOR_TIME(getFormattedTime(totalElapsedTime))}`)
@@ -179,10 +161,6 @@ export default class Fetch extends SfpowerscriptsCommand {
                 )
             );
         }
-        console.log(
-            COLOR_HEADER(
-                `----------------------------------------------------------------------------------------------------`
-            )
-        );
+        SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
     }
 }

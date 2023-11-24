@@ -70,6 +70,9 @@ export default class GitDiffUtils {
             }
         });
 
+        if(gitFiles.length==0)
+          throw new Error(`Unable to find the required file  ${filePath} in Git.., Did you really commit the file?`)
+
         let copyOutputFolder = outputFolder;
         for (let i = 0; i < gitFiles.length; i++) {
             outputFolder = copyOutputFolder;

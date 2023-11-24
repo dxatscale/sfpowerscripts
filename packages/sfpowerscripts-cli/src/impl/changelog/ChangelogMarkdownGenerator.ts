@@ -8,7 +8,8 @@ export default class ChangelogMarkdownGenerator {
         private releaseChangelog: ReleaseChangelog,
         private workItemURL: string,
         private limit: number,
-        private showAllArtifacts: boolean
+        private showAllArtifacts: boolean,
+        private isForWorkItemOnlyOutput:boolean=false
     ) {}
 
     /**
@@ -18,7 +19,7 @@ export default class ChangelogMarkdownGenerator {
     generate(): string {
         let payload: string = '';
 
-        if (this.releaseChangelog.orgs) {
+        if (this.releaseChangelog.orgs && ! this.isForWorkItemOnlyOutput ) {
             payload = this.generateOrgs(this.releaseChangelog.orgs, payload);
         }
 
@@ -44,15 +45,18 @@ export default class ChangelogMarkdownGenerator {
                 payload += `\n<a id=${release.hashId}></a>\n`; // Create anchor from release hash Id
                 payload += `# ${release.names.join(`/`)}\n `;
                 payload += `Cumulative Release Number: <b>${release.buildNumber}</b> \n\n`;
-                if(release.date)
+                if(release.date && !this.isForWorkItemOnlyOutput)
                   payload += `Matching defintion first created or deployed to an org on: ${release.date}\n `
 
             }
 
-            payload = this.generateArtifacts(payload, release);
+            if(!this.isForWorkItemOnlyOutput)
+             payload = this.generateArtifacts(payload, release);
 
             payload = this.generateWorkItems(payload, release);
 
+            if(!this.isForWorkItemOnlyOutput)
+            {
             let versionChangeOnly: string[] = [];
             let noChangeInVersion: string[] = [];
             payload = this.generateCommits(payload, release, versionChangeOnly, noChangeInVersion);
@@ -69,6 +73,7 @@ export default class ChangelogMarkdownGenerator {
                 payload += '\nArtifacts with no changes:\n';
                 noChangeInVersion.forEach((artifactName) => (payload += `  - ${artifactName}\n`));
             }
+          }
         }
         return payload;
     }
@@ -125,7 +130,7 @@ export default class ChangelogMarkdownGenerator {
                         specificWorkItemURL = this.workItemURL.concat(`/${workItem}`);
                     }
                 }
-                payload += `  - [${workItem}](${specificWorkItemURL})\n`;
+                payload += `[${workItem}](${specificWorkItemURL})\n`;
             }
         } else {
             payload += `N/A\n`;

@@ -1,9 +1,15 @@
-import { flags } from '@salesforce/command';
 import { AnyJson } from '@salesforce/ts-types';
 import SfpowerscriptsCommand from '../../../SfpowerscriptsCommand';
 import PoolOrgDeleteImpl from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolOrgDeleteImpl';
 import SFPLogger from '@dxatscale/sfp-logger';
 import { Messages } from '@salesforce/core';
+import {
+    loglevel,
+    orgApiVersionFlagSfdxStyle,
+    targetdevhubusername,
+    requiredUserNameFlag,
+} from '../../../flags/sfdxflags';
+import { AliasAccessor } from '@salesforce/core/lib/stateAggregator';
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -17,33 +23,13 @@ export default class Delete extends SfpowerscriptsCommand {
 
     protected static requiresDevhubUsername = true;
 
-    public static examples = [`$ sfpowerscripts pool:org:delete -u test-xasdasd@example.com -v devhub`];
+    public static examples = [`$ sfp pool:org:delete -u test-xasdasd@example.com -v devhub`];
 
-    protected static flagsConfig = {
-        username: flags.string({
-            char: 'u',
-            description: messages.getMessage('userNameFlagDescription'),
-            required: true,
-        }),
-        loglevel: flags.enum({
-            description: 'logging level for this command invocation',
-            default: 'info',
-            required: false,
-            options: [
-                'trace',
-                'debug',
-                'info',
-                'warn',
-                'error',
-                'fatal',
-                'TRACE',
-                'DEBUG',
-                'INFO',
-                'WARN',
-                'ERROR',
-                'FATAL',
-            ],
-        }),
+    public static flags = {
+        apiversion: orgApiVersionFlagSfdxStyle,
+        targetusername: requiredUserNameFlag,
+        targetdevhubusername,
+        loglevel,
     };
 
     public async execute(): Promise<AnyJson> {
@@ -52,10 +38,19 @@ export default class Delete extends SfpowerscriptsCommand {
 
         this.flags.apiversion = this.flags.apiversion || (await hubConn.retrieveMaxApiVersion());
 
-        let poolOrgDeleteImpl = new PoolOrgDeleteImpl(this.hubOrg, this.flags.username);
+        let aliasAccessor = await AliasAccessor.create();
+        let resolvedAliasOrUserName:string;
+        if (aliasAccessor.resolveAlias(this.flags.targetusername)) {
+            resolvedAliasOrUserName = aliasAccessor.resolveUsername(this.flags.targetusername);
+        } else {
+            resolvedAliasOrUserName = this.flags.targetusername;
+        }
+
+        let poolOrgDeleteImpl = new PoolOrgDeleteImpl(this.hubOrg, resolvedAliasOrUserName);
 
         await poolOrgDeleteImpl.execute();
-        if (!this.flags.json) SFPLogger.log(`Scratch org with username ${this.flags.username} is deleted successfully`);
+        if (!this.flags.json)
+            SFPLogger.log(`Scratch org with username or alias ${this.flags.targetusername} is deleted successfully`);
 
         return { username: this.flags.username, messages: 'Scratch Org deleted Succesfully' } as AnyJson;
     }

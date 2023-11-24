@@ -1,12 +1,14 @@
 import { Messages } from '@salesforce/core';
 import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
-import { flags } from '@salesforce/command';
 import ValidateImpl, { ValidateAgainst, ValidateProps, ValidationMode } from '../../impl/validate/ValidateImpl';
 import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender';
 import SFPLogger, { COLOR_HEADER, COLOR_KEY_MESSAGE } from '@dxatscale/sfp-logger';
 import ValidateError from '../../errors/ValidateError';
 import ValidateResult from '../../impl/validate/ValidateResult';
 import * as fs from 'fs-extra';
+import { arrayFlagSfdxStyle, loglevel, logsgroupsymbol, targetdevhubusername } from '../../flags/sfdxflags';
+import { Flags } from '@oclif/core';
+import { LoggerLevel } from '@dxatscale/sfp-logger';
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'validate');
@@ -19,100 +21,79 @@ export default class Validate extends SfpowerscriptsCommand {
     protected static requiresDevhubUsername = true;
 
     public static examples = [
-        `$ sfpowerscripts orchestrator:validate -p "POOL_TAG_1,POOL_TAG_2" -v <devHubUsername>`,
+        `$ sfp orchestrator:validate -p "POOL_TAG_1,POOL_TAG_2" -v <devHubUsername>`,
     ];
 
-    static aliases = ['sfpowerscripts:orchestrator:validateAgainstPool'];
-
-    protected static flagsConfig = {
-        pools: flags.array({
+   //Fix Typo
+    public static flags = {
+        pools: arrayFlagSfdxStyle({
             char: 'p',
             description: messages.getMessage('poolsFlagDescription'),
             required: true,
         }),
-        mode: flags.enum({
+        targetdevhubusername,
+        mode: Flags.string({
             description: 'validation mode',
             default: 'thorough',
             required: true,
             options: ['individual', 'fastfeedback', 'thorough', 'ff-release-config', 'thorough-release-config'],
         }),
-        installdeps: flags.boolean({
+        installdeps: Flags.boolean({
             description: messages.getMessage('installDepsFlagDescription'),
             default: false,
         }),
-        releaseconfig: flags.string({
+        releaseconfig: Flags.string({
             description: messages.getMessage('configFileFlagDescription'),
         }),
-        coveragepercent: flags.integer({
+        coveragepercent: Flags.integer({
             description: messages.getMessage('coveragePercentFlagDescription'),
             default: 75,
         }),
-        disablesourcepkgoverride: flags.boolean({
+        disablesourcepkgoverride: Flags.boolean({
             description: messages.getMessage('disableSourcePackageOverride'),
             default: false,
         }),
-        deletescratchorg: flags.boolean({
+        deletescratchorg: Flags.boolean({
             char: 'x',
             description: messages.getMessage('deleteScratchOrgFlagDescription'),
             default: false,
         }),
-        orginfo: flags.boolean({
+        orginfo: Flags.boolean({
             description: messages.getMessage('orgInfoFlagDescription'),
             default: false,
         }),
-        keys: flags.string({
+        keys: Flags.string({
             required: false,
             description: messages.getMessage('keysFlagDescription'),
         }),
-        basebranch: flags.string({
+        basebranch: Flags.string({
             description: messages.getMessage('baseBranchFlagDescription'),
         }),
-        enableimpactanalysis: flags.boolean({
+        enableimpactanalysis: Flags.boolean({
             description: messages.getMessage('enableImpactAnalysisFlagDescription'),
             dependsOn: ['basebranch'],
         }),
-        enabledependencyvalidation: flags.boolean({
+        enabledependencyvalidation: Flags.boolean({
             description: messages.getMessage('enableDependencyValidation'),
             dependsOn: ['basebranch'],
         }),
-        tag: flags.string({
+        tag: Flags.string({
             description: messages.getMessage('tagFlagDescription'),
         }),
-        disableparalleltesting: flags.boolean({
+        disableparalleltesting: Flags.boolean({
             description: messages.getMessage('disableParallelTestingFlagDescription'),
             default: false,
         }),
-        disablediffcheck: flags.boolean({
+        disablediffcheck: Flags.boolean({
             description: messages.getMessage('disableDiffCheckFlagDescription'),
             default: false,
         }),
-        disableartifactupdate: flags.boolean({
+        disableartifactupdate: Flags.boolean({
             description: messages.getMessage('disableArtifactUpdateFlagDescription'),
             default: false,
         }),
-        logsgroupsymbol: flags.array({
-            char: 'g',
-            description: messages.getMessage('logsGroupSymbolFlagDescription'),
-        }),
-        loglevel: flags.enum({
-            description: 'logging level for this command invocation',
-            default: 'info',
-            required: false,
-            options: [
-                'trace',
-                'debug',
-                'info',
-                'warn',
-                'error',
-                'fatal',
-                'TRACE',
-                'DEBUG',
-                'INFO',
-                'WARN',
-                'ERROR',
-                'FATAL',
-            ],
-        }),
+        logsgroupsymbol,
+        loglevel
     };
 
     async execute(): Promise<void> {
@@ -150,9 +131,7 @@ export default class Validate extends SfpowerscriptsCommand {
         );
        
 
-        SFPLogger.log(
-            COLOR_HEADER(`-------------------------------------------------------------------------------------------`)
-        );
+        SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
 
         let validateResult: ValidateResult;
         try {
@@ -172,8 +151,6 @@ export default class Validate extends SfpowerscriptsCommand {
                 isDeleteScratchOrg: this.flags.deletescratchorg,
                 keys: this.flags.keys,
                 baseBranch: this.flags.basebranch,
-                isImpactAnalysis: this.flags.enableimpactanalysis,
-                isDependencyAnalysis: this.flags.enabledependencyvalidation,
                 diffcheck: !this.flags.disablediffcheck,
                 disableArtifactCommit: this.flags.disableartifactupdate,
                 orgInfo: this.flags.orginfo,

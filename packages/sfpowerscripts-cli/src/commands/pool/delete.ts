@@ -1,4 +1,3 @@
-import { flags, SfdxCommand } from '@salesforce/command';
 import { Messages } from '@salesforce/core';
 import PoolDeleteImpl from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolDeleteImpl';
 import OrphanedOrgsDeleteImpl from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/OrphanedOrgsDeleteImpl';
@@ -8,6 +7,8 @@ import { ZERO_BORDER_TABLE } from '../../ui/TableConstants';
 import SFPLogger, { ConsoleLogger, LoggerLevel } from '@dxatscale/sfp-logger';
 import { COLOR_KEY_MESSAGE } from '@dxatscale/sfp-logger';
 import { COLOR_WARNING } from '@dxatscale/sfp-logger';
+import { Flags } from '@oclif/core';
+import { loglevel, orgApiVersionFlagSfdxStyle, targetdevhubusername } from '../../flags/sfdxflags';
 const Table = require('cli-table');
 
 // Initialize Messages with the current plugin directory
@@ -28,47 +29,31 @@ export default class Delete extends SfpowerscriptsCommand {
         `$ sfpowerscripts pool:delete --orphans -v devhub`,
     ];
 
-    protected static flagsConfig = {
-        tag: flags.string({
+    public static flags = {
+        targetdevhubusername,
+        tag: Flags.string({
             char: 't',
             description: messages.getMessage('tagDescription'),
             required: false,
         }),
-        allscratchorgs: flags.boolean({
+        allscratchorgs: Flags.boolean({
             char: 'a',
             description: messages.getMessage('allscratchorgsDescription'),
             required: false,
         }),
-        inprogressonly: flags.boolean({
+        inprogressonly: Flags.boolean({
             char: 'i',
             description: messages.getMessage('inprogressonlyDescription'),
             required: false,
             exclusive: ['allscratchorgs'],
         }),
-        orphans: flags.boolean({
+        orphans: Flags.boolean({
             char: 'o',
             description: messages.getMessage('recoverOrphanedScratchOrgsDescription'),
             required: false,
         }),
-        loglevel: flags.enum({
-            description: 'logging level for this command invocation',
-            default: 'info',
-            required: false,
-            options: [
-                'trace',
-                'debug',
-                'info',
-                'warn',
-                'error',
-                'fatal',
-                'TRACE',
-                'DEBUG',
-                'INFO',
-                'WARN',
-                'ERROR',
-                'FATAL',
-            ],
-        }),
+        'apiversion': orgApiVersionFlagSfdxStyle,
+        loglevel,
     };
 
     public async execute(): Promise<{ orgId: string; username: string; operation: string }[]> {

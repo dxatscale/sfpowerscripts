@@ -1,4 +1,4 @@
-import { Org, sfdc } from '@salesforce/core';
+import { Org, trimTo15 } from '@salesforce/core';
 import QueryHelper from '../queryHelper/QueryHelper';
 
 export default class ScratchOrgInfoFetcher {
@@ -9,7 +9,7 @@ export default class ScratchOrgInfoFetcher {
 
         let collection = orgId
             .map((id) => {
-                return `'${sfdc.trimTo15(id)}'`;
+                return `'${trimTo15(id)}'`;
             })
             .toString();
 

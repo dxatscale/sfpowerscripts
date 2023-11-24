@@ -1,8 +1,9 @@
-import { flags } from '@salesforce/command';
 import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
 import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender';
 import SFPLogger, { LoggerLevel, COLOR_KEY_MESSAGE } from '@dxatscale/sfp-logger';
 import { Messages } from '@salesforce/core';
+import { Flags } from '@oclif/core';
+import { loglevel } from '../../flags/sfdxflags';
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -17,15 +18,15 @@ export default class Report extends SfpowerscriptsCommand {
   protected static requiresDevhubUsername = false;
   protected static requiresProject = false;
 
-  public static examples = ['$ sfpowerscripts metrics:report -m <metric> -t <type> -v <value>'];
+  public static examples = ['$ sfp metrics:report -m <metric> -t <type> -v <value>'];
 
-  protected static flagsConfig = {
-    metric: flags.string({
+  public static flags = {
+    metric: Flags.string({
       description: 'metrics to publish',
       required: true,
       char: 'm',
     }),
-    type: flags.enum({
+    type: Flags.string({
       options: [
         'gauge',
         'counter',
@@ -35,34 +36,16 @@ export default class Report extends SfpowerscriptsCommand {
       required: true,
       char: 't',
     }),
-    value: flags.string({
+    value: Flags.string({
       description: 'value of metric',
       char: 'v',
     }),
-    tags: flags.string({
+    tags: Flags.string({
       description: 'tags for metric',
       required: false,
       char: 'g',
     }),
-    loglevel: flags.enum({
-      description: 'logging level for this command invocation',
-      default: 'info',
-      required: false,
-      options: [
-        'trace',
-        'debug',
-        'info',
-        'warn',
-        'error',
-        'fatal',
-        'TRACE',
-        'DEBUG',
-        'INFO',
-        'WARN',
-        'ERROR',
-        'FATAL',
-      ],
-    }),
+    loglevel
   };
 
   public async execute(): Promise<void> {

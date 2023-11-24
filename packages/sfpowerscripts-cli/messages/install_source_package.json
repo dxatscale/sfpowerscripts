@@ -1,5 +1,5 @@
 {
-    "commandDescription": "Installs a sfpowerscripts source package to the target org",
+    "commandDescription": "(DEPRECATED) Installs a sfpowerscripts source package to the target org",
     "packageFlagDescription": "Name of the package to be installed",
     "targetOrgFlagDescription": "Alias/User Name of the target environment",
     "artifactDirectoryFlagDescription": "The directory where the artifact is located",

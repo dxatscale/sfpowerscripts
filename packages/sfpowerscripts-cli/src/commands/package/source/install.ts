@@ -1,12 +1,13 @@
 import { Messages } from '@salesforce/core';
-import { flags } from '@salesforce/command';
 import InstallPackageCommand from '../../../InstallPackageCommand';
 import * as fs from 'fs-extra';
 import { PackageInstallationStatus } from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/PackageInstallationResult';
-import { ConsoleLogger } from '@dxatscale/sfp-logger';
+import SFPLogger, { ConsoleLogger, LoggerLevel } from '@dxatscale/sfp-logger';
 import { DeploymentType } from '@dxatscale/sfpowerscripts.core/lib/deployers/DeploymentExecutor';
 import { SfpPackageInstallationOptions } from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/InstallPackage';
 import SfpPackageInstaller from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageInstaller';
+import { loglevel, requiredUserNameFlag } from '../../../flags/sfdxflags';
+import { Flags } from '@oclif/core';
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -18,71 +19,54 @@ const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'install_sou
 export default class InstallSourcePackage extends InstallPackageCommand {
     public static description = messages.getMessage('commandDescription');
 
-    public static examples = [`$ sfpowerscripts package:source:install -n mypackage -u <org>`];
+    public static examples = [`$ sfp package:source:install -n mypackage -u <org>`];
 
-    protected static flagsConfig = {
-        package: flags.string({
+    public static deprecated:boolean = true;
+
+    public static flags = {
+        package: Flags.string({
             char: 'n',
             description: messages.getMessage('packageFlagDescription'),
             required: true,
         }),
-        targetorg: flags.string({
-            char: 'u',
-            description: messages.getMessage('targetOrgFlagDescription'),
-            required: true,
-        }),
-        artifactdir: flags.directory({
+        targetorg: requiredUserNameFlag,
+        artifactdir: Flags.directory({
             description: messages.getMessage('artifactDirectoryFlagDescription'),
             default: 'artifacts',
         }),
-        skipifalreadyinstalled: flags.boolean({
+        skipifalreadyinstalled: Flags.boolean({
             description: messages.getMessage('skipIfAlreadyInstalled'),
         }),
-        skiponmissingartifact: flags.boolean({
+        skiponmissingartifact: Flags.boolean({
             char: 's',
             description: messages.getMessage('skipOnMissingArtifactFlagDescription'),
         }),
-        optimizedeployment: flags.boolean({
+        optimizedeployment: Flags.boolean({
             char: 'o',
             description: messages.getMessage('optimizedeployment'),
             default: false,
             required: false,
         }),
-        skiptesting: flags.boolean({
+        skiptesting: Flags.boolean({
             char: 't',
             description: messages.getMessage('skiptesting'),
             default: false,
             required: false,
         }),
-        waittime: flags.string({
+        waittime: Flags.string({
             description: messages.getMessage('waitTimeFlagDescription'),
             default: '120',
         }),
-        refname: flags.string({
+        refname: Flags.string({
             description: messages.getMessage('refNameFlagDescription'),
         }),
-        loglevel: flags.enum({
-            description: 'logging level for this command invocation',
-            default: 'info',
-            required: false,
-            options: [
-                'trace',
-                'debug',
-                'info',
-                'warn',
-                'error',
-                'fatal',
-                'TRACE',
-                'DEBUG',
-                'INFO',
-                'WARN',
-                'ERROR',
-                'FATAL',
-            ],
-        }),
+        loglevel
     };
 
     public async install(): Promise<any> {
+
+        SFPLogger.log(`This command is now deprecated, please proceed to use sfp package:install instead`,LoggerLevel.WARN)
+
 
         const sfdx_package: string = this.flags.package;
         const optimizeDeployment: boolean = this.flags.optimizedeployment;

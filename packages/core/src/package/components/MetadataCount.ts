@@ -1,11 +1,11 @@
-import glob from 'glob';
+import { globSync } from 'glob';
 import path from 'path';
 
 export default class MetadataCount {
-    public static getMetadataCount(projectDirectory: string, sourceDirectory: string): number {
+    public static async getMetadataCount(projectDirectory: string, sourceDirectory: string): Promise<number> {
         let metadataCount;
         try {
-            let metadataFiles: string[] = glob.sync(`**/*-meta.xml`, {
+            let metadataFiles: string[] = globSync(`**/*-meta.xml`, {
                 cwd: projectDirectory ? path.join(projectDirectory, sourceDirectory) : sourceDirectory,
                 absolute: true,
             });

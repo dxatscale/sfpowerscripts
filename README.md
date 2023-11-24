@@ -1,17 +1,17 @@
-[![DeepScan grade](https://deepscan.io/api/teams/10234/projects/12959/branches/208838/badge/grade.svg)](https://deepscan.io/dashboard#view=project&tid=10234&pid=12959&bid=208838) [![CodeFactor](https://www.codefactor.io/repository/github/dxatscale/sfpowerscripts/badge/develop)](https://www.codefactor.io/repository/github/dxatscale/sfpowerscripts/overview/develop)
-
-[![npm](https://img.shields.io/npm/v/@dxatscale/sfpowerscripts)](https://www.npmjs.com/package/@dxatscale/sfpowerscripts)
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fdxatscale%2Fsfpowerscripts.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fdxatscale%2Fsfpowerscripts?ref=badge_shield) [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/5614/badge)](https://bestpractices.coreinfrastructure.org/projects/5614)
-
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-
-
-[![Join slack](https://i.imgur.com/FZZmA3g.png)](https://launchpass.com/dxatscale)
-
 <p align="center">
   <img alt="sfpowerscripts" src="https://repository-images.githubusercontent.com/248449736/448f93b4-9883-48da-a75c-330f242bbf8c" width="480" height="400">
 </p>
 
+![Version](https://img.shields.io/npm/v/@dxatscale/sfpowerscripts.svg)
+[![GitHub stars](https://img.shields.io/github/stars/dxatscale/sfpowerscripts)](https://gitHub.com/dxatscale/sfpowerscripts/stargazers/)
+[![GitHub contributors](https://img.shields.io/github/contributors/dxatscale/sfpowerscripts.svg)](https://github.com/dxatscale/sfpowerscripts/graphs/contributors/)
+[![License](https://img.shields.io/badge/license-MIT-green)](https://github.com/dxatscale/sfpowerscripts/blob/master/LICENSE)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
+
+[![DeepScan grade](https://deepscan.io/api/teams/10234/projects/12959/branches/208838/badge/grade.svg)](https://deepscan.io/dashboard#view=project&tid=10234&pid=12959&bid=208838)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fdxatscale%2Fsfpowerscripts.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fdxatscale%2Fsfpowerscripts?ref=badge_shield) [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/5614/badge)](https://bestpractices.coreinfrastructure.org/projects/5614)
+
+[![Join slack](https://i.imgur.com/FZZmA3g.png)](https://launchpass.com/dxatscale)
 
 A build system for package based development in Salesforce, delivered as a node cli that can be implemented in any CI/CD system of choice.Read more about the cli and details here - https://docs.dxatscale.io
 
@@ -26,9 +26,9 @@ A build system for package based development in Salesforce, delivered as a node 
 - Integrate with any CI/CD system of choice
 - All commands are enabled with statsD, for collecting metrics about your pipeline.
 
-There are lot more features to explore. Read more at  https://docs.dxatscale.io
+There are lot more features to explore. Read more at https://docs.dxatscale.io
 
-The project is delivered as a <b>CLI</b> that can be deployed in any CI/CD system, The module is available in  [NPM](https://www.npmjs.com/package/@dxatscale/sfpowerscripts) or can be 
+The project is delivered as a <b>CLI</b> that can be deployed in any CI/CD system, The module is available in [NPM](https://www.npmjs.com/package/@dxatscale/sfpowerscripts) or can be
 used by using the [docker image](https://github.com/dxatscale/sfpowerscripts/pkgs/container/sfpowerscripts)
 
 
@@ -45,7 +45,15 @@ used by using the [docker image](https://github.com/dxatscale/sfpowerscripts/pkg
 
 #### CI/CD Reference Implementation
 
-Getting started guides for popular CI/CD platforms along with reference pipelines are available [here](https://docs.dxatscale.io/reference-implementation/github)
+Getting started guides for popular CI/CD platforms along with reference pipelines are available [here](https://docs.dxatscale.io/implementing-your-ci-cd/github)
+
+#### Installing sfpowerscripts locally
+
+sfpowerscripts can be installed on your local device using npm
+
+```
+npm i -g @dxatscale/sfpowerscripts
+```
 
 
 #### Docker
@@ -54,12 +62,12 @@ Docker images for sfpowerscripts are available at [GitHub Container Registry](ht
 
 We recommend using the sfpowerscripts docker image to avoid breakages in your CI/CD pipelines due to updates in sfpowerscripts or any of its dependencies such as the SFDX CLI.
 
-#### Build Instructions 
-To build sfpowerscripts execute the following on the terminal: 
+#### Build Instructions
+To build sfpowerscripts execute the following on the terminal:
 ```
 npm i -g lerna #Install Lerna Globally
-cd <sfpowerscrips directory> # Navigate to the checked out directory 
-npm i
+cd <sfpowerscripts directory> # Navigate to the checked out directory
+pnpm i
 lerna run build
 ```
 
@@ -72,7 +80,7 @@ lerna run test
 To debug and test plugin
 
 ```
- cd sfpowerscripts-cli
+ cd packages/sfpowerscripts-cli
  npm link
 ```
 
@@ -83,7 +91,7 @@ List of Maintainers are available in the [link](https://docs.dxatscale.io/about-
 
 #### Where do I reach for queries?
 
-Please create an issue in the repo for bugs or utilize GitHub Discussions for other queries.  Join our [Slack Community](https://launchpass.com/dxatscale) as well.
+Please create an issue in the repo for bugs or utilize GitHub Discussions for other queries. Join our [Slack Community](https://launchpass.com/dxatscale) as well.
 
 
 ## License

@@ -121,6 +121,8 @@ export default class TriggerApexTests {
                 { retries: 2, minTimeout: 3000 }
             );
 
+            testResult = this.fixBadNamespaceClassFullNames(testResult);
+
             //Collect Failed Tests only if Parallel
             testResult = await this.triggerSecondRunInSerialForParallelFailedTests(
                 testResult,
@@ -133,7 +135,23 @@ export default class TriggerApexTests {
             testResult = this.removeDuplicateTestListing(testResult);
 
             //Write Test Results to file
-            let jsonOutput = this.writeTestOutput(testResult);
+            let jsonOutput = undefined;
+            try
+            {
+              jsonOutput = this.writeTestOutput(testResult);
+            }catch(error)
+            {
+                SFPLogger.log(
+                    `Unable to write test results to file due to ${error}`,
+                    LoggerLevel.DEBUG,
+                    this.fileLogger
+                );
+                return {
+                    result: false,
+                    id: testResult.summary.testRunId,
+                    message: 'Unable to fetch test execution results, Please retry',
+                };
+            }
 
             //Print tests result to screen
             let testReportDisplayer = new TestReportDisplayer(jsonOutput, this.testOptions, this.fileLogger);
@@ -334,7 +352,10 @@ export default class TriggerApexTests {
                     //Check for messages
                     if (
                         test.message.includes(`Your request exceeded the time limit for processing`) ||
-                        test.message.includes(`UNABLE_TO_LOCK_ROW`)
+                        test.message.includes(`UNABLE_TO_LOCK_ROW`) ||
+                        test.message.includes(`Internal Salesforce Error`) ||
+                        test.message.includes(`LIMIT_EXCEEDED`) ||
+                        test.message.includes(`Too many concurrent Apex compilations during resource mitigation`)
                     ) {
                         if (!testToBeTriggered.includes(test.apexClass.fullName)) {
                             parallelFailedTestClasses.push(test.apexClass.fullName);
@@ -403,11 +424,15 @@ export default class TriggerApexTests {
                     { retries: 2, minTimeout: 3000 }
                 );
 
+                secondRuntestRunResult = this.fixBadNamespaceClassFullNames(secondRuntestRunResult);
+
                 //Fetch Test Results
-                const secondTestResult = await testService.reportAsyncResults(
-                    secondRuntestRunResult.summary.testRunId,
-                    true,
-                    this.cancellationTokenSource.token
+                const secondTestResult = this.fixBadNamespaceClassFullNames(
+                    await testService.reportAsyncResults(
+                        secondRuntestRunResult.summary.testRunId,
+                        true,
+                        this.cancellationTokenSource.token
+                    )
                 );
 
                 this.writeTestOutput(secondTestResult);
@@ -442,6 +467,38 @@ export default class TriggerApexTests {
                 //Now redo the math
                 modifiedTestResult = this.combineTestResult(modifiedTestResult, secondRuntestRunResult);
             }
+        }
+
+        return modifiedTestResult;
+    }
+
+    private fixBadNamespaceClassFullNames(testResult: any): any {
+        let modifiedTestResult = _.cloneDeep(testResult);
+
+        try
+        {
+        modifiedTestResult.tests = modifiedTestResult.tests.map((test) => {
+            return {
+                ...test,
+                ...{
+                    fullName: test.fullName?.replace('__', '.'),
+                    apexClass: {
+                        ...test.apexClass,
+                        ...{
+                            fullName: test.apexClass?.fullName?.replace('__', '.'),
+                        },
+                    },
+                },
+            };
+        });
+        }catch(error)
+        {
+            SFPLogger.log(
+                `Unable to fix bad namespace class full names due to ${error}`,
+                LoggerLevel.DEBUG,
+                this.fileLogger
+            );
+            modifiedTestResult = _.cloneDeep(testResult);
         }
 
         return modifiedTestResult;
@@ -683,7 +740,7 @@ export class ProgressReporter implements Progress<ApexTestProgressValue> {
             if (Date.now() - this.lastExecutedTime > Duration.seconds(30).milliseconds) {
                 if (value.type == 'TestQueueProgress') {
                     for (const elem of value.value.records) {
-                        if (elem.Status) {
+                        if (elem?.Status) {
                             if (!count[elem.Status]) {
                                 count[elem.Status] = 1;
                             } else count[elem.Status]++;

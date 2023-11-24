@@ -1,10 +1,11 @@
-import { flags } from '@salesforce/command';
 import { Messages } from '@salesforce/core';
 import InstallPackageCommand from '../../../InstallPackageCommand';
 import { PackageInstallationStatus } from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/PackageInstallationResult';
-import { ConsoleLogger } from '@dxatscale/sfp-logger';
+import SFPLogger, { ConsoleLogger, LoggerLevel } from '@dxatscale/sfp-logger';
 import SfpPackageInstaller from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageInstaller';
 import { SfpPackageInstallationOptions } from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/InstallPackage';
+import { Flags } from '@oclif/core';
+import { loglevel, requiredUserNameFlag } from '../../../flags/sfdxflags';
 
 
 // Initialize Messages with the current plugin directory
@@ -17,47 +18,27 @@ const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'install_dat
 export default class InstallDataPackage extends InstallPackageCommand {
     public static description = messages.getMessage('commandDescription');
 
-    public static examples = [`$ sfpowerscripts package:data:install -n mypackage -u <org>`];
+    public static examples = [`$ sfp package:data:install -n mypackage -u <org>`];
 
-    protected static flagsConfig = {
-        package: flags.string({
+    public static deprecated:boolean = true;
+
+    public static flags = {
+        package: Flags.string({
             char: 'n',
             description: messages.getMessage('packageFlagDescription'),
             required: true,
         }),
-        targetorg: flags.string({
-            char: 'u',
-            description: messages.getMessage('targetOrgFlagDescription'),
-            required: true,
-        }),
-        artifactdir: flags.directory({
+        targetorg: requiredUserNameFlag,
+        artifactdir: Flags.directory({
             description: messages.getMessage('artifactDirectoryFlagDescription'),
             default: 'artifacts',
         }),
-        skiponmissingartifact: flags.boolean({
+        skiponmissingartifact: Flags.boolean({
             char: 's',
             description: messages.getMessage('skipOnMissingArtifactFlagDescription'),
         }),
-        skipifalreadyinstalled: flags.boolean({ description: messages.getMessage('skipIfAlreadyInstalled') }),
-        loglevel: flags.enum({
-            description: 'logging level for this command invocation',
-            default: 'info',
-            required: false,
-            options: [
-                'trace',
-                'debug',
-                'info',
-                'warn',
-                'error',
-                'fatal',
-                'TRACE',
-                'DEBUG',
-                'INFO',
-                'WARN',
-                'ERROR',
-                'FATAL',
-            ],
-        }),
+        skipifalreadyinstalled: Flags.boolean({ description: messages.getMessage('skipIfAlreadyInstalled') }),
+        loglevel
     };
 
     protected static requiresUsername = false;
@@ -66,6 +47,9 @@ export default class InstallDataPackage extends InstallPackageCommand {
     public async install() {
         try {
           
+            SFPLogger.log(`This command is now deprecated, please proceed to use sfp package:install instead`,LoggerLevel.WARN)
+
+            
             const skipIfAlreadyInstalled = this.flags.skipifalreadyinstalled;
             let options: SfpPackageInstallationOptions = {
                 skipIfPackageInstalled: skipIfAlreadyInstalled

@@ -108,18 +108,23 @@ export default class PackageComponentDiff {
                             await this.gitDiffUtils.copyFile(sourceComponent.content, outputFolder, this.logger);
                         } else if (sourceComponent.type.strategies?.adapter == AdapterId.MixedContent) {
                             await this.gitDiffUtils.copyFile(sourceComponent.xml, outputFolder, this.logger);
-                            await this.gitDiffUtils.copyFolder(sourceComponent.content, outputFolder, this.logger);
+                            if(path.extname(sourceComponent.content))
+                              await this.gitDiffUtils.copyFile(sourceComponent.content, outputFolder, this.logger);
+                            else
+                              await this.gitDiffUtils.copyFolder(sourceComponent.content, outputFolder, this.logger);
                         } else if (sourceComponent.type.strategies?.adapter == AdapterId.Decomposed) {
                             await this.gitDiffUtils.copyFile(sourceComponent.xml, outputFolder, this.logger);
                         } else if (sourceComponent.type.strategies?.adapter == AdapterId.Bundle) {
                             await this.gitDiffUtils.copyFolder(sourceComponent.content, outputFolder, this.logger);
-                        } else if (sourceComponent.type.strategies?.adapter == AdapterId.Default) {
-                            await this.gitDiffUtils.copyFile(sourceComponent.xml, outputFolder, this.logger);
                         } else {
                             await this.gitDiffUtils.copyFile(sourceComponent.xml, outputFolder, this.logger);
                         }
                     }
                 } catch (error) {
+                    
+                   if(error.message.includes(`Unable to find the required file`))
+                    throw error;
+
                     //Metadata resolver is not respecting forceignores at this stage
                     // So it fails on diff packages with post deploy, so lets ignore and move on
                     SFPLogger.log(
@@ -143,18 +148,6 @@ export default class PackageComponentDiff {
         }
 
         SFPLogger.log(`Generating output summary`, LoggerLevel.TRACE, this.logger);
-
-        // try {
-        //     await this.gitDiffUtils.copyFile('.forceignore', outputFolder, this.logger);
-        // } catch (e) {
-        //     SFPLogger.log(`.forceignore not found, skipping..`, LoggerLevel.DEBUG, this.logger);
-        // }
-        // try {
-        //     let cleanedUpProjectManifest = ProjectConfig.cleanupMPDFromProjectDirectory(null, this.sfdxPackage);
-        //     fs.writeJSONSync(path.join(outputFolder, 'sfdx-project.json'), cleanedUpProjectManifest, { spaces: 4 });
-        // } catch (error) {
-        //     SFPLogger.log(`sfdx-project.json not found, skipping..`, LoggerLevel.DEBUG, this.logger);
-        // }
 
         return this.resultOutput;
     }
