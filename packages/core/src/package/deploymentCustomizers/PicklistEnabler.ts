@@ -74,8 +74,15 @@ export default class PicklistEnabler implements DeploymentCustomizer {
 
                     let picklistInOrg = await this.getPicklistInOrg(urlId, sfpOrg.getConnection());
 
-                    //check for empty picklists on org and fix first deployment issue
-                    if (!picklistInOrg && picklistInOrg?.Metadata?.valueSet?.valueSetDefinition) continue;
+                    if (!picklistInOrg?.Metadata?.valueSet?.valueSetDefinition)
+                        SFPLogger.log(
+                            `Picklist field ${objName}.${picklistName} not in target Org. Skipping`,
+                            LoggerLevel.TRACE,
+                            logger
+                        );
+                        continue;
+                    }
+
 
                     let picklistValueInOrg = [];
 
@@ -115,6 +122,7 @@ export default class PicklistEnabler implements DeploymentCustomizer {
             }
         } catch (error) {
             SFPLogger.log(`Unable to process Picklist update due to ${error.message}`, LoggerLevel.WARN, logger);
+            SFPLogger.log(`Error Details : ${error.stack}`, LoggerLevel.TRACE);
         }
     }
 
