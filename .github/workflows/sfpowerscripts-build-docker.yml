@@ -10,6 +10,10 @@ on:
     repo:
       type: string
       required: true
+    dockerFileName:
+      type: string
+      required: false
+      default: sfpowerscripts
     image:
       type: string
       required: false
@@ -70,7 +74,7 @@ jobs:
       id: docker_build
       uses: docker/build-push-action@v2
       with:
-          file: dockerfiles/sfpowerscripts.Dockerfile
+          file: dockerfiles/${{inputs.dockerFileName}}.Dockerfile
           context: dockerfiles
           push: true
           labels: ${{ steps.meta.outputs.labels }}

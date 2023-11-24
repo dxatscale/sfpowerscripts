@@ -53,6 +53,20 @@ jobs:
        username: ${{ secrets.DOCKER_USERNAME }}
        token: ${{ secrets.DOCKER_SECRET }}
     needs: [ build ]
+  
+  build-docker-lite:
+    name: 'build sfp lite docker image'
+    uses: ./.github/workflows/sfpowerscripts-build-docker.yml
+    with:
+      job-environment: 'build-docker'
+      suffix-tag: ${{ github.run_id }}
+      repo: 'dxatscale'
+      dockerFileName: 'sfp-lite'
+      image: 'sfp-lite-rc'
+    secrets:
+       username: ${{ secrets.DOCKER_USERNAME }}
+       token: ${{ secrets.DOCKER_SECRET }}
+    needs: [ build ]
 
  #Promotion Stages
 
@@ -82,6 +96,19 @@ jobs:
       token: ${{ secrets.DOCKER_SECRET }}
     needs: [ build-docker ]
 
+  alpha-docker-lite:
+    name: 'promote docker lite to alpha'
+    uses: ./.github/workflows/sfpowerscripts-promote-docker.yml
+    with:
+      job-environment: 'sfpowerscripts-alpha-docker'
+      repo: 'dxatscale'
+      new-tag: alpha   
+      image: 'sfp-lite-rc'  
+    secrets:
+      username: ${{ secrets.DOCKER_USERNAME }}
+      token: ${{ secrets.DOCKER_SECRET }}
+    needs: [ build-docker-lite ]
+
 
   sfpowerscripts-beta:
     name: 'sfpowerscripts beta'
@@ -101,11 +128,25 @@ jobs:
       job-environment: 'sfpowerscripts-beta-docker'
       repo: 'dxatscale'
       new-tag: beta   
-      image: 'sfpowerscripts-rc'  
+      image: 'sfp-lite-rc' 
     secrets:
       username: ${{ secrets.DOCKER_USERNAME }}
       token: ${{ secrets.DOCKER_SECRET }}
     needs: [ build-docker ]
+
+  beta-docker-lite:
+    name: 'promote docker light to beta'
+    uses: ./.github/workflows/sfpowerscripts-promote-docker.yml
+    with:
+      job-environment: 'sfpowerscripts-beta-docker'
+      repo: 'dxatscale'
+      new-tag: beta   
+      image: 'sfpowerscripts-rc'  
+    secrets:
+      username: ${{ secrets.DOCKER_USERNAME }}
+      token: ${{ secrets.DOCKER_SECRET }}
+    needs: [ build-docker-lite ]
+ 
  
 
 
@@ -120,17 +161,6 @@ jobs:
       npm-token: ${{ secrets.NPM_TOKEN }}
     needs: [ build ]
   
-  sfp-prod:
-    name: 'sfp prod'
-    uses: ./.github/workflows/promotePackage.yml
-    with:
-      version: 'latest'
-      pathToPackageJson: 'packages/sfp-cli/package.json'
-      environment: sfp-prod
-    secrets:
-      npm-token: ${{ secrets.NPM_TOKEN }}
-    needs: [ build ]
-
   prod-docker:
     name: 'copy rc docker to prod'
     uses: ./.github/workflows/sfpowerscripts-copy-docker.yml
@@ -142,5 +172,19 @@ jobs:
       signing_secret: ${{ secrets.SIGNING_SECRET }}
       cosign_password:  ${{ secrets.COSIGN_PASSWORD }}
     needs: [ build-docker ]
+
+  prod-docker-lite:
+    name: 'copy rc lite docker to prod'
+    uses: ./.github/workflows/sfpowerscripts-copy-docker.yml
+    with:
+      job-environment: 'sfpowerscripts-prod-docker'
+      image: sfp-lite-rc
+      image-as: sfp-lite
+    secrets:
+      username: ${{ secrets.DOCKER_USERNAME }}
+      token: ${{ secrets.DOCKER_SECRET }}
+      signing_secret: ${{ secrets.SIGNING_SECRET }}
+      cosign_password:  ${{ secrets.COSIGN_PASSWORD }}
+    needs: [ build-docker-lite ]
 
 

@@ -54,7 +54,10 @@ jobs:
     - name: 'Get package version'
       run: |
          echo "PKG_VERSION=$(jq -r ".version" packages/sfpowerscripts-cli/package.json)" >> $GITHUB_ENV
-         echo "RELEASE_VERSION=$(jq -r ".release" packages/sfpowerscripts-cli/package.json| read input; echo "$(cut -c1-3 <<< "$input")-$(cut -d' ' -f2 <<< "$input")" | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+         RELEASE_NAME=$(jq -r ".release" packages/sfpowerscripts-cli/package.json)
+         RELEASE_NAME_AS_ARRAY=($RELEASE_NAME)
+         RELEASE_NAME=$(echo ${RELEASE_NAME_AS_ARRAY[0]} | cut -c1-3)${RELEASE_NAME_AS_ARRAY[1]}
+         echo "RELEASE_NAME=release-$RELEASE_NAME"  >> $GITHUB_ENV
 
     - name: 'Re expose secretes'
       run: |

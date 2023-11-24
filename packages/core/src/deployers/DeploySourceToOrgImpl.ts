@@ -185,7 +185,7 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
         return result;
     }
 
-    //For compatibilty with cli output
+    //For compatibility with cli output
     private formatResultAsJSON(result) {
         const response = result?.response ? result.response : {};
         return {

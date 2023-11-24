@@ -20,7 +20,7 @@ A recently surfaced issue (#836), have uncovered coverage calculation becoming e
 
 ## Decision
 
-sfpowerscripts will collect all the test classes that failed in an asynchronous run due to 'UNABLE_TO_LOCK_ROW', 'Your request exceeded the time limit for processing' or an 'Internal Salesforce Error' and trigger these tests in synchronous mode.
+sfpowerscripts will collect all the test classes that failed in an asynchronous run due to 'UNABLE_TO_LOCK_ROW', 'Your request exceeded the time limit for processing', 'LIMIT_EXCEEDED', 'Too many concurrent Apex compilations during resource mitigation', or an 'Internal Salesforce Error' and trigger these tests in synchronous mode.
 
 sfpowerscripts will also figure out any tests classes that were not able to contribute to code coverage and execute them synchronously. As the current test api has limitation on how tests could be triggered synchronously (only one test class is allowed), sfpowerscripts will change the mode of the org to 'Disable Parallel Testing' by changing the apex setting as mentioned [ here](https://developer.salesforce.com/docs/atlas.en-us.api_meta.meta/api_meta/meta_apexsettings.htm). sfpowerscripts will utilize jsforce update (http://jsforce.github.io/jsforce/doc/Metadata.html) to update this setting on the fly.
  Once the setting is successfully toggled, it will  proceed to execute these tests using asynchronous payload, which is equivalent to triggering test classes synchronously. The coverage results are then converged and new coverage value is calculated

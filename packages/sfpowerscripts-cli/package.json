@@ -1,7 +1,7 @@
 {
     "name": "@dxatscale/sfpowerscripts",
     "description": "DX@Scale Toolkit",
-    "version": "25.0.7",
+    "version": "25.5.0",
     "license": "MIT",
     "author": "dxatscale",
     "release": "December 23",
@@ -13,7 +13,7 @@
     "dependencies": {
         "@dxatscale/sfdx-process-wrapper": "^1.0.2",
         "@dxatscale/sfp-logger": "^2.1.2",
-        "@dxatscale/sfpowerscripts.core": "36.1.8",
+        "@dxatscale/sfpowerscripts.core": "36.5.0",
         "@dxatscale/sfprofiles": "^2.0.8",
         "@oclif/core": "2.11.8",
         "@oclif/plugin-commands": "^3.0.3",
@@ -111,6 +111,10 @@
                         "description": "Commands to create and install sfpowerscripts source packages"
                     }
                 }
+            },
+            "impact": {
+                "description": "Figures out the impact of  various components of sfpowerscripts",
+                "external": true
             },
             "analyze": {
                 "description": "Analyze your projects using static analysis tools such as PMD",

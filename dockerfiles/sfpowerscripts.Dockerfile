@@ -2,7 +2,7 @@ FROM ubuntu:22.04
 
 
 ARG SFPOWERSCRIPTS_VERSION=alpha
-ARG SF_CLI_VERSION=2.10.2
+ARG SF_CLI_VERSION=2.16.7
 ARG BROWSERFORCE_VERSION=0.0.3
 ARG SFDMU_VERSION=4.18.2
 ARG GIT_COMMIT
@@ -15,7 +15,7 @@ LABEL org.opencontainers.image.documentation "https://docs.dxatscale.io/sfpowers
 LABEL org.opencontainers.image.revision $GIT_COMMIT
 LABEL org.opencontainers.image.vendor "DX@Scale"
 LABEL org.opencontainers.image.source "https://github.com/dxatscale/sfpowerscripts"
-LABEL org.opencontainers.image.title "DX@Scale sfpowercripts docker image - October 23"
+LABEL org.opencontainers.image.title "DX@Scale sfpowercripts docker image - December 23"
 
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -117,6 +117,7 @@ ENV SF_DISABLE_TELEMETRY=true
 ENV SF_USE_GENERIC_UNIX_KEYCHAIN=true
 ENV SF_USE_PROGRESS_BAR=false
 ENV SF_DNS_TIMEOUT=60000
+ENV SF_SKIP_VERSION_CHECK=true
 
 WORKDIR /root
 
