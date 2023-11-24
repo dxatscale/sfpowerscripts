@@ -180,7 +180,8 @@ export default class DeploySourceToOrgImpl implements DeploymentExecutor {
         });
 
         // Wait for polling to finish and get the DeployResult object
-        const result = await deploy.pollStatus({ frequency: Duration.seconds(30), timeout: Duration.hours(2) });
+        const hoursInWaitTime = Number(this.deploymentOptions.waitTime) / 60;
+        const result = await deploy.pollStatus({ frequency: Duration.seconds(30), timeout: Duration.hours(hoursInWaitTime) });
         return result;
     }
 
