@@ -105,7 +105,6 @@ RUN mkdir -p $XDG_DATA_HOME && \
 # Install sfdx plugins
 RUN echo 'y' | sf plugins:install @dxatscale/browserforce@${BROWSERFORCE_VERSION} \
     && echo 'y' | sf plugins:install sfdmu@${SFDMU_VERSION} \
-    && echo 'y' | sf plugins:install @salesforce/plugin-packaging@1.25.0 \
     && echo 'y' | sf plugins:install @salesforce/plugin-signups@1.5.0 \
     && echo 'y' | sf plugins:install @salesforce/sfdx-scanner@3.16.0 \
     && yarn cache clean --all 
