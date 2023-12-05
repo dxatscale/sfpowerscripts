@@ -4,7 +4,7 @@
     "version": "25.5.3",
     "license": "MIT",
     "author": "dxatscale",
-    "release": "December 23",
+    "release": "January 24",
     "bin": {
         "sfp": "./bin/run",
         "sfpowerscripts": "./bin/run"

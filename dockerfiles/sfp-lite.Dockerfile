@@ -12,7 +12,7 @@ LABEL org.opencontainers.image.documentation "https://docs.dxatscale.io/sfpowers
 LABEL org.opencontainers.image.revision $GIT_COMMIT
 LABEL org.opencontainers.image.vendor "DX@Scale"
 LABEL org.opencontainers.image.source "https://github.com/dxatscale/sfpowerscripts"
-LABEL org.opencontainers.image.title "DX@Scale sfp lite docker image - December 23"
+LABEL org.opencontainers.image.title "DX@Scale sfp lite docker image - January 24"
 
 
 ENV DEBIAN_FRONTEND=noninteractive
