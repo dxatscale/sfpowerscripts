@@ -27,7 +27,6 @@ export default class Fetch extends SfpowerscriptsCommand {
     public static description = messages.getMessage('commandDescription');
 
     protected static requiresDevhubUsername = true;
-    protected static requiresProject = true;
     public static enableJsonFlag = true;
 
     public static examples = [
@@ -71,8 +70,6 @@ export default class Fetch extends SfpowerscriptsCommand {
     public async execute(): Promise<AnyJson> {
         const fetchStartTime: number = Date.now();
 
-        if (!fs.existsSync('sfdx-project.json'))
-            throw new Error('This command must be run in the root directory of a SFDX project');
 
         await this.hubOrg.refreshAuth();
         const hubConn = this.hubOrg.getConnection();
