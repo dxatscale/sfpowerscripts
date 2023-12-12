@@ -12,7 +12,8 @@ export enum PATH {
     DEFAULT = ".sfpowerscripts",
     PREPARE = ".sfpowerscripts/eventStreamPrepare.json",
     BUILD = ".sfpowerscripts/eventStreamBuild.json",
-    VALIDATE = ".sfpowerscripts/eventStreamValidate.json"
+    VALIDATE = ".sfpowerscripts/eventStreamValidate.json",
+    RELEASE = ".sfpowerscripts/eventStreamRelease.json"
 }
 
 export enum EVENTTYPE {
@@ -308,6 +309,8 @@ export interface ValidateProps {
 export interface ReleaseHookSchema {
     eventType: string;
     jobId: string;
+    devHubAlias: string;
+    branch: string;
     payload: ReleaseFile;
 }
 

@@ -15,5 +15,6 @@
     "allowUnpromotedPackagesFlagDescription": "Allow un-promoted packages to be installed in production",
     "devhubAliasFlagDescription": "Provide the alias of the devhub previously authenticated, default value is HubOrg",
     "directoryFlagDescription": "Relative path to directory to which the changelog should be generated, if the directory doesnt exist, it will be created",
-    "branchNameFlagDescription": "Repository branch in which the changelog files are located"
+    "branchNameFlagDescription": "Repository branch in which the changelog files are located",
+    "jobIdFlagDescription":"The job id of the current build job, identifier for event streams and webhooks"
 }
