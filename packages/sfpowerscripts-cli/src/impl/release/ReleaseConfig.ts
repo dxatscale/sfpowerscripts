@@ -15,7 +15,7 @@ export default class ReleaseConfig {
         return lodash.cloneDeep(this._releaseDefinitionGeneratorSchema);
     }
 
-    public constructor(private logger: Logger, pathToReleaseDefinition: string) {
+    public constructor(private logger: Logger, pathToReleaseDefinition: string, private isExplicitDependencyCheckEnabled:boolean=false) {
         this._releaseDefinitionGeneratorSchema = yaml.load(fs.readFileSync(pathToReleaseDefinition, 'utf8'));
         this.validateReleaseDefinitionGeneratorConfig(this._releaseDefinitionGeneratorSchema);
 
@@ -55,6 +55,16 @@ export default class ReleaseConfig {
             }
         }
 
+        if(packages.length>0)
+        {
+            for (const sfdxPackage of sfdxPackages) {
+                if (this.getPackageDependencyPredicate(sfdxPackage)) {
+                    packages.push(sfdxPackage);
+                }
+            }
+        }
+
+
         return packages;
     }
 
@@ -91,6 +101,15 @@ export default class ReleaseConfig {
             return this.releaseDefinitionGeneratorConfigSchema.includeOnlyArtifacts?.includes(artifact);
         } else if (this.releaseDefinitionGeneratorConfigSchema.excludeArtifacts) {
             return !this.releaseDefinitionGeneratorConfigSchema.excludeArtifacts?.includes(artifact);
-        } else return true;
+        } else if(this.isExplicitDependencyCheckEnabled && this.releaseDefinitionGeneratorConfigSchema.dependencyOn) {
+            return this.releaseDefinitionGeneratorConfigSchema.dependencyOn?.includes(artifact);
+        }
+        else return true;
+    }
+
+    private getPackageDependencyPredicate(artifact: string): boolean {
+        if(this.isExplicitDependencyCheckEnabled && this.releaseDefinitionGeneratorConfigSchema.dependencyOn) {
+            return this.releaseDefinitionGeneratorConfigSchema.dependencyOn?.includes(artifact);
+        }
     }
 }

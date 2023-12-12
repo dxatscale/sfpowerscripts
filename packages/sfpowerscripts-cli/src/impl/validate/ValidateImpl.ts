@@ -515,6 +515,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
 				let releaseConfig: ReleaseConfig = new ReleaseConfig(
 					logger,
 					props.releaseConfigPath,
+					true
 				);
 				return releaseConfig.getPackagesAsPerReleaseConfig();
 			}

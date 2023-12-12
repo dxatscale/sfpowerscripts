@@ -4,7 +4,7 @@ import path from 'path';
 
 export default class ImpactedRelaseConfigResolver {
 
-    public getImpactedReleaseConfigs(impactedPackages, configDir, filterBy?: string) {
+    public getImpactedReleaseConfigs(impactedPackages, configDir,isExplicitDependencyCheckEnabled:boolean=false, filterBy?: string) {
         const impactedReleaseDefs = [];
 
         fs.readdirSync(configDir).forEach((file) => {
@@ -24,6 +24,15 @@ export default class ImpactedRelaseConfigResolver {
                         (artifact) => !releaseConfig.excludeArtifacts.includes(artifact)
                     );
                 }
+
+
+                // handle dependencyOn, only do impact if there is atleast one package that is impacted
+                if (releaseImpactedPackages.length>0 && isExplicitDependencyCheckEnabled && releaseConfig.dependencyOn) {
+                    releaseImpactedPackages = releaseConfig.dependencyOn.filter((artifact) =>
+                        impactedPackages.includes(artifact)
+                    );
+                }
+
 
                 if (releaseImpactedPackages.length > 0) {
                     if (filterBy) {

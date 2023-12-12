@@ -26,6 +26,10 @@ export default class ReleaseConfig extends SfpowerscriptsCommand {
             description: messages.getMessage('releaseConfigFileFlagDescription'),
             default: 'config',
         }),
+        explictDependencyCheck: Flags.boolean({
+            description: messages.getMessage('explictDependencyCheckFlagDescription'),
+            default: false,
+        }),
         filterBy: Flags.string({
             description: messages.getMessage('filterByFlagDescription'),
         }),
@@ -63,6 +67,7 @@ export default class ReleaseConfig extends SfpowerscriptsCommand {
         let impactedReleaseConfigs = impactedReleaseConfigResolver.getImpactedReleaseConfigs(
             packagesToBeBuilt,
             this.flags.releaseconfig,
+            this.flags.explictDependencyCheck,
             this.flags.filterBy
         );
 
