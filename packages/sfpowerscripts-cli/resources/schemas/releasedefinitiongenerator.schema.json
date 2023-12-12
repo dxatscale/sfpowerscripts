@@ -48,6 +48,13 @@
                 "type": "string"
             }
         },
+        "dependencyOn": {
+            "type": "array",
+            "title": "Include the below artifacts as dependencies of this release definition,usefor for validation",
+            "items": {
+                "type": "string"
+            }
+        },
         "releasedefinitionProperties":{
             "type": "object",
             "title": "Properties that need to be set in the generated definition file",
