@@ -15,6 +15,7 @@ import { PackageVersion, PackageVersionCreateRequestResult } from '@salesforce/p
 import { Duration } from '@salesforce/kit';
 import PackageDependencyDisplayer from '../../display/PackageDependencyDisplayer';
 const path = require('path');
+import { BuildStreamService } from '../../eventStream/build';
 
 export default class CreateUnlockedPackageImpl extends CreatePackage {
     private static packageTypeInfos: PackageTypeInfo[];
@@ -60,6 +61,7 @@ export default class CreateUnlockedPackageImpl extends CreatePackage {
                 LoggerLevel.WARN,
                 this.logger
             );
+            BuildStreamService.sendPackageError(this.sfpPackage,'Unable to find a package info for this particular package, Are you sure you created this package?')
             throw new Error('Unable to fetch Package Info');
         }
 
@@ -89,7 +91,7 @@ export default class CreateUnlockedPackageImpl extends CreatePackage {
         }
 
         //Print Dependencies
-        PackageDependencyDisplayer.printPackageDependencies(sfpPackage.dependencies,sfpPackage.projectConfig, this.logger);
+        PackageDependencyDisplayer.printPackageDependencies(sfpPackage.dependencies,sfpPackage.projectConfig, this.logger, this.sfpPackage.packageName);
 
     }
 
@@ -147,6 +149,7 @@ export default class CreateUnlockedPackageImpl extends CreatePackage {
                     errorMessage = 'Creation errors: ';
                     for (let i = 0; i < errors.length; i++) {
                         errorMessage += `\n${i + 1}) ${errors[i]}`;
+                        BuildStreamService.sendPackageError(this.sfpPackage,errors[i],true)
                     }
                 }
                 throw new Error(`Unable to create ${this.sfpPackage.packageName} due to \n` + errorMessage);
@@ -160,6 +163,9 @@ export default class CreateUnlockedPackageImpl extends CreatePackage {
             sfpPackage.package_version_id = currentPackageCreationStatus.SubscriberPackageVersionId;
             await this.getPackageInfo(sfpPackage);
         } else {
+            BuildStreamService.sendPackageError(this.sfpPackage,`The build for ${this.sfpPackage.packageName} was not completed in the wait time ${this.packageCreationParams.waitTime} provided.${EOL}
+            You might want to increase the wait time or better check the dependencies or convert to different package type ${EOL}
+            Read more about it here https://docs.dxatscale.io/development-practices/types-of-packaging/unlocked-packages#build-options-with-unlocked-packages`)
             throw new Error(
                 `The build for ${this.sfpPackage.packageName} was not completed in the wait time ${this.packageCreationParams.waitTime} provided.${EOL}
          You might want to increase the wait time or better check the dependencies or convert to different package type ${EOL}
@@ -169,8 +175,10 @@ export default class CreateUnlockedPackageImpl extends CreatePackage {
 
         //Break if coverage is low
         if (this.packageCreationParams.isCoverageEnabled && !this.isOrgDependentPackage) {
-            if (!sfpPackage.has_passed_coverage_check)
+            if (!sfpPackage.has_passed_coverage_check){
+                BuildStreamService.sendPackageError(this.sfpPackage,'This package has not meet the minimum coverage requirement of 75%')
                 throw new Error('This package has not meet the minimum coverage requirement of 75%');
+            }
         }
     }
 

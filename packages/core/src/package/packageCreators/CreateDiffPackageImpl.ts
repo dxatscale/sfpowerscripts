@@ -16,6 +16,7 @@ import MetadataCount from '../components/MetadataCount';
 import * as rimraf from 'rimraf';
 import Component from '../../dependency/Component';
 import PackageComponentDiff from '../diff/PackageComponentDiff';
+import { BuildStreamService } from '../../eventStream/build';
 
 export default class CreateDiffPackageImp extends CreateSourcePackageImpl {
     public constructor(
@@ -80,6 +81,7 @@ export default class CreateDiffPackageImp extends CreateSourcePackageImpl {
             } catch (error) {
                 //if both are same after git resolution.. just do nothing, treat is a normal source package
                 if (error.message.includes('Unable to compute diff, as both commits are same')) {
+                    BuildStreamService.sendPackageError(this.sfpPackage,`Unable to compute diff, as both commits are same`)
                     SFPLogger.log(
                         `Both commits are same, treating it as an empty package`,
                         LoggerLevel.WARN,
@@ -88,7 +90,10 @@ export default class CreateDiffPackageImp extends CreateSourcePackageImpl {
                     //Create an empty diff directory to force skip of packages
                     const diffSrcDir = path.join(sfpPackage.workingDirectory, `diff/${sfpPackage.packageDirectory}`);
                     fs.mkdirpSync(diffSrcDir);
-                } else throw error;
+                } else {
+                    BuildStreamService.sendPackageError(this.sfpPackage,`Unable to create diff package`)
+                    throw error;
+                }
             }
 
             await this.introspectDiffPackageCreated(sfpPackage, this.params, this.logger);

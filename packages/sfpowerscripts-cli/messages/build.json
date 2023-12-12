@@ -14,5 +14,6 @@
     "branchFlagDescription": "The git branch that this build is triggered on, Useful for metrics and general identification purposes",
     "tagFlagDescription": "Tag the build with a label, useful to identify in metrics",
     "logsGroupSymbolFlagDescription": "Symbol used by CICD platform to group/collapse logs in the console. Provide an opening group, and an optional closing group symbol.",
-    "releaseConfigFileFlagDescription":"Path to the release config file which determines what packages should be built"
+    "releaseConfigFileFlagDescription":"Path to the release config file which determines what packages should be built",
+    "jobIdFlagDescription":"The job id of the current build job, identifier for event streams and webhooks"
 }

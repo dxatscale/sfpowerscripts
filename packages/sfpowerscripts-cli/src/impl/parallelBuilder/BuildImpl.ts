@@ -37,6 +37,7 @@ import TransitiveDependencyResolver from "@dxatscale/sfpowerscripts.core/lib/pac
 import GroupConsoleLogs from "../../ui/GroupConsoleLogs";
 import UserDefinedExternalDependency from "@dxatscale/sfpowerscripts.core/lib/project/UserDefinedExternalDependency";
 import PackageDependencyDisplayer from "@dxatscale/sfpowerscripts.core/lib/display/PackageDependencyDisplayer";
+import { BuildStreamService } from '@dxatscale/sfpowerscripts.core/lib/eventStream/build';
 
 const PRIORITY_UNLOCKED_PKG_WITH_DEPENDENCY = 1;
 const PRIORITY_UNLOCKED_PKG_WITHOUT_DEPENDENCY = 3;
@@ -55,6 +56,7 @@ export interface BuildProps {
 	buildNumber: number;
 	executorcount: number;
 	isBuildAllAsSourcePackages: boolean;
+	jobId?: string;
 	branch?: string;
 	currentStage: Stage;
 	baseBranch?: string;
@@ -106,11 +108,11 @@ export default class BuildImpl {
 				aliasOrUsername: this.props.devhubAlias,
 			});
 
-
+		BuildStreamService.buildProps(this.props);
 		let git = await Git.initiateRepo(new ConsoleLogger());
 		this.repository_url = await git.getRemoteOriginUrl(this.props.repourl);
 		this.commit_id = await git.getHeadCommit();
-
+        BuildStreamService.buildJobAndOrgId(this.props.jobId, this.sfpOrg?.getConnection().getAuthInfoFields().instanceUrl,this.props.devhubAlias,this.commit_id);
 		this.packagesToBeBuilt = this.getPackagesToBeBuilt(
 			this.props.projectDirectory,
 			this.props.includeOnlyPackages,
@@ -309,6 +311,7 @@ export default class BuildImpl {
 		});
 		for (const pkg of this.packagesToBeBuilt) {
 			let item = [pkg, "Activated as part of all package build"];
+			BuildStreamService.buildPackageInitialitation(pkg,'Activated as part of all package build','');
 			if (
 				this.isMultiConfigFilesEnabled &&
 				this.props.currentStage == Stage.BUILD
@@ -351,6 +354,7 @@ export default class BuildImpl {
 					reason: packageDiffCheck.reason,
 					tag: packageDiffCheck.tag,
 				});
+				BuildStreamService.buildPackageInitialitation(pkg,packageDiffCheck.reason,packageDiffCheck.tag);
 				//Add Bundles
 				if (buildCollections.isPackageInACollection(pkg)) {
 					buildCollections
@@ -360,6 +364,7 @@ export default class BuildImpl {
 								packagesToBeBuilt.set(packageInCollection, {
 									reason: "Part of a build collection",
 								});
+								BuildStreamService.buildPackageInitialitation(packageInCollection,'Part of a build collection','');
 							}
 						});
 				}
@@ -435,14 +440,34 @@ export default class BuildImpl {
 		SFPLogger.log(
 			`${EOL}Packages currently processed:{${this.packagesInQueue.length}} + ${this.packagesInQueue}`,
 		);
+		BuildStreamService.buildPackageCurrentlyProcessedList(this.packagesInQueue);
 		SFPLogger.log(
 			`Awaiting Dependencies to be resolved:{${this.packagesToBeBuilt.length}} + ${this.packagesToBeBuilt}`,
 		);
+		BuildStreamService.buildPackageAwaitingList(this.packagesToBeBuilt);
 	}
 
 	private handlePackageError(reason: any, pkg: string): any {
 		SFPLogger.printHeaderLine('', COLOR_HEADER, LoggerLevel.INFO);
 		SFPLogger.log(COLOR_ERROR(`Package Creation Failed for ${pkg}, Here are the details:`));
+		const sfpPackageMain:SfpPackage = {
+			projectDirectory: this.props.projectDirectory, packageDirectory: pkg,
+			workingDirectory: "",
+			mdapiDir: "",
+			destructiveChangesPath: "",
+			resolvedPackageDirectory: "",
+			version: "",
+			packageName: "",
+			versionNumber: "",
+			packageType: "",
+			toJSON() {
+				return this;
+			},
+			package_name: pkg
+		}; 
+
+		BuildStreamService.sendPackageError(sfpPackageMain,reason.message);
+
 		try {
 			// Append error to log file
 			fs.appendFileSync(`.sfpowerscripts/logs/${pkg}`, reason.message, "utf8");
@@ -458,6 +483,7 @@ export default class BuildImpl {
 
 			SFPLogger.log(data);
 		} catch (e) {
+			BuildStreamService.sendPackageError(sfpPackageMain,`Unable to display logs for pkg ${pkg}`);
 			SFPLogger.log(`Unable to display logs for pkg ${pkg}`);
 		}
 
@@ -466,19 +492,39 @@ export default class BuildImpl {
 			if (el == pkg) return false;
 			else return true;
 		});
+		BuildStreamService.buildPackageAwaitingList(this.packagesToBeBuilt);
 		this.packagesInQueue = this.packagesInQueue.filter((pkg_name) => {
 			if (pkg == pkg_name) return false;
 			else return true;
 		});
+		BuildStreamService.buildPackageCurrentlyProcessedList(this.packagesInQueue);
 
 		//Remove myself and my  childs
 		this.failedPackages.push(pkg);
+		BuildStreamService.buildPackageErrorList(pkg);
 		SFPStatsSender.logCount("build.failed.packages", { package: pkg });
 		this.packagesToBeBuilt = this.packagesToBeBuilt.filter((pkgBuild) => {
 			if (this.childs[pkg].includes(pkgBuild)) {
 				SFPStatsSender.logCount("build.failed.packages", {
 					package: pkgBuild,
 				});
+				const sfpPackage:SfpPackage = {
+					projectDirectory: this.props.projectDirectory, packageDirectory: pkgBuild,
+					workingDirectory: "",
+					mdapiDir: "",
+					destructiveChangesPath: "",
+					resolvedPackageDirectory: "",
+					version: "",
+					packageName: "",
+					versionNumber: "",
+					packageType: "",
+					toJSON() {
+						return this;
+					},
+					package_name: pkgBuild
+				}; 
+				BuildStreamService.sendPackageError(sfpPackage,reason.message);
+				BuildStreamService.buildPackageErrorList(pkgBuild);
 				this.failedPackages.push(pkgBuild);
 				return false;
 			}
@@ -492,6 +538,8 @@ export default class BuildImpl {
 
 	private queueChildPackages(sfpPackage: SfpPackage): any {
 		this.packagesBuilt.push(sfpPackage.packageName);
+		BuildStreamService.buildPackageSuccessList(sfpPackage.packageName);
+		BuildStreamService.sendPackageCompletedInfos(sfpPackage);
 		this.printPackageDetails(sfpPackage);
 
 		this.packagesToBeBuilt.forEach((pkg) => {
@@ -556,9 +604,11 @@ export default class BuildImpl {
 		this.packagesToBeBuilt = this.packagesToBeBuilt.filter((el) => {
 			return !pushedPackages.includes(el);
 		});
+		BuildStreamService.buildPackageAwaitingList(this.packagesToBeBuilt);
 		this.packagesInQueue = this.packagesInQueue.filter(
 			(pkg_name) => pkg_name !== sfpPackage.packageName,
 		);
+		BuildStreamService.buildPackageCurrentlyProcessedList(this.packagesInQueue);
 	}
 
 	private resolveDependenciesOnCompletedPackage(

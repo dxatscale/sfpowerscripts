@@ -27,6 +27,7 @@ export default class Build extends BuildBase {
             isDiffCheckEnabled: this.flags.diffcheck,
             buildNumber: this.flags.buildnumber,
             executorcount: this.flags.executorcount,
+            jobId: this.flags.jobid ?? `NO_DEV_HUB_IMPL_${Date.now().toString()}`,
             branch: this.flags.branch,
             currentStage: Stage.BUILD,
             isBuildAllAsSourcePackages: false,
