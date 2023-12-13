@@ -4,7 +4,7 @@ import SFPLogger, { Logger, LoggerLevel } from '@flxblio/sfp-logger';
 import { mkdirpSync } from 'fs-extra';
 import * as fs from 'fs-extra';
 import PackageComponentDiff from '../diff/PackageComponentDiff';
-let path = require('path');
+const path = require('path');
 
 export default class SfpPackageContentGenerator {
     public static isPreDeploymentScriptAvailable: boolean = false;
@@ -92,7 +92,7 @@ export default class SfpPackageContentGenerator {
         const packageDescriptor = ProjectConfig.getPackageDescriptorFromConfig(sfdx_package, projectConfig);
         if (packageDescriptor.unpackagedMetadata?.path) {
             if (fs.pathExistsSync(packageDescriptor.unpackagedMetadata.path)) {
-                let unpackagedMetadataDir: string = path.join(artifactDirectory, `unpackagedMetadata`);
+                const unpackagedMetadataDir: string = path.join(artifactDirectory, `unpackagedMetadata`);
                 mkdirpSync(unpackagedMetadataDir);
                 fs.copySync(path.join(rootDirectory, packageDescriptor.unpackagedMetadata.path), unpackagedMetadataDir);
             } else {
@@ -109,7 +109,7 @@ export default class SfpPackageContentGenerator {
         versionNumber:string
     ) {
         // Create pruned package manifest in source directory
-        let cleanedUpProjectManifest = ProjectConfig.cleanupMPDFromProjectConfig(projectConfig, sfdx_package);
+        const cleanedUpProjectManifest = ProjectConfig.cleanupMPDFromProjectConfig(projectConfig, sfdx_package);
 
         //Ensure version numbers are used from 
         cleanedUpProjectManifest.packageDirectories[0].versionNumber=versionNumber
@@ -134,7 +134,7 @@ export default class SfpPackageContentGenerator {
         fs.writeFileSync(path.join(artifactDirectory, 'sfdx-project.json'), JSON.stringify(cleanedUpProjectManifest));
 
         // Copy original package manifest
-        let manifestsDir: string = path.join(artifactDirectory, `manifests`);
+        const manifestsDir: string = path.join(artifactDirectory, `manifests`);
         mkdirpSync(manifestsDir);
         fs.copySync(path.join(projectDirectory, 'sfdx-project.json'), path.join(manifestsDir, 'sfdx-project.json.ori'));
     }
@@ -146,10 +146,10 @@ export default class SfpPackageContentGenerator {
      * @param sfdx_package
      */
     private static createScripts(artifactDirectory: string, projectDirectory: string, sfdx_package): void {
-        let scriptsDir: string = path.join(artifactDirectory, `scripts`);
+        const scriptsDir: string = path.join(artifactDirectory, `scripts`);
         mkdirpSync(scriptsDir);
 
-        let packageDescriptor = ProjectConfig.getSFDXPackageDescriptor(projectDirectory, sfdx_package);
+        const packageDescriptor = ProjectConfig.getSFDXPackageDescriptor(projectDirectory, sfdx_package);
 
         if (packageDescriptor.preDeploymentScript) {
             if (projectDirectory)
@@ -186,19 +186,19 @@ export default class SfpPackageContentGenerator {
      * @param projectDirectory
      */
     private static createForceIgnores(artifactDirectory: string, projectDirectory: string): void {
-        let forceIgnoresDir: string = path.join(artifactDirectory, `forceignores`);
+        const forceIgnoresDir: string = path.join(artifactDirectory, `forceignores`);
         mkdirpSync(forceIgnoresDir);
 
-        let projectConfig = ProjectConfig.getSFDXProjectConfig(projectDirectory);
-        let ignoreFiles = projectConfig.plugins?.sfp?.ignoreFiles;
+        const projectConfig = ProjectConfig.getSFDXProjectConfig(projectDirectory);
+        const ignoreFiles = projectConfig.plugins?.sfp?.ignoreFiles;
 
         //TODO: Make this readable
         //This is a fix when sfppackage is used in stages where build is not involved
         //So it has to be build from the root of the unzipped directory
         //and whatever mentioned in .json is already translated
 
-        let rootForceIgnore: string = path.join(projectDirectory, '.forceignore');
-        let copyForceIgnoreForStage = (stage) => {
+        const rootForceIgnore: string = path.join(projectDirectory, '.forceignore');
+        const copyForceIgnoreForStage = (stage) => {
             if (ignoreFiles?.[stage]) {
                 if (fs.existsSync(path.join(projectDirectory, ignoreFiles[stage]))) {
                     fs.copySync(
@@ -218,7 +218,7 @@ export default class SfpPackageContentGenerator {
             fs.appendFileSync(  path.join(forceIgnoresDir, '.' + stage + 'ignore'),"\n**/postDeploy");
         };
 
-        let stages: string[] = ['prepare', 'validate', 'quickbuild', 'build'];
+        const stages: string[] = ['prepare', 'validate', 'quickbuild', 'build'];
         stages.forEach((stage) => copyForceIgnoreForStage(stage));
 
         fs.copySync(rootForceIgnore, path.join(artifactDirectory, '.forceignore'));
@@ -290,10 +290,10 @@ export default class SfpPackageContentGenerator {
     }
 
     private static makefolderid(length): string {
-        var result = '';
-        var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-        var charactersLength = characters.length;
-        for (var i = 0; i < length; i++) {
+        let result = '';
+        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        const charactersLength = characters.length;
+        for (let i = 0; i < length; i++) {
             result += characters.charAt(Math.floor(Math.random() * charactersLength));
         }
         return result;

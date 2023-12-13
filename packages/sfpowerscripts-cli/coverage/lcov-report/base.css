@@ -26,7 +26,7 @@ pre {
 a { color:#0074D9; text-decoration:none; }
 a:hover { text-decoration:underline; }
 .strong { font-weight: bold; }
-.space-top1 { padding: 10px 0 0 0; }
+.space-top1 { padding: 10px 0 0; }
 .pad2y { padding: 20px 0; }
 .pad1y { padding: 10px 0; }
 .pad2x { padding: 0 20px; }
@@ -68,7 +68,7 @@ a:hover { text-decoration:underline; }
 div.path a:link, div.path a:visited { color: #333; }
 table.coverage {
   border-collapse: collapse;
-  margin: 10px 0 0 0;
+  margin: 10px 0 0;
   padding: 0;
 }
 

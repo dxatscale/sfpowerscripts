@@ -10,7 +10,7 @@ export default class PackageMergeManager {
     public constructor(private sfpPackages: SfpPackage[], private logger?: Logger) {}
 
     public async mergePackages(targetOrAlias?: string): Promise<MergeResult> {
-        let mergeResult: MergeResult = new MergeResult();
+        const mergeResult: MergeResult = new MergeResult();
         mergeResult.skippedPackages = [];
         mergeResult.unlockedPackages = [];
         mergeResult.mergedPackages = [];
@@ -18,13 +18,13 @@ export default class PackageMergeManager {
         mergeResult.requestedMergeOrder = this.sfpPackages;
 
         //Use the .sfp directory
-        let tmpDir = tmp.dirSync({ unsafeCleanup: true });
-        let locationOfCopiedDirectory = tmpDir.name;
+        const tmpDir = tmp.dirSync({ unsafeCleanup: true });
+        const locationOfCopiedDirectory = tmpDir.name;
         //Create a  temporary folder
-        let mergedProjectDir = path.join(locationOfCopiedDirectory, `${this.makefolderid(5)}_merged`);
+        const mergedProjectDir = path.join(locationOfCopiedDirectory, `${this.makefolderid(5)}_merged`);
         mergeResult.mergedProjectDirectory = mergedProjectDir;
 
-        let mergedPackageDir = path.join(mergedProjectDir, 'force-app');
+        const mergedPackageDir = path.join(mergedProjectDir, 'force-app');
         fs.mkdirpSync(mergedPackageDir);
 
         //Create sfdx project.json
@@ -48,7 +48,7 @@ export default class PackageMergeManager {
             } else {
                 //handle alaisfy directory
                 if (sfpPackage.packageDescriptor.aliasfy) {
-                    let aliasFolder = path.join(
+                    const aliasFolder = path.join(
                         process.cwd(),
                         sfpPackage.projectDirectory,
                         sfpPackage.packageDirectory,
@@ -72,7 +72,7 @@ export default class PackageMergeManager {
                 console.log('copied file');
 
                 //Merge
-                let results = await converter.convert(componentSet, 'source', {
+                const results = await converter.convert(componentSet, 'source', {
                     type: 'merge',
                     mergeWith: ComponentSet.fromSource(mergedPackageDir).getSourceComponents(),
                     defaultDirectory: mergedPackageDir,
@@ -93,7 +93,7 @@ export default class PackageMergeManager {
 
         //Build SfpPackage
         if (mergeResult.mergedPackages.length > 0) {
-            let mergedSfPPackage = await SfpPackageBuilder.buildPackageFromProjectDirectory(
+            const mergedSfPPackage = await SfpPackageBuilder.buildPackageFromProjectDirectory(
                 this.logger,
                 mergeResult.mergedProjectDirectory,
                 'merged',
@@ -116,14 +116,14 @@ export default class PackageMergeManager {
     }
 
     private dedupeXmlFileSuffix(xmlFile: string): string {
-        let deduped = xmlFile.replace(/-meta\.xml/, '');
+        const deduped = xmlFile.replace(/-meta\.xml/, '');
         fs.renameSync(xmlFile, deduped);
 
         return deduped;
     }
 
     private getMergedProjectManifest() {
-        let projectManifest = {
+        const projectManifest = {
             packageDirectories: [
                 {
                     path: 'force-app',
@@ -139,11 +139,11 @@ export default class PackageMergeManager {
     }
 
     private makefolderid(length): string {
-        var result = '';
-        var characters =
+        let result = '';
+        const characters =
             'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-        var charactersLength = characters.length;
-        for (var i = 0; i < length; i++) {
+        const charactersLength = characters.length;
+        for (let i = 0; i < length; i++) {
             result += characters.charAt(Math.floor(Math.random() * charactersLength));
         }
         return result;

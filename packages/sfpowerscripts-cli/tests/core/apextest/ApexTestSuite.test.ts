@@ -28,14 +28,14 @@ describe('Provided an apex test suite from a source directory', () => {
         `;
         });
 
-        let resultTestClasses = new Array<string>();
+        const resultTestClasses = new Array<string>();
         resultTestClasses.push(`AccountAccountRelationTriggerTest`);
         resultTestClasses.push(`AccountContactRelationTriggerTest`);
         resultTestClasses.push(`AccountTeamMemberTriggerTest`);
         resultTestClasses.push(`AccountTriggerTest`);
         resultTestClasses.push(`ContactTriggerTest`);
 
-        let apexTestSuite = new ApexTestSuite(`dir`, `test`);
+        const apexTestSuite = new ApexTestSuite(`dir`, `test`);
         expect(apexTestSuite.getConstituentClasses()).resolves.toStrictEqual(resultTestClasses);
     });
 
@@ -47,7 +47,7 @@ describe('Provided an apex test suite from a source directory', () => {
 
 
 
-        let apexTestSuite = new ApexTestSuite(`dir`, `test`);
+        const apexTestSuite = new ApexTestSuite(`dir`, `test`);
 
         expect(apexTestSuite.getConstituentClasses()).rejects.toThrowError();
     });
@@ -55,7 +55,7 @@ describe('Provided an apex test suite from a source directory', () => {
     it('should return apexclass even if there is only one', () => {
 
         jest.spyOn(globSync, 'globSync').mockImplementationOnce((pattern: string | string[], options: any) => {
-            return new Array('/path/to/test.testSuite-meta.xml');;
+            return new Array('/path/to/test.testSuite-meta.xml');
         });
 
         const fsReadMock = jest.spyOn(fs, 'readFileSync');
@@ -68,10 +68,10 @@ describe('Provided an apex test suite from a source directory', () => {
       `;
         });
 
-        let resultTestClasses = new Array<string>();
+        const resultTestClasses = new Array<string>();
         resultTestClasses.push(`AccountAccountRelationTriggerTest`);
 
-        let apexTestSuite = new ApexTestSuite(`dir`, `test`);
+        const apexTestSuite = new ApexTestSuite(`dir`, `test`);
         expect(apexTestSuite.getConstituentClasses()).resolves.toStrictEqual(resultTestClasses);
     });
 });

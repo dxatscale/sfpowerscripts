@@ -10,7 +10,7 @@ export default class FTAnalyser implements PackageAnalyzer {
 
     public getName(): string {
         return "Feed Tracking Analyzer";
-    };
+    }
 
     public async analyze(sfpPackage: SfpPackage, componentSet:ComponentSet, logger:Logger): Promise<SfpPackage> {
         try {
@@ -18,7 +18,7 @@ export default class FTAnalyser implements PackageAnalyzer {
             let ftFields: { [key: string]: Array<string> } = {};
 
             //read the yaml
-            let ftYamlPath = path.join(
+            const ftYamlPath = path.join(
                 sfpPackage.workingDirectory,
                 sfpPackage.projectDirectory,
                 sfpPackage.packageDirectory,
@@ -50,16 +50,16 @@ export default class FTAnalyser implements PackageAnalyzer {
         ftFields: { [key: string]: Array<string> },
         componentSet: ComponentSet
     ): Promise<Record<string, Array<string>>> {
-        let sourceComponents = componentSet.getSourceComponents().toArray();
+        const sourceComponents = componentSet.getSourceComponents().toArray();
 
         for (const sourceComponent of sourceComponents) {
             if (sourceComponent.type.name !== registry.types.customobject.children.types.customfield.name) {
                 continue;
             }
 
-            let customField = sourceComponent.parseXmlSync().CustomField;
+            const customField = sourceComponent.parseXmlSync().CustomField;
             if (customField['trackFeedHistory'] == 'true') {
-                let objName = sourceComponent.parent.fullName;
+                const objName = sourceComponent.parent.fullName;
                 if (!ftFields[objName]) ftFields[objName] = [];
                 ftFields[objName].push(sourceComponent.name);
             }

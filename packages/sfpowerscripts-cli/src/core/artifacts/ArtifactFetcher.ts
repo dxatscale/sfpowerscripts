@@ -14,17 +14,17 @@ export default class ArtifactFetcher {
      * @param sfdx_package
      */
     public static fetchArtifacts(artifactDirectory: string, sfdx_package?: string, logger?: Logger): Artifact[] {
-        let result: Artifact[] = [];
+        const result: Artifact[] = [];
 
         if (!fs.existsSync(artifactDirectory)) {
             throw new Error(`Artifact directory ${path.resolve(artifactDirectory)} does not exist`);
         }
 
-        let artifacts: string[] = this.findArtifacts(artifactDirectory, sfdx_package);
+        const artifacts: string[] = this.findArtifacts(artifactDirectory, sfdx_package);
 
         SFPLogger.log(`Artifacts: ${JSON.stringify(artifacts)}`, LoggerLevel.TRACE, logger);
 
-        for (let artifact of artifacts) {
+        for (const artifact of artifacts) {
             let artifactFilePaths: Artifact;
             if (path.extname(artifact) === '.zip') {
                 artifactFilePaths = ArtifactFetcher.fetchArtifactFilePathsFromZipFile(artifact);
@@ -44,11 +44,11 @@ export default class ArtifactFetcher {
      * @param packageMetadataFilePath
      */
     private static fetchArtifactFilePathsFromFolder(packageMetadataFilePath: string): Artifact {
-        let sourceDirectory = path.join(path.dirname(packageMetadataFilePath), `source`);
+        const sourceDirectory = path.join(path.dirname(packageMetadataFilePath), `source`);
 
-        let changelogFilePath = path.join(path.dirname(packageMetadataFilePath), `changelog.json`);
+        const changelogFilePath = path.join(path.dirname(packageMetadataFilePath), `changelog.json`);
 
-        let artifactFilePaths: Artifact = {
+        const artifactFilePaths: Artifact = {
             packageMetadataFilePath: packageMetadataFilePath,
             sourceDirectoryPath: sourceDirectory,
             changelogFilePath: changelogFilePath,
@@ -64,26 +64,26 @@ export default class ArtifactFetcher {
      * @param artifact
      */
     private static fetchArtifactFilePathsFromZipFile(artifact: string): Artifact {
-        let unzippedArtifactsDirectory: string = `.sfp/unzippedArtifacts/${this.makefolderid(8)}`;
+        const unzippedArtifactsDirectory: string = `.sfp/unzippedArtifacts/${this.makefolderid(8)}`;
 
         fs.mkdirpSync(unzippedArtifactsDirectory);
-        let zip = new AdmZip(artifact);
+        const zip = new AdmZip(artifact);
 
         // Overwrite existing files
         zip.extractAllTo(unzippedArtifactsDirectory, true);
 
-        let artifactName: string = path.basename(artifact).match(/.*sfp_artifact/)?.[0];
+        const artifactName: string = path.basename(artifact).match(/.*sfp_artifact/)?.[0];
         if (artifactName == null) {
             throw new Error(`Failed to fetch artifact file paths for ${artifact}`);
         }
 
-        let packageMetadataFilePath = path.join(unzippedArtifactsDirectory, artifactName, 'artifact_metadata.json');
+        const packageMetadataFilePath = path.join(unzippedArtifactsDirectory, artifactName, 'artifact_metadata.json');
 
-        let sourceDirectory = path.join(unzippedArtifactsDirectory, artifactName, `source`);
+        const sourceDirectory = path.join(unzippedArtifactsDirectory, artifactName, `source`);
 
-        let changelogFilePath = path.join(unzippedArtifactsDirectory, artifactName, `changelog.json`);
+        const changelogFilePath = path.join(unzippedArtifactsDirectory, artifactName, `changelog.json`);
 
-        let artifactFilePaths: Artifact = {
+        const artifactFilePaths: Artifact = {
             packageMetadataFilePath: packageMetadataFilePath,
             sourceDirectoryPath: sourceDirectory,
             changelogFilePath: changelogFilePath,
@@ -99,7 +99,7 @@ export default class ArtifactFetcher {
      * @param artifact
      */
     private static fetchArtifactFilePathsFromTarball(artifact: string): Artifact {
-        let unzippedArtifactsDirectory: string = `.sfp/unzippedArtifacts/${this.makefolderid(8)}`;
+        const unzippedArtifactsDirectory: string = `.sfp/unzippedArtifacts/${this.makefolderid(8)}`;
         fs.mkdirpSync(unzippedArtifactsDirectory);
 
         tar.x({
@@ -108,13 +108,13 @@ export default class ArtifactFetcher {
             sync: true,
         });
 
-        let packageMetadataFilePath = path.join(unzippedArtifactsDirectory, 'package', 'artifact_metadata.json');
+        const packageMetadataFilePath = path.join(unzippedArtifactsDirectory, 'package', 'artifact_metadata.json');
 
-        let sourceDirectory = path.join(unzippedArtifactsDirectory, 'package', `source`);
+        const sourceDirectory = path.join(unzippedArtifactsDirectory, 'package', `source`);
 
-        let changelogFilePath = path.join(unzippedArtifactsDirectory, 'package', `changelog.json`);
+        const changelogFilePath = path.join(unzippedArtifactsDirectory, 'package', `changelog.json`);
 
-        let artifactFilePaths: Artifact = {
+        const artifactFilePaths: Artifact = {
             packageMetadataFilePath: packageMetadataFilePath,
             sourceDirectoryPath: sourceDirectory,
             changelogFilePath: changelogFilePath,
@@ -140,14 +140,14 @@ export default class ArtifactFetcher {
             pattern = `**/*sfp_artifact*.@(zip|tgz)`;
         }
 
-        let artifacts: string[] = globSync(pattern, {
+        const artifacts: string[] = globSync(pattern, {
             cwd: artifactDirectory,
             absolute: true,
         });
 
         if (sfdx_package && artifacts.length > 1) {
             SFPLogger.log(`Found more than one artifact for ${sfdx_package}`, LoggerLevel.INFO);
-            let latestArtifact: string = ArtifactFetcher.getLatestArtifact(artifacts);
+            const latestArtifact: string = ArtifactFetcher.getLatestArtifact(artifacts);
             SFPLogger.log(`Using latest artifact ${latestArtifact}`, LoggerLevel.INFO);
             return [latestArtifact];
         } else return artifacts;
@@ -160,22 +160,22 @@ export default class ArtifactFetcher {
     private static getLatestArtifact(artifacts: string[]) {
         // Consider zip & tarball artifacts only
         artifacts = artifacts.filter((artifact) => {
-            let ext: string = path.extname(artifact);
+            const ext: string = path.extname(artifact);
             return ext === '.zip' || ext === '.tgz';
         });
 
-        let pattern = new RegExp('(?:^.*)(?:_sfp_artifact[_-])(?<version>.*)(?:\\.zip|\\.tgz)$');
-        let versions: string[] = artifacts.map((artifact) => {
-            let match: RegExpMatchArray = path.basename(artifact).match(pattern);
-            let version = match?.groups.version;
+        const pattern = new RegExp('(?:^.*)(?:_sfp_artifact[_-])(?<version>.*)(?:\\.zip|\\.tgz)$');
+        const versions: string[] = artifacts.map((artifact) => {
+            const match: RegExpMatchArray = path.basename(artifact).match(pattern);
+            const version = match?.groups.version;
 
             if (version) return version;
             else throw new Error('Corrupted artifact detected with no version number');
         });
 
         // Pick artifact with latest semantic version
-        let sortedVersions: string[] = semver.sort(versions);
-        let latestVersion: string = sortedVersions.pop();
+        const sortedVersions: string[] = semver.sort(versions);
+        const latestVersion: string = sortedVersions.pop();
 
         return artifacts.find((artifact) => artifact.includes(latestVersion));
     }
@@ -207,10 +207,10 @@ export default class ArtifactFetcher {
     }
 
     private static makefolderid(length): string {
-        var result = '';
-        var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-        var charactersLength = characters.length;
-        for (var i = 0; i < length; i++) {
+        let result = '';
+        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        const charactersLength = characters.length;
+        for (let i = 0; i < length; i++) {
             result += characters.charAt(Math.floor(Math.random() * charactersLength));
         }
         return result;
