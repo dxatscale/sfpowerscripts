@@ -1,5 +1,5 @@
 import UndirectedGraph from './UndirectedGraph';
-import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig';
+import ProjectConfig from '../../core/project/ProjectConfig';
 
 /**
  * Class for the manipulation of package build collections

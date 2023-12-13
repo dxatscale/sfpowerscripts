@@ -1,29 +1,29 @@
 import { Messages } from '@salesforce/core';
-import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
+import sfpCommand from '../../SfpCommand';
 import ReleaseDefinition from '../../impl/release/ReleaseDefinition';
-import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig';
+import ProjectConfig from '../../core/project/ProjectConfig';
 import GroupConsoleLogs from '../../ui/GroupConsoleLogs';
 import FetchImpl from '../../impl/artifacts/FetchImpl';
 import ReleaseDefinitionSchema from '../../impl/release/ReleaseDefinitionSchema';
 import path = require('path');
-import ArtifactFetcher, { Artifact } from '@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFetcher';
-import SfpPackage, { PackageType } from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
-import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder';
-import SFPLogger, { ConsoleLogger, Logger, LoggerLevel } from '@dxatscale/sfp-logger';
-import SfpPackageInquirer from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageInquirer';
-import Git from '@dxatscale/sfpowerscripts.core/lib/git/Git';
+import ArtifactFetcher, { Artifact } from '../../core/artifacts/ArtifactFetcher';
+import SfpPackage, { PackageType } from '../../core/package/SfpPackage';
+import SfpPackageBuilder from '../../core/package/SfpPackageBuilder';
+import SFPLogger, { ConsoleLogger, Logger, LoggerLevel } from '@flxblio/sfp-logger';
+import SfpPackageInquirer from '../../core/package/SfpPackageInquirer';
+import Git from '../../core/git/Git';
 import * as fs from 'fs-extra';
-import { COLOR_KEY_MESSAGE } from '@dxatscale/sfp-logger';
+import { COLOR_KEY_MESSAGE } from '@flxblio/sfp-logger';
 import { EOL } from 'os';
-import { COLOR_WARNING } from '@dxatscale/sfp-logger';
-import { COLOR_HEADER } from '@dxatscale/sfp-logger';
+import { COLOR_WARNING } from '@flxblio/sfp-logger';
+import { COLOR_HEADER } from '@flxblio/sfp-logger';
 import { Flags } from '@oclif/core';
 import { arrayFlagSfdxStyle, loglevel, logsgroupsymbol } from '../../flags/sfdxflags';
 
 Messages.importMessagesDirectory(__dirname);
-const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'patch');
+const messages = Messages.loadMessages('@flxblio/sfp', 'patch');
 
-export default class Patch extends SfpowerscriptsCommand {
+export default class Patch extends sfpCommand {
     public static description = messages.getMessage('commandDescription');
 
     public static examples = [`$ sfp repo:patch -n <releaseName>`];

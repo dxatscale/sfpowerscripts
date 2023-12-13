@@ -1,12 +1,12 @@
 import { Messages, Org }  from '@salesforce/core';
 import * as _ from 'lodash';
-import { Sfpowerkit } from '@dxatscale/sfprofiles/lib/utils/sfpowerkit';
-import SFPLogger, { LoggerLevel } from '@dxatscale/sfp-logger';
-import { METADATA_INFO } from '@dxatscale/sfprofiles/lib/impl/metadata/metadataInfo';
+import { Sfpowerkit } from '@flxblio/sfprofiles/lib/utils/sfpowerkit';
+import SFPLogger, { LoggerLevel } from '@flxblio/sfp-logger';
+import { METADATA_INFO } from '@flxblio/sfprofiles/lib/impl/metadata/metadataInfo';
 import * as path from 'path';
-import ProfileReconcile from '@dxatscale/sfprofiles/lib/impl/source/profileReconcile';
-import MetadataFiles from '@dxatscale/sfprofiles/lib/impl/metadata/metadataFiles';
-import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
+import ProfileReconcile from '@flxblio/sfprofiles/lib/impl/source/profileReconcile';
+import MetadataFiles from '@flxblio/sfprofiles/lib/impl/metadata/metadataFiles';
+import sfpCommand from '../../SfpCommand';
 const Table = require('cli-table');
 import { ZERO_BORDER_TABLE } from '../../ui/TableConstants';
 import { Flags } from '@oclif/core';
@@ -15,9 +15,9 @@ import { arrayFlagSfdxStyle, loglevel, orgApiVersionFlagSfdxStyle, requiredUserN
 Messages.importMessagesDirectory(__dirname);
 
 
-const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'profile_reconcile');
+const messages = Messages.loadMessages('@flxblio/sfp', 'profile_reconcile');
 
-export default class Reconcile extends SfpowerscriptsCommand {
+export default class Reconcile extends sfpCommand {
     public static description = messages.getMessage('commandDescription');
 
     public static examples = [

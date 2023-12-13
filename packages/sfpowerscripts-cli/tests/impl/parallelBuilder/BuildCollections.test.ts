@@ -2,7 +2,7 @@ import { jest, expect } from '@jest/globals';
 import BuildCollections from '../../../src/impl/parallelBuilder/BuildCollections';
 
 let packageManifest = null;
-jest.mock('../../../../core/lib/project/ProjectConfig', () => {
+jest.mock('../../../src/core/project/ProjectConfig', () => {
     class ProjectConfig {
         static getSFDXProjectConfig(projectDirectory: string) {
             return packageManifest;

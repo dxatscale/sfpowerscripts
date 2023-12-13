@@ -1,35 +1,35 @@
-import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
+import sfpCommand from '../../SfpCommand';
 import { Messages } from '@salesforce/core';
 import * as fs from 'fs-extra';
 import path = require('path');
-import ArtifactFetcher, { Artifact } from '@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFetcher';
-import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender';
+import ArtifactFetcher, { Artifact } from '../../core/artifacts/ArtifactFetcher';
+import SFPStatsSender from '../../core/stats/SFPStatsSender';
 import SFPLogger, {
     COLOR_ERROR,
     COLOR_HEADER,
     COLOR_KEY_MESSAGE,
     COLOR_SUCCESS,
     COLOR_TIME,
-} from '@dxatscale/sfp-logger';
-import getFormattedTime from '@dxatscale/sfpowerscripts.core/lib/utils/GetFormattedTime';
-import defaultShell from '@dxatscale/sfpowerscripts.core/lib/utils/DefaultShell';
-import SfpPackage, { PackageType } from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
-import { ConsoleLogger } from '@dxatscale/sfp-logger';
-import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder';
-import Git from '@dxatscale/sfpowerscripts.core/lib/git/Git';
+} from '@flxblio/sfp-logger';
+import getFormattedTime from '../../core/utils/GetFormattedTime';
+import defaultShell from '../../core/utils/DefaultShell';
+import SfpPackage, { PackageType } from '../../core/package/SfpPackage';
+import { ConsoleLogger } from '@flxblio/sfp-logger';
+import SfpPackageBuilder from '../../core/package/SfpPackageBuilder';
+import Git from '../../core/git/Git';
 import GroupConsoleLogs from '../../ui/GroupConsoleLogs';
-import PackageVersionLister from '@dxatscale/sfpowerscripts.core/lib/package/version/PackageVersionLister';
-import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
-import ExecuteCommand from '@dxatscale/sfdx-process-wrapper/lib/commandExecutor/ExecuteCommand';
-import { LoggerLevel } from '@dxatscale/sfp-logger';
-import GitTags from '@dxatscale/sfpowerscripts.core/lib/git/GitTags';
+import PackageVersionLister from '../../core/package/version/PackageVersionLister';
+import SFPOrg from '../../core/org/SFPOrg';
+import ExecuteCommand from '@flxblio/sfdx-process-wrapper/lib/commandExecutor/ExecuteCommand';
+import { LoggerLevel } from '@flxblio/sfp-logger';
+import GitTags from '../../core/git/GitTags';
 import { arrayFlagSfdxStyle, loglevel, logsgroupsymbol, optionalDevHubFlag } from '../../flags/sfdxflags';
 import { Flags } from '@oclif/core';
 
 Messages.importMessagesDirectory(__dirname);
-const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'publish');
+const messages = Messages.loadMessages('@flxblio/sfp', 'publish');
 
-export default class Promote extends SfpowerscriptsCommand {
+export default class Promote extends sfpCommand {
     public static description = messages.getMessage('commandDescription');
 
     public static examples = [
@@ -92,7 +92,7 @@ export default class Promote extends SfpowerscriptsCommand {
             required: false,
             deprecated: {
                 message:
-                    '--npmtag is deprecated, sfpowerscripts will automatically tag the artifact with the branch name',
+                    '--npmtag is deprecated, sfp will automatically tag the artifact with the branch name',
             },
         }),
         npmrcpath: Flags.file({
@@ -140,7 +140,7 @@ export default class Promote extends SfpowerscriptsCommand {
             let artifactFilePaths = ArtifactFetcher.fetchArtifacts(this.flags.artifactdir);
 
             // Pattern captures two named groups, the "package" name and "version" number
-            let pattern = new RegExp('(?<package>^.*)(?:_sfpowerscripts_artifact_)(?<version>.*)(?:\\.zip)');
+            let pattern = new RegExp('(?<package>^.*)(?:_sfp_artifact_)(?<version>.*)(?:\\.zip)');
             for (let artifact of artifacts) {
                 let packageName: string;
                 let packageVersionNumber: string;
@@ -261,7 +261,7 @@ export default class Promote extends SfpowerscriptsCommand {
         let artifactRootDirectory = path.dirname(sfpPackage.sourceDir);
 
         // NPM does not accept packages with uppercase characters
-        let name: string = sfpPackage.packageName.toLowerCase() + '_sfpowerscripts_artifact';
+        let name: string = sfpPackage.packageName.toLowerCase() + '_sfp_artifact';
 
         //Check whether the user has already passed in @
 

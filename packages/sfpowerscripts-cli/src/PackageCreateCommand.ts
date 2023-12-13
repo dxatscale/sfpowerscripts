@@ -1,20 +1,20 @@
-import ArtifactGenerator from '@dxatscale/sfpowerscripts.core/lib/artifacts/generators/ArtifactGenerator';
-import { COLOR_HEADER, COLOR_KEY_MESSAGE, ConsoleLogger } from '@dxatscale/sfp-logger';
-import PackageDiffImpl from '@dxatscale/sfpowerscripts.core/lib/package/diff/PackageDiffImpl';
+import ArtifactGenerator from './core//artifacts/generators/ArtifactGenerator';
+import { COLOR_HEADER, COLOR_KEY_MESSAGE, ConsoleLogger } from '@flxblio/sfp-logger';
+import PackageDiffImpl from './core//package/diff/PackageDiffImpl';
 import { Messages } from '@salesforce/core';
 import { EOL } from 'os';
-import SfpowerscriptsCommand from './SfpowerscriptsCommand';
-import SfpPackage, { PackageType } from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
-import getFormattedTime from '@dxatscale/sfpowerscripts.core/lib/utils/GetFormattedTime';
+import sfpCommand from './SfpCommand';
+import SfpPackage, { PackageType } from './core//package/SfpPackage';
+import getFormattedTime from './core//utils/GetFormattedTime';
 const fs = require('fs-extra');
-import Git from '@dxatscale/sfpowerscripts.core/lib/git/Git';
+import Git from './core//git/Git';
 import { Flags } from '@oclif/core';
 import { loglevel } from './flags/sfdxflags';
 
 Messages.importMessagesDirectory(__dirname);
-const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'create-package');
+const messages = Messages.loadMessages('@flxblio/sfp', 'create-package');
 
-export default abstract class PackageCreateCommand extends SfpowerscriptsCommand {
+export default abstract class PackageCreateCommand extends sfpCommand {
     protected static requiresUsername = false;
     protected static requiresDevhubUsername = false;
     protected static requiresProject = true;
@@ -115,7 +115,7 @@ export default abstract class PackageCreateCommand extends SfpowerscriptsCommand
            
             let git = await Git.initiateRepo(new ConsoleLogger());
             let tagname = `${this.sfdxPackage}_v${sfpPackage.package_version_number}`;
-            await git.addAnnotatedTag(tagname, `${sfpPackage.packageName} sfpowerscripts package ${sfpPackage.package_version_number}`)
+            await git.addAnnotatedTag(tagname, `${sfpPackage.packageName} sfp package ${sfpPackage.package_version_number}`)
 
             sfpPackage.tag = tagname;
         }
@@ -131,7 +131,7 @@ export default abstract class PackageCreateCommand extends SfpowerscriptsCommand
     }
 
     private generateEnvironmentVariables(artifactFilepath: string, sfpPackage: SfpPackage) {
-        let prefix = 'sfpowerscripts';
+        let prefix = 'sfp';
         if (this.refname != null) prefix = `${this.refname}_${prefix}`;
 
         console.log('\nOutput variables:');

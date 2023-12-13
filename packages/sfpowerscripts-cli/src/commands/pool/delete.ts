@@ -1,12 +1,12 @@
 import { Messages } from '@salesforce/core';
-import PoolDeleteImpl from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolDeleteImpl';
-import OrphanedOrgsDeleteImpl from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/OrphanedOrgsDeleteImpl';
-import ScratchOrg from '@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg';
-import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
+import PoolDeleteImpl from '../../core/scratchorg/pool/PoolDeleteImpl';
+import OrphanedOrgsDeleteImpl from '../../core/scratchorg/pool/OrphanedOrgsDeleteImpl';
+import ScratchOrg from '../../core/scratchorg/ScratchOrg';
+import sfpCommand from '../../SfpCommand';
 import { ZERO_BORDER_TABLE } from '../../ui/TableConstants';
-import SFPLogger, { ConsoleLogger, LoggerLevel } from '@dxatscale/sfp-logger';
-import { COLOR_KEY_MESSAGE } from '@dxatscale/sfp-logger';
-import { COLOR_WARNING } from '@dxatscale/sfp-logger';
+import SFPLogger, { ConsoleLogger, LoggerLevel } from '@flxblio/sfp-logger';
+import { COLOR_KEY_MESSAGE } from '@flxblio/sfp-logger';
+import { COLOR_WARNING } from '@flxblio/sfp-logger';
 import { Flags } from '@oclif/core';
 import { loglevel, orgApiVersionFlagSfdxStyle, targetdevhubusername } from '../../flags/sfdxflags';
 const Table = require('cli-table');
@@ -16,17 +16,17 @@ Messages.importMessagesDirectory(__dirname);
 
 // Load the specific messages for this file. Messages from @salesforce/command, @salesforce/core,
 // or any library that is using the messages framework can also be loaded this way.
-const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'pool_delete');
+const messages = Messages.loadMessages('@flxblio/sfp', 'pool_delete');
 
-export default class Delete extends SfpowerscriptsCommand {
+export default class Delete extends sfpCommand {
     public static description = messages.getMessage('commandDescription');
 
     protected static requiresDevhubUsername = true;
 
     public static examples = [
-        `$ sfpowerscripts pool:delete -t core `,
-        `$ sfpowerscripts pool:delete -t core -v devhub`,
-        `$ sfpowerscripts pool:delete --orphans -v devhub`,
+        `$ sfp pool:delete -t core `,
+        `$ sfp pool:delete -t core -v devhub`,
+        `$ sfp pool:delete --orphans -v devhub`,
     ];
 
     public static flags = {

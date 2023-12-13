@@ -1,9 +1,9 @@
-import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig';
+import ProjectConfig from '../src/core/project/ProjectConfig';
 import { jest, expect } from '@jest/globals';
 import ProjectValidation from '../src/ProjectValidation';
 
 describe('Given a sfdx-project.json, it should be validated against the scehma', () => {
-    it('should not throw an error for a valid sfdx-project.json without any sfpowerscripts decorators', () => {
+    it('should not throw an error for a valid sfdx-project.json without any sfp decorators', () => {
         let sfdx_project = {
             packageDirectories: [
                 {
@@ -108,7 +108,7 @@ describe('Given a sfdx-project.json, it should be validated against the scehma',
         }).not.toThrow();
     });
 
-    it('should not throw an error for a sfdx-project.json where various sfpowerscripts orchestrator properties are used', () => {
+    it('should not throw an error for a sfdx-project.json where various sfp orchestrator properties are used', () => {
         let sfdx_project = {
             packageDirectories: [
                 {
@@ -184,7 +184,7 @@ describe('Given a sfdx-project.json, it should be validated against the scehma',
         }).not.toThrow();
     });
 
-    it('should not throw an error for a sfdx-project.json where various sfpowerscripts orchestrator properties are incorrectly used', () => {
+    it('should not throw an error for a sfdx-project.json where various sfp orchestrator properties are incorrectly used', () => {
         //As the errors are moved to warning, it will not throw an error
         let sfdx_project = {
             packageDirectories: [

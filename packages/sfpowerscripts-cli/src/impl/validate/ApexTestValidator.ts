@@ -1,8 +1,8 @@
-import SFPLogger, { COLOR_HEADER, Logger } from "@dxatscale/sfp-logger";
-import { CoverageOptions } from "@dxatscale/sfpowerscripts.core/lib/apex/coverage/IndividualClassCoverage";
-import { TestOptions, RunAllTestsInPackageOptions, RunSpecifiedTestsOption } from "@dxatscale/sfpowerscripts.core/lib/apextest/TestOptions";
-import TriggerApexTests from "@dxatscale/sfpowerscripts.core/lib/apextest/TriggerApexTests";
-import SfpPackage, { PackageType } from "@dxatscale/sfpowerscripts.core/lib/package/SfpPackage";
+import SFPLogger, { COLOR_HEADER, Logger } from "@flxblio/sfp-logger";
+import { CoverageOptions } from "../../core/apex/coverage/IndividualClassCoverage";
+import { TestOptions, RunAllTestsInPackageOptions, RunSpecifiedTestsOption } from "../../core/apextest/TestOptions";
+import TriggerApexTests from "../../core/apextest/TriggerApexTests";
+import SfpPackage, { PackageType } from "../../core/package/SfpPackage";
 import { LoggerLevel } from "@salesforce/core";
 import { ValidationMode } from "./ValidateImpl";
 

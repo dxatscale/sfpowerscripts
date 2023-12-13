@@ -1,10 +1,10 @@
-import SfpowerscriptsCommand from '../../../SfpowerscriptsCommand';
-import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender';
-import PoolListImpl from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolListImpl';
-import ScratchOrg from '@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg';
-import LimitsFetcher from '@dxatscale/sfpowerscripts.core/lib/limits/LimitsFetcher';
+import sfpCommand from '../../../SfpCommand';
+import SFPStatsSender from '../../../core/stats/SFPStatsSender';
+import PoolListImpl from '../../../core/scratchorg/pool/PoolListImpl';
+import ScratchOrg from '../../../core/scratchorg/ScratchOrg';
+import LimitsFetcher from '../../../core/limits/LimitsFetcher';
 const Table = require('cli-table');
-import SFPLogger, { LoggerLevel, COLOR_KEY_MESSAGE } from '@dxatscale/sfp-logger';
+import SFPLogger, { LoggerLevel, COLOR_KEY_MESSAGE } from '@flxblio/sfp-logger';
 import { Messages } from '@salesforce/core';
 import { loglevel, targetdevhubusername } from '../../../flags/sfdxflags';
 
@@ -13,9 +13,9 @@ Messages.importMessagesDirectory(__dirname);
 
 // Load the specific messages for this file. Messages from @salesforce/command, @salesforce/core,
 // or any library that is using the messages framework can also be loaded this way.
-const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'scratchorg_pool_metrics_publish');
+const messages = Messages.loadMessages('@flxblio/sfp', 'scratchorg_pool_metrics_publish');
 
-export default class Publish extends SfpowerscriptsCommand {
+export default class Publish extends sfpCommand {
     public static description = messages.getMessage('commandDescription');
 
     protected static requiresDevhubUsername = true;
@@ -58,11 +58,11 @@ export default class Publish extends SfpowerscriptsCommand {
         SFPStatsSender.logGauge(`scratchorgs.active.remaining`, remainingActiveScratchOrgs, {target_org: devhubUserName});
         SFPStatsSender.logGauge(`scratchorgs.daily.remaining`, remainingDailyScratchOrgs, {target_org: devhubUserName});
 
-        table.push(['sfpowerscripts.scratchorgs.active.remaining', remainingActiveScratchOrgs, devhubUserName]);
-        table.push(['sfpowerscripts.scratchorgs.daily.remaining', remainingDailyScratchOrgs, devhubUserName]);
+        table.push(['sfp.scratchorgs.active.remaining', remainingActiveScratchOrgs, devhubUserName]);
+        table.push(['sfp.scratchorgs.daily.remaining', remainingDailyScratchOrgs, devhubUserName]);
 
         SFPStatsSender.logGauge(`pool.footprint`, nPooledScratchOrgs);
-        table.push(['sfpowerscripts.pool.footprint', nPooledScratchOrgs, '']);
+        table.push(['sfp.pool.footprint', nPooledScratchOrgs, '']);
 
         if (pools) {
             for (let pool of Object.entries(pools)) {
@@ -71,10 +71,10 @@ export default class Publish extends SfpowerscriptsCommand {
                 SFPStatsSender.logGauge('pool.inuse', pool[1].nInUse, { poolName: pool[0] });
                 SFPStatsSender.logGauge('pool.provisioning', pool[1].nProvisioningInProgress, { poolName: pool[0] });
 
-                table.push(['sfpowerscripts.pool.total', pool[1].nTotal, pool[0]]);
-                table.push(['sfpowerscripts.pool.available', pool[1].nAvailable, pool[0]]);
-                table.push(['sfpowerscripts.pool.inuse', pool[1].nInUse, pool[0]]);
-                table.push(['sfpowerscripts.pool.provisioning', pool[1].nProvisioningInProgress, pool[0]]);
+                table.push(['sfp.pool.total', pool[1].nTotal, pool[0]]);
+                table.push(['sfp.pool.available', pool[1].nAvailable, pool[0]]);
+                table.push(['sfp.pool.inuse', pool[1].nInUse, pool[0]]);
+                table.push(['sfp.pool.provisioning', pool[1].nProvisioningInProgress, pool[0]]);
             }
         }
 
@@ -114,10 +114,10 @@ export default class Publish extends SfpowerscriptsCommand {
     private validateEnvVars() {
         if (
             !(
-                process.env.SFPOWERSCRIPTS_STATSD ||
-                process.env.SFPOWERSCRIPTS_DATADOG ||
-                process.env.SFPOWERSCRIPTS_NEWRELIC ||
-                process.env.SFPOWERSCRIPTS_SPLUNK
+                process.env.sfp_STATSD ||
+                process.env.sfp_DATADOG ||
+                process.env.sfp_NEWRELIC ||
+                process.env.sfp_SPLUNK
             )
         ) {
             throw new Error('Environment variable not set for metrics. No metrics will be published.');

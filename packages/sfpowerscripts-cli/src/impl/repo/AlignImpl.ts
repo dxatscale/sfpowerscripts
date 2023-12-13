@@ -1,4 +1,4 @@
-import { Logger } from "@dxatscale/sfp-logger";
+import { Logger } from "@flxblio/sfp-logger";
 
 export interface AlignRepoProps {
     artifactDirectory: string;

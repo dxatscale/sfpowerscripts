@@ -2,7 +2,7 @@ import * as fs from 'fs-extra';
 import child_process = require('child_process');
 import path = require('path');
 import FetchAnArtifact from './FetchAnArtifact';
-import SFPLogger, { COLOR_WARNING } from '@dxatscale/sfp-logger';
+import SFPLogger, { COLOR_WARNING } from '@flxblio/sfp-logger';
 
 export class FetchAnArtifactFromNPM implements FetchAnArtifact {
     constructor(private scope: string, private npmrcPath: string) {
@@ -40,8 +40,8 @@ export class FetchAnArtifactFromNPM implements FetchAnArtifact {
             packageName = packageName.toLowerCase();
 
             let cmd: string;
-            if (this.scope) cmd = `npm pack @${this.scope.toLowerCase()}/${packageName}_sfpowerscripts_artifact`;
-            else cmd = `npm pack ${packageName}_sfpowerscripts_artifact`;
+            if (this.scope) cmd = `npm pack @${this.scope.toLowerCase()}/${packageName}_sfp_artifact`;
+            else cmd = `npm pack ${packageName}_sfp_artifact`;
 
             cmd += `@${version}`;
 

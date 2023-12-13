@@ -1,9 +1,9 @@
-import PackageDiffImpl, { PackageDiffOptions } from '@dxatscale/sfpowerscripts.core/lib/package/diff/PackageDiffImpl';
+import PackageDiffImpl, { PackageDiffOptions } from '../../core/package/diff/PackageDiffImpl';
 import { Stage } from '../Stage';
-import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig';
-import { PackageType } from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
+import ProjectConfig from '../../core/project/ProjectConfig';
+import { PackageType } from '../../core/package/SfpPackage';
 import * as fs from 'fs-extra';
-import { Logger } from '@dxatscale/sfp-logger';
+import { Logger } from '@flxblio/sfp-logger';
 import BuildCollections from '../parallelBuilder/BuildCollections';
 
 export interface ImpactedPackageProps {
@@ -44,7 +44,7 @@ export default class ImpactedPackageResolver {
     private getPathToForceIgnoreForCurrentStage(projectConfig: any, currentStage: Stage): string {
         let stageForceIgnorePath: string;
 
-        let ignoreFiles: { [key in Stage]: string } = projectConfig.plugins?.sfpowerscripts?.ignoreFiles;
+        let ignoreFiles: { [key in Stage]: string } = projectConfig.plugins?.sfp?.ignoreFiles;
         if (ignoreFiles) {
             Object.keys(ignoreFiles).forEach((key) => {
                 if (key.toLowerCase() == currentStage) {

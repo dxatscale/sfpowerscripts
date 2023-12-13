@@ -1,10 +1,10 @@
 import { Messages, Org }  from '@salesforce/core';
 import { isNil } from 'lodash';
-import { Sfpowerkit } from '@dxatscale/sfprofiles/lib/utils/sfpowerkit';
-import SFPLogger, { LoggerLevel } from '@dxatscale/sfp-logger';
-import ProfileRetriever from '@dxatscale/sfprofiles/lib/impl/metadata/retriever/profileRetriever';
-import ProfileMerge from '@dxatscale/sfprofiles/lib/impl/source/profileMerge';
-import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
+import { Sfpowerkit } from '@flxblio/sfprofiles/lib/utils/sfpowerkit';
+import SFPLogger, { LoggerLevel } from '@flxblio/sfp-logger';
+import ProfileRetriever from '@flxblio/sfprofiles/lib/impl/metadata/retriever/profileRetriever';
+import ProfileMerge from '@flxblio/sfprofiles/lib/impl/source/profileMerge';
+import sfpCommand from '../../SfpCommand';
 import Table from 'cli-table';
 import { ZERO_BORDER_TABLE } from '../../ui/TableConstants';
 import { arrayFlagSfdxStyle, loglevel, orgApiVersionFlagSfdxStyle, requiredUserNameFlag } from '../../flags/sfdxflags';
@@ -12,9 +12,9 @@ import { Flags } from '@oclif/core';
 
 Messages.importMessagesDirectory(__dirname);
 
-const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'profile_merge');
+const messages = Messages.loadMessages('@flxblio/sfp', 'profile_merge');
 
-export default class Merge extends SfpowerscriptsCommand {
+export default class Merge extends sfpCommand {
     public static description = messages.getMessage('commandDescription');
 
     public static examples = [

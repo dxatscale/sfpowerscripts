@@ -1,9 +1,9 @@
 
-import SfpowerscriptsError from '../../errors/SfpowerscriptsError';
+import SfpError from '../../errors/SfpError';
 import { ArtifactVersion } from './FetchImpl';
 
 
-export default class FetchArtifactsError extends SfpowerscriptsError {
+export default class FetchArtifactsError extends SfpError {
     /**
      * Payload consisting of artifacts that succeeded and failed to fetch
      */

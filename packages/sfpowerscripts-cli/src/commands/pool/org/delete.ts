@@ -1,7 +1,7 @@
 import { AnyJson } from '@salesforce/ts-types';
-import SfpowerscriptsCommand from '../../../SfpowerscriptsCommand';
-import PoolOrgDeleteImpl from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolOrgDeleteImpl';
-import SFPLogger from '@dxatscale/sfp-logger';
+import sfpCommand from '../../../SfpCommand';
+import PoolOrgDeleteImpl from '../../../core/scratchorg/pool/PoolOrgDeleteImpl';
+import SFPLogger from '@flxblio/sfp-logger';
 import { Messages } from '@salesforce/core';
 import {
     loglevel,
@@ -16,9 +16,9 @@ Messages.importMessagesDirectory(__dirname);
 
 // Load the specific messages for this file. Messages from @salesforce/command, @salesforce/core,
 // or any library that is using the messages framework can also be loaded this way.
-const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'scratchorg_pool_org_delete');
+const messages = Messages.loadMessages('@flxblio/sfp', 'scratchorg_pool_org_delete');
 
-export default class Delete extends SfpowerscriptsCommand {
+export default class Delete extends sfpCommand {
     public static description = messages.getMessage('commandDescription');
 
     protected static requiresDevhubUsername = true;

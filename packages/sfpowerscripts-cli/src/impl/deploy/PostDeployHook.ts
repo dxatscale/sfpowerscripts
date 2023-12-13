@@ -1,6 +1,6 @@
-import { Logger } from '@dxatscale/sfp-logger';
-import { PackageInstallationResult } from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/PackageInstallationResult';
-import SfpPackage from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
+import { Logger } from '@flxblio/sfp-logger';
+import { PackageInstallationResult } from '../../core/package/packageInstallers/PackageInstallationResult';
+import SfpPackage from '../../core/package/SfpPackage';
 
 export interface PostDeployHook {
     postDeployPackage(

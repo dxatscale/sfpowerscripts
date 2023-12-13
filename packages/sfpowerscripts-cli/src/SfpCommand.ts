@@ -1,8 +1,7 @@
-import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender';
+import SFPStatsSender from './core/stats/SFPStatsSender';
 import * as rimraf from 'rimraf';
 import ProjectValidation from './ProjectValidation';
-import * as fs from 'fs-extra';
-import SFPLogger, { COLOR_HEADER, ConsoleLogger, LoggerLevel } from '@dxatscale/sfp-logger';
+import SFPLogger, { COLOR_HEADER, ConsoleLogger, LoggerLevel } from '@flxblio/sfp-logger';
 import GroupConsoleLogs from './ui/GroupConsoleLogs';
 import { Command, Flags, ux } from '@oclif/core';
 import { FlagOutput } from '@oclif/core/lib/interfaces/parser';
@@ -10,11 +9,11 @@ import { Org } from '@salesforce/core';
 
 
 /**
- * A base class that provides common funtionality for sfpowerscripts commands
+ * A base class that provides common funtionality for sfp commands
  *
  * @extends SfdxCommand
  */
-export default abstract class SfpowerscriptsCommand extends Command {
+export default abstract class sfpCommand extends Command {
 
     protected static requiresProject: boolean;
 
@@ -24,7 +23,7 @@ export default abstract class SfpowerscriptsCommand extends Command {
 
    
     private isSfpowerkitFound: boolean;
-    private sfpowerscriptsConfig;
+    private sfpConfig;
     private isSfdmuFound: boolean;
     protected static requiresUsername: boolean=false;
     protected static requiresDevhubUsername: boolean=false;
@@ -40,7 +39,7 @@ export default abstract class SfpowerscriptsCommand extends Command {
      */
     async run(): Promise<any> {
         //Always enable color by default
-        if (process.env.SFPOWERSCRIPTS_NOCOLOR) SFPLogger.disableColor();
+        if (process.env.sfp_NOCOLOR) SFPLogger.disableColor();
         else SFPLogger.enableColor();
 
        
@@ -78,7 +77,7 @@ export default abstract class SfpowerscriptsCommand extends Command {
 
 
         //Clear temp directory before every run
-        rimraf.sync('.sfpowerscripts');
+        rimraf.sync('.sfp');
 
 
         //Initialise StatsD
@@ -122,32 +121,32 @@ export default abstract class SfpowerscriptsCommand extends Command {
 
 
     private initializeStatsD() {
-        if (process.env.SFPOWERSCRIPTS_STATSD) {
+        if (process.env.sfp_STATSD) {
             SFPStatsSender.initialize(
-                process.env.SFPOWERSCRIPTS_STATSD_PORT,
-                process.env.SFPOWERSCRIPTS_STATSD_HOST,
-                process.env.SFPOWERSCRIPTS_STATSD_PROTOCOL
+                process.env.sfp_STATSD_PORT,
+                process.env.sfp_STATSD_HOST,
+                process.env.sfp_STATSD_PROTOCOL
             );
         }
-        if (process.env.SFPOWERSCRIPTS_DATADOG) {
+        if (process.env.sfp_DATADOG) {
             SFPStatsSender.initializeNativeMetrics(
                 'DataDog',
-                process.env.SFPOWERSCRIPTS_DATADOG_HOST,
-                process.env.SFPOWERSCRIPTS_DATADOG_API_KEY,
+                process.env.sfp_DATADOG_HOST,
+                process.env.sfp_DATADOG_API_KEY,
                 new ConsoleLogger()
             );
-        } else if (process.env.SFPOWERSCRIPTS_NEWRELIC) {
+        } else if (process.env.sfp_NEWRELIC) {
             SFPStatsSender.initializeNativeMetrics(
                 'NewRelic',
                 null,
-                process.env.SFPOWERSCRIPTS_NEWRELIC_API_KEY,
+                process.env.sfp_NEWRELIC_API_KEY,
                 new ConsoleLogger()
             );
-        } else if (process.env.SFPOWERSCRIPTS_SPLUNK) {
+        } else if (process.env.sfp_SPLUNK) {
             SFPStatsSender.initializeNativeMetrics(
                 'Splunk',
-                process.env.SFPOWERSCRIPTS_SPLUNK_HOST,
-                process.env.SFPOWERSCRIPTS_SPLUNK_API_KEY,
+                process.env.sfp_SPLUNK_HOST,
+                process.env.sfp_SPLUNK_API_KEY,
                 new ConsoleLogger()
             );
         }
@@ -171,8 +170,8 @@ export default abstract class SfpowerscriptsCommand extends Command {
     }
 
 
-    protected get statics(): typeof SfpowerscriptsCommand {
-        return this.constructor as typeof SfpowerscriptsCommand;
+    protected get statics(): typeof sfpCommand {
+        return this.constructor as typeof sfpCommand;
     }
 
 }

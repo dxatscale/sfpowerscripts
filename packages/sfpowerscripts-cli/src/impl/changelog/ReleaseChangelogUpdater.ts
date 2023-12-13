@@ -4,7 +4,7 @@ import WorkItemUpdater from './WorkItemUpdater';
 import OrgsUpdater from './OrgsUpdater';
 import ReadPackageChangelog from './ReadPackageChangelog';
 import * as fs from 'fs-extra';
-import SfpPackage from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
+import SfpPackage from '../../core/package/SfpPackage';
 var hash = require('object-hash');
 
 export default class ReleaseChangelogUpdater {

@@ -1,14 +1,14 @@
 import * as fs from 'fs-extra';
-import Git from '@dxatscale/sfpowerscripts.core/lib/git/Git';
-import GitTags from '@dxatscale/sfpowerscripts.core/lib/git/GitTags';
+import Git from '../../core/git/Git';
+import GitTags from '../../core/git/GitTags';
 import ReleaseDefinitionSchema from '../release/ReleaseDefinitionSchema';
 import FetchArtifactsError from './FetchArtifactsError';
 import * as rimraf from 'rimraf';
 import FetchArtifactSelector from './FetchArtifactSelector';
 import _ from 'lodash';
 import path from 'path';
-import FileUtils from '@dxatscale/sfpowerscripts.core/lib/utils/Fileutils';
-import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
+import FileUtils from '../../core/utils/Fileutils';
+import SFPLogger, { Logger, LoggerLevel } from '@flxblio/sfp-logger';
 
 export default class FetchImpl {
     constructor(

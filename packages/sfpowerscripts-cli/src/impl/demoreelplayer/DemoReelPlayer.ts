@@ -2,7 +2,7 @@ import path = require('path');
 import * as fs from 'fs-extra';
 import { marked } from 'marked';
 const TerminalRenderer = require('marked-terminal');
-import { delay } from '@dxatscale/sfpowerscripts.core/lib/utils/Delay';
+import { delay } from '../../core/utils/Delay';
 
 export default class DemoReelPlayer {
     public async execute(demoReelFolderPath: string) {

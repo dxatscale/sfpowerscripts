@@ -1,6 +1,6 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "$id": "https://github.com/dxatscale/sfpowerscripts/blob/develop/packages/sfpowerscripts-cli/resources/releasedefinitiongenerator.schema.json",
+    "$id": "https://github.com/flxblio/sfp/blob/develop/packages/sfp-cli/resources/releasedefinitiongenerator.schema.json",
     "title": "release definition generator",
     "description": "The definition for generating a release defintion using generator command",
     "type": "object",

@@ -3,12 +3,12 @@ import DependencyHelper from "./DependencyHelper";
 import Bottleneck from "bottleneck";
 import PackageDiffImpl, {
 	PackageDiffOptions,
-} from "@dxatscale/sfpowerscripts.core/lib/package/diff/PackageDiffImpl";
+} from "../../core/package/diff/PackageDiffImpl";
 import { EOL } from "os";
-import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender";
+import SFPStatsSender from "../../core/stats/SFPStatsSender";
 import { Stage } from "../Stage";
 import * as fs from "fs-extra";
-import ProjectConfig from "@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig";
+import ProjectConfig from "../../core/project/ProjectConfig";
 import BuildCollections from "./BuildCollections";
 const Table = require("cli-table");
 import SFPLogger, {
@@ -17,26 +17,26 @@ import SFPLogger, {
 	FileLogger,
 	LoggerLevel,
 	VoidLogger,
-} from "@dxatscale/sfp-logger";
-import { COLOR_KEY_MESSAGE } from "@dxatscale/sfp-logger";
-import { COLOR_HEADER } from "@dxatscale/sfp-logger";
-import { COLOR_ERROR } from "@dxatscale/sfp-logger";
+} from "@flxblio/sfp-logger";
+import { COLOR_KEY_MESSAGE } from "@flxblio/sfp-logger";
+import { COLOR_HEADER } from "@flxblio/sfp-logger";
+import { COLOR_ERROR } from "@flxblio/sfp-logger";
 import SfpPackage, {
 	PackageType,
-} from "@dxatscale/sfpowerscripts.core/lib/package/SfpPackage";
-import SfpPackageBuilder from "@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder";
-import getFormattedTime from "@dxatscale/sfpowerscripts.core/lib/utils/GetFormattedTime";
+} from "../../core/package/SfpPackage";
+import SfpPackageBuilder from "../../core/package/SfpPackageBuilder";
+import getFormattedTime from "../../core/utils/GetFormattedTime";
 import {
 	COLON_MIDDLE_BORDER_TABLE,
 	ZERO_BORDER_TABLE,
 } from "../../ui/TableConstants";
-import PackageDependencyResolver from "@dxatscale/sfpowerscripts.core/lib/package/dependencies/PackageDependencyResolver";
-import SFPOrg from "@dxatscale/sfpowerscripts.core/lib/org/SFPOrg";
-import Git from "@dxatscale/sfpowerscripts.core/lib/git/Git";
-import TransitiveDependencyResolver from "@dxatscale/sfpowerscripts.core/lib/package/dependencies/TransitiveDependencyResolver";
+import PackageDependencyResolver from "../../core/package/dependencies/PackageDependencyResolver";
+import SFPOrg from "../../core/org/SFPOrg";
+import Git from "../../core/git/Git";
+import TransitiveDependencyResolver from "../../core/package/dependencies/TransitiveDependencyResolver";
 import GroupConsoleLogs from "../../ui/GroupConsoleLogs";
-import UserDefinedExternalDependency from "@dxatscale/sfpowerscripts.core/lib/project/UserDefinedExternalDependency";
-import PackageDependencyDisplayer from "@dxatscale/sfpowerscripts.core/lib/display/PackageDependencyDisplayer";
+import UserDefinedExternalDependency from "../../core/project/UserDefinedExternalDependency";
+import PackageDependencyDisplayer from "../../core/display/PackageDependencyDisplayer";
 
 const PRIORITY_UNLOCKED_PKG_WITH_DEPENDENCY = 1;
 const PRIORITY_UNLOCKED_PKG_WITHOUT_DEPENDENCY = 3;
@@ -445,11 +445,11 @@ export default class BuildImpl {
 		SFPLogger.log(COLOR_ERROR(`Package Creation Failed for ${pkg}, Here are the details:`));
 		try {
 			// Append error to log file
-			fs.appendFileSync(`.sfpowerscripts/logs/${pkg}`, reason.message, "utf8");
-			let data = fs.readFileSync(`.sfpowerscripts/logs/${pkg}`, "utf8");
+			fs.appendFileSync(`.sfp/logs/${pkg}`, reason.message, "utf8");
+			let data = fs.readFileSync(`.sfp/logs/${pkg}`, "utf8");
 
-			const pathToMarkDownFile = `.sfpowerscripts/outputs/build-error-info.md`;
-			fs.mkdirpSync(".sfpowerscripts/outputs");
+			const pathToMarkDownFile = `.sfp/outputs/build-error-info.md`;
+			fs.mkdirpSync(".sfp/outputs");
 			fs.createFileSync(pathToMarkDownFile);
 			fs.appendFileSync(pathToMarkDownFile, `\nPlease find the errors observed during build\n\n`);
 			fs.appendFileSync(pathToMarkDownFile, `## ${pkg}\n\n`);
@@ -755,7 +755,7 @@ export default class BuildImpl {
 
 
 		return SfpPackageBuilder.buildPackageFromProjectDirectory(
-			new FileLogger(`.sfpowerscripts/logs/${sfdx_package}`),
+			new FileLogger(`.sfp/logs/${sfdx_package}`),
 			this.props.projectDirectory,
 			sfdx_package,
 			{
@@ -800,7 +800,7 @@ export default class BuildImpl {
 		let stageForceIgnorePath: string;
 
 		let ignoreFiles: { [key in Stage]: string } =
-			projectConfig.plugins?.sfpowerscripts?.ignoreFiles;
+			projectConfig.plugins?.sfp?.ignoreFiles;
 		if (ignoreFiles) {
 			Object.keys(ignoreFiles).forEach((key) => {
 				if (key.toLowerCase() == currentStage) {
@@ -823,11 +823,11 @@ export default class BuildImpl {
 		projectConfig: any,
 	): { [key: string]: any }[] {
 		this.isMultiConfigFilesEnabled =
-			this.projectConfig?.plugins?.sfpowerscripts?.scratchOrgDefFilePaths?.enableMultiDefinitionFiles;
+			this.projectConfig?.plugins?.sfp?.scratchOrgDefFilePaths?.enableMultiDefinitionFiles;
 		let configFiles: { [key: string]: any }[];
 		if (this.isMultiConfigFilesEnabled) {
 			configFiles =
-				this.projectConfig?.plugins?.sfpowerscripts?.scratchOrgDefFilePaths
+				this.projectConfig?.plugins?.sfp?.scratchOrgDefFilePaths
 					?.packages;
 		}
 		return configFiles;
@@ -835,7 +835,7 @@ export default class BuildImpl {
 
 	private async resolvePackageDependencies(projectConfig: any) {
 		let isDependencyResolverEnabled =
-			!projectConfig?.plugins?.sfpowerscripts
+			!projectConfig?.plugins?.sfp
 				?.disableTransitiveDependencyResolver;
 
 		if (isDependencyResolverEnabled) {

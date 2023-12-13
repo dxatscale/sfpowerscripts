@@ -1,4 +1,4 @@
-import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig';
+import ProjectConfig from '../../core/project/ProjectConfig';
 export default class DependencyHelper {
     static getParentsToBeFullFilled(packagesWithParents: AdjacentList, packages: string[]): any {
         for (let [pkgName, parents] of Object.entries(packagesWithParents)) {

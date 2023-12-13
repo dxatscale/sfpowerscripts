@@ -1,20 +1,33 @@
 {
-    "name": "@dxatscale/sfpowerscripts",
-    "description": "DX@Scale Toolkit",
-    "version": "25.6.0",
+    "name": "@flxblio/sfp",
+    "description": "Flxbl Toolkit",
+    "version": "1.0.0",
     "license": "MIT",
-    "author": "dxatscale",
+    "author": "flxblio",
     "release": "January 24",
     "bin": {
-        "sfp": "./bin/run",
-        "sfpowerscripts": "./bin/run"
+        "sfp": "./bin/run"
     },
-    "bugs": "https://github.com/dxatscale/sfpowerscripts/issues",
+    "bugs": "https://github.com/flxblio/sfp/issues",
     "dependencies": {
-        "@dxatscale/sfdx-process-wrapper": "^1.0.2",
-        "@dxatscale/sfp-logger": "^2.1.2",
-        "@dxatscale/sfpowerscripts.core": "^36.5.3",
-        "@dxatscale/sfprofiles": "^2.0.8",
+        "@flxblio/apexlink": "^1.0.2",
+        "@newrelic/telemetry-sdk": "^0.6.0",
+        "@salesforce/apex-node": "2.1.0",
+        "@salesforce/packaging": "2.3.3",
+        "@salesforce/source-deploy-retrieve": "9.7.24",
+        "@salesforce/source-tracking": "4.2.16",
+        "apex-parser": "2.13.0",
+        "axios": "^1.4.0",
+        "datadog-metrics": "^0.9.3",
+        "fast-xml-parser": "4.2.7",
+        "hot-shots": "^8.5.0",
+        "ignore": "^5.1.6",
+        "tar": "^6.1.9",
+        "tmp": "^0.2.1",
+        "xml2js": "^0.6.0",
+        "@flxblio/sfdx-process-wrapper": "^1.0.2",
+        "@flxblio/sfp-logger": "^2.1.2",
+        "@flxblio/sfprofiles": "^2.0.8",
         "@oclif/core": "2.11.8",
         "@oclif/plugin-commands": "^3.0.3",
         "@oclif/plugin-help": "5.2.17",
@@ -61,6 +74,7 @@
         "oclif": "^3.10.0",
         "ts-jest": "29.1.1",
         "ts-node": "10.7.0",
+        "@types/fs-extra": "11.0.4",
         "typescript": "^5"
     },
     "engines": {
@@ -74,10 +88,10 @@
         "/resources",
         "/oclif.manifest.json"
     ],
-    "homepage": "https://github.com/dxatscale/sfpowerscripts",
+    "homepage": "https://github.com/flxblio/sfp",
     "keywords": [
-        "dxatscale",
-        "sf-cli",
+        "flxblio",
+        "sfp-cli",
         "sfdx",
         "salesforce",
         "sf",
@@ -93,7 +107,7 @@
                 "description": "Orchestrate packages from a monorepo through its lifecycle, driven by descriptors in your sfdx-project.json"
             },
             "pool": {
-                "description": "Manage the pooled orgs created by the sfpowerscripts orchestrator in prepare stage"
+                "description": "Manage the pooled orgs created by the sfp orchestrator in prepare stage"
             },
             "changelog": {
                 "description": "Track your artifacts & user stories as they progress through different environments, with release changelogs"
@@ -108,12 +122,12 @@
                         "description": "Commands to create and install unlocked packages"
                     },
                     "source": {
-                        "description": "Commands to create and install sfpowerscripts source packages"
+                        "description": "Commands to create and install sfp source packages"
                     }
                 }
             },
             "impact": {
-                "description": "Figures out the impact of  various components of sfpowerscripts",
+                "description": "Figures out the impact of  various components of sfp",
                 "external": true
             },
             "analyze": {
@@ -148,8 +162,8 @@
     },
     "repository": {
         "type": "git",
-        "url": "https://github.com/dxatscale/sfpowerscripts.git",
-        "directory": "packages/sfpowerscripts-cli"
+        "url": "https://github.com/flxblio/sfp.git",
+        "directory": "packages/sfp-cli"
     },
     "scripts": {
         "build": "pnpm run clean && pnpm run compile",

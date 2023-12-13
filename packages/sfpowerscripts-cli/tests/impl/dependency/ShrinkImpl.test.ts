@@ -23,7 +23,7 @@ const setupFakeConnection = async () => {
   return conn;
 }
 
-jest.mock('../../../../core/src/git/Git', () => {
+jest.mock('../../../src/core/git/Git', () => {
   class Git {
     static async initiateRepo()
      {
@@ -34,7 +34,7 @@ jest.mock('../../../../core/src/git/Git', () => {
   return Git;
 });
 
-jest.mock('../../../../core/src/git/GitTags', () => {
+jest.mock('../../../src/core/git/GitTags', () => {
   class GitTags {
       async listTagsOnBranch(): Promise<string[]> {
           return gitTags;
@@ -205,7 +205,7 @@ const projectConfig = {
     "sfdc-framework":"04t1000x00x00x"
   },
   "plugins": {
-      "sfpowerscripts": {
+      "sfp": {
           "disableShrinkImpl": false,
               "externalDependencyMap": {
                   "tech-framework@2.0.0.38": [

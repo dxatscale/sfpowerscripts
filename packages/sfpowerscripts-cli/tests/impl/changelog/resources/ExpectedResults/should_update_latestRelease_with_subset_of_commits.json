@@ -15,7 +15,7 @@
                     "date": "2021-01-25T11:01:55+11:00",
                     "author": "Azlam",
                     "message": "Add persist credential to PR (#6)",
-                    "body": "* Add persist credential to PR\r\n\r\n* switch to alpha\r\n\r\n* Increment versions\r\n\r\n* Revert \"Increment versions\"\r\n\r\nThis reverts commit 39a68617d8e92de46604b883b6681e8022d2e403.\r\n\r\n* Test abs path\r\n\r\n* Revert \"Test abs path\"\r\n\r\nThis reverts commit 5ab30a8b52eddf16025acf6aec57d1bb9262549d.\r\n\r\n* Cleanup and switch to prod version of sfpowerscripts\r\n\r\nCo-authored-by: sfpowerscripts <sfpowerscripts@dxscale>\r\nCo-authored-by: Alan Ly <alan.ly@accenture.com>"
+                    "body": "* Add persist credential to PR\r\n\r\n* switch to alpha\r\n\r\n* Increment versions\r\n\r\n* Revert \"Increment versions\"\r\n\r\nThis reverts commit 39a68617d8e92de46604b883b6681e8022d2e403.\r\n\r\n* Test abs path\r\n\r\n* Revert \"Test abs path\"\r\n\r\nThis reverts commit 5ab30a8b52eddf16025acf6aec57d1bb9262549d.\r\n\r\n* Cleanup and switch to prod version of sfp\r\n\r\nCo-authored-by: sfp <sfp@dxscale>\r\nCo-authored-by: Alan Ly <alan.ly@flxbl.io>"
                 },
                 {
                     "commitId": "d7124579",

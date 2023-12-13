@@ -1,28 +1,28 @@
-import ArtifactFetcher, { Artifact } from '@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFetcher';
-import SFPLogger, { COLOR_ERROR, COLOR_SUCCESS, FileLogger, Logger, LoggerLevel } from '@dxatscale/sfp-logger';
+import ArtifactFetcher, { Artifact } from '../../core/artifacts/ArtifactFetcher';
+import SFPLogger, { COLOR_ERROR, COLOR_SUCCESS, FileLogger, Logger, LoggerLevel } from '@flxblio/sfp-logger';
 import { EOL } from 'os';
 import { Stage } from '../Stage';
-import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig';
+import ProjectConfig from '../../core/project/ProjectConfig';
 import semver = require('semver');
-import PromoteUnlockedPackageImpl from '@dxatscale/sfpowerscripts.core/lib/package/promote/PromoteUnlockedPackageImpl';
-import { DeploymentType } from '@dxatscale/sfpowerscripts.core/lib/deployers/DeploymentExecutor';
-import { COLOR_KEY_MESSAGE,COLOR_KEY_VALUE,COLOR_HEADER } from '@dxatscale/sfp-logger';
+import PromoteUnlockedPackageImpl from '../../core/package/promote/PromoteUnlockedPackageImpl';
+import { DeploymentType } from '../../core/deployers/DeploymentExecutor';
+import { COLOR_KEY_MESSAGE,COLOR_KEY_VALUE,COLOR_HEADER } from '@flxblio/sfp-logger';
 import {
     PackageInstallationResult,
     PackageInstallationStatus,
-} from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/PackageInstallationResult';
-import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
-import SfpPackage, { PackageType } from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
-import SfpPackageInquirer from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageInquirer';
+} from '../../core/package/packageInstallers/PackageInstallationResult';
+import SFPOrg from '../../core/org/SFPOrg';
+import SfpPackage, { PackageType } from '../../core/package/SfpPackage';
+import SfpPackageInquirer from '../../core/package/SfpPackageInquirer';
 import { PostDeployHook } from './PostDeployHook';
 import { PreDeployHook } from './PreDeployHook';
-import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder';
-import SfpPackageInstaller from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageInstaller';
-import { SfpPackageInstallationOptions } from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/InstallPackage';
+import SfpPackageBuilder from '../../core/package/SfpPackageBuilder';
+import SfpPackageInstaller from '../../core/package/SfpPackageInstaller';
+import { SfpPackageInstallationOptions } from '../../core/package/packageInstallers/InstallPackage';
 import * as _ from 'lodash';
 import GroupConsoleLogs from '../../ui/GroupConsoleLogs';
 import { ZERO_BORDER_TABLE } from '../../ui/TableConstants';
-import convertBuildNumDotDelimToHyphen from '@dxatscale/sfpowerscripts.core/lib/utils/VersionNumberConverter';
+import convertBuildNumDotDelimToHyphen from '../../core/utils/VersionNumberConverter';
 import ReleaseConfig from '../release/ReleaseConfig';
 import fs from 'fs-extra';
 import { Align, getMarkdownTable } from 'markdown-table-ts';

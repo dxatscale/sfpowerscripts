@@ -1,4 +1,4 @@
-import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
+import SFPLogger, { Logger, LoggerLevel } from '@flxblio/sfp-logger';
 import { Release } from './ReleaseChangelog';
  
 

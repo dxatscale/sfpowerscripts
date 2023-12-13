@@ -1,10 +1,10 @@
 
 import { AnyJson } from '@salesforce/ts-types';
-import poolListImpl from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolListImpl';
-import ScratchOrg from '@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg';
-import SFPLogger, { LoggerLevel } from '@dxatscale/sfp-logger';
+import poolListImpl from '../../core/scratchorg/pool/PoolListImpl';
+import ScratchOrg from '../../core/scratchorg/ScratchOrg';
+import SFPLogger, { LoggerLevel } from '@flxblio/sfp-logger';
 import { Messages } from '@salesforce/core';
-import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
+import sfpCommand from '../../SfpCommand';
 import { Flags, ux } from '@oclif/core';
 import { loglevel, orgApiVersionFlagSfdxStyle, targetdevhubusername } from '../../flags/sfdxflags';
 
@@ -13,19 +13,19 @@ Messages.importMessagesDirectory(__dirname);
 
 // Load the specific messages for this file. Messages from @salesforce/command, @salesforce/core,
 // or any library that is using the messages framework can also be loaded this way.
-const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'scratchorg_poollist');
+const messages = Messages.loadMessages('@flxblio/sfp', 'scratchorg_poollist');
 
-export default class List extends SfpowerscriptsCommand {
+export default class List extends sfpCommand {
     public static description = messages.getMessage('commandDescription');
 
     protected static requiresDevhubUsername = true;
     public static enableJsonFlag = true
     
     public static examples = [
-        `$ sfpowerscripts pool:list -t core `,
-        `$ sfpowerscripts pool:list -t core -v devhub`,
-        `$ sfpowerscripts pool:list -t core -v devhub -m`,
-        `$ sfpowerscripts pool:list -t core -v devhub -m -a`,
+        `$ sfp pool:list -t core `,
+        `$ sfp pool:list -t core -v devhub`,
+        `$ sfp pool:list -t core -v devhub -m`,
+        `$ sfp pool:list -t core -v devhub -m -a`,
     ];
 
     public static flags = {

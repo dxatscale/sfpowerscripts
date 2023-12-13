@@ -1,8 +1,8 @@
-import SFPLogger, { COLOR_WARNING, LoggerLevel } from '@dxatscale/sfp-logger';
+import SFPLogger, { COLOR_WARNING, LoggerLevel } from '@flxblio/sfp-logger';
 const fs = require('fs-extra');
 import child_process = require('child_process');
 import FetchAnArtifact from './FetchAnArtifact';
-import defaultShell from '@dxatscale/sfpowerscripts.core/lib/utils/DefaultShell';
+import defaultShell from '../../core/utils/DefaultShell';
 
 export class FetchAnArtifactUsingScript implements FetchAnArtifact {
     constructor(private scriptPath: string) {}

@@ -1,10 +1,10 @@
-import TransitiveDependencyResolver from '@dxatscale/sfpowerscripts.core/lib/package/dependencies/TransitiveDependencyResolver';
-import { COLOR_HEADER, COLOR_KEY_MESSAGE, COLOR_SUCCESS, COLOR_ERROR } from '@dxatscale/sfp-logger';
-import SFPLogger, { LoggerLevel, Logger } from '@dxatscale/sfp-logger';
+import TransitiveDependencyResolver from '../../core/package/dependencies/TransitiveDependencyResolver';
+import { COLOR_HEADER, COLOR_KEY_MESSAGE, COLOR_SUCCESS, COLOR_ERROR } from '@flxblio/sfp-logger';
+import SFPLogger, { LoggerLevel, Logger } from '@flxblio/sfp-logger';
 import _ from 'lodash';
 import { Connection } from '@salesforce/core';
 const Table = require('cli-table');
-import UserDefinedExternalDependency from '@dxatscale/sfpowerscripts.core/lib/project/UserDefinedExternalDependency';
+import UserDefinedExternalDependency from '../../core/project/UserDefinedExternalDependency';
 
 export default class ShrinkImpl {
     private dependencyMap;

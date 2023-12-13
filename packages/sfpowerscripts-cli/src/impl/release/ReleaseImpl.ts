@@ -1,16 +1,16 @@
 import ReleaseDefinitionSchema from './ReleaseDefinitionSchema';
 import DeployImpl, { DeployProps, DeploymentMode, DeploymentResult } from '../deploy/DeployImpl';
-import SFPLogger, { COLOR_HEADER, COLOR_KEY_MESSAGE, ConsoleLogger, Logger, LoggerLevel } from '@dxatscale/sfp-logger';
+import SFPLogger, { COLOR_HEADER, COLOR_KEY_MESSAGE, ConsoleLogger, Logger, LoggerLevel } from '@flxblio/sfp-logger';
 import { Stage } from '../Stage';
 import ReleaseError from '../../errors/ReleaseError';
 import ChangelogImpl from '../../impl/changelog/ChangelogImpl';
-import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender';
+import SFPStatsSender from '../../core/stats/SFPStatsSender';
 import { Release } from '../changelog/ReleaseChangelog';
-import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
+import SFPOrg from '../../core/org/SFPOrg';
 import path = require('path');
 import { EOL } from 'os';
-import Package2Detail from '@dxatscale/sfpowerscripts.core/lib/package/Package2Detail';
-import InstallUnlockedPackageCollection from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/InstallUnlockedPackageCollection';
+import Package2Detail from '../../core/package/Package2Detail';
+import InstallUnlockedPackageCollection from '../../core/package/packageInstallers/InstallUnlockedPackageCollection';
 import FetchImpl from '../artifacts/FetchImpl';
 import GroupConsoleLogs  from '../../ui/GroupConsoleLogs';
 

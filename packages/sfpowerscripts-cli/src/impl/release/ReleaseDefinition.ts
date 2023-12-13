@@ -3,8 +3,8 @@ import Ajv from 'ajv';
 const yaml = require('js-yaml');
 import lodash = require('lodash');
 import get18DigitSalesforceId from '../../utils/Get18DigitSalesforceId';
-import Git from '@dxatscale/sfpowerscripts.core/lib/git/Git';
-import { ConsoleLogger } from '@dxatscale/sfp-logger';
+import Git from '../../core/git/Git';
+import { ConsoleLogger } from '@flxblio/sfp-logger';
 const fs = require('fs-extra');
 const path = require('path');
 

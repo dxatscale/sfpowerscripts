@@ -6,16 +6,16 @@ import {
     TestLevel,
     TestOptions,
     RunAllTestsInPackageOptions,
-} from '@dxatscale/sfpowerscripts.core/lib/apextest/TestOptions';
-import TriggerApexTests from '@dxatscale/sfpowerscripts.core/lib/apextest/TriggerApexTests';
-import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
+} from '../../core/apextest/TestOptions';
+import TriggerApexTests from '../../core/apextest/TriggerApexTests';
+import sfpCommand from '../../SfpCommand';
 import { Messages } from '@salesforce/core';
-import SfpPackage from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
+import SfpPackage from '../../core/package/SfpPackage';
 
-import { ConsoleLogger } from '@dxatscale/sfp-logger';
-import { CoverageOptions } from '@dxatscale/sfpowerscripts.core/lib/apex/coverage/IndividualClassCoverage';
-import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder';
-import { PackageType } from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
+import { ConsoleLogger } from '@flxblio/sfp-logger';
+import { CoverageOptions } from '../../core/apex/coverage/IndividualClassCoverage';
+import SfpPackageBuilder from '../../core/package/SfpPackageBuilder';
+import { PackageType } from '../../core/package/SfpPackage';
 import { Flags } from '@oclif/core';
 import { loglevel, orgApiVersionFlagSfdxStyle, requiredUserNameFlag } from '../../flags/sfdxflags';
 const path = require('path');
@@ -25,9 +25,9 @@ Messages.importMessagesDirectory(__dirname);
 
 // Load the specific messages for this file. Messages from @salesforce/command, @salesforce/core,
 // or any library that is using the messages framework can also be loaded this way.
-const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'trigger_apex_test');
+const messages = Messages.loadMessages('@flxblio/sfp', 'trigger_apex_test');
 
-export default class TriggerApexTest extends SfpowerscriptsCommand {
+export default class TriggerApexTest extends sfpCommand {
     public static description = messages.getMessage('commandDescription');
 
     public static examples = [

@@ -1,12 +1,12 @@
-import ArtifactGenerator from '@dxatscale/sfpowerscripts.core/lib/artifacts/generators/ArtifactGenerator';
+import ArtifactGenerator from './core//artifacts/generators/ArtifactGenerator';
 
 import { EOL } from 'os';
-import SfpowerscriptsCommand from './SfpowerscriptsCommand';
+import sfpCommand from './SfpCommand';
 import { Messages } from '@salesforce/core';
 import fs = require('fs');
-import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender';
+import SFPStatsSender from './core/stats/SFPStatsSender';
 import BuildImpl, { BuildProps } from './impl/parallelBuilder/BuildImpl';
-import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig';
+import ProjectConfig from './core/project/ProjectConfig';
 import { Stage } from './impl/Stage';
 import SFPLogger, {
     COLOR_ERROR,
@@ -19,9 +19,9 @@ import SFPLogger, {
     ConsoleLogger,
     LoggerLevel,
     COLOR_KEY_VALUE,
-} from '@dxatscale/sfp-logger';
-import getFormattedTime from '@dxatscale/sfpowerscripts.core/lib/utils/GetFormattedTime';
-import SfpPackage from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
+} from '@flxblio/sfp-logger';
+import getFormattedTime from './core//utils/GetFormattedTime';
+import SfpPackage from './core//package/SfpPackage';
 import ReleaseConfig from './impl/release/ReleaseConfig';
 import { Flags } from '@oclif/core';
 import { loglevel, orgApiVersionFlagSfdxStyle, targetdevhubusername } from './flags/sfdxflags';
@@ -32,9 +32,9 @@ Messages.importMessagesDirectory(__dirname);
 
 // Load the specific messages for this file. Messages from @salesforce/command, @salesforce/core,
 // or any library that is using the messages framework can also be loaded this way.
-const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'build');
+const messages = Messages.loadMessages('@flxblio/sfp', 'build');
 
-export default abstract class BuildBase extends SfpowerscriptsCommand {
+export default abstract class BuildBase extends sfpCommand {
     protected static requiresUsername = false;
     protected static requiresDevhubUsername = false;
     protected static requiresProject = true;
@@ -115,7 +115,7 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
 
             SFPLogger.log(COLOR_HEADER(`command: ${COLOR_KEY_MESSAGE(this.getStage())}`));
             SFPLogger.log(COLOR_HEADER(`Build Packages Only Changed: ${flags.diffcheck}`));
-            if(projectConfig?.plugins?.sfpowerscripts?.scratchOrgDefFilePaths?.enableMultiDefinitionFiles){
+            if(projectConfig?.plugins?.sfp?.scratchOrgDefFilePaths?.enableMultiDefinitionFiles){
                 SFPLogger.log(COLOR_HEADER(`Multiple Config Files Mode: enabled`));
             }else{
                 SFPLogger.log(COLOR_HEADER(`Config File Path: ${flags.configfilepath}`));

@@ -1,5 +1,5 @@
 {
-    "commandDescription": "Installs a sfpowerscripts artifact to an org",
+    "commandDescription": "Installs a sfp artifact to an org",
     "packageFlagDescription": "Name of the package to be installed",
     "targetOrgFlagDescription": "Alias/User Name of the target environment",
     "apexCompileOnlyPackageFlagDescription": "(unlocked) package installation triggers a compilation of apex, flag to trigger compilation of package only",

@@ -1,5 +1,5 @@
-import ChangedComponentsFetcher from "@dxatscale/sfpowerscripts.core/lib/dependency/ChangedComponentsFetcher";
-import Component from "@dxatscale/sfpowerscripts.core/lib/dependency/Component";
+import ChangedComponentsFetcher from "../../core/dependency/ChangedComponentsFetcher";
+import Component from "../../core/dependency/Component";
 
 
 export class Analyzer {

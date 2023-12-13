@@ -1,5 +1,5 @@
-import SFPLogger, { Logger, LoggerLevel } from '@dxatscale/sfp-logger';
-import { COLOR_KEY_MESSAGE } from '@dxatscale/sfp-logger';
+import SFPLogger, { Logger, LoggerLevel } from '@flxblio/sfp-logger';
+import { COLOR_KEY_MESSAGE } from '@flxblio/sfp-logger';
 import { EOL } from 'os';
 
 //TODO: Move to sfpconsole package

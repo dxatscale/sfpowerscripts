@@ -7,7 +7,7 @@ export default class FileOutputHandler {
 
   public static getInstance() {
     if (!FileOutputHandler.instance)
-      FileOutputHandler.instance = new FileOutputHandler('.sfpowerscripts/outputs');
+      FileOutputHandler.instance = new FileOutputHandler('.sfp/outputs');
 
     return FileOutputHandler.instance;
   }

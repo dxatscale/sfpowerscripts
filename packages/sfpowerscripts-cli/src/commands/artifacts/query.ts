@@ -1,15 +1,15 @@
-import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
+import sfpCommand from '../../SfpCommand';
 import { LoggerLevel, Messages } from '@salesforce/core';
-import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
-import SFPLogger, { ConsoleLogger } from '@dxatscale/sfp-logger';
+import SFPOrg from '../../core/org/SFPOrg';
+import SFPLogger, { ConsoleLogger } from '@flxblio/sfp-logger';
 import { ZERO_BORDER_TABLE } from '../../ui/TableConstants';
 import { loglevel, requiredUserNameFlag } from '../../flags/sfdxflags';
 const Table = require('cli-table');
 
 Messages.importMessagesDirectory(__dirname);
-const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'artifacts_query');
+const messages = Messages.loadMessages('@flxblio/sfp', 'artifacts_query');
 
-export default class Query extends SfpowerscriptsCommand {
+export default class Query extends sfpCommand {
     public static description = messages.getMessage('commandDescription');
 
     public static examples = [`$ sfp artifacts:query -u <target_org>`];
@@ -35,7 +35,7 @@ export default class Query extends SfpowerscriptsCommand {
                     'Commmit Id',
                     'Subcriber Version',
                     'Type',
-                    'Is Sfpowerscripts Installed',
+                    'Is sfp Installed',
                 ],
                 chars: ZERO_BORDER_TABLE
             });
@@ -46,7 +46,7 @@ export default class Query extends SfpowerscriptsCommand {
                     installedArtifact.commitId.substring(0,8),
                     installedArtifact.subscriberVersion,
                     installedArtifact.type,
-                    installedArtifact.isInstalledBySfpowerscripts,
+                    installedArtifact.isInstalledBysfp,
                 ]);
             });
             SFPLogger.log(minTable.toString(), LoggerLevel.INFO, new ConsoleLogger());

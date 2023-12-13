@@ -1,11 +1,11 @@
-import TransitiveDependencyResolver from '@dxatscale/sfpowerscripts.core/lib/package/dependencies/TransitiveDependencyResolver';
+import TransitiveDependencyResolver from '../../core/package/dependencies/TransitiveDependencyResolver';
 import { Messages } from '@salesforce/core';
-import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
-import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig';
-import SFPLogger, { LoggerLevel, Logger } from '@dxatscale/sfp-logger';
+import sfpCommand from '../../SfpCommand';
+import ProjectConfig from '../../core/project/ProjectConfig';
+import SFPLogger, { LoggerLevel, Logger } from '@flxblio/sfp-logger';
 import * as fs from 'fs-extra';
 import path = require('path');
-import UserDefinedExternalDependency from "@dxatscale/sfpowerscripts.core/lib/project/UserDefinedExternalDependency";
+import UserDefinedExternalDependency from "../../core/project/UserDefinedExternalDependency";
 import { Flags } from '@oclif/core';
 import { loglevel, targetdevhubusername } from '../../flags/sfdxflags';
 
@@ -14,9 +14,9 @@ Messages.importMessagesDirectory(__dirname);
 
 // Load the specific messages for this file. Messages from @salesforce/command, @salesforce/core,
 // or any library that is using the messages framework can also be loaded this way.
-const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'dependency_expand');
+const messages = Messages.loadMessages('@flxblio/sfp', 'dependency_expand');
 
-export default class Expand extends SfpowerscriptsCommand {
+export default class Expand extends sfpCommand {
     public static description = messages.getMessage('commandDescription');
 
 
