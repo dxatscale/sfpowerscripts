@@ -1,9 +1,9 @@
 import { Messages } from '@salesforce/core';
 import InstallPackageCommand from '../../../InstallPackageCommand';
-import { PackageInstallationStatus } from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/PackageInstallationResult';
-import SFPLogger, { ConsoleLogger, LoggerLevel } from '@dxatscale/sfp-logger';
-import { SfpPackageInstallationOptions } from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/InstallPackage';
-import SfpPackageInstaller from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageInstaller';
+import { PackageInstallationStatus } from '../../../core/package/packageInstallers/PackageInstallationResult';
+import SFPLogger, { ConsoleLogger, LoggerLevel } from '@flxblio/sfp-logger';
+import { SfpPackageInstallationOptions } from '../../../core/package/packageInstallers/InstallPackage';
+import SfpPackageInstaller from '../../../core/package/SfpPackageInstaller';
 import { Flags } from '@oclif/core';
 import { loglevel, requiredUserNameFlag } from '../../../flags/sfdxflags';
 
@@ -13,7 +13,7 @@ Messages.importMessagesDirectory(__dirname);
 
 // Load the specific messages for this file. Messages from @salesforce/command, @salesforce/core,
 // or any library that is using the messages framework can also be loaded this way.
-const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'install_unlocked_package');
+const messages = Messages.loadMessages('@flxblio/sfp', 'install_unlocked_package');
 
 export default class InstallUnlockedPackage extends InstallPackageCommand {
     public static description = messages.getMessage('commandDescription');

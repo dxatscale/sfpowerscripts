@@ -1,14 +1,14 @@
-import { ConsoleLogger } from '@dxatscale/sfp-logger';
+import { ConsoleLogger } from '@flxblio/sfp-logger';
 import { Messages } from '@salesforce/core';
 import ChangelogImpl from '../../impl/changelog/ChangelogImpl';
-import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
+import sfpCommand from '../../SfpCommand';
 import { Flags } from '@oclif/core';
 import { loglevel } from '../../flags/sfdxflags';
 
 Messages.importMessagesDirectory(__dirname);
-const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'generate_changelog');
+const messages = Messages.loadMessages('@flxblio/sfp', 'generate_changelog');
 
-export default class GenerateChangelog extends SfpowerscriptsCommand {
+export default class GenerateChangelog extends sfpCommand {
     
     public static description = messages.getMessage('commandDescription');
 

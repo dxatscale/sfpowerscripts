@@ -1,4 +1,4 @@
-export default abstract class SfpowerscriptsError extends Error {
+export default abstract class SfpError extends Error {
     readonly message: string;
     readonly code: string;
     /**

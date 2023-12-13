@@ -1,6 +1,6 @@
 /*
- * Modified from sfdx-plugins-core to meet sfpowerscripts requirment
- * sfpowerscripts is not moving to the new style immediately 
+ * Modified from sfdx-plugins-core to meet sfp requirment
+ * sfp is not moving to the new style immediately 
  * to reduce migration efforts in pipelines
  * 
  * 
@@ -25,7 +25,7 @@ export const orgApiVersionFlagSfdxStyle = orgApiVersionFlag({
 });
 
 Messages.importMessagesDirectory(__dirname);
-const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'core-messages');
+const messages = Messages.loadMessages('@flxblio/sfp', 'core-messages');
 
 export const loglevel = Flags.string({
   description: 'logging level for this command invocation',

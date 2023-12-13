@@ -1,13 +1,13 @@
 import { Messages } from '@salesforce/core';
-import { COLOR_SUCCESS, ConsoleLogger } from '@dxatscale/sfp-logger';
+import { COLOR_SUCCESS, ConsoleLogger } from '@flxblio/sfp-logger';
 import PackageCreateCommand from '../../../PackageCreateCommand';
-import SfpPackage, { PackageType } from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
-import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder';
+import SfpPackage, { PackageType } from '../../../core/package/SfpPackage';
+import SfpPackageBuilder from '../../../core/package/SfpPackageBuilder';
 import { Flags } from '@oclif/core';
 import { loglevel } from '../../../flags/sfdxflags';
 
 Messages.importMessagesDirectory(__dirname);
-const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'create_source_package');
+const messages = Messages.loadMessages('@flxblio/sfp', 'create_source_package');
 
 export default class CreateSourcePackage extends PackageCreateCommand {
     public static description = messages.getMessage('commandDescription');

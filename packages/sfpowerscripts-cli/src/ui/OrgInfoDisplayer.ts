@@ -1,10 +1,10 @@
-import SFPLogger, { COLOR_HEADER, COLOR_KEY_VALUE, COLOR_KEY_MESSAGE, COLOR_TRACE } from "@dxatscale/sfp-logger";
-import SFPOrg from "@dxatscale/sfpowerscripts.core/lib/org/SFPOrg";
+import SFPLogger, { COLOR_HEADER, COLOR_KEY_VALUE, COLOR_KEY_MESSAGE, COLOR_TRACE } from "@flxblio/sfp-logger";
+import SFPOrg from "../core/org/SFPOrg";
 const Table = require("cli-table");
 import { LoggerLevel } from "@salesforce/core";
 import GroupConsoleLogs from "./GroupConsoleLogs";
 import { COLON_MIDDLE_BORDER_TABLE } from "./TableConstants";
-import ScratchOrg from "@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg";
+import ScratchOrg from "../core/scratchorg/ScratchOrg";
 import { Align, getMarkdownTable } from "markdown-table-ts";
 import fs from "fs-extra";
 import FileOutputHandler from "../outputs/FileOutputHandler";

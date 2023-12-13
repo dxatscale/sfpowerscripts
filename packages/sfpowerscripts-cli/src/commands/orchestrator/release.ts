@@ -1,6 +1,6 @@
-import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
+import sfpCommand from '../../SfpCommand';
 import { LoggerLevel, Messages } from '@salesforce/core';
-import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender';
+import SFPStatsSender from '../../core/stats/SFPStatsSender';
 import ReleaseImpl, { ReleaseProps, ReleaseResult } from '../../impl/release/ReleaseImpl';
 import ReleaseDefinition from '../../impl/release/ReleaseDefinition';
 import ReleaseError from '../../errors/ReleaseError';
@@ -13,15 +13,15 @@ import SFPLogger, {
     COLOR_WARNING,
     COLOR_KEY_MESSAGE,
     ConsoleLogger,
-} from '@dxatscale/sfp-logger';
+} from '@flxblio/sfp-logger';
 import ReleaseDefinitionSchema from '../../impl/release/ReleaseDefinitionSchema';
 import { arrayFlagSfdxStyle, loglevel, logsgroupsymbol, optionalDevHubFlag, requiredUserNameFlag } from '../../flags/sfdxflags';
 import { Flags } from '@oclif/core';
 
 Messages.importMessagesDirectory(__dirname);
-const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'release');
+const messages = Messages.loadMessages('@flxblio/sfp', 'release');
 
-export default class Release extends SfpowerscriptsCommand {
+export default class Release extends sfpCommand {
     public static description = messages.getMessage('commandDescription');
 
     public static examples = [

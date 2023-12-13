@@ -1,4 +1,4 @@
-import { Changelog, Commit } from '@dxatscale/sfpowerscripts.core/lib/changelog/interfaces/GenericChangelogInterfaces';
+import { Changelog, Commit } from '../../core/changelog/interfaces/GenericChangelogInterfaces';
 
 export class ReleaseChangelog {
     releases: Release[];

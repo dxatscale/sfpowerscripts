@@ -1,16 +1,16 @@
 import { Messages } from '@salesforce/core';
 import InstallPackageCommand from '../../InstallPackageCommand';
-import { PackageInstallationStatus } from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/PackageInstallationResult';
-import SFPLogger, { COLOR_HEADER, COLOR_KEY_MESSAGE, ConsoleLogger, LoggerLevel } from '@dxatscale/sfp-logger';
-import { SfpPackageInstallationOptions } from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/InstallPackage';
-import SfpPackageInstaller from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageInstaller';
+import { PackageInstallationStatus } from '../../core/package/packageInstallers/PackageInstallationResult';
+import SFPLogger, { COLOR_HEADER, COLOR_KEY_MESSAGE, ConsoleLogger, LoggerLevel } from '@flxblio/sfp-logger';
+import { SfpPackageInstallationOptions } from '../../core/package/packageInstallers/InstallPackage';
+import SfpPackageInstaller from '../../core/package/SfpPackageInstaller';
 import { Flags } from '@oclif/core';
 import { loglevel, requiredUserNameFlag } from '../../flags/sfdxflags';
-import { PackageType } from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
+import { PackageType } from '../../core/package/SfpPackage';
 
 
 Messages.importMessagesDirectory(__dirname);
-const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'install_package');
+const messages = Messages.loadMessages('@flxblio/sfp', 'install_package');
 
 export default class Install extends InstallPackageCommand {
   public static description = messages.getMessage('commandDescription');

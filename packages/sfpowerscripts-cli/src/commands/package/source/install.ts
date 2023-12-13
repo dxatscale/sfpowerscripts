@@ -1,11 +1,11 @@
 import { Messages } from '@salesforce/core';
 import InstallPackageCommand from '../../../InstallPackageCommand';
 import * as fs from 'fs-extra';
-import { PackageInstallationStatus } from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/PackageInstallationResult';
-import SFPLogger, { ConsoleLogger, LoggerLevel } from '@dxatscale/sfp-logger';
-import { DeploymentType } from '@dxatscale/sfpowerscripts.core/lib/deployers/DeploymentExecutor';
-import { SfpPackageInstallationOptions } from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/InstallPackage';
-import SfpPackageInstaller from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageInstaller';
+import { PackageInstallationStatus } from '../../../core/package/packageInstallers/PackageInstallationResult';
+import SFPLogger, { ConsoleLogger, LoggerLevel } from '@flxblio/sfp-logger';
+import { DeploymentType } from '../../../core/deployers/DeploymentExecutor';
+import { SfpPackageInstallationOptions } from '../../../core/package/packageInstallers/InstallPackage';
+import SfpPackageInstaller from '../../../core/package/SfpPackageInstaller';
 import { loglevel, requiredUserNameFlag } from '../../../flags/sfdxflags';
 import { Flags } from '@oclif/core';
 
@@ -14,7 +14,7 @@ Messages.importMessagesDirectory(__dirname);
 
 // Load the specific messages for this file. Messages from @salesforce/command, @salesforce/core,
 // or any library that is using the messages framework can also be loaded this way.
-const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'install_source_package');
+const messages = Messages.loadMessages('@flxblio/sfp', 'install_source_package');
 
 export default class InstallSourcePackage extends InstallPackageCommand {
     public static description = messages.getMessage('commandDescription');
@@ -74,7 +74,7 @@ export default class InstallSourcePackage extends InstallPackageCommand {
         const wait_time: string = this.flags.waittime;
         const skipIfAlreadyInstalled = this.flags.skipifalreadyinstalled;
 
-        console.log('sfpowerscripts.Install Source Package To Org');
+        console.log('sfp.Install Source Package To Org');
 
         try {
             let options: SfpPackageInstallationOptions = {
@@ -106,19 +106,19 @@ export default class InstallSourcePackage extends InstallPackageCommand {
                     if (this.flags.refname) {
                         fs.writeFileSync(
                             '.env',
-                            `${this.flags.refname}_sfpowerscripts_installsourcepackage_deployment_id=${result.deploy_id}\n`,
+                            `${this.flags.refname}_sfp_installsourcepackage_deployment_id=${result.deploy_id}\n`,
                             { flag: 'a' }
                         );
                         console.log(
-                            `${this.flags.refname}_sfpowerscripts_installsourcepackage_deployment_id=${result.deploy_id}`
+                            `${this.flags.refname}_sfp_installsourcepackage_deployment_id=${result.deploy_id}`
                         );
                     } else {
                         fs.writeFileSync(
                             '.env',
-                            `sfpowerscripts_installsourcepackage_deployment_id=${result.deploy_id}\n`,
+                            `sfp_installsourcepackage_deployment_id=${result.deploy_id}\n`,
                             { flag: 'a' }
                         );
-                        console.log(`sfpowerscripts_installsourcepackage_deployment_id=${result.deploy_id}`);
+                        console.log(`sfp_installsourcepackage_deployment_id=${result.deploy_id}`);
                     }
                 }
             }

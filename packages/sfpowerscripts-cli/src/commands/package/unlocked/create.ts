@@ -1,8 +1,8 @@
 import { Messages } from '@salesforce/core';
 import PackageCreateCommand from '../../../PackageCreateCommand';
-import { COLOR_SUCCESS, ConsoleLogger } from '@dxatscale/sfp-logger';
-import SfpPackage from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
-import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder';
+import { COLOR_SUCCESS, ConsoleLogger } from '@flxblio/sfp-logger';
+import SfpPackage from '../../../core/package/SfpPackage';
+import SfpPackageBuilder from '../../../core/package/SfpPackageBuilder';
 import { loglevel, targetdevhubusername } from '../../../flags/sfdxflags';
 import { Flags } from '@oclif/core';
 
@@ -11,7 +11,7 @@ Messages.importMessagesDirectory(__dirname);
 
 // Load the specific messages for this file. Messages from @salesforce/command, @salesforce/core,
 // or any library that is using the messages framework can also be loaded this way.
-const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'create_unlocked_package');
+const messages = Messages.loadMessages('@flxblio/sfp', 'create_unlocked_package');
 
 export default class CreateUnlockedPackage extends PackageCreateCommand {
     public static description = messages.getMessage('commandDescription');

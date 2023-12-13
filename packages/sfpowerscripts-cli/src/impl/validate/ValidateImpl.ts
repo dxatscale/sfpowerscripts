@@ -4,7 +4,7 @@ import DeployImpl, {
 	DeployProps,
 	DeploymentResult,
 } from "../deploy/DeployImpl";
-import ArtifactGenerator from "@dxatscale/sfpowerscripts.core/lib/artifacts/generators/ArtifactGenerator";
+import ArtifactGenerator from "../../core/artifacts/generators/ArtifactGenerator";
 import { Stage } from "../Stage";
 import SFPLogger, {
 	COLOR_KEY_VALUE,
@@ -12,40 +12,40 @@ import SFPLogger, {
 	ConsoleLogger,
 	Logger,
 	LoggerLevel,
-} from "@dxatscale/sfp-logger";
+} from "@flxblio/sfp-logger";
 import {
 	PackageInstallationResult,
 	PackageInstallationStatus,
-} from "@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/PackageInstallationResult";
-import { PackageDiffOptions } from "@dxatscale/sfpowerscripts.core/lib/package/diff/PackageDiffImpl";
-import PoolFetchImpl from "@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolFetchImpl";
+} from "../../core/package/packageInstallers/PackageInstallationResult";
+import { PackageDiffOptions } from "../../core/package/diff/PackageDiffImpl";
+import PoolFetchImpl from "../../core/scratchorg/pool/PoolFetchImpl";
 import { Org } from "@salesforce/core";
-import InstalledArtifactsDisplayer from "@dxatscale/sfpowerscripts.core/lib/display/InstalledArtifactsDisplayer";
+import InstalledArtifactsDisplayer from "../../core/display/InstalledArtifactsDisplayer";
 import ValidateError from "../../errors/ValidateError";
-import ScratchOrg from "@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg";
-import { COLOR_KEY_MESSAGE } from "@dxatscale/sfp-logger";
-import { COLOR_WARNING } from "@dxatscale/sfp-logger";
-import { COLOR_ERROR } from "@dxatscale/sfp-logger";
-import { COLOR_HEADER } from "@dxatscale/sfp-logger";
-import { COLOR_SUCCESS } from "@dxatscale/sfp-logger";
-import { COLOR_TIME } from "@dxatscale/sfp-logger";
-import SFPStatsSender from "@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender";
-import ScratchOrgInfoFetcher from "@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/services/fetchers/ScratchOrgInfoFetcher";
-import ScratchOrgInfoAssigner from "@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/services/updaters/ScratchOrgInfoAssigner";
+import ScratchOrg from "../../core/scratchorg/ScratchOrg";
+import { COLOR_KEY_MESSAGE } from "@flxblio/sfp-logger";
+import { COLOR_WARNING } from "@flxblio/sfp-logger";
+import { COLOR_ERROR } from "@flxblio/sfp-logger";
+import { COLOR_HEADER } from "@flxblio/sfp-logger";
+import { COLOR_SUCCESS } from "@flxblio/sfp-logger";
+import { COLOR_TIME } from "@flxblio/sfp-logger";
+import SFPStatsSender from "../../core/stats/SFPStatsSender";
+import ScratchOrgInfoFetcher from "../../core/scratchorg/pool/services/fetchers/ScratchOrgInfoFetcher";
+import ScratchOrgInfoAssigner from "../../core/scratchorg/pool/services/updaters/ScratchOrgInfoAssigner";
 import ValidateResult from "./ValidateResult";
-import PoolOrgDeleteImpl from "@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolOrgDeleteImpl";
-import SFPOrg from "@dxatscale/sfpowerscripts.core/lib/org/SFPOrg";
+import PoolOrgDeleteImpl from "../../core/scratchorg/pool/PoolOrgDeleteImpl";
+import SFPOrg from "../../core/org/SFPOrg";
 import SfpPackage, {
 	PackageType,
-} from "@dxatscale/sfpowerscripts.core/lib/package/SfpPackage";
+} from "../../core/package/SfpPackage";
 
-import getFormattedTime from "@dxatscale/sfpowerscripts.core/lib/utils/GetFormattedTime";
+import getFormattedTime from "../../core/utils/GetFormattedTime";
 import { PostDeployHook } from "../deploy/PostDeployHook";
 import * as rimraf from "rimraf";
-import ProjectConfig from "@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig";
-import InstallUnlockedPackageCollection from "@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/InstallUnlockedPackageCollection";
-import ExternalPackage2DependencyResolver from "@dxatscale/sfpowerscripts.core/lib/package/dependencies/ExternalPackage2DependencyResolver";
-import ExternalDependencyDisplayer from "@dxatscale/sfpowerscripts.core/lib/display/ExternalDependencyDisplayer";
+import ProjectConfig from "../../core/project/ProjectConfig";
+import InstallUnlockedPackageCollection from "../../core/package/packageInstallers/InstallUnlockedPackageCollection";
+import ExternalPackage2DependencyResolver from "../../core/package/dependencies/ExternalPackage2DependencyResolver";
+import ExternalDependencyDisplayer from "../../core/display/ExternalDependencyDisplayer";
 import { PreDeployHook } from "../deploy/PreDeployHook";
 import GroupConsoleLogs from "../../ui/GroupConsoleLogs";
 import ReleaseConfig from "../release/ReleaseConfig";
@@ -107,9 +107,9 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
 			} else if (
 				this.props.validateAgainst === ValidateAgainst.PRECREATED_POOL
 			) {
-				if (process.env.SFPOWERSCRIPTS_DEBUG_PREFETCHED_SCRATCHORG)
+				if (process.env.sfp_DEBUG_PREFETCHED_SCRATCHORG)
 					scratchOrgUsername =
-						process.env.SFPOWERSCRIPTS_DEBUG_PREFETCHED_SCRATCHORG;
+						process.env.sfp_DEBUG_PREFETCHED_SCRATCHORG;
 				else
 					scratchOrgUsername = await this.fetchScratchOrgFromPool(
 						this.props.pools,
@@ -138,7 +138,7 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
 				let installedArtifacts = await this.orgAsSFPOrg.getInstalledArtifacts();
 				if (installedArtifacts.length == 0) {
 					SFPLogger.log(
-						COLOR_ERROR("Failed to query org for Sfpowerscripts Artifacts"),
+						COLOR_ERROR("Failed to query org for sfp Artifacts"),
 					);
 				}
 				packagesInstalledInOrgMappedToCommits =

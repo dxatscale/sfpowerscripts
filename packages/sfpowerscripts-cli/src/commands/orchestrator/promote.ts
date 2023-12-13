@@ -1,20 +1,20 @@
-import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
+import sfpCommand from '../../SfpCommand';
 import { Messages } from '@salesforce/core';
-import PromoteUnlockedPackageImpl from '@dxatscale/sfpowerscripts.core/lib/package/promote/PromoteUnlockedPackageImpl'
-import ArtifactFetcher from '@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFetcher';
-import { ConsoleLogger } from '@dxatscale/sfp-logger';
-import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder';
-import { PackageType } from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
+import PromoteUnlockedPackageImpl from '../../core/package/promote/PromoteUnlockedPackageImpl'
+import ArtifactFetcher from '../../core/artifacts/ArtifactFetcher';
+import { ConsoleLogger } from '@flxblio/sfp-logger';
+import SfpPackageBuilder from '../../core/package/SfpPackageBuilder';
+import { PackageType } from '../../core/package/SfpPackage';
 import { Flags, ux } from '@oclif/core';
 import { loglevel, targetdevhubusername } from '../../flags/sfdxflags';
-import { LoggerLevel } from '@dxatscale/sfp-logger';
-import { COLOR_HEADER } from '@dxatscale/sfp-logger';
-import SFPLogger from '@dxatscale/sfp-logger';
+import { LoggerLevel } from '@flxblio/sfp-logger';
+import { COLOR_HEADER } from '@flxblio/sfp-logger';
+import SFPLogger from '@flxblio/sfp-logger';
 
 Messages.importMessagesDirectory(__dirname);
-const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'promote');
+const messages = Messages.loadMessages('@flxblio/sfp', 'promote');
 
-export default class Promote extends SfpowerscriptsCommand {
+export default class Promote extends sfpCommand {
     public static description = messages.getMessage('commandDescription');
 
     public static examples = [`$ sfp orchestrator:promote -d path/to/artifacts -v <org>`];

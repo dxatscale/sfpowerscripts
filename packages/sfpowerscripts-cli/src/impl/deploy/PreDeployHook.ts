@@ -1,5 +1,5 @@
-import { Logger } from '@dxatscale/sfp-logger';
-import SfpPackage from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
+import { Logger } from '@flxblio/sfp-logger';
+import SfpPackage from '../../core/package/SfpPackage';
 
 export interface PreDeployHook {
     preDeployPackage(

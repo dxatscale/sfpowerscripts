@@ -1,23 +1,23 @@
-import SfpowerscriptsCommand from './SfpowerscriptsCommand';
+import sfpCommand from './SfpCommand';
 import { Messages } from '@salesforce/core';
-import ArtifactFetcher, { Artifact } from '@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFetcher';
+import ArtifactFetcher, { Artifact } from './core//artifacts/ArtifactFetcher';
 import * as rimraf from 'rimraf';
-import SfpPackage from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
-import { ConsoleLogger } from '@dxatscale/sfp-logger';
-import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder';
-import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
+import SfpPackage from './core//package/SfpPackage';
+import { ConsoleLogger } from '@flxblio/sfp-logger';
+import SfpPackageBuilder from './core//package/SfpPackageBuilder';
+import SFPOrg from './core//org/SFPOrg';
 import { Flags } from '@oclif/core';
 import { requiredUserNameFlag } from './flags/sfdxflags';
 
 Messages.importMessagesDirectory(__dirname);
-const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'install_package_command');
+const messages = Messages.loadMessages('@flxblio/sfp', 'install_package_command');
 
 /**
  * Base class providing common functionality for package installation
  *
- * @extends SfpowerscriptsCommand
+ * @extends sfpCommand
  */
-export default abstract class InstallPackageCommand extends SfpowerscriptsCommand {
+export default abstract class InstallPackageCommand extends sfpCommand {
     protected sfpPackage: SfpPackage;
     protected sfpOrg: SFPOrg;
     /**
@@ -86,6 +86,6 @@ export default abstract class InstallPackageCommand extends SfpowerscriptsComman
      */
     private postInstall(): void {
         // Delete temp directory containing unzipped artifacts
-        rimraf.sync('.sfpowerscripts/unzippedArtifacts');
+        rimraf.sync('.sfp/unzippedArtifacts');
     }
 }

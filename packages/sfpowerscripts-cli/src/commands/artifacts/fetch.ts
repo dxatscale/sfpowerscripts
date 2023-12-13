@@ -1,18 +1,18 @@
-import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
+import sfpCommand from '../../SfpCommand';
 import { LoggerLevel, Messages } from '@salesforce/core';
 import FetchImpl, { ArtifactVersion } from '../../impl/artifacts/FetchImpl';
 import ReleaseDefinition from '../../impl/release/ReleaseDefinition';
 import FetchArtifactsError from '../../impl/artifacts/FetchArtifactsError';
-import { ConsoleLogger } from '@dxatscale/sfp-logger';
+import { ConsoleLogger } from '@flxblio/sfp-logger';
 import { Flags } from '@oclif/core';
 import { loglevel } from '../../flags/sfdxflags';
-import SFPLogger from '@dxatscale/sfp-logger';
-import { COLOR_HEADER } from '@dxatscale/sfp-logger';
+import SFPLogger from '@flxblio/sfp-logger';
+import { COLOR_HEADER } from '@flxblio/sfp-logger';
 
 Messages.importMessagesDirectory(__dirname);
-const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'fetch');
+const messages = Messages.loadMessages('@flxblio/sfp', 'fetch');
 
-export default class Fetch extends SfpowerscriptsCommand {
+export default class Fetch extends sfpCommand {
     public static description = messages.getMessage('commandDescription');
 
     public static examples = [

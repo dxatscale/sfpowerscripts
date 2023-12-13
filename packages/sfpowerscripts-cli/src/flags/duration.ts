@@ -9,7 +9,7 @@ import { Messages } from '@salesforce/core';
 import { Duration } from '@salesforce/kit';
 
 Messages.importMessagesDirectory(__dirname);
-const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'core-messages');
+const messages = Messages.loadMessages('@flxblio/sfp', 'core-messages');
 
 type DurationUnit = Lowercase<keyof typeof Duration.Unit>;
 

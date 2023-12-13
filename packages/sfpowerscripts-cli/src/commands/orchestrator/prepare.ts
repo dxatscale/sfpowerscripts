@@ -1,13 +1,13 @@
 import { Messages } from '@salesforce/core';
-import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
+import sfpCommand from '../../SfpCommand';
 import PrepareImpl from '../../impl/prepare/PrepareImpl';
-import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender';
+import SFPStatsSender from '../../core/stats/SFPStatsSender';
 import { Stage } from '../../impl/Stage';
 import * as fs from 'fs-extra';
-import ScratchOrgInfoFetcher from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/services/fetchers/ScratchOrgInfoFetcher';
+import ScratchOrgInfoFetcher from '../../core/scratchorg/pool/services/fetchers/ScratchOrgInfoFetcher';
 import Ajv from 'ajv';
 import path = require('path');
-import { PoolErrorCodes } from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolError';
+import { PoolErrorCodes } from '../../core/scratchorg/pool/PoolError';
 import SFPLogger, {
     LoggerLevel,
     COLOR_ERROR,
@@ -15,19 +15,18 @@ import SFPLogger, {
     COLOR_SUCCESS,
     COLOR_TIME,
     COLOR_KEY_MESSAGE,
-} from '@dxatscale/sfp-logger';
-import getFormattedTime from '@dxatscale/sfpowerscripts.core/lib/utils/GetFormattedTime';
-import { PoolConfig } from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolConfig';
-import { COLOR_WARNING } from '@dxatscale/sfp-logger';
-import PoolSchema from '@dxatscale/sfpowerscripts.core/resources/pooldefinition.schema.json';
-import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
+} from '@flxblio/sfp-logger';
+import getFormattedTime from '../../core/utils/GetFormattedTime';
+import { PoolConfig } from '../../core/scratchorg/pool/PoolConfig';
+import { COLOR_WARNING } from '@flxblio/sfp-logger';
+import SFPOrg from '../../core/org/SFPOrg';
 import { Flags } from '@oclif/core';
 import { loglevel, logsgroupsymbol, targetdevhubusername } from '../../flags/sfdxflags';
 
 Messages.importMessagesDirectory(__dirname);
-const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'prepare');
+const messages = Messages.loadMessages('@flxblio/sfp', 'prepare');
 
-export default class Prepare extends SfpowerscriptsCommand {
+export default class Prepare extends sfpCommand {
     protected static requiresDevhubUsername = true;
     protected static requiresProject = true;
 
@@ -200,7 +199,11 @@ export default class Prepare extends SfpowerscriptsCommand {
 
     public validatePoolConfig(poolConfig: any) {
         let ajv = new Ajv({ allErrors: true });
-        let validator = ajv.compile(PoolSchema);
+        let schema = fs.readJSONSync(
+            path.join(__dirname, '..', '..', '..', 'resources', 'schemas', 'pooldefinition.schema.json'),
+            { encoding: 'UTF-8' }
+        );
+        let validator = ajv.compile(schema);
         let isSchemaValid = validator(poolConfig);
         if (!isSchemaValid) {
             let errorMsg: string = `The pool configuration is invalid, Please fix the following errors\n`;

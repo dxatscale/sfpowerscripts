@@ -1,8 +1,8 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "$id": "https://github.com/dxatscale/sfpowerscripts/blob/develop/packages/sfpowerscripts-cli/resources/sfdx-project.schema.json",
-    "title": "sfpowerscripts DX Project File",
-    "description": "The properties and shape of the SFDX project enhanced for sfpowerscripts",
+    "$id": "https://github.com/flxblio/sfp/blob/develop/packages/sfp-cli/resources/sfdx-project.schema.json",
+    "title": "sfp DX Project File",
+    "description": "The properties and shape of the SFDX project enhanced for sfp",
     "type": "object",
     "additionalProperties": true,
     "required": [
@@ -12,7 +12,7 @@
         "$schema": {
             "description": "Support editors like vscode to help with IntelliSense",
             "type": "string",
-            "default": "https://raw.githubusercontent.com/dxatscale/sfpowerscripts/main/packages/sfpowerscripts-cli/resources/schemas/sfdx-project.schema.json"
+            "default": "https://raw.githubusercontent.com/flxblio/sfp/main/packages/sfp-cli/resources/schemas/sfdx-project.schema.json"
         },
         "packageDirectories": {
             "title": "Package Directories",
@@ -236,8 +236,8 @@
             "description": "Salesforce CLI plugin configurations used with this project.",
             "additionalProperties": true,
             "properties": {
-                "sfpowerscripts": {
-                    "$ref": "#/definitions/plugins.sfpowerscripts"
+                "sfp": {
+                    "$ref": "#/definitions/plugins.sfp"
                 }
             }
         },
@@ -560,10 +560,10 @@
             "title": "Package branch",
             "description": "branched package for the specific dev team"
         },
-        "plugins.sfpowerscripts": {
+        "plugins.sfp": {
             "type": "object",
-            "title": "sfpowerscripts plugin configuration",
-            "description": "Configuration for sfpowerscripts plugin",
+            "title": "sfp plugin configuration",
+            "description": "Configuration for sfp plugin",
             "additionalProperties": false,
             "properties": {
                 "ignoreFiles": {
@@ -626,7 +626,7 @@
                 "externalDependencyMap": {
                     "title": "Map of external package and its dependencies",
                     "type": "object",
-                    "description": "Use this map to define dependencies of unlocked packages built elsewhere, This information will be used by sfpowerscripts while expanding package dependencies",
+                    "description": "Use this map to define dependencies of unlocked packages built elsewhere, This information will be used by sfp while expanding package dependencies",
                     "patternProperties": {
                         ".*": {
                             "type": "array",

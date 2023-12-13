@@ -1,31 +1,31 @@
 import DeployImpl, { DeploymentMode, DeployProps, DeploymentResult } from '../deploy/DeployImpl';
-import SFPLogger, { LoggerLevel, Logger, COLOR_KEY_MESSAGE, ConsoleLogger } from '@dxatscale/sfp-logger';
+import SFPLogger, { LoggerLevel, Logger, COLOR_KEY_MESSAGE, ConsoleLogger } from '@flxblio/sfp-logger';
 import { Stage } from '../Stage';
-import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender';
-import ScratchOrg from '@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg';
+import SFPStatsSender from '../../core/stats/SFPStatsSender';
+import ScratchOrg from '../../core/scratchorg/ScratchOrg';
 import { Result, ok, err } from 'neverthrow';
 import PoolJobExecutor, {
     JobError,
     ScriptExecutionResult,
-} from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolJobExecutor';
+} from '../../core/scratchorg/pool/PoolJobExecutor';
 import { Connection, Org } from '@salesforce/core';
-import { PoolConfig } from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolConfig';
-import VlocityPackUpdateSettings from '@dxatscale/sfpowerscripts.core/lib/vlocitywrapper/VlocityPackUpdateSettings';
-import VlocityInitialInstall from '@dxatscale/sfpowerscripts.core/lib/vlocitywrapper/VlocityInitialInstall';
-import ScriptExecutor from '@dxatscale/sfpowerscripts.core/lib/scriptExecutor/ScriptExecutorHelpers';
-import DeploymentSettingsService from '@dxatscale/sfpowerscripts.core/lib/deployers/DeploymentSettingsService';
-import PackageDetails from '@dxatscale/sfpowerscripts.core/lib/package/Package2Detail';
-import InstallUnlockedPackageCollection from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/InstallUnlockedPackageCollection';
-import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
+import { PoolConfig } from '../../core/scratchorg/pool/PoolConfig';
+import VlocityPackUpdateSettings from '../../core/vlocitywrapper/VlocityPackUpdateSettings';
+import VlocityInitialInstall from '../../core/vlocitywrapper/VlocityInitialInstall';
+import ScriptExecutor from '../../core/scriptExecutor/ScriptExecutorHelpers';
+import DeploymentSettingsService from '../../core/deployers/DeploymentSettingsService';
+import PackageDetails from '../../core/package/Package2Detail';
+import InstallUnlockedPackageCollection from '../../core/package/packageInstallers/InstallUnlockedPackageCollection';
+import SFPOrg from '../../core/org/SFPOrg';
 import { PreDeployHook } from '../deploy/PreDeployHook';
-import SfpPackage from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
-import ExternalPackage2DependencyResolver from '@dxatscale/sfpowerscripts.core/lib/package/dependencies/ExternalPackage2DependencyResolver';
-import ExternalDependencyDisplayer from '@dxatscale/sfpowerscripts.core/lib/display/ExternalDependencyDisplayer';
-import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig';
-import { FileLogger } from '@dxatscale/sfp-logger';
+import SfpPackage from '../../core/package/SfpPackage';
+import ExternalPackage2DependencyResolver from '../../core/package/dependencies/ExternalPackage2DependencyResolver';
+import ExternalDependencyDisplayer from '../../core/display/ExternalDependencyDisplayer';
+import ProjectConfig from '../../core/project/ProjectConfig';
+import { FileLogger } from '@flxblio/sfp-logger';
 const fs = require('fs-extra');
 
-const SFPOWERSCRIPTS_ARTIFACT_PACKAGE = '04t1P000000ka9mQAA';
+const sfp_ARTIFACT_PACKAGE = '04t1P000000ka9mQAA';
 export default class PrepareOrgJob extends PoolJobExecutor implements PreDeployHook {
     public constructor(
         protected pool: PoolConfig,
@@ -57,8 +57,8 @@ export default class PrepareOrgJob extends PoolJobExecutor implements PreDeployH
                 individualSODeploymentActivityLogger
             );
 
-            //Install sfpowerscripts package
-            await this.installSfPowerscriptsArtifactPackage(
+            //Install sfp package
+            await this.installsfpArtifactPackage(
                 scratchOrg,
                 individualSODeploymentActivityLogger,
                 packageCollectionInstaller
@@ -140,27 +140,27 @@ export default class PrepareOrgJob extends PoolJobExecutor implements PreDeployH
         return deploymentSucceed;
     }
 
-    private async installSfPowerscriptsArtifactPackage(
+    private async installsfpArtifactPackage(
         scratchOrg: ScratchOrg,
         logger: Logger,
         packageCollectionInstaller: InstallUnlockedPackageCollection
     ) {
-        SFPLogger.log(`Installing sfpowerscripts_artifact package to the ${scratchOrg.alias}`, null, logger);
+        SFPLogger.log(`Installing sfp_artifact package to the ${scratchOrg.alias}`, null, logger);
 
-        //Install sfpowerscripts artifact package
+        //Install sfp artifact package
         await packageCollectionInstaller.install(
             [
                 {
-                    name: 'sfpowerscripts_artifact2',
-                    subscriberPackageVersionId: process.env.SFPOWERSCRIPTS_ARTIFACT_PACKAGE
-                        ? process.env.SFPOWERSCRIPTS_ARTIFACT_PACKAGE
-                        : SFPOWERSCRIPTS_ARTIFACT_PACKAGE,
+                    name: 'sfp_artifact2',
+                    subscriberPackageVersionId: process.env.sfp_ARTIFACT_PACKAGE
+                        ? process.env.sfp_ARTIFACT_PACKAGE
+                        : sfp_ARTIFACT_PACKAGE,
                 },
             ],
             true
         );
 
-        SFPLogger.log(`Suscessfully Installed sfpowerscripts_artifact package to the ${scratchOrg.alias}`, null, logger);
+        SFPLogger.log(`Suscessfully Installed sfp_artifact package to the ${scratchOrg.alias}`, null, logger);
     }
 
     private async invokeDeployImpl(

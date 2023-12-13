@@ -1,7 +1,7 @@
-import SfpowerscriptsError from './SfpowerscriptsError';
+import SfpError from './SfpError';
 import ValidateResult from '../impl/validate/ValidateResult';
 
-export default class ValidateError extends SfpowerscriptsError {
+export default class ValidateError extends SfpError {
     /**
      * Payload for the results of the release
      */

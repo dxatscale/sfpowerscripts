@@ -1,7 +1,7 @@
 import { expect } from '@jest/globals';
 import CommitUpdater from '../../../src/impl/changelog/CommitUpdater';
 import ReadPackageChangelog from '../../../src/impl/changelog/ReadPackageChangelog';
-import { Changelog as PackageChangelog } from '@dxatscale/sfpowerscripts.core/lib/changelog/interfaces/GenericChangelogInterfaces';
+import { Changelog as PackageChangelog } from '../../../src/core/changelog/interfaces/GenericChangelogInterfaces';
 import { Release } from '../../../src/impl/changelog/ReleaseChangelog';
 const path = require('path');
 import * as fs from 'fs-extra';

@@ -1,4 +1,4 @@
-import ArtifactFetcher, { Artifact } from '@dxatscale/sfpowerscripts.core/lib/artifacts/ArtifactFetcher';
+import ArtifactFetcher, { Artifact } from '../../core/artifacts/ArtifactFetcher';
 import { ReleaseChangelog } from './ReleaseChangelog';
 import ChangelogMarkdownGenerator from './ChangelogMarkdownGenerator';
 import ReleaseChangelogUpdater from './ReleaseChangelogUpdater';
@@ -8,10 +8,10 @@ import { marked } from 'marked';
 const TerminalRenderer = require('marked-terminal');
 const retry = require('async-retry');
 import { GitError } from 'simple-git';
-import SfpPackage from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackage';
-import SFPLogger, { LoggerLevel, ConsoleLogger, Logger } from '@dxatscale/sfp-logger';
-import SfpPackageBuilder from '@dxatscale/sfpowerscripts.core/lib/package/SfpPackageBuilder';
-import Git from '@dxatscale/sfpowerscripts.core/lib/git/Git';
+import SfpPackage from '../../core/package/SfpPackage';
+import SFPLogger, { LoggerLevel, ConsoleLogger, Logger } from '@flxblio/sfp-logger';
+import SfpPackageBuilder from '../../core/package/SfpPackageBuilder';
+import Git from '../../core/git/Git';
 import FileOutputHandler from '../../outputs/FileOutputHandler';
 
 
@@ -97,7 +97,7 @@ export default class ChangelogImpl {
                     } else {
                         console.log(`${sfpPackage.packageName} artifact is missing branch information`);
                         console.log(
-                            `This will cause an error in the future. Re-create the artifact using the latest version of sfpowerscripts to maintain compatibility.`
+                            `This will cause an error in the future. Re-create the artifact using the latest version of sfp to maintain compatibility.`
                         );
                     }
                 } 

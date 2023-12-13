@@ -1,8 +1,8 @@
 import { Messages } from '@salesforce/core';
-import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
+import sfpCommand from '../../SfpCommand';
 import { Stage } from '../../impl/Stage';
 import * as fs from 'fs-extra';
-import SFPLogger, { COLOR_KEY_MESSAGE, ConsoleLogger } from '@dxatscale/sfp-logger';
+import SFPLogger, { COLOR_KEY_MESSAGE, ConsoleLogger } from '@flxblio/sfp-logger';
 import { Flags } from '@oclif/core';
 import { loglevel } from '../../flags/sfdxflags';
 import { ZERO_BORDER_TABLE } from '../../ui/TableConstants';
@@ -13,9 +13,9 @@ const Table = require('cli-table');
 
 
 Messages.importMessagesDirectory(__dirname);
-const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'impact_release_config');
+const messages = Messages.loadMessages('@flxblio/sfp', 'impact_release_config');
 
-export default class ReleaseConfig extends SfpowerscriptsCommand {
+export default class ReleaseConfig extends sfpCommand {
     public static flags = {
         loglevel,
         basebranch: Flags.string({

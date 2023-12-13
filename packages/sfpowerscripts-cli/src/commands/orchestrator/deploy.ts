@@ -1,6 +1,6 @@
-import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
+import sfpCommand from '../../SfpCommand';
 import { Messages } from '@salesforce/core';
-import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender';
+import SFPStatsSender from '../../core/stats/SFPStatsSender';
 import DeployImpl, { DeploymentMode, DeployProps, DeploymentResult } from '../../impl/deploy/DeployImpl';
 import { Stage } from '../../impl/Stage';
 import SFPLogger, {
@@ -8,21 +8,21 @@ import SFPLogger, {
     COLOR_HEADER,
     COLOR_KEY_MESSAGE,
     COLOR_SUCCESS,
-} from '@dxatscale/sfp-logger';
-import { COLOR_TIME } from '@dxatscale/sfp-logger';
-import getFormattedTime from '@dxatscale/sfpowerscripts.core/lib/utils/GetFormattedTime';
+} from '@flxblio/sfp-logger';
+import { COLOR_TIME } from '@flxblio/sfp-logger';
+import getFormattedTime from '../../core/utils/GetFormattedTime';
 import { Flags } from '@oclif/core';
 import { arrayFlagSfdxStyle, loglevel, logsgroupsymbol, requiredUserNameFlag } from '../../flags/sfdxflags';
-import { LoggerLevel } from '@dxatscale/sfp-logger';
+import { LoggerLevel } from '@flxblio/sfp-logger';
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
 
 // Load the specific messages for this file. Messages from @salesforce/command, @salesforce/core,
 // or any library that is using the messages framework can also be loaded this way.
-const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'deploy');
+const messages = Messages.loadMessages('@flxblio/sfp', 'deploy');
 
-export default class Deploy extends SfpowerscriptsCommand {
+export default class Deploy extends sfpCommand {
     public static description = messages.getMessage('commandDescription');
 
     public static examples = [`$ sfp orchestrator:deploy -u <username>`];

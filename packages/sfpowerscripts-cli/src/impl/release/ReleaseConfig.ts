@@ -1,10 +1,10 @@
 import * as fs from 'fs-extra';
-import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig';
+import ProjectConfig from '../../core/project/ProjectConfig';
 import Ajv, { _ } from 'ajv';
 import ReleaseDefinitionGeneratorConfigSchema from './ReleaseDefinitionGeneratorConfigSchema';
 import lodash = require('lodash');
 const yaml = require('js-yaml');
-import { Logger } from '@dxatscale/sfp-logger';
+import { Logger } from '@flxblio/sfp-logger';
 const path = require('path');
 
 export default class ReleaseConfig {

@@ -8,7 +8,7 @@ import { Flags } from '@oclif/core';
 import { Messages, Lifecycle, OrgConfigProperties, validateApiVersion } from '@salesforce/core';
 
 Messages.importMessagesDirectory(__dirname);
-const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'core-messages');
+const messages = Messages.loadMessages('@flxblio/sfp', 'core-messages');
 
 // versions below this are retired
 export const minValidApiVersion = 21;
@@ -16,7 +16,7 @@ export const minValidApiVersion = 21;
 export const maxDeprecated = 30;
 export const maxDeprecatedUrl = 'https://help.salesforce.com/s/articleView?id=000354473&type=1;';
 
-/**const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'core-messages');
+/**const messages = Messages.loadMessages('@flxblio/sfp', 'core-messages');
  * apiVersion for a salesforce org's rest api.
  * Will validate format and that the api version is still supported.
  * Will default to the version specified in Config, if it exists (and will provide an override warning)

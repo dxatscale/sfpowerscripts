@@ -1,8 +1,8 @@
-import SfpowerscriptsError from './SfpowerscriptsError';
+import SfpError from './SfpError';
 
 import { ReleaseResult } from '../impl/release/ReleaseImpl';
 
-export default class ReleaseError extends SfpowerscriptsError {
+export default class ReleaseError extends SfpError {
     /**
      * Payload for the results of the release
      */

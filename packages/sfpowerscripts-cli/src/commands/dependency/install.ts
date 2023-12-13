@@ -1,11 +1,11 @@
-import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
+import sfpCommand from '../../SfpCommand';
 import { Messages } from '@salesforce/core';
-import ExternalPackage2DependencyResolver from '@dxatscale/sfpowerscripts.core/lib/package/dependencies/ExternalPackage2DependencyResolver';
-import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig';
-import SFPLogger, { COLOR_KEY_MESSAGE, ConsoleLogger, LoggerLevel } from '@dxatscale/sfp-logger';
-import ExternalDependencyDisplayer from '@dxatscale/sfpowerscripts.core/lib/display/ExternalDependencyDisplayer';
-import InstallUnlockedPackageCollection from '@dxatscale/sfpowerscripts.core/lib/package/packageInstallers/InstallUnlockedPackageCollection';
-import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
+import ExternalPackage2DependencyResolver from '../../core/package/dependencies/ExternalPackage2DependencyResolver';
+import ProjectConfig from '../../core/project/ProjectConfig';
+import SFPLogger, { COLOR_KEY_MESSAGE, ConsoleLogger, LoggerLevel } from '@flxblio/sfp-logger';
+import ExternalDependencyDisplayer from '../../core/display/ExternalDependencyDisplayer';
+import InstallUnlockedPackageCollection from '../../core/package/packageInstallers/InstallUnlockedPackageCollection';
+import SFPOrg from '../../core/org/SFPOrg';
 import { Flags } from '@oclif/core';
 import { loglevel, targetdevhubusername, requiredUserNameFlag } from '../../flags/sfdxflags';
 
@@ -14,9 +14,9 @@ Messages.importMessagesDirectory(__dirname);
 
 // Load the specific messages for this file. Messages from @salesforce/command, @salesforce/core,
 // or any library that is using the messages framework can also be loaded this way.
-const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'dependency_install');
+const messages = Messages.loadMessages('@flxblio/sfp', 'dependency_install');
 
-export default class Install extends SfpowerscriptsCommand {
+export default class Install extends sfpCommand {
     public static description = messages.getMessage('commandDescription');
     protected static requiresUsername = true;
     protected static requiresDevhubUsername = true;

@@ -1,18 +1,18 @@
 import { Messages } from '@salesforce/core';
-import ScratchOrg from '@dxatscale/sfpowerscripts.core/lib/scratchorg/ScratchOrg';
+import ScratchOrg from '../../core/scratchorg/ScratchOrg';
 import { AnyJson } from '@salesforce/ts-types';
-import PoolFetchImpl from '@dxatscale/sfpowerscripts.core/lib/scratchorg/pool/PoolFetchImpl';
+import PoolFetchImpl from '../../core/scratchorg/pool/PoolFetchImpl';
 import * as fs from 'fs-extra';
-import SFPLogger, { LoggerLevel } from '@dxatscale/sfp-logger';
-import InstalledArtifactsDisplayer from '@dxatscale/sfpowerscripts.core/lib/display/InstalledArtifactsDisplayer';
-import InstalledPackageDisplayer from '@dxatscale/sfpowerscripts.core/lib/display/InstalledPackagesDisplayer';
-import { COLOR_KEY_MESSAGE } from '@dxatscale/sfp-logger';
-import SFPOrg from '@dxatscale/sfpowerscripts.core/lib/org/SFPOrg';
-import { COLOR_HEADER } from '@dxatscale/sfp-logger';
-import { COLOR_SUCCESS } from '@dxatscale/sfp-logger';
-import { COLOR_TIME } from '@dxatscale/sfp-logger';
-import getFormattedTime from '@dxatscale/sfpowerscripts.core/lib/utils/GetFormattedTime';
-import SfpowerscriptsCommand from '../../SfpowerscriptsCommand';
+import SFPLogger, { LoggerLevel } from '@flxblio/sfp-logger';
+import InstalledArtifactsDisplayer from '../../core/display/InstalledArtifactsDisplayer';
+import InstalledPackageDisplayer from '../../core/display/InstalledPackagesDisplayer';
+import { COLOR_KEY_MESSAGE } from '@flxblio/sfp-logger';
+import SFPOrg from '../../core/org/SFPOrg';
+import { COLOR_HEADER } from '@flxblio/sfp-logger';
+import { COLOR_SUCCESS } from '@flxblio/sfp-logger';
+import { COLOR_TIME } from '@flxblio/sfp-logger';
+import getFormattedTime from '../../core/utils/GetFormattedTime';
+import sfpCommand from '../../SfpCommand';
 import { Flags, ux } from '@oclif/core';
 import { loglevel, orgApiVersionFlagSfdxStyle, targetdevhubusername } from '../../flags/sfdxflags';
 
@@ -21,9 +21,9 @@ Messages.importMessagesDirectory(__dirname);
 
 // Load the specific messages for this file. Messages from @salesforce/command, @salesforce/core,
 // or any library that is using the messages framework can also be loaded this way.
-const messages = Messages.loadMessages('@dxatscale/sfpowerscripts', 'scratchorg_poolFetch');
+const messages = Messages.loadMessages('@flxblio/sfp', 'scratchorg_poolFetch');
 
-export default class Fetch extends SfpowerscriptsCommand {
+export default class Fetch extends sfpCommand {
     public static description = messages.getMessage('commandDescription');
 
     protected static requiresDevhubUsername = true;

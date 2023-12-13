@@ -4,5 +4,5 @@
     "mypoolDescription": "Filter only Scratch orgs created by current user in the pool",
     "allscratchorgsDescription": "Deletes all used and unused Scratch orgs from pool by the tag",
     "inprogressonlyDescription": "Deletes all In Progress Scratch orgs from pool by the tag",
-    "recoverOrphanedScratchOrgsDescription": "Recovers scratch orgs that were created by salesforce but were not tagged to sfpowerscripts due to timeouts etc."
+    "recoverOrphanedScratchOrgsDescription": "Recovers scratch orgs that were created by salesforce but were not tagged to sfp due to timeouts etc."
 }
