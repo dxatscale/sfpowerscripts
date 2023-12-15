@@ -40,7 +40,7 @@ jobs:
 
       - name: 'Set Git Config'
         run: |
-          git config --global user.email "ciuser@dxatscale.io"
+          git config --global user.email "ciuser@flxbl.io"
           git config --global user.name "ciuser"
 
 

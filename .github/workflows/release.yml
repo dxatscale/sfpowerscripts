@@ -90,7 +90,7 @@ jobs:
       job-environment: 'sfpowerscripts-alpha-docker'
       repo: 'flxbl-io'
       new-tag: alpha   
-      image: 'sfpowerscripts-rc'  
+      image: 'sfp-rc'  
     secrets:
       username: ${{ secrets.DOCKER_USERNAME }}
       token: ${{ secrets.GITHUB_TOKEN }}
@@ -141,7 +141,7 @@ jobs:
       job-environment: 'sfpowerscripts-beta-docker'
       repo: 'flxbl-io'
       new-tag: beta   
-      image: 'sfpowerscripts-rc'  
+      image: 'sfp-rc'  
     secrets:
       username: ${{ secrets.DOCKER_USERNAME }}
       token: ${{ secrets.DOCKER_SECRET }}

@@ -13,7 +13,7 @@ on:
     image:
       type: string
       required: false
-      default: sfpowerscripts
+      default: sfp
     new-tag:
       type: string
       required: true

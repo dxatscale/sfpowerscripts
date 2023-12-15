@@ -14,7 +14,7 @@ on:
     image:
       type: string
       required: false
-      default: sfpowerscripts-rc
+      default: sfp-rc
     image-as:
       type: string
       required: false
