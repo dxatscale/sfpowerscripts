@@ -25,7 +25,7 @@ on:
 
    workflow_dispatch:
 
-run-name: Release ${{ github.run_id  }} / ${{ github.ref_name }}
+
 
 # Merge to Develop, create builds   
 jobs: 
