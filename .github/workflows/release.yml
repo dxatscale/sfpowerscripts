@@ -50,8 +50,8 @@ jobs:
       repo: 'dxatscale'
       image: 'sfpowerscripts-rc'
     secrets:
-       username: ${{ secrets.DOCKER_USERNAME }}
-       token: ${{ secrets.DOCKER_SECRET }}
+      username: ${{ secrets.DOCKER_USERNAME }}
+      token: ${{ secrets.GITHUB_TOKEN }}
     needs: [ build ]
   
   build-docker-lite:
@@ -64,8 +64,8 @@ jobs:
       dockerFileName: 'sfp-lite'
       image: 'sfp-lite-rc'
     secrets:
-       username: ${{ secrets.DOCKER_USERNAME }}
-       token: ${{ secrets.DOCKER_SECRET }}
+      username: ${{ secrets.DOCKER_USERNAME }}
+      token: ${{ secrets.GITHUB_TOKEN }}
     needs: [ build ]
 
  #Promotion Stages
@@ -93,7 +93,7 @@ jobs:
       image: 'sfpowerscripts-rc'  
     secrets:
       username: ${{ secrets.DOCKER_USERNAME }}
-      token: ${{ secrets.DOCKER_SECRET }}
+      token: ${{ secrets.GITHUB_TOKEN }}
     needs: [ build-docker ]
 
   alpha-docker-lite:
