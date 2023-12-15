@@ -8,13 +8,13 @@ ARG SFDMU_VERSION=4.18.2
 ARG GIT_COMMIT
 ARG NODE_MAJOR=18
 
-LABEL org.opencontainers.image.description "sfpowerscripts is a build system for modular development in Salesforce."
+LABEL org.opencontainers.image.description "sfp is a build system for modular development in Salesforce."
 LABEL org.opencontainers.image.licenses "MIT"
-LABEL org.opencontainers.image.url "https://github.com/dxatscale/sfpowerscripts"
-LABEL org.opencontainers.image.documentation "https://docs.dxatscale.io/sfpowerscripts/sfpowerscripts"
+LABEL org.opencontainers.image.url "https://github.com/flxblio/sfp"
+LABEL org.opencontainers.image.documentation "https://docs.flxbl.io"
 LABEL org.opencontainers.image.revision $GIT_COMMIT
 LABEL org.opencontainers.image.vendor "DX@Scale"
-LABEL org.opencontainers.image.source "https://github.com/dxatscale/sfpowerscripts"
+LABEL org.opencontainers.image.source "https://github.com/flxblio/sfp"
 LABEL org.opencontainers.image.title "DX@Scale sfpowercripts docker image - January 24"
 
 

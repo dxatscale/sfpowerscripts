@@ -5,7 +5,7 @@ import * as fs from 'fs-extra';
 import * as path from 'path';
 import FileUtils from 'utils/fileutils';
 import { FileProperties } from 'jsforce/lib/api/metadata';
-import SFPLogger, {LoggerLevel } from '@dxatscale/sfp-logger';
+import SFPLogger, {LoggerLevel } from '@flxblio/sfp-logger';
 
 
 if (Symbol['asyncIterator'] === undefined) {

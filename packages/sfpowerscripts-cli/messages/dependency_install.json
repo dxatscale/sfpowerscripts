@@ -1,4 +1,0 @@
-{
-  "commandDescription":"Install all the external dependencies of a given project",
-  "installationkeysFlagDescription":"Installation key for key-protected packages (format is packagename:key --> core:key nCino:key vlocity:key to allow some packages without installation key)"
-}

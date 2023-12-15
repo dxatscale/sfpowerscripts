@@ -8,7 +8,7 @@ import ProfileWriter from '@impl/metadata/writer/profileWriter';
 import Profile from '@impl/metadata/schema';
 import { Sfpowerkit } from '@utils/sfpowerkit';
 import MetadataFiles from '@impl/metadata/metadataFiles';
-import SFPLogger, {LoggerLevel } from '@dxatscale/sfp-logger';
+import SFPLogger, {LoggerLevel } from '@flxblio/sfp-logger';
 
 import { diff_match_patch } from 'diff-match-patch';
 import 'diff-match-patch-line-and-word'; // import globally to  enhanse the class

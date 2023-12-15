@@ -1,5 +1,5 @@
 {
-    "name": "@dxatscale/forcemula",
+    "name": "@flxblio/forcemula",
     "version": "1.0.0",
     "description": "Extract fields from Salesforce formulas",
     "main": "src/index.js",
@@ -9,7 +9,7 @@
         "watch": "jest --silent=false --verbose --detectOpenHandles --coverage --watchAll",
         "test:coverage": "jest --silent=false --verbose --detectOpenHandles --coverage"
     },
-    "author": "dxatscale",
+    "author": "flxblio",
     "license": "MIT",
     "devDependencies": {
         "jest": "^29.6.1"

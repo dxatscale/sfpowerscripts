@@ -1,9 +1,9 @@
 {
-    "name": "@dxatscale/sfdx-process-wrapper",
+    "name": "@flxblio/sfdx-process-wrapper",
     "version": "1.0.2",
     "description": "Wraps around SFDXCommand to exeute it using a subprocess",
-    "author": "dxatscale",
-    "homepage": "https://github.com/dxatscale/sfpowerscripts#readme",
+    "author": "flxbl",
+    "homepage": "https://github.com/flxblio/sfp#readme",
     "license": "MIT",
     "main": "lib/index",
     "types": "lib/index",
@@ -11,7 +11,7 @@
         "lib": "lib"
     },
     "dependencies": {
-        "@dxatscale/sfp-logger": "^2.1.2",
+        "@flxblio/sfp-logger": "^2.1.2",
         "fs-extra": "^9.1.0"
     },
     "devDependencies": {
@@ -24,7 +24,7 @@
     ],
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/dxatscale/sfpowerscripts.git"
+        "url": "git+https://github.com/flxblio/sfp.git"
     },
     "publishConfig": {
         "access": "public"
@@ -35,6 +35,6 @@
         "compile": "tsc -b tsconfig.json"
     },
     "bugs": {
-        "url": "https://github.com/dxatscale/sfpowerscripts/issues"
+        "url": "https://github.com/flxblio/sfp/issues"
     }
 }

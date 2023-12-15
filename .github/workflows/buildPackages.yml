@@ -1,4 +1,4 @@
-# This pipeline is used as template to build the sfpowerscripts plugin
+# This pipeline is used as template to build the sfp plugin
 
 
 name: 'Build Packages'

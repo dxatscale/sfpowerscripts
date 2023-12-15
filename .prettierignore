@@ -9,11 +9,11 @@ tmp/
 oclif.manifest.json
 packages/azpipelines_release_management_extensions/BuildTasks/ManageReleaseTask/*
 packages/core/coverage
-packages/sfpowerscripts-cli/coverage
+packages/sfp-cli/coverage
 .DS_Store
 packages/core/resources
 packages/sfp-cli/resources
-packages/sfpowerscripts-cli/resources
+packages/sfp-cli/resources
 .github
 decision records
 demoreel

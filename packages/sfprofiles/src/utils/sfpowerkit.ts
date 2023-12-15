@@ -3,7 +3,7 @@ import chalk from 'chalk';
 import * as fs from 'fs-extra';
 import SQLITEKeyValue from './sqlitekv';
 import FileUtils from './fileutils';
-import SFPLogger, {LoggerLevel } from '@dxatscale/sfp-logger';
+import SFPLogger, {LoggerLevel } from '@flxblio/sfp-logger';
 import NodeCache from 'node-cache';
 
 

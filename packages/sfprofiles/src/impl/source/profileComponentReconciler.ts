@@ -1,7 +1,7 @@
 import { Connection } from '@salesforce/core';
 import { registry } from '@salesforce/source-deploy-retrieve';
 import MetadataFiles from '@impl/metadata/metadataFiles';
-import SFPLogger, {LoggerLevel } from '@dxatscale/sfp-logger';
+import SFPLogger, {LoggerLevel } from '@flxblio/sfp-logger';
 import { Sfpowerkit } from '@utils/sfpowerkit';
 import UserPermissionBuilder from '@impl/metadata/builder/userPermissionBuilder';
 import MetadataRetriever from '@impl/metadata/retriever/metadataRetriever';

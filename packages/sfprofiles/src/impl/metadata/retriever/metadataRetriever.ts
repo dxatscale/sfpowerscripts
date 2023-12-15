@@ -4,7 +4,7 @@ import { Connection } from 'jsforce';
 import QueryExecutor from '@utils/queryExecutor';
 import MetadataOperation from '@utils/metadataOperation';
 import { registry } from '@salesforce/source-deploy-retrieve';
-import SFPLogger, {LoggerLevel } from '@dxatscale/sfp-logger';
+import SFPLogger, {LoggerLevel } from '@flxblio/sfp-logger';
 
 export default class MetadataRetriever {
     protected _componentType;

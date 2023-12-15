@@ -5,14 +5,14 @@ ARG SFPOWERSCRIPTS_VERSION=alpha
 ARG GIT_COMMIT
 ARG NODE_MAJOR=18
 
-LABEL org.opencontainers.image.description "sfpowerscripts is a build system for modular development in Salesforce."
+LABEL org.opencontainers.image.description "sfp is a build system for modular development in Salesforce."
 LABEL org.opencontainers.image.licenses "MIT"
-LABEL org.opencontainers.image.url "https://github.com/dxatscale/sfpowerscripts"
-LABEL org.opencontainers.image.documentation "https://docs.dxatscale.io/sfpowerscripts/sfpowerscripts"
+LABEL org.opencontainers.image.url "https://github.com/flxblio/sfp"
+LABEL org.opencontainers.image.documentation "https://docs.flxbl.io"
 LABEL org.opencontainers.image.revision $GIT_COMMIT
-LABEL org.opencontainers.image.vendor "DX@Scale"
-LABEL org.opencontainers.image.source "https://github.com/dxatscale/sfpowerscripts"
-LABEL org.opencontainers.image.title "DX@Scale sfp lite docker image - January 24"
+LABEL org.opencontainers.image.vendor "Flxbl"
+LABEL org.opencontainers.image.source "https://github.com/flxblio/sfp"
+LABEL org.opencontainers.image.title "Flxbl sfp lite docker image - January 24"
 
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -54,9 +54,9 @@ RUN mkdir -p /etc/apt/keyrings \
     && rm -rf /var/lib/apt/list/*    
 
 
-# Install sfpowerscripts
+# Install sfp
 RUN npm install --global --omit=dev \
-    @dxatscale/sfpowerscripts@${SFPOWERSCRIPTS_VERSION} 
+    @flxblio/sfp@${SFPOWERSCRIPTS_VERSION} 
 
 WORKDIR /root
 

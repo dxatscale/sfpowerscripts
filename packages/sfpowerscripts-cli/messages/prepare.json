@@ -1,8 +1,0 @@
-{
-    "commandDescription": "Prepare a pool of scratchorgs with all the packages upfront, so that any incoming change can be validated in an optimized manner",
-    "poolConfigFlagDescription": "The path to the configuration file for creating a pool of scratch orgs",
-    "keysDescription": "Keys to be used while installing any managed package dependencies. Required format is a string of key-value pairs separated by spaces e.g. packageA:pw123 packageB:pw123 packageC:pw123",
-    "apiversion": "API version to be used",
-    "npmrcPathFlagDescription": "Path to .npmrc file used for authentication to a npm registry when using npm based artifacts. If left blank, defaults to home directory",
-    "logsGroupSymbolFlagDescription": "Symbol used by CICD platform to group/collapse logs in the console. Provide an opening group, and an optional closing group symbol."
-}

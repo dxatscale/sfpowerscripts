@@ -21,7 +21,7 @@ import SharingRuleDiff from './sharingRuleDiff';
 import CustomLabelsDiff from './customLabelsDiff';
 import DiffUtil, { DiffFile, DiffFileStatus } from './diffUtil';
 import { Sfpowerkit } from '@utils/sfpowerkit';
-import SFPLogger, {LoggerLevel } from '@dxatscale/sfp-logger';
+import SFPLogger, {LoggerLevel } from '@flxblio/sfp-logger';
 import { DXProjectManifestUtils } from '@utils/dxProjectManifestUtils';
 import simplegit from 'simple-git';
 import { Messages } from '@salesforce/core';

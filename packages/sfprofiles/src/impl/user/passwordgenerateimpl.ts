@@ -2,7 +2,7 @@
 // eslint-disable-next-line no-useless-escape
 import { Connection, User, AuthInfo } from '@salesforce/core';
 import queryApi from '../../utils/queryExecutor';
-import SFPLogger, {LoggerLevel } from '@dxatscale/sfp-logger';
+import SFPLogger, {LoggerLevel } from '@flxblio/sfp-logger';
 
 export default class Passwordgenerateimpl {
     public static async run(userName: string) {

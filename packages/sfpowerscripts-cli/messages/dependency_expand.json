@@ -1,4 +1,0 @@
-{
-  "commandDescription":"Expand the dependency list in sfdx-project.json file for each package, fix the gap of dependencies from its dependent packages",
-  "overWriteProjectConfigFlagDescription":"Flag to overwrite existing sfdx-project.json file"
-}

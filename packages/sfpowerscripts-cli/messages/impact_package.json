@@ -1,4 +1,0 @@
-{
-  "commandDescription": "Figures out impacted packages of a project, due to a change from the last known tags",
-  "baseCommitOrBranchFlagDescription": "The base branch on which the git tags should be used"
-}

@@ -1,4 +1,4 @@
-# This pipeline builds the sfpowerscripts & sfp cli plugin
+# This pipeline builds the sfp cli plugin
 # Needs following secrets
 # NPM_TOKEN :  Token to npm.js for dx@scale scope
 # DOCKER_USERNAME : Token to username for ghcr.io for publishing docker

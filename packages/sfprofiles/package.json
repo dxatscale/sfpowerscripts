@@ -1,5 +1,5 @@
 {
-    "name": "@dxatscale/sfprofiles",
+    "name": "@flxblio/sfprofiles",
     "version": "2.0.8",
     "description": "Salesforce Profile management",
     "keywords": [
@@ -8,8 +8,8 @@
         "profiles",
         "permissions"
     ],
-    "author": "dxatscale",
-    "homepage": "https://github.com/dxatscale/sfpowerscripts",
+    "author": "flxblio",
+    "homepage": "https://github.com/flxblio/sfp",
     "license": "MIT",
     "main": "lib/sfprofiles",
     "types": "lib/sfprofiles",
@@ -22,7 +22,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/dxatscale/sfpowerscripts.git"
+        "url": "git+https://github.com/flxblio/sfp.git"
     },
     "scripts": {
         "build": "pnpm run clean && pnpm run compile",
@@ -32,7 +32,7 @@
         "clearCache": "jest --clearCache"
     },
     "bugs": {
-        "url": "https://github.com/dxatscale/sfpowerscripts/issues"
+        "url": "https://github.com/flxblio/sfp/issues"
     },
     "devDependencies": {
         "@babel/core": "7.18.2",
@@ -59,7 +59,7 @@
         "typescript": "^5"
     },
     "dependencies": {
-        "@dxatscale/sfp-logger": "^2.1.2",
+        "@flxblio/sfp-logger": "^2.1.2",
         "@salesforce/core": "5.3.9",
         "@salesforce/source-deploy-retrieve": "9.7.24",
         "async-retry": "^1.3.3",

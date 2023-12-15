@@ -1,5 +1,5 @@
 import child_process = require('child_process');
-import SFPLogger, { COLOR_TRACE, Logger, LoggerLevel } from '@dxatscale/sfp-logger';
+import SFPLogger, { COLOR_TRACE, Logger, LoggerLevel } from '@flxblio/sfp-logger';
 import defaultProcessOptions from './DefaultProcessOptions';
 
 

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import getDefaults from '@utils/getDefaults';
-import SFPLogger, {LoggerLevel } from '@dxatscale/sfp-logger';
+import SFPLogger, {LoggerLevel } from '@flxblio/sfp-logger';
 import { FileProperties, DescribeMetadataResult } from 'jsforce/lib/api/metadata';
 import { Connection } from 'jsforce';
 import { chunkArray } from '@utils/chunkArray';

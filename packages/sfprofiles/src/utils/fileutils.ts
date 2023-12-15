@@ -1,4 +1,4 @@
-import SFPLogger, {LoggerLevel } from '@dxatscale/sfp-logger';
+import SFPLogger, {LoggerLevel } from '@flxblio/sfp-logger';
 import * as fs from 'fs-extra'
 const path = require('path');
 const _ = require('lodash');

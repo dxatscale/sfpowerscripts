@@ -1,5 +1,0 @@
-{
-    "commandDescription": "Validates apex test coverage in the org, Please ensure that the SFDX CLI and sfpowerkit plugin are installed before using this task.",
-    "targetOrgFlagDescription": "Alias or username of the target org",
-    "testCoverageFlagDescription": "The percentage of test coverage for apex clasess, that should be as per the last test run status"
-}

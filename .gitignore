@@ -14,12 +14,12 @@ oclif.manifest.json
  packages/azpipelines_release_management_extensions/BuildTasks/ManageReleaseTask/*
 
 packages/core/coverage
-packages/sfpowerscripts-cli/coverage
+packages/sfp-cli/coverage
 .DS_Store
-packages/core/.sfpowerscripts/**
+
 
 coverage/**
 packages/apexlink/coverage
-packages/sfpowerscripts-cli/oclif.manifest.json
+packages/sfp-cli/oclif.manifest.json
 packages/apexlink/tests/resources/core-crm/apexlink.json
 packages/apexlink/tests/resources/feature-mgmt/apexlink.json

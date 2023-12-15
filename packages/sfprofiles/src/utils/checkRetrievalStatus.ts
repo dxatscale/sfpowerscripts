@@ -1,7 +1,7 @@
 import { Connection } from 'jsforce';
 import { RetrieveResult } from 'jsforce/lib/api/metadata';
 import { delay } from './delay';
-import SFPLogger, {LoggerLevel } from '@dxatscale/sfp-logger';
+import SFPLogger, {LoggerLevel } from '@flxblio/sfp-logger';
 
 
 export async function checkRetrievalStatus(conn: Connection, retrievedId: string, isToBeLoggedToConsole = true): Promise<RetrieveResult> {

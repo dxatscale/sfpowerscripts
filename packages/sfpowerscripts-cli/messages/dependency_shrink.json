@@ -1,4 +1,0 @@
-{
-  "commandDescription":"Shrink the dependency list in sfdx-project.json file for each package, remove duplicate dependencies that already exist in its dependent packages",
-  "overWriteProjectConfigFlagDescription":"Flag to overwrite existing sfdx-project.json file"
-}

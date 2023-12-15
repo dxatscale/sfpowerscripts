@@ -1,4 +1,0 @@
-{
-    "commandDescription": "Runs static analysis on the code/config based on configurable rules",
-    "devhubAliasFlagDescription": "Provide the alias of the devhub previously authenticated, default value is HubOrg if using the Authenticate Devhub task"
-}

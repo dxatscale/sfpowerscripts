@@ -1,6 +1,6 @@
 import { Connection } from 'jsforce';
 import { Sfpowerkit } from '@utils/sfpowerkit';
-import SFPLogger, {LoggerLevel } from '@dxatscale/sfp-logger';
+import SFPLogger, {LoggerLevel } from '@flxblio/sfp-logger';
 import retry from 'async-retry';
 
 export default class MetadataOperation {

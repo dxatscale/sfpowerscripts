@@ -5,7 +5,7 @@ import * as _ from 'lodash';
 import MetadataFiles from '@impl/metadata/metadataFiles';
 import { SOURCE_EXTENSION_REGEX } from '@impl/metadata/metadataInfo';
 import { METADATA_INFO } from '@impl/metadata/metadataInfo';
-import SFPLogger, {LoggerLevel } from '@dxatscale/sfp-logger';
+import SFPLogger, {LoggerLevel } from '@flxblio/sfp-logger';
 import simplegit, { SimpleGit } from 'simple-git';
 const SEP = /\/|\\/;
 

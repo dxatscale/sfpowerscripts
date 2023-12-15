@@ -1,5 +1,5 @@
 {
-    "name": "@dxatscale/sfp-logger",
+    "name": "@flxblio/sfp-logger",
     "version": "2.1.2",
     "description": "sfp logger library",
     "main": "lib/SFPLogger.js",
@@ -26,14 +26,14 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/dxatscale/sfpowerscripts.git"
+        "url": "git+https://github.com/flxblio/sfp.git"
     },
-    "author": "dxatscale",
+    "author": "flxblio",
     "license": "MIT",
     "bugs": {
-        "url": "https://github.com/dxatscale/sfpowerscripts/issues"
+        "url": "https://github.com/flxblio/sfp/issues"
     },
-    "homepage": "https://github.com/dxatscale/sfpowerscripts/tree/main/packages/sfplogger#readme",
+    "homepage": "https://github.com/flxblio/sfp/tree/main/packages/sfplogger#readme",
     "keywords": [
         "logger",
         "sfp",

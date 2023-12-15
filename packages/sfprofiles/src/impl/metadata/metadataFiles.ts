@@ -5,7 +5,7 @@ import _ from 'lodash';
 import ignore from 'ignore';
 import * as fs from 'fs-extra';
 import { Sfpowerkit } from 'utils/sfpowerkit';
-import SFPLogger, {LoggerLevel } from '@dxatscale/sfp-logger';
+import SFPLogger, {LoggerLevel } from '@flxblio/sfp-logger';
 import { globSync } from 'glob';
 
 const SEP = /\/|\\/;

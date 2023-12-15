@@ -1,6 +1,6 @@
 import { Connection, Org, SfProject } from '@salesforce/core';
 import { Sfpowerkit } from '@utils/sfpowerkit';
-import SFPLogger, {LoggerLevel } from '@dxatscale/sfp-logger';
+import SFPLogger, {LoggerLevel } from '@flxblio/sfp-logger';
 import { parentPort, workerData } from 'worker_threads';
 import * as fs from 'fs-extra';
 import * as path from 'path';
