@@ -106,7 +106,9 @@ export default class BuildImplEvents {
             this.sfpOrg = await SFPOrg.create({
                 aliasOrUsername: this.props.devhubAlias,
             });
-
+        /*************************************************************************************************************************************************
+      First get all packages in the repo, then filter packages based on release definition and project json settings
+    *************************************************************************************************************************************************/
         let git = await Git.initiateRepo(new ConsoleLogger());
         this.repository_url = await git.getRemoteOriginUrl(this.props.repourl);
         this.commit_id = await git.getHeadCommit();
@@ -121,9 +123,14 @@ export default class BuildImplEvents {
 
         this.packageTypeInfos = await this.sfpOrg.listAllPackages();
 
+        const q = new pQueue({ concurrency: this.props.executorcount });
+
         //Do a diff Impl
         let table;
         let packageCharacterMap = new Map<string, PackageCharacter>();
+       /*************************************************************************************************************************************************
+        Check if diff check is enabled, if so, then filter packages to be built based on the diff check
+       *************************************************************************************************************************************************/
         if (this.props.isDiffCheckEnabled) {
             const buildGeneration = new BuildGeneration();
             packageCharacterMap = await buildGeneration.run(this.packagesToBeBuilt);
@@ -154,25 +161,17 @@ export default class BuildImplEvents {
             });
         }
 
-        if (this.packagesToBeBuilt.length == 0)
+        if (this.packagesToBeBuilt.length == 0){
             return {
                 generatedPackages: this.generatedPackages,
                 failedPackages: this.failedPackages,
             };
+        }
 
-        //###############################start old build logic ###########################################
+        /*************************************************************************************************************************************************
+         This part builds all packages from the repo because the flag isDiffCheckEnabled is false
+        *************************************************************************************************************************************************/
         if (!this.props.isDiffCheckEnabled) {
-            this.childs = DependencyHelper.getChildsOfAllPackages(this.props.projectDirectory, this.packagesToBeBuilt);
-
-            this.parents = DependencyHelper.getParentsOfAllPackages(
-                this.props.projectDirectory,
-                this.packagesToBeBuilt
-            );
-
-            this.parentsToBeFulfilled = DependencyHelper.getParentsToBeFullFilled(this.parents, this.packagesToBeBuilt);
-
-            let sortedBatch = new BatchingTopoSort().sort(this.childs);
-
             if (!this.props.isQuickBuild && this.sfpOrg) {
                 const packageDependencyResolver = new PackageDependencyResolver(
                     this.sfpOrg.getConnection(),
@@ -182,17 +181,14 @@ export default class BuildImplEvents {
                 this.projectConfig = await packageDependencyResolver.resolvePackageDependencyVersions();
             }
 
-            //Do First Level Package First
-            let pushedPackages = [];
-            for (const pkg of sortedBatch[0]) {
-                let { priority, type } = this.getPriorityandTypeOfAPackage(this.projectConfig, pkg);
-                let packagePromise: Promise<SfpPackage> = this.limiter
-                    .schedule({ id: pkg, priority: priority }, () =>
-                        this.createPackage(type, pkg, this.props.isBuildAllAsSourcePackages)
-                    )
-                    .then(
-                        (sfpPackage: SfpPackage) => {
+            for (const pkg of this.packagesToBeBuilt) {
+                SFPLogger.log(COLOR_KEY_MESSAGE(`📦 Package creation initiated for 👉 ${pkg}`));
+                let type = this.getPriorityandTypeOfAPackage(this.projectConfig, pkg).type;
+                q.add(() =>
+                    this.createPackage(type, pkg, this.props.isBuildAllAsSourcePackages)
+                        .then(async (sfpPackage) => {
                             this.generatedPackages.push(sfpPackage);
+                            this.printPackageDetails(sfpPackage);
                             SFPStatsSender.logCount('build.succeeded.packages', {
                                 package: pkg,
                                 type: type,
@@ -200,34 +196,28 @@ export default class BuildImplEvents {
                                 is_dependency_validated: this.props.isQuickBuild ? 'false' : 'true',
                                 pr_mode: String(this.props.isBuildAllAsSourcePackages),
                             });
-                            this.queueChildPackages(sfpPackage);
-                        },
-                        (reason: any) => this.handlePackageError(reason, pkg)
-                    );
-
-                pushedPackages.push(pkg);
-                this.packageCreationPromises.push(packagePromise);
+                        })
+                        .catch((error) => {
+                            this.handlePackageError(error.reason, pkg);
+                        })
+                );
             }
 
-            //Remove Pushed Packages from the packages array
-            this.packagesToBeBuilt = this.packagesToBeBuilt.filter((el) => {
-                return !pushedPackages.includes(el);
-            });
-
-            this.packagesInQueue = Array.from(pushedPackages);
-
-            this.printQueueDetails();
-
-            //Other packages get added when each one in the first level finishes
-            await this.recursiveAll(this.packageCreationPromises);
+            await q.onIdle();
+            SFPLogger.log('Finished loading all packages');
+            return {
+                generatedPackages: this.generatedPackages,
+                failedPackages: this.failedPackages,
+            };
         }
-        //###############################end old build logic ###########################################
 
-        //###############################start new build logic ###########################################
-        const sourceDataPackagePromises: Promise<SfpPackage>[] = [];
-        const sourceDataPackageList: string[] = [];
-        let headerCount = 0;
-        const q = new pQueue({ concurrency: this.props.executorcount });
+        /*************************************************************************************************************************************************
+         This part builds all packages with diff check enabled
+        *************************************************************************************************************************************************/
+
+        /*************************************************************************************************************************************************
+         First build source and data packages
+        *************************************************************************************************************************************************/
         // create initial build lists
         for (const [packageName, packageCharacter] of packageCharacterMap) {
             if (packageCharacter.hasError && !this.failedPackages.includes(packageName)) {
@@ -240,62 +230,51 @@ export default class BuildImplEvents {
                     packageCharacter.type === 'diff') &&
                 !packageCharacter.hasError
             ) {
-                if (headerCount === 0) {
-                    headerCount++;
-                    SFPLogger.log(
-                        COLOR_KEY_MESSAGE(
-                            `📦 Found source/data packages for build job. So first create this packages in parallel... 📦`
-                        )
-                    );
-                }
-                const sourcePackagePromise = this.createPackage(
-                    packageCharacter.type,
-                    packageName,
-                    this.props.isBuildAllAsSourcePackages
+                
+                SFPLogger.log(COLOR_KEY_MESSAGE(`📦 Package creation initiated for 👉 ${packageName}`));
+                q.add(() =>
+                    this.createPackage(packageCharacter.type, packageName, this.props.isBuildAllAsSourcePackages)
+                        .then(async (sfpPackage) => {
+                            this.generatedPackages.push(sfpPackage);
+                            this.printPackageDetails(sfpPackage);
+                            SFPStatsSender.logCount('build.succeeded.packages', {
+                                package: packageName,
+                                type: packageCharacter.type,
+                                is_diffcheck_enabled: String(this.props.isDiffCheckEnabled),
+                                is_dependency_validated: this.props.isQuickBuild ? 'false' : 'true',
+                                pr_mode: String(this.props.isBuildAllAsSourcePackages),
+                            });
+                        })
+                        .catch((error) => {
+                            this.handlePackageError(error.reason, packageName);
+                            packageCharacter.hasError = true;
+                            packageCharacter.errorMessages = error?.reason;
+                        })
                 );
-                sourceDataPackagePromises.push(sourcePackagePromise);
-                sourceDataPackageList.push(packageName);
             }
         }
 
-        // First create all source/data/diff packages in parallel
-        if (sourceDataPackagePromises.length > 0) {
-            const sourceCreationResult = await Promise.allSettled(sourceDataPackagePromises);
-            let sourceCounter = 0;
-            for (const result of sourceCreationResult) {
-                if (result.status === 'rejected') {
-                    this.handlePackageError(result.reason, sourceDataPackageList[sourceCounter]);
-                    this.failedPackages.push(sourceDataPackageList[sourceCounter]);
-                }
-
-                if (result.status === 'fulfilled') {
-                    this.generatedPackages.push(result.value);
-                    this.printPackageDetails(result.value);
-                }
-                sourceCounter++;
-            }
-        }
-
-        // fill unlocked package creation promises
+        /*************************************************************************************************************************************************
+         Now build all unlocked packages with dependencies, fill the queue and listen to the lifecycle events from @salesforce/packaging
+        *************************************************************************************************************************************************/
         for (const [packageName, packageCharacter] of packageCharacterMap) {
             // check if the deps package has error , then the main will not be created and the main get the error message from deps
             if (packageCharacter.type === 'unlocked' && packageCharacter.hasError) {
-				if(!this.failedPackages.includes(packageName)) {
-					this.handlePackageError(packageCharacter.errorMessages.toString(), packageName);
-				}
+                if (!this.failedPackages.includes(packageName)) {
+                    this.handlePackageError(packageCharacter.errorMessages.toString(), packageName);
+                }
                 for (const dep of packageCharacter.buildDeps) {
                     if (packageCharacterMap.has(dep) && packageCharacterMap.get(dep).hasError) {
                         if (!packageCharacter.hasError) {
                             packageCharacter.hasError = true;
-                            packageCharacter.errorMessages =
-                                `Dependend package ${packageName} has errors: ${packageCharacterMap
-                                    .get(dep)
-                                    .errorMessages}. So build of this package is skipped`
-           
+                            packageCharacter.errorMessages = `Dependend package ${packageName} has errors: ${
+                                packageCharacterMap.get(dep).errorMessages
+                            }. So build of this package is skipped`;
+
                             this.handlePackageError(
-                                `Dependend package ${packageName} has errors: ${packageCharacterMap
-                                    .get(dep)
-                                    .errorMessages}. So build of this package is skipped`,
+                                `Dependend package ${packageName} has errors: ${
+                                    packageCharacterMap.get(dep).errorMessages
+                                }. So build of this package is skipped`,
                                 packageName
                             );
                         }
@@ -303,112 +282,120 @@ export default class BuildImplEvents {
                 }
             }
 
-			if (
-				packageCharacter.type === 'unlocked' &&
-				!packageCharacter.hasError &&
-				packageCharacter.buildDeps.length > 0
-			) {
-				SFPLogger.log(
-					`⏳ Put package ${packageName} in queue because it needs to wait for this dependecies: ${packageCharacter.buildDeps.toString()}`,
-					LoggerLevel.INFO,
-				);
-			}
+            if (
+                packageCharacter.type === 'unlocked' &&
+                !packageCharacter.hasError &&
+                packageCharacter.buildDeps.length > 0
+            ) {
+                SFPLogger.log(
+                    COLOR_KEY_VALUE(
+                        `⏳ Put package ${packageName} in queue because it needs to wait for this dependecies: ${packageCharacter.buildDeps.toString()}`
+                    ),
+                    LoggerLevel.INFO
+                );
+            }
 
-			if (
-				packageCharacter.type === 'unlocked' &&
-				!packageCharacter.hasError &&
-				packageCharacter.buildDeps.length === 0
-			) {
-				SFPLogger.log(COLOR_KEY_MESSAGE(`📦 Package creation initiated for 👉 ${packageName}`));
-				await q.add(async () => {
-					try {
-						const sfpPackage = await this.createPackage(
-							packageCharacter.type,
-							packageName,
-							this.props.isBuildAllAsSourcePackages
-						);
-						if (packageCharacter.subscriberPackageId) {
-							await this.getPackageInfo(sfpPackage, this.sfpOrg.getConnection());
-							if (
-								this.packageTypeInfos.find((item) => item.Name === packageName).IsOrgDependent !==
-									'Yes' &&
-								!this.props.isQuickBuild
-							) {
-								if (!sfpPackage.has_passed_coverage_check) {
-									packageCharacter.hasError = true;
-									packageCharacter.errorMessages = 'This package has not meet the minimum coverage requirement of 75%'
-									this.handlePackageError('This package has not meet the minimum coverage requirement of 75%', packageName);
-								} else {
-									this.generatedPackages.push(sfpPackage);
+            if (
+                packageCharacter.type === 'unlocked' &&
+                !packageCharacter.hasError &&
+                packageCharacter.buildDeps.length === 0
+            ) {
+                SFPLogger.log(COLOR_KEY_MESSAGE(`📦 Package creation initiated for 👉 ${packageName}`));
+                q.add(() =>
+                    this.createPackage(packageCharacter.type, packageName, this.props.isBuildAllAsSourcePackages)
+                        .then(async (sfpPackage) => {
+                            if (packageCharacter.subscriberPackageId) {
+                                sfpPackage.package_version_id = packageCharacter.subscriberPackageId;
+                                await this.getPackageInfo(sfpPackage, this.sfpOrg.getConnection());
+                                if (
+                                    this.packageTypeInfos.find((item) => item.Name === packageName).IsOrgDependent !==
+                                        'Yes' &&
+                                    !this.props.isQuickBuild
+                                ) {
+                                    if (!sfpPackage.has_passed_coverage_check) {
+                                        packageCharacter.hasError = true;
+                                        packageCharacter.errorMessages =
+                                            'This package has not meet the minimum coverage requirement of 75%';
+                                        this.handlePackageError(
+                                            'This package has not meet the minimum coverage requirement of 75%',
+                                            packageName
+                                        );
+                                    } else {
+                                        this.generatedPackages.push(sfpPackage);
+                                        this.printPackageDetails(sfpPackage);
+                                        SFPStatsSender.logCount('build.succeeded.packages', {
+                                            package: packageName,
+                                            type: packageCharacter.type,
+                                            is_diffcheck_enabled: String(this.props.isDiffCheckEnabled),
+                                            is_dependency_validated: this.props.isQuickBuild ? 'false' : 'true',
+                                            pr_mode: String(this.props.isBuildAllAsSourcePackages),
+                                        });
+                                    }
+                                }
+                            } else {
+                                packageCharacter.hasError = true;
+                                packageCharacter.errorMessages = `The build for this package was not completed in the wait time 240 minutes.`;
 
-									SFPStatsSender.logCount('build.succeeded.packages', {
-										package: packageName,
-										type: packageCharacter.type,
-										is_diffcheck_enabled: String(this.props.isDiffCheckEnabled),
-										is_dependency_validated: this.props.isQuickBuild ? 'false' : 'true',
-										pr_mode: String(this.props.isBuildAllAsSourcePackages),
-									});
-								}
-							}
-						} else {
-							packageCharacter.hasError = true;
-							packageCharacter.errorMessages =
-								`The build for this package was not completed in the wait time 240 minutes.`
-
-							this.handlePackageError(
-								`F`,
-								packageName
-							);
-							for (const [packageNameDep, packageCharacterDep] of packageCharacterMap) {
-								if (
-									packageCharacterDep.type === 'unlocked' &&
-									packageCharacterDep.buildDeps.includes(packageName) &&
-									!packageCharacterDep.hasError
-								) {
-									SFPLogger.log(
-										COLOR_TRACE(
-											`👆 Delete package ${packageNameDep} from queue because the dependend package: ${packageName} runs on error`
-										),
-										LoggerLevel.INFO
-									);
-									this.handlePackageError(`Dependend package with errors ${packageName}:\nThe build for the depenend package was not completed in the wait time 240 minutes.`, packageNameDep);
-									packageCharacterMap.get(packageNameDep).hasError = true;
-									packageCharacterMap.get(packageNameDep).errorMessages = `Dependend package with errors ${packageName}:\nThe build for the depenend package was not completed in the wait time 240 minutes.`;
-								}
-							}
-						}
-					} catch (error) {
-						packageCharacter.hasError = true;
-						packageCharacter.errorMessages = error;
-						this.handlePackageError(error, packageName);
-						for (const [packageNameDep, packageCharacterDep] of packageCharacterMap) {
-							if (
-								packageCharacterDep.type === 'unlocked' &&
-								packageCharacterDep.buildDeps.includes(packageName) &&
-								!packageCharacterDep.hasError
-							) {
-								SFPLogger.log(
-									COLOR_TRACE(
-										`👆 Delete package ${packageNameDep} from queue because the dependend package: ${packageName} runs on error`
-									),
-									LoggerLevel.INFO
-								);
-								this.handlePackageError(`Dependend package with errors ${packageName}:\n ${error}`, packageNameDep);
-								packageCharacterMap.get(packageNameDep).hasError = true;
-								packageCharacterMap.get(packageNameDep).errorMessages = error;
-							}
-						}
-					}
-				});
-			}
+                                this.handlePackageError(
+                                    `The build for this package was not completed in the wait time 240 minutes.`,
+                                    packageName
+                                );
+                                for (const [packageNameDep, packageCharacterDep] of packageCharacterMap) {
+                                    if (
+                                        packageCharacterDep.type === 'unlocked' &&
+                                        packageCharacterDep.buildDeps.includes(packageName) &&
+                                        !packageCharacterDep.hasError
+                                    ) {
+                                        SFPLogger.log(
+                                            COLOR_TRACE(
+                                                `👆 Delete package ${packageNameDep} from queue because the dependend package: ${packageName} runs on error`
+                                            ),
+                                            LoggerLevel.INFO
+                                        );
+                                        this.handlePackageError(
+                                            `Dependend package ${packageName} with errors:\nThe build for the depenend package was not completed in the wait time 240 minutes.`,
+                                            packageNameDep
+                                        );
+                                        packageCharacterMap.get(packageNameDep).hasError = true;
+                                        packageCharacterMap.get(
+                                            packageNameDep
+                                        ).errorMessages = `Dependend package ${packageName} with errors:\nThe build for the depenend package was not completed in the wait time 240 minutes.`;
+                                    }
+                                }
+                            }
+                        })
+                        .catch((error) => {
+                            packageCharacter.hasError = true;
+                            packageCharacter.errorMessages = error;
+                            this.handlePackageError(error, packageName);
+                            for (const [packageNameDep, packageCharacterDep] of packageCharacterMap) {
+                                if (
+                                    packageCharacterDep.type === 'unlocked' &&
+                                    packageCharacterDep.buildDeps.includes(packageName) &&
+                                    !packageCharacterDep.hasError
+                                ) {
+                                    SFPLogger.log(
+                                        COLOR_TRACE(
+                                            `👆 Delete package ${packageNameDep} from queue because the dependend package: ${packageName} runs on error`
+                                        ),
+                                        LoggerLevel.INFO
+                                    );
+                                    this.handlePackageError(
+                                        `Dependend package with errors ${packageName}:\n ${error}`,
+                                        packageNameDep
+                                    );
+                                    packageCharacterMap.get(packageNameDep).hasError = true;
+                                    packageCharacterMap.get(packageNameDep).errorMessages = error?.reason;
+                                }
+                            }
+                        })
+                );
+            }
         }
 
-		await q.onIdle();
-        SFPLogger.log("Finished loading all unlocked packages");
-
-
-        // listen for lifecycle events from packing modul
-        //to fetch new stuff from queue or create statis  I love this shit!!!
+        /*************************************************************************************************************************************************
+         Listen to the lifecycle events from @salesforce/packaging for package creation is in progress. At the moment only for logger info
+        *************************************************************************************************************************************************/
 
         Lifecycle.getInstance().on(
             PackageVersionEvents.create.progress,
@@ -425,6 +412,10 @@ export default class BuildImplEvents {
             }
         );
 
+        /*************************************************************************************************************************************************
+         Listen to the lifecycle events from @salesforce/packaging for package errors. Display error message and remove child packages from the queue
+        *************************************************************************************************************************************************/
+
         Lifecycle.getInstance().on(
             PackageVersionEvents.create.error,
             async (results: PackageVersionCreateReportProgress) => {
@@ -432,14 +423,14 @@ export default class BuildImplEvents {
                 if (!packageTypeInfo.Name) {
                     throw new Error(`Unable to find package type info for package id ${results.Package2Id}`);
                 }
-				let errorMessage = '<empty>';
-				if (results?.Error?.length) {
-					errorMessage = 'Creation errors: ';
-					for (let i = 0; i < results?.Error?.length; i++) {
-						errorMessage += `\n${i + 1}) ${results?.Error[i]}`;
-					}
-				}
-				this.handlePackageError(errorMessage, packageTypeInfo.Name);
+                let errorMessage = '<empty>';
+                if (results?.Error?.length) {
+                    errorMessage = 'Creation errors: ';
+                    for (let i = 0; i < results?.Error?.length; i++) {
+                        errorMessage += `\n${i + 1}) ${results?.Error[i]}`;
+                    }
+                }
+                this.handlePackageError(errorMessage, packageTypeInfo.Name);
 
                 packageCharacterMap.get(packageTypeInfo.Name).hasError = true;
                 packageCharacterMap.get(packageTypeInfo.Name).errorMessages = results.Error.toString();
@@ -457,13 +448,21 @@ export default class BuildImplEvents {
                             LoggerLevel.INFO,
                             this.logger
                         );
-                        this.handlePackageError(`\nDependend package with errors ${packageTypeInfo.Name}:\n ${errorMessage}`, packageName);
+                        this.handlePackageError(
+                            `\nDependend package ${packageTypeInfo.Name} with errors:\n ${errorMessage}`,
+                            packageName
+                        );
                         packageCharacterMap.get(packageName).hasError = true;
                         packageCharacterMap.get(packageName).errorMessages = results.Error.toString();
                     }
                 }
             }
         );
+
+         /*************************************************************************************************************************************************
+         Listen to the lifecycle events from @salesforce/packaging for package success. Display succes message and add the package to the generated packages
+         Then check child packages to put in build job when all deps are created
+        *************************************************************************************************************************************************/
 
         Lifecycle.getInstance().on(
             PackageVersionEvents.create.success,
@@ -488,61 +487,110 @@ export default class BuildImplEvents {
                         }
                         if (packageCharacter.buildDeps.length === 0) {
                             // no deps left, so we can create the package
-							SFPLogger.log(COLOR_KEY_MESSAGE(`📦 Package creation initiated for 👉 ${packageName}`));
-                            await q.add(async () => {
-                                try {
-                                    const sfpPackage = await this.createPackage(
-                                        packageCharacter.type,
-                                        packageName,
-                                        this.props.isBuildAllAsSourcePackages
-                                    );
-                                    if (packageCharacter.subscriberPackageId) {
-                                        await this.getPackageInfo(sfpPackage, this.sfpOrg.getConnection());
-                                        if (
-                                            this.packageTypeInfos.find((item) => item.Name === packageName)
-                                                .IsOrgDependent !== 'Yes' &&
-                                            !this.props.isQuickBuild
-                                        ) {
-                                            if (!sfpPackage.has_passed_coverage_check) {
-                                                packageCharacter.hasError = true;
-                                                packageCharacter.errorMessages =
-                                                    'This package has not meet the minimum coverage requirement of 75%'
-                                                this.handlePackageError(
-                                                    'This package has not meet the minimum coverage requirement of 75%',
-                                                    packageName
-                                                );
-                                            } else {
-                                                this.generatedPackages.push(sfpPackage);
+                            SFPLogger.log(COLOR_KEY_MESSAGE(`📦 Package creation initiated for 👉 ${packageName}`));
+                            q.add(() =>
+                                this.createPackage(
+                                    packageCharacter.type,
+                                    packageName,
+                                    this.props.isBuildAllAsSourcePackages
+                                )
+                                    .then(async (sfpPackage) => {
+                                        if (packageCharacter.subscriberPackageId) {
+                                            sfpPackage.package_version_id = packageCharacter.subscriberPackageId;
+                                            await this.getPackageInfo(sfpPackage, this.sfpOrg.getConnection());
+                                            if (
+                                                this.packageTypeInfos.find((item) => item.Name === packageName)
+                                                    .IsOrgDependent !== 'Yes' &&
+                                                !this.props.isQuickBuild
+                                            ) {
+                                                if (!sfpPackage.has_passed_coverage_check) {
+                                                    packageCharacter.hasError = true;
+                                                    packageCharacter.errorMessages =
+                                                        'This package has not meet the minimum coverage requirement of 75%';
+                                                    this.handlePackageError(
+                                                        'This package has not meet the minimum coverage requirement of 75%',
+                                                        packageName
+                                                    );
+                                                } else {
+                                                    this.generatedPackages.push(sfpPackage);
+                                                    this.printPackageDetails(sfpPackage);
+                                                    SFPStatsSender.logCount('build.succeeded.packages', {
+                                                        package: packageName,
+                                                        type: packageCharacter.type,
+                                                        is_diffcheck_enabled: String(this.props.isDiffCheckEnabled),
+                                                        is_dependency_validated: this.props.isQuickBuild
+                                                            ? 'false'
+                                                            : 'true',
+                                                        pr_mode: String(this.props.isBuildAllAsSourcePackages),
+                                                    });
+                                                }
+                                            }
+                                        } else {
+                                            packageCharacter.hasError = true;
+                                            packageCharacter.errorMessages = `The build for this package was not completed in the wait time 240 minutes.`;
 
-                                                SFPStatsSender.logCount('build.succeeded.packages', {
-                                                    package: packageName,
-                                                    type: packageCharacter.type,
-                                                    is_diffcheck_enabled: String(this.props.isDiffCheckEnabled),
-                                                    is_dependency_validated: this.props.isQuickBuild ? 'false' : 'true',
-                                                    pr_mode: String(this.props.isBuildAllAsSourcePackages),
-                                                });
+                                            this.handlePackageError(
+                                                `The build for this package was not completed in the wait time 240 minutes.`,
+                                                packageName
+                                            );
+                                            for (const [packageNameDep, packageCharacterDep] of packageCharacterMap) {
+                                                if (
+                                                    packageCharacterDep.type === 'unlocked' &&
+                                                    packageCharacterDep.buildDeps.includes(packageName) &&
+                                                    !packageCharacterDep.hasError
+                                                ) {
+                                                    SFPLogger.log(
+                                                        COLOR_ERROR(
+                                                            `👆 Delete package ${packageNameDep} from queue because the dependend package: ${packageName} runs on error`
+                                                        ),
+                                                        LoggerLevel.INFO
+                                                    );
+                                                    this.handlePackageError(
+                                                        `Dependend package ${packageName} with errors:\nThe build for the depenend package was not completed in the wait time 240 minutes.`,
+                                                        packageNameDep
+                                                    );
+                                                    packageCharacterMap.get(packageNameDep).hasError = true;
+                                                    packageCharacterMap.get(
+                                                        packageNameDep
+                                                    ).errorMessages = `Dependend package ${packageName} with errors:\nThe build for the depenend package was not completed in the wait time 240 minutes.`;
+                                                }
                                             }
                                         }
-                                    } else {
+                                    })
+                                    .catch((error) => {
                                         packageCharacter.hasError = true;
-                                        packageCharacter.errorMessages =
-                                            `The build for this package was not completed in the wait time 240 minutes.`
-                                        this.handlePackageError(
-                                            `The build for this package was not completed in the wait time 240 minutes.`,
-                                            packageName
-                                        );
-                                    }
-                                } catch (error) {
-                                    packageCharacter.hasError = true;
-                                    packageCharacter.errorMessages = error;
-                                    this.handlePackageError(error, packageName);
-                                }
-                            });
+                                        packageCharacter.errorMessages = error;
+                                        this.handlePackageError(error, packageName);
+                                        for (const [packageNameDep, packageCharacterDep] of packageCharacterMap) {
+                                            if (
+                                                packageCharacterDep.type === 'unlocked' &&
+                                                packageCharacterDep.buildDeps.includes(packageName) &&
+                                                !packageCharacterDep.hasError
+                                            ) {
+                                                SFPLogger.log(
+                                                    COLOR_ERROR(
+                                                        `👆 Delete package ${packageNameDep} from queue because the dependend package: ${packageName} runs on error`
+                                                    ),
+                                                    LoggerLevel.INFO
+                                                );
+                                                this.handlePackageError(
+                                                    `Dependend package ${packageName} with errors:\n ${error}`,
+                                                    packageNameDep
+                                                );
+                                                packageCharacterMap.get(packageNameDep).hasError = true;
+                                                packageCharacterMap.get(packageNameDep).errorMessages = error?.reason;
+                                            }
+                                        }
+                                    })
+                            );
                         }
                     }
                 }
             }
         );
+
+        await q.onIdle();
+        SFPLogger.log('Finished loading all packages');
 
         //###############################end new build logic ###########################################
 
@@ -553,6 +601,10 @@ export default class BuildImplEvents {
             failedPackages: this.failedPackages,
         };
     }
+
+    /*************************************************************************************************************************************************
+        Display all package to build as a table in the command header for diff check.
+    *************************************************************************************************************************************************/
 
     private createDiffPackageScheduledDisplayedAsATable(packagesToBeBuilt: Map<string, PackageCharacter>) {
         let tableHead = ['Package', 'Reason to be built', 'Last Known Tag'];
@@ -580,6 +632,10 @@ export default class BuildImplEvents {
         return table;
     }
 
+    /*************************************************************************************************************************************************
+        Display all package to build as a table in the command header for all packages
+    *************************************************************************************************************************************************/
+
     private createAllPackageScheduledDisplayedAsATable() {
         let tableHead = ['Package', 'Reason to be built'];
         if (this.isMultiConfigFilesEnabled && this.props.currentStage == Stage.BUILD) {
@@ -601,44 +657,11 @@ export default class BuildImplEvents {
         return table;
     }
 
-    private async filterPackagesToBeBuiltByChanged(projectDirectory: string, allPackagesInRepo: any) {
-        let packagesToBeBuilt = new Map<string, any>();
-        let buildCollections = new BuildCollections(projectDirectory);
-        if (this.props.diffOptions)
-            this.props.diffOptions.pathToReplacementForceIgnore = this.getPathToForceIgnoreForCurrentStage(
-                this.projectConfig,
-                this.props.currentStage
-            );
+    /*************************************************************************************************************************************************
+        Filter packages based on release definition and project json settings
+    *************************************************************************************************************************************************/
 
-        for await (const pkg of allPackagesInRepo) {
-            let diffImpl: PackageDiffImpl = new PackageDiffImpl(
-                new ConsoleLogger(),
-                pkg,
-                this.props.projectDirectory,
-                this.props.diffOptions
-            );
-            let packageDiffCheck = await diffImpl.exec();
-
-            if (packageDiffCheck.isToBeBuilt) {
-                packagesToBeBuilt.set(pkg, {
-                    reason: packageDiffCheck.reason,
-                    tag: packageDiffCheck.tag,
-                });
-                //Add Bundles
-                if (buildCollections.isPackageInACollection(pkg)) {
-                    buildCollections.listPackagesInCollection(pkg).forEach((packageInCollection) => {
-                        if (!packagesToBeBuilt.has(packageInCollection)) {
-                            packagesToBeBuilt.set(packageInCollection, {
-                                reason: 'Part of a build collection',
-                            });
-                        }
-                    });
-                }
-            }
-        }
-        return packagesToBeBuilt;
-    }
-
+    
     private getPackagesToBeBuilt(projectDirectory: string, includeOnlyPackages?: string[]): string[] {
         let projectConfig = ProjectConfig.getSFDXProjectConfig(projectDirectory);
         let sfdxpackages = [];
@@ -688,20 +711,17 @@ export default class BuildImplEvents {
         }
     }
 
-    private printQueueDetails() {
-        SFPLogger.log(`${EOL}Packages currently processed:{${this.packagesInQueue.length}} + ${this.packagesInQueue}`);
-        SFPLogger.log(
-            `Awaiting Dependencies to be resolved:{${this.packagesToBeBuilt.length}} + ${this.packagesToBeBuilt}`
-        );
-    }
+    /*************************************************************************************************************************************************
+        Write package error to the artifacts and display the message in the console
+    *************************************************************************************************************************************************/
 
     private handlePackageError(reason: any, pkg: string): any {
         SFPLogger.printHeaderLine('', COLOR_HEADER, LoggerLevel.INFO);
         SFPLogger.log(COLOR_ERROR(`Package Creation Failed for ${pkg}, Here are the details:`));
         try {
             // Append error to log file
-			let errorMessage = typeof reason === 'string' ? reason : reason.message;
-			
+            let errorMessage = typeof reason === 'string' ? reason : reason.message;
+
             fs.appendFileSync(`.sfpowerscripts/logs/${pkg}`, errorMessage, 'utf8');
             let data = fs.readFileSync(`.sfpowerscripts/logs/${pkg}`, 'utf8');
 
@@ -715,94 +735,20 @@ export default class BuildImplEvents {
             SFPLogger.log(data);
         } catch (e) {
             SFPLogger.log(`Unable to display logs for pkg ${pkg}`);
-			console.log(e);
+            console.log(e);
         }
-
-        //Remove the package from packages To Be Built
-        this.packagesToBeBuilt = this.packagesToBeBuilt.filter((el) => {
-            if (el == pkg) return false;
-            else return true;
-        });
-        this.packagesInQueue = this.packagesInQueue.filter((pkg_name) => {
-            if (pkg == pkg_name) return false;
-            else return true;
-        });
 
         //Remove myself and my  childs
         this.failedPackages.push(pkg);
         SFPStatsSender.logCount('build.failed.packages', { package: pkg });
-        this.packagesToBeBuilt = this.packagesToBeBuilt.filter((pkgBuild) => {
-            if (this.childs && this.childs[pkg].includes(pkgBuild)) {
-                SFPStatsSender.logCount('build.failed.packages', {
-                    package: pkgBuild,
-                });
-                this.failedPackages.push(pkgBuild);
-                return false;
-            }
-            return true;
-        });
-        SFPLogger.log(COLOR_KEY_MESSAGE(`${EOL}Removed all childs of ${pkg} from queue`));
+
         SFPLogger.printHeaderLine('', COLOR_HEADER, LoggerLevel.INFO);
     }
 
-    private queueChildPackages(sfpPackage: SfpPackage): any {
-        this.packagesBuilt.push(sfpPackage.packageName);
-        this.printPackageDetails(sfpPackage);
-
-        this.packagesToBeBuilt.forEach((pkg) => {
-            const indexOfFulfilledParent = this.parentsToBeFulfilled[pkg]?.findIndex(
-                (parent) => parent === sfpPackage.packageName
-            );
-            if (indexOfFulfilledParent !== -1 && indexOfFulfilledParent != null) {
-                if (!this.props.isQuickBuild) this.resolveDependenciesOnCompletedPackage(pkg, sfpPackage);
-
-                //let all my childs know, I am done building  and remove myself from
-                this.parentsToBeFulfilled[pkg].splice(indexOfFulfilledParent, 1);
-            }
-        });
-
-        // Do a second pass and push packages with fulfilled parents to queue
-        let pushedPackages = [];
-        this.packagesToBeBuilt.forEach((pkg) => {
-            if (this.parentsToBeFulfilled[pkg]?.length == 0) {
-                let { priority, type } = this.getPriorityandTypeOfAPackage(this.projectConfig, pkg);
-                let packagePromise: Promise<SfpPackage> = this.limiter
-                    .schedule({ id: pkg, priority: priority }, () =>
-                        this.createPackage(type, pkg, this.props.isBuildAllAsSourcePackages)
-                    )
-                    .then(
-                        (sfpPackage: SfpPackage) => {
-                            SFPStatsSender.logCount('build.succeeded.packages', {
-                                package: pkg,
-                                type: type,
-                                is_diffcheck_enabled: String(this.props.isDiffCheckEnabled),
-                                is_dependency_validated: this.props.isQuickBuild ? 'false' : 'true',
-                                pr_mode: String(this.props.isBuildAllAsSourcePackages),
-                            });
-                            this.generatedPackages.push(sfpPackage);
-                            this.queueChildPackages(sfpPackage);
-                        },
-                        (reason: any) => this.handlePackageError(reason, pkg)
-                    );
-                pushedPackages.push(pkg);
-                this.packagesInQueue.push(pkg);
-                this.packageCreationPromises.push(packagePromise);
-            }
-        });
-
-        if (pushedPackages.length > 0) {
-            SFPLogger.log(
-                COLOR_KEY_MESSAGE(
-                    `${EOL}Packages being pushed to the queue:{${pushedPackages.length}} + ${pushedPackages}`
-                )
-            );
-        }
-        //Remove Pushed Packages from the packages array
-        this.packagesToBeBuilt = this.packagesToBeBuilt.filter((el) => {
-            return !pushedPackages.includes(el);
-        });
-        this.packagesInQueue = this.packagesInQueue.filter((pkg_name) => pkg_name !== sfpPackage.packageName);
-    }
+    
+    /*************************************************************************************************************************************************
+        Update dependend package version id for child packages infos /Wait for @salesforce/packaging pull request!!!!!!
+    *************************************************************************************************************************************************/
 
     private resolveDependenciesOnCompletedPackage(dependentPackage: string, completedPackage: SfpPackage) {
         const pkgDescriptor = ProjectConfig.getPackageDescriptorFromConfig(dependentPackage, this.projectConfig);
@@ -829,6 +775,10 @@ export default class BuildImplEvents {
         }
     }
 
+    /*************************************************************************************************************************************************
+        Get package type for all package build job
+    *************************************************************************************************************************************************/
+
     private getPriorityandTypeOfAPackage(projectConfig: any, pkg: string) {
         let priority = 0;
         let childs = DependencyHelper.getChildsOfAllPackages(this.props.projectDirectory, this.packagesToBeBuilt);
@@ -848,6 +798,10 @@ export default class BuildImplEvents {
 
         return { priority, type };
     }
+
+    /*************************************************************************************************************************************************
+        Print all package infos after successfully build job
+    *************************************************************************************************************************************************/
 
     private printPackageDetails(sfpPackage: SfpPackage) {
         SFPLogger.log(
@@ -913,14 +867,18 @@ export default class BuildImplEvents {
         }
     }
 
+    /*************************************************************************************************************************************************
+        Package version create request 
+    *************************************************************************************************************************************************/
+
     private async createPackage(
         packageType: string,
         sfdx_package: string,
         isValidateMode: boolean
     ): Promise<SfpPackage> {
         if (!this.props.isDiffCheckEnabled) {
-        SFPLogger.log(COLOR_KEY_MESSAGE(`Package creation initiated for ${sfdx_package}`));
-		}
+            SFPLogger.log(COLOR_KEY_MESSAGE(`Package creation initiated for ${sfdx_package}`));
+        }
         let configFilePath = this.props.configFilePath;
         if (this.isMultiConfigFilesEnabled) {
             if (this.scratchOrgDefinitions[sfdx_package]) {
@@ -982,13 +940,11 @@ export default class BuildImplEvents {
         );
     }
 
-    /**
-     * Get the file path of the forceignore for current stage, from project config.
-     * Returns null if a forceignore path is not defined in the project config for the current stage.
-     *
-     * @param projectConfig
-     * @param currentStage
-     */
+    /*************************************************************************************************************************************************
+        Get the file path of the forceignore for current stage, from project config.
+        Returns null if a forceignore path is not defined in the project config for the current stage.
+    *************************************************************************************************************************************************/
+
     private getPathToForceIgnoreForCurrentStage(projectConfig: any, currentStage: Stage): string {
         let stageForceIgnorePath: string;
 
@@ -1008,6 +964,10 @@ export default class BuildImplEvents {
         } else return null;
     }
 
+    /*************************************************************************************************************************************************
+        Get the files for multi scratch orgs
+    *************************************************************************************************************************************************/
+
     private getMultiScratchOrgDefinitionFileMap(projectConfig: any): { [key: string]: any }[] {
         this.isMultiConfigFilesEnabled =
             this.projectConfig?.plugins?.sfpowerscripts?.scratchOrgDefFilePaths?.enableMultiDefinitionFiles;
@@ -1017,6 +977,10 @@ export default class BuildImplEvents {
         }
         return configFiles;
     }
+
+    /*************************************************************************************************************************************************
+        Resolve package deps from project config
+    *************************************************************************************************************************************************/
 
     private async resolvePackageDependencies(projectConfig: any) {
         let isDependencyResolverEnabled = !projectConfig?.plugins?.sfpowerscripts?.disableTransitiveDependencyResolver;
@@ -1035,6 +999,10 @@ export default class BuildImplEvents {
         }
     }
 
+    /*************************************************************************************************************************************************
+        Get the package version from alias and branch
+    *************************************************************************************************************************************************/
+
     private extractPackageVersionAndBranch(packageAlias: string): [string, string, string] {
         const parts = packageAlias.split('@');
 
@@ -1052,6 +1020,10 @@ export default class BuildImplEvents {
 
         return ['', '', ''];
     }
+
+    /*************************************************************************************************************************************************
+        makes the request to get the code coverage for a subriber package version This method is depraceted and can be removed when the issue from @salesforce/packaging is fixed
+    *************************************************************************************************************************************************/
 
     private async getPackageInfo(sfpPackage: SfpPackage, connection: Connection<Schema>) {
         let packageVersionCoverage: PackageVersionCoverage = new PackageVersionCoverage(connection, this.logger);
