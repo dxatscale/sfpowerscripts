@@ -13,7 +13,7 @@ import PropertyFetcher from './propertyFetchers/PropertyFetcher';
 import AssignPermissionSetFetcher from './propertyFetchers/AssignPermissionSetFetcher';
 import DestructiveManifestPathFetcher from './propertyFetchers/DestructiveManifestPathFetcher';
 import ReconcilePropertyFetcher from './propertyFetchers/ReconcileProfilePropertyFetcher';
-import CreateUnlockedPackageImpl from './packageCreators/CreateUnlockedPackageImpl';
+import CreateUnlockedPackageImplEvent from './packageCreators/CreateUnlockedPackageImplEvent';
 import CreateSourcePackageImpl from './packageCreators/CreateSourcePackageImpl';
 import CreateDataPackageImpl from './packageCreators/CreateDataPackageImpl';
 import lodash = require('lodash');
@@ -143,7 +143,7 @@ export default class SfpPackageBuilder {
         //Get Implementors
         switch (packageType) {
             case PackageType.Unlocked:
-                createPackage = new CreateUnlockedPackageImpl(
+                createPackage = new CreateUnlockedPackageImplEvent(
                     sfpPackage.workingDirectory,
                     sfpPackage,
                     packageCreationParams,

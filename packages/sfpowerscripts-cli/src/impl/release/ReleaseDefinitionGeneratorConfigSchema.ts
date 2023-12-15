@@ -5,6 +5,7 @@ export default interface ReleaseDefinitionGeneratorSchema {
     excludeAllPackageDependencies?:boolean;
     excludePackageDependencies?: string[];
     includeOnlyPackageDependencies?: string[];
+    dependencyOn?: string[];
     releasedefinitionProperties?: {
         skipIfAlreadyInstalled: boolean;
         skipArtifactUpdate:boolean;

@@ -1,4 +1,4 @@
-import BuildImpl, { BuildProps } from '../../impl/parallelBuilder/BuildImpl';
+import BuildImplEvents, { BuildProps } from '../../impl/parallelBuilder/BuildImplEvents';
 import { Stage } from '../../impl/Stage';
 import BuildBase from '../../BuildBase';
 import { Messages } from '@salesforce/core';
@@ -38,8 +38,8 @@ export default class Build extends BuildBase {
         return buildProps;
     }
 
-    getBuildImplementer(buildProps: BuildProps): BuildImpl {
-        let buildImpl = new BuildImpl(buildProps);
+    getBuildImplementer(buildProps: BuildProps): BuildImplEvents {
+        let buildImpl = new BuildImplEvents(buildProps);
         return buildImpl;
     }
 }

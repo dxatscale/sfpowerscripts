@@ -5,7 +5,7 @@ import SfpowerscriptsCommand from './SfpowerscriptsCommand';
 import { Messages } from '@salesforce/core';
 import fs = require('fs');
 import SFPStatsSender from '@dxatscale/sfpowerscripts.core/lib/stats/SFPStatsSender';
-import BuildImpl, { BuildProps } from './impl/parallelBuilder/BuildImpl';
+import BuildImplEvents, { BuildProps } from './impl/parallelBuilder/BuildImplEvents';
 import ProjectConfig from '@dxatscale/sfpowerscripts.core/lib/project/ProjectConfig';
 import { Stage } from './impl/Stage';
 import SFPLogger, {
@@ -254,7 +254,7 @@ export default abstract class BuildBase extends SfpowerscriptsCommand {
 
     abstract getStage(): Stage;
 
-    abstract getBuildImplementer(buildProps:BuildProps): BuildImpl;
+    abstract getBuildImplementer(buildProps:BuildProps): BuildImplEvents;
 }
 
 interface BuildResult {
