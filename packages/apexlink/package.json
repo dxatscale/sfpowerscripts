@@ -3,7 +3,7 @@
     "version": "1.0.2",
     "description": "Wrappers around @nawforce's apexlink java pom ",
     "author": "flxblio",
-    "homepage": "https://github.com/flxblio/sfp",
+    "homepage": "https://github.com/flxbl-io/sfp",
     "license": "MIT",
     "main": "lib/index",
     "types": "lib/index",
@@ -31,7 +31,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/flxblio/sfp.git"
+        "url": "git+https://github.com/flxbl-io/sfp.git"
     },
     "publishConfig": {
         "access": "public"
@@ -45,6 +45,6 @@
         "spec-test": "FORCE_COLOR=true jest -i packages/apexlink/tests/ApexDependencyCheckImpl.test.ts --verbose true --coverage --detectOpenHandles"
     },
     "bugs": {
-        "url": "https://github.com/flxblio/sfp/issues"
+        "url": "https://github.com/flxbl-io/sfp/issues"
     }
 }

@@ -3,7 +3,7 @@
 * Status: Proposed  <!-- optional -->
 
 
-Issue: [Issue #478](https://github.com/flxblio/sfp/issues/478) <!-- optional -->
+Issue: [Issue #478](https://github.com/flxbl-io/sfp/issues/478) <!-- optional -->
 
 ## Context and Problem Statement
 

@@ -25,5 +25,5 @@ Creating an issue is the simplest form of contributing to the project. But there
 
 ## Issues <a id="issues"></a>
 
-Please only create issues for bug reports or feature requests at [sfp repo](https://github.com/flxblio/sfp). Issues discussing any other topics may be closed by the project’s maintainers without further explanation.
+Please only create issues for bug reports or feature requests at [sfp repo](https://github.com/flxbl-io/sfp). Issues discussing any other topics may be closed by the project’s maintainers without further explanation.
 

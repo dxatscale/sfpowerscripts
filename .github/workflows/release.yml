@@ -47,8 +47,8 @@ jobs:
     with:
       job-environment: 'build-docker'
       suffix-tag: ${{ github.run_id }}
-      repo: 'dxatscale'
-      image: 'sfpowerscripts-rc'
+      repo: 'flxbl-io'
+      image: 'sfp-rc'
     secrets:
       username: ${{ secrets.DOCKER_USERNAME }}
       token: ${{ secrets.GITHUB_TOKEN }}
@@ -60,7 +60,7 @@ jobs:
     with:
       job-environment: 'build-docker'
       suffix-tag: ${{ github.run_id }}
-      repo: 'dxatscale'
+      repo: 'flxbl-io'
       dockerFileName: 'sfp-lite'
       image: 'sfp-lite-rc'
     secrets:
@@ -88,7 +88,7 @@ jobs:
     uses: ./.github/workflows/sfpowerscripts-promote-docker.yml
     with:
       job-environment: 'sfpowerscripts-alpha-docker'
-      repo: 'dxatscale'
+      repo: 'flxbl-io'
       new-tag: alpha   
       image: 'sfpowerscripts-rc'  
     secrets:
@@ -101,7 +101,7 @@ jobs:
     uses: ./.github/workflows/sfpowerscripts-promote-docker.yml
     with:
       job-environment: 'sfpowerscripts-alpha-docker'
-      repo: 'dxatscale'
+      repo: 'flxbl-io'
       new-tag: alpha   
       image: 'sfp-lite-rc'  
     secrets:
@@ -126,7 +126,7 @@ jobs:
     uses: ./.github/workflows/sfpowerscripts-promote-docker.yml
     with:
       job-environment: 'sfpowerscripts-beta-docker'
-      repo: 'dxatscale'
+      repo: 'flxbl-io'
       new-tag: beta   
       image: 'sfp-lite-rc' 
     secrets:
@@ -139,7 +139,7 @@ jobs:
     uses: ./.github/workflows/sfpowerscripts-promote-docker.yml
     with:
       job-environment: 'sfpowerscripts-beta-docker'
-      repo: 'dxatscale'
+      repo: 'flxbl-io'
       new-tag: beta   
       image: 'sfpowerscripts-rc'  
     secrets:

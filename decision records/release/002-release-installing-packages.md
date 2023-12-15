@@ -4,7 +4,7 @@
 * Deciders: Azlam, Alan <!-- optional -->
 * Date: 23/03/21 <!-- optional -->
 
-Issue: [Issue #452](https://github.com/flxblio/sfp/issues/452) <!-- optional -->
+Issue: [Issue #452](https://github.com/flxbl-io/sfp/issues/452) <!-- optional -->
 
 ## Context and Problem Statement
 

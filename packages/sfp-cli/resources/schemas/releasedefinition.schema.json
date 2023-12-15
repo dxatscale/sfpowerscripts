@@ -1,6 +1,6 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "$id": "https://github.com/flxblio/sfp/blob/develop/packages/sfp-cli/resources/releasedefinition.schema.json",
+    "$id": "https://github.com/flxbl-io/sfp/blob/develop/packages/sfp-cli/resources/releasedefinition.schema.json",
     "title": "release definition",
     "description": "The definition for a release using sfp orchestrator",
     "type": "object",

@@ -3,9 +3,9 @@
 </p>
 
 ![Version](https://img.shields.io/npm/v/@flxblio/sfp.svg)
-[![GitHub stars](https://img.shields.io/github/stars/flxblio/sfp)](https://github.com/flxblio/sfp/stargazers/)
-[![GitHub contributors](https://img.shields.io/github/contributors/flxblio/sfp.svg)](https://github.com/flxblio/sfp/graphs/contributors/)
-[![License](https://img.shields.io/badge/license-MIT-green)](https://github.com/flxblio/sfp/blob/master/LICENSE)
+[![GitHub stars](https://img.shields.io/github/stars/flxblio/sfp)](https://github.com/flxbl-io/sfp/stargazers/)
+[![GitHub contributors](https://img.shields.io/github/contributors/flxblio/sfp.svg)](https://github.com/flxbl-io/sfp/graphs/contributors/)
+[![License](https://img.shields.io/badge/license-MIT-green)](https://github.com/flxbl-io/sfp/blob/master/LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
 
 [![DeepScan grade](https://deepscan.io/api/teams/10234/projects/12959/branches/208838/badge/grade.svg)](https://deepscan.io/dashboard#view=project&tid=10234&pid=12959&bid=208838)
@@ -29,7 +29,7 @@ A build system for package based development in Salesforce, delivered as a node 
 There are lot more features to explore. Read more at https://docs.flxblio.io
 
 The project is delivered as a <b>CLI</b> that can be deployed in any CI/CD system, The module is available in [NPM](https://www.npmjs.com/package/@flxblio/sfp) or can be
-used by using the [docker image](https://github.com/flxblio/sfp/pkgs/container/sfp)
+used by using the [docker image](https://github.com/flxbl-io/sfp/pkgs/container/sfp)
 
 
 
@@ -58,7 +58,7 @@ npm i -g @flxblio/sfp
 
 #### Docker
 
-Docker images for sfp are available at [GitHub Container Registry](https://github.com/flxblio/sfp/pkgs/container/sfp).
+Docker images for sfp are available at [GitHub Container Registry](https://github.com/flxbl-io/sfp/pkgs/container/sfp).
 
 We recommend using the sfp docker image to avoid breakages in your CI/CD pipelines due to updates in sfp or any of its dependencies such as the SFDX CLI.
 

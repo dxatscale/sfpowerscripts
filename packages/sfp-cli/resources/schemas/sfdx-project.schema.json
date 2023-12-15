@@ -1,6 +1,6 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "$id": "https://github.com/flxblio/sfp/blob/develop/packages/sfp-cli/resources/sfdx-project.schema.json",
+    "$id": "https://github.com/flxbl-io/sfp/blob/develop/packages/sfp-cli/resources/sfdx-project.schema.json",
     "title": "sfp DX Project File",
     "description": "The properties and shape of the SFDX project enhanced for sfp",
     "type": "object",

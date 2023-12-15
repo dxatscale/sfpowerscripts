@@ -8,7 +8,7 @@
     "bin": {
         "sfp": "./bin/run"
     },
-    "bugs": "https://github.com/flxblio/sfp/issues",
+    "bugs": "https://github.com/flxbl-io/sfp/issues",
     "publishConfig": {
         "access": "public"
     },
@@ -91,7 +91,7 @@
         "/resources",
         "/oclif.manifest.json"
     ],
-    "homepage": "https://github.com/flxblio/sfp",
+    "homepage": "https://github.com/flxbl-io/sfp",
     "keywords": [
         "flxblio",
         "sfp-cli",
@@ -165,7 +165,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "https://github.com/flxblio/sfp.git",
+        "url": "https://github.com/flxbl-io/sfp.git",
         "directory": "packages/sfp-cli"
     },
     "scripts": {
