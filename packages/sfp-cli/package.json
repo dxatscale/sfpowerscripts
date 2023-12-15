@@ -9,6 +9,9 @@
         "sfp": "./bin/run"
     },
     "bugs": "https://github.com/flxblio/sfp/issues",
+    "publishConfig": {
+        "access": "public"
+    },
     "dependencies": {
         "@flxblio/apexlink": "^1.0.2",
         "@newrelic/telemetry-sdk": "^0.6.0",

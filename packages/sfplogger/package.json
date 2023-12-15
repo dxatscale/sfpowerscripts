@@ -12,6 +12,9 @@
         "clean": "rimraf ./lib && rimraf tsconfig.tsbuildinfo",
         "compile": "tsc -b tsconfig.json"
     },
+    "publishConfig": {
+        "access": "public"
+    },
     "dependencies": {
         "chalk": "^4.1.2",
         "fs-extra": "^9.1.0",

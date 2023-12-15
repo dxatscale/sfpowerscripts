@@ -9,6 +9,9 @@
         "watch": "jest --silent=false --verbose --detectOpenHandles --coverage --watchAll",
         "test:coverage": "jest --silent=false --verbose --detectOpenHandles --coverage"
     },
+    "publishConfig": {
+        "access": "public"
+    },
     "author": "flxblio",
     "license": "MIT",
     "devDependencies": {
