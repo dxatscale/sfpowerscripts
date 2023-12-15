@@ -106,7 +106,7 @@ jobs:
       image: 'sfp-lite-rc'  
     secrets:
       username: ${{ secrets.DOCKER_USERNAME }}
-      token: ${{ secrets.DOCKER_SECRET }}
+      token: ${{ secrets.GITHUB_TOKEN }}
     needs: [ build-docker-lite ]
 
 
