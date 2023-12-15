@@ -1,0 +1,13 @@
+{
+    "commandDescription": "This task is used to run a static analysis of the apex classes and triggers using PMD, Please ensure that the SFDX CLI and sfpowerkit plugin are installed before using this task",
+    "sourceDirectoryFlagDescription": "The directory that is to be analzed using PMD, If omitted default project diretory as mentioned in sfdx-project.json will be used",
+    "rulesetFlagDescription": "Inbuilt is the default ruleset that comes with the task, If you choose custom, please provide the path to the ruleset",
+    "rulesetPathFlagDescription": "The path to the ruleset if you are utilizing your own ruleset",
+    "formatFlagDescription": "https://pmd.github.io/latest/pmd_userdocs_cli_reference.html#available-report-formats",
+    "outputPathFlagDescription": "The file to which the output for static analysis will be written",
+    "versionFlagDescription": "The version of PMD to be used for static analysis",
+    "thresholdFlagDescription": "Violations with a priority less than or equal to the threshold will cause the command to fail",
+    "isToBreakBuildFlagDescription": "Enable this option if the build should be reported as failure if 1 or more critical defects are reported during the analysis",
+    "projectDirectoryFlagDescription": "The project directory should contain a sfdx-project.json for this command to succeed",
+    "refNameFlagDescription": "Reference name to be prefixed to output variables"
+}

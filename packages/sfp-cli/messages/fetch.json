@@ -1,0 +1,10 @@
+{
+    "commandDescription": "Fetch artifacts from an artifact registry that is either NPM compatible or supports universal artifacts",
+    "releaseDefinitionFlagDescription": "Path to YAML file containing map of packages and package versions to download",
+    "artifactDirectoryFlagDescription": "Directory to save downloaded artifacts",
+    "scriptPathFlagDescription": "(Optional: no-NPM) Path to script that authenticates and downloads artifacts from the registry",
+    "npmFlagDescription": "Download artifacts from a pre-authenticated private npm registry",
+    "scopeFlagDescription": "(required for NPM) User or Organisation scope of the NPM package",
+    "npmrcPathFlagDescription": "Path to .npmrc file used for authentication to registry. If left blank, defaults to home directory",
+    "logsGroupSymbolFlagDescription": "Symbol used by CICD platform to group/collapse logs in the console. Provide an opening group, and an optional closing group symbol."
+}

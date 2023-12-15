@@ -1,0 +1,13 @@
+{
+    "commandDescription": "This task simulates a packaging experience similar to unlocked packaging - creating an artifact that consists of the metadata (e.g. commit Id), source code & an optional destructive manifest. The artifact can then be consumed by release pipelines, to deploy the package",
+    "packageFlagDescription": "The name of the package",
+    "versionNumberFlagDescription": "The format is major.minor.patch.buildnumber . This will override the build number mentioned in the sfdx-project.json, Try considering the use of Increment Version Number task before this task",
+    "projectDirectoryFlagDescription": "The project directory should contain a sfdx-project.json for this command to succeed",
+    "destructiveManiFestFilePathFlagDescription": "Path to a destructiveChanges.xml, mentioning any metadata that need to be deleted before the contents in the source package need to be installed in the org",
+    "artifactDirectoryFlagDescription": "The directory where the artifact is to be written",
+    "diffCheckFlagDescription": "Only build when the package has changed",
+    "branchFlagDescription": "The git branch that this build is triggered on, Useful for metrics and general identification purposes",
+    "gitTagFlagDescription": "Tag the current commit ID with an annotated tag containing the package name and version - does not push tag",
+    "repoUrlFlagDescription": "Custom source repository URL to use in artifact metadata, overrides origin URL defined in git config",
+    "refNameFlagDescription": "Reference name to be prefixed to output variables"
+}

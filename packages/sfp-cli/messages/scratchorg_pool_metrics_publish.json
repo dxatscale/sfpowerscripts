@@ -1,0 +1,3 @@
+{
+    "commandDescription": "Publish metrics about scratch org pools to your observability platform, via StatsD or direct APIs for supported platforms"
+}

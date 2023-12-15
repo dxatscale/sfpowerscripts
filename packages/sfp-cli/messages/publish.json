@@ -1,0 +1,17 @@
+{
+    "commandDescription": "Publish packages to an artifact registry, using a user-provided script that is responsible for authenticating & uploading to the registry.",
+    "artifactDirectoryFlagDescription": "The directory containing artifacts to be published",
+    "publishPromotedOnlyFlagDescription": "Only publish unlocked packages that have been promoted",
+    "devhubAliasFlagDescription": "Provide the alias of the devhub previously authenticated",
+    "scriptPathFlagDescription": "Path to script that authenticates and uploaded artifacts to the registry",
+    "tagFlagDescription": "Tag the publish with a label, useful for identification in metrics",
+    "gitTagFlagDescription": "Tag the current commit ID with an annotated tag containing the package name and version - does not push tag",
+    "gitPushTagFlagDescription": "Pushes the git tags created by this command to the repo, ensure you have access to the repo",
+    "npmFlagDescription": "Upload artifacts to a pre-authenticated private npm registry",
+    "scopeFlagDescription": "(required for NPM) User or Organisation scope of the NPM package",
+    "npmTagFlagDescription": "Add an optional distribution tag to NPM packages. If not provided, the 'latest' tag is set to the published version.",
+    "npmrcPathFlagDescription": "Path to .npmrc file used for authentication to registry. If left blank, defaults to home directory",
+    "logsGroupSymbolFlagDescription": "Symbol used by CICD platform to group/collapse logs in the console. Provide an opening group, and an optional closing group symbol.",
+    "gitTagAgeFlagDescription": "Specifies the number of days,for a tag to be retained,any tags older the provided number will be deleted",
+    "gitTagLimitFlagDescription": "Specifies the minimum number of  tags to be retained for a package"
+}

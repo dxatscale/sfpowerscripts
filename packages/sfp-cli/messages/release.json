@@ -1,0 +1,19 @@
+{
+    "commandDescription": "Release a  collection of artifacts as defined in the release definition file",
+    "releaseDefinitionFlagDescription": "Path to release definiton yaml, Multiple paths can be seperated by commas",
+    "targetOrgFlagDescription": "Alias/User Name of the target environment",
+    "scriptPathFlagDescription": "(Optional: no-NPM) Path to script that authenticates and downloads artifacts from the registry",
+    "npmFlagDescription": "Download artifacts from a pre-authenticated private npm registry",
+    "scopeFlagDescription": "(required for NPM) User or Organisation scope of the NPM package",
+    "npmrcPathFlagDescription": "Path to .npmrc file used for authentication to registry. If left blank, defaults to home directory",
+    "logsGroupSymbolFlagDescription": "Symbol used by CICD platform to group/collapse logs in the console. Provide an opening group, and an optional closing group symbol.",
+    "tagFlagDescription": "Tag the release with a label, useful for identification in metrics",
+    "dryRunFlagDescription": "Perform dry-run of release. No artifacts are deployed to the target org.",
+    "waitTimeFlagDescription": "Wait time for package installation",
+    "keysFlagDescription": "Keys to be used while installing any managed package dependencies. Required format is a string of key-value pairs separated by spaces e.g. packageA:pw123 packageB:pw123 packageC:pw123",
+    "generateChangelogFlagDescription": "Create a release changelog",
+    "allowUnpromotedPackagesFlagDescription": "Allow un-promoted packages to be installed in production",
+    "devhubAliasFlagDescription": "Provide the alias of the devhub previously authenticated, default value is HubOrg",
+    "directoryFlagDescription": "Relative path to directory to which the changelog should be generated, if the directory doesnt exist, it will be created",
+    "branchNameFlagDescription": "Repository branch in which the changelog files are located"
+}

@@ -1,0 +1,4 @@
+{
+    "commandDescription": "Fetch details about artifacts installed in a target org",
+    "branchNameFlagDescription": "Repository branch in which the changelog files are located"
+}

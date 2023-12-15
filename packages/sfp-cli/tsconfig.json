@@ -1,0 +1,10 @@
+{
+    "extends": "../../tsconfig.json",
+    "compilerOptions": {
+        "outDir": "./lib",
+        "rootDir": "./src",
+        "skipLibCheck": true,
+        "lib": ["ES2020"]
+    },
+    "exclude": ["node_modules", "dist", "tests"]
+}

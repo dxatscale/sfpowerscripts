@@ -1,0 +1,7 @@
+{
+  "commandDescription": "Figures out impacted release configurations of a project, due to a change,from the last known tags",
+  "releaseConfigFileFlagDescription":"Path to the directory containing release defns",
+  "baseCommitOrBranchFlagDescription": "The base branch on which the git tags should be used from",
+  "filterByFlagDescription": "Filter by a specific release config name",
+  "explictDependencyCheckFlagDescription": "Activate to consider dependencyOn attribut while handling impact"
+}

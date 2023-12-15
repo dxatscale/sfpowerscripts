@@ -1,0 +1,6 @@
+{
+    "packageFlagDescription": "Name of the package to be installed",
+    "targetOrgFlagDescription": "Alias/User Name of the target environment",
+    "artifactDirectoryFlagDescription": "The directory where the artifact is located",
+    "skipOnMissingArtifactFlagDescription": "Skip package installation if the build artifact is missing. Enable this if artifacts are only being created for modified packages"
+}

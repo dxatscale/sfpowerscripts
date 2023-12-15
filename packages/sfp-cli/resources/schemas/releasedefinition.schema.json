@@ -1,0 +1,73 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://github.com/flxblio/sfp/blob/develop/packages/sfp-cli/resources/releasedefinition.schema.json",
+    "title": "release definition",
+    "description": "The definition for a release using sfp orchestrator",
+    "type": "object",
+    "required": ["release", "artifacts"],
+    "additionalProperties": false,
+    "dependencies": {
+        "baselineOrg": ["skipIfAlreadyInstalled"]
+    },
+    "properties": {
+        "release": {
+            "type": "string"
+        },
+        "skipIfAlreadyInstalled": {
+            "type": "boolean"
+        },
+        "skipArtifactUpdate": {
+            "type": "boolean"
+        },
+        "baselineOrg": {
+            "type": "string"
+        },
+        "artifacts": {
+            "type": "object",
+            "patternProperties": {
+                ".+": {
+                    "type": "string"
+                }
+            }
+        },
+        "packageDependencies": {
+            "type": "object",
+            "patternProperties": {
+                ".+": {
+                    "type": "string",
+                    "pattern": "^04t([a-zA-Z0-9]{15}|[a-zA-Z0-9]{12})$"
+                }
+            }
+        },
+        "promotePackagesBeforeDeploymentToOrg": {
+            "type": "string"
+        },
+        "changelog": {
+            "type": "object",
+            "properties": {
+                "workItemFilter": {
+                    "type": "string",
+                    "title": "Support legacy workItemFilter which supports only one single regex pattern"
+                },
+                "workItemFilters": {
+                    "type": "array",
+                    "title": "Regex to filter workitems from commit messages",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "workItemUrl": {
+                    "type": "string"
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "showAllArtifacts": {
+                    "type": "boolean"
+                }
+            },
+            "oneOf": [{ "required": ["workItemFilter"] }, { "required": ["workItemFilters"] }],
+            "additionalProperties": false
+        }
+    }
+}

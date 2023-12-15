@@ -1,0 +1,15 @@
+{
+    "commandDescription": "Deploy packages from the provided aritfact directory, to a given org, using the order and configurable flags provided in sfdx-project.json",
+    "targetOrgFlagDescription": "Alias/User Name of the target environment",
+    "artifactDirectoryFlagDescription": "The directory containing artifacts to be deployed",
+    "waitTimeFlagDescription": "Wait time for command to finish in minutes",
+    "logsGroupSymbolFlagDescription": "Symbol used by CICD platform to group/collapse logs in the console. Provide an opening group, and an optional closing group symbol.",
+    "tagFlagDescription": "Tag the deploy with a label, useful for identification in metrics",
+    "validateModeFlagDescription": "Enable for validation deployments",
+    "skipIfAlreadyInstalled": "Skip the package installation if the package is already installed in the org",
+    "baselineorgFlagDescription": "The org against which the package skip should be baselined",
+    "allowUnpromotedPackagesFlagDescription": "Allow un-promoted packages to be installed in production",
+    "retryOnFailureFlagDescription": "Retry on a failed deployment of a package",
+    "configFileFlagDescription":"Path to the config file which determines how the packages are deployed based on the filters in release config",
+    "enableSourceTrackingFlagDescription": "Enable source tracking on the packages being deployed to an org"
+}

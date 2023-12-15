@@ -1,0 +1,251 @@
+{
+    "name": "ESSpaceMgmtLWC",
+    "to": "2dbd257",
+    "commits": [
+        {
+            "commitId": "d60274b3",
+            "date": "2020-11-03T10:08:08-05:00",
+            "author": "Mohith Shrivastava",
+            "message": "feat: add in app guidance (#191)",
+            "body": "* feat: add in app guidance\r\n\r\n* fix: prettier formatting\r\n\r\n* fix: fix the order of walk throughs\r\n\r\n* fix: Naming issues\r\n\r\n* fix: address In-App guidance issues\r\n\r\n* fix: address minor comments"
+        },
+        {
+            "commitId": "e61ffe19",
+            "date": "2020-10-26T15:04:09-04:00",
+            "author": "Mohith Shrivastava",
+            "message": "fix: add order by clause (#189)",
+            "body": ""
+        },
+        {
+            "commitId": "d7124579",
+            "date": "2020-10-19T02:30:31-04:00",
+            "author": "Mohith Shrivastava",
+            "message": "feat: winter '21 release updates (#178)",
+            "body": "* Upgrade sa11y version (#165)\r\n\r\n* Update to v50.0 api version (#164)\r\n\r\n* update api version and sfdx-jest versions\r\n\r\n* update sfdx-project.json version\r\n\r\n* updated package json\r\n\r\n* freeze api version for jests to pass\r\n\r\n* update package lock file\r\n\r\n* fix prettier issue\r\n\r\n* fix failing test\r\n\r\n* update v50.0\r\n\r\n* feat: flow refactor with innvocable method (#168)\r\n\r\n* update api version and sfdx-jest versions\r\n\r\n* update sfdx-project.json version\r\n\r\n* updated package json\r\n\r\n* freeze api version for jests to pass\r\n\r\n* update package lock file\r\n\r\n* fix prettier issue\r\n\r\n* fix failing test\r\n\r\n* fix class names\r\n\r\n* Delete lower case class names\r\n\r\n* Delete lower case class names\r\n\r\nDelete lower case class names\r\n\r\n* Delete lower case class names\r\n\r\nDelete lower case class names\r\n\r\n* Delete lower case class names\r\n\r\nDelete lower case class names\r\n\r\n* Delete lower case class names\r\n\r\n* Delete marketServices.cls-meta.xml\r\n\r\nDelete lower case class names\r\n\r\n* Delete lower case class names\r\n\r\n* Delete lower case class names\r\n\r\n* Delete lower case class names\r\n\r\n* Delete lower case class names\r\n\r\n* delete lower cases classes\r\n\r\n* delete lower cases classes\r\n\r\n* delete lower cases classes\r\n\r\n* delete lower cases classes\r\n\r\n* fix class name in perms\r\n\r\n* refactor flows to be object agnostic\r\n\r\n* fix package lock json merge\r\n\r\n* address comments\r\n\r\n* fix: refactor the reservation manager method\r\n\r\n* run prettier\r\n\r\n* update the version to 50.0\r\n\r\n* refactor: use winter21 safe nav operators for null checks (#170)\r\n\r\n* feat: refactor flows to use flow screen elements (#169)\r\n\r\n* update api version and sfdx-jest versions\r\n\r\n* update sfdx-project.json version\r\n\r\n* updated package json\r\n\r\n* freeze api version for jests to pass\r\n\r\n* update package lock file\r\n\r\n* fix prettier issue\r\n\r\n* fix failing test\r\n\r\n* fix class names\r\n\r\n* Delete lower case class names\r\n\r\n* Delete lower case class names\r\n\r\nDelete lower case class names\r\n\r\n* Delete lower case class names\r\n\r\nDelete lower case class names\r\n\r\n* Delete lower case class names\r\n\r\nDelete lower case class names\r\n\r\n* Delete lower case class names\r\n\r\n* Delete marketServices.cls-meta.xml\r\n\r\nDelete lower case class names\r\n\r\n* Delete lower case class names\r\n\r\n* Delete lower case class names\r\n\r\n* Delete lower case class names\r\n\r\n* Delete lower case class names\r\n\r\n* delete lower cases classes\r\n\r\n* delete lower cases classes\r\n\r\n* delete lower cases classes\r\n\r\n* delete lower cases classes\r\n\r\n* fix class name in perms\r\n\r\n* refactor flows to be object agnostic\r\n\r\n* fix package lock json merge\r\n\r\n* feat: refactor flows to use flow screen elements\r\n\r\n* add jest tests for draft event\r\n\r\n* fix comments\r\n\r\n* fix: provide access for @auraenabled apex class winter21 (#172)\r\n\r\n* fix: provide access for @auraenabled apex class winter21\r\n\r\n* pretiier formatting\r\n\r\n* fix: small issues for winter 21 updates (#181)\r\n\r\n* Changed package versions to 50.0.0\r\n\r\nCo-authored-by: Alba Rivas <arivas@salesforce.com>\r\nCo-authored-by: Philippe Ozil <5071767+pozil@users.noreply.github.com>"
+        },
+        {
+            "commitId": "e4fd5b2c",
+            "date": "2020-09-28T09:52:59+02:00",
+            "author": "Alba Rivas",
+            "message": "Setup sa11y and implement accessibility tests (#162)",
+            "body": ""
+        },
+        {
+            "commitId": "a155ee7a",
+            "date": "2020-09-07T11:55:42+02:00",
+            "author": "pozil",
+            "message": "Simplified LMS pub/sub logic",
+            "body": ""
+        },
+        {
+            "commitId": "9ca5cf96",
+            "date": "2020-09-04T12:10:49-04:00",
+            "author": "Mohith Shrivastava",
+            "message": "feat:object agnostic design for apex code for Customer List component (#158)",
+            "body": "* feat:object agnostic design for apex code for Customer List component\r\n\r\n* fix: add compound assignment operators"
+        },
+        {
+            "commitId": "55d0933a",
+            "date": "2020-07-17T14:33:26-04:00",
+            "author": "Mohith Shrivastava",
+            "message": "tests for reservationHelper lwc (#138)",
+            "body": "* tests for reservationHelper lwc\r\n\r\n* add negative test cases"
+        },
+        {
+            "commitId": "37cbaa2b",
+            "date": "2020-07-16T15:06:50-04:00",
+            "author": "Mohith Shrivastava",
+            "message": "tests for reservationTile lwc component (#126)",
+            "body": "* tests for reservationTile lwc component\r\n\r\n* address review comments\r\n\r\n* address comments on PR"
+        },
+        {
+            "commitId": "92e07c50",
+            "date": "2020-07-16T15:06:36-04:00",
+            "author": "Mohith Shrivastava",
+            "message": "tests for reservationDetailForm lwc (#125)",
+            "body": "* test for reservationDetailForm lwc\r\n\r\n* fix comments\r\n\r\n* fix comments\r\n\r\n* resolve comments from pozil review"
+        },
+        {
+            "commitId": "dec3e62f",
+            "date": "2020-07-16T14:02:22-04:00",
+            "author": "Mohith Shrivastava",
+            "message": "test for lwc reservationlist component (#127)",
+            "body": "* tests for reservationList component\r\n\r\n* add few more tests\r\n\r\n* ignore jest coverage reports\r\n\r\n* resolve comments raised\r\n\r\n* fix formating for jest.config.js\r\n\r\nCo-authored-by: Aditya Naag <atopalli@salesforce.com>"
+        },
+        {
+            "commitId": "68e81302",
+            "date": "2020-07-16T18:35:04+05:30",
+            "author": "Aditya Naag",
+            "message": "Tests for SpaceDesigner component (#137)",
+            "body": "* Tests for SpaceDesigner component\r\n\r\n* Fixes based on review comments"
+        },
+        {
+            "commitId": "33b4fdd1",
+            "date": "2020-07-16T17:49:59+05:30",
+            "author": "Aditya Naag",
+            "message": "Tests for Space Designer Form Component (#136)",
+            "body": "* Tests for Space Designer Component\r\n\r\n* Cleanup\r\n\r\n* Fixes based on review comments"
+        },
+        {
+            "commitId": "8e0c67e3",
+            "date": "2020-07-16T07:47:00-04:00",
+            "author": "Mohith Shrivastava",
+            "message": "tests for lwc reservationHelperForm (#128)",
+            "body": "* tests for lwc reservationHelperForm\r\n\r\n* add some more coverage\r\n\r\n* address comments\r\n\r\n* fix test names and code readability"
+        },
+        {
+            "commitId": "4757d3f3",
+            "date": "2020-07-16T16:41:55+05:30",
+            "author": "Aditya Naag",
+            "message": "Tests for CustomerList Component (#134)",
+            "body": "* Tests for Customer List Component\r\n\r\n* Fixes for review comments\r\n\r\n* Fixes based on review comments"
+        },
+        {
+            "commitId": "02a00c82",
+            "date": "2020-07-16T16:34:49+05:30",
+            "author": "Aditya Naag",
+            "message": "Tests for Customer Tile (#135)",
+            "body": "* Tests for Customer Tile\r\n\r\n* Updated Mock for GenerateURL\r\n\r\n* Fixes based on review comments"
+        },
+        {
+            "commitId": "fc006867",
+            "date": "2020-07-16T15:37:50+05:30",
+            "author": "Aditya Naag",
+            "message": "Tests for Customer Detail Form (#132)",
+            "body": "* Tests for Customer Detail Form\r\n\r\n* Fixes based on review comments"
+        },
+        {
+            "commitId": "4d0a1047",
+            "date": "2020-07-15T13:38:34-04:00",
+            "author": "Mohith Shrivastava",
+            "message": "test for relatedSpaces lwc (#124)",
+            "body": "* test for related spaces\r\n\r\n* fix  comments"
+        },
+        {
+            "commitId": "0f92230c",
+            "date": "2020-07-13T21:36:01+05:30",
+            "author": "Aditya Naag",
+            "message": "Removed un-needed Application Scope (#123)",
+            "body": ""
+        },
+        {
+            "commitId": "9e072cb0",
+            "date": "2020-06-22T22:54:04+05:30",
+            "author": "Aditya Naag",
+            "message": "Sync with Develop and Updated Aura Linting (#115)",
+            "body": "* feat: 🤘🏼adding new GitHub actions (#103)\r\n\r\n* feat: 🤘🏼adding new GitHub actions\r\n\r\n* feat: add pull request template\r\n\r\n* fix: use GitHub task list instead of icons\r\n\r\n* ci: migrated CI jobs to GitHub Actions (#104)\r\n\r\n* Migrating to GitHub Actions\r\n\r\n* Migrating to GitHub Actions\r\n\r\n* Updated dependencies and fixed aura linting script\r\n\r\n* Fixed Linting Errors\r\n\r\n* Fixed Linting Errors in Aura\r\n\r\n* Testing package install on a scratch org\r\n\r\n* Fixed label\r\n\r\nCo-authored-by: pozil <philippe.ozil@gmail.com>\r\n\r\n* Added new package version IDs (#105)\r\n\r\nCo-authored-by: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>\r\n\r\n* Removed branch deletion step (this is automated)\r\n\r\n* Doc fix (#106)\r\n\r\n* Added new package version IDs (#107)\r\n\r\nCo-authored-by: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>\r\n\r\n* Bump @salesforce/eslint-config-lwc from 0.6.0 to 0.7.0 (#108)\r\n\r\nBumps [@salesforce/eslint-config-lwc](https://github.com/salesforce/eslint-config-lwc) from 0.6.0 to 0.7.0.\r\n- [Release notes](https://github.com/salesforce/eslint-config-lwc/releases)\r\n- [Commits](https://github.com/salesforce/eslint-config-lwc/compare/v0.6.0...v0.7.0)\r\n\r\nSigned-off-by: dependabot-preview[bot] <support@dependabot.com>\r\n\r\nCo-authored-by: dependabot-preview[bot] <27856297+dependabot-preview[bot]@users.noreply.github.com>\r\n\r\n* Bump eslint from 7.0.0 to 7.1.0 (#109)\r\n\r\nBumps [eslint](https://github.com/eslint/eslint) from 7.0.0 to 7.1.0.\r\n- [Release notes](https://github.com/eslint/eslint/releases)\r\n- [Changelog](https://github.com/eslint/eslint/blob/master/CHANGELOG.md)\r\n- [Commits](https://github.com/eslint/eslint/compare/v7.0.0...v7.1.0)\r\n\r\nSigned-off-by: dependabot-preview[bot] <support@dependabot.com>\r\n\r\nCo-authored-by: dependabot-preview[bot] <27856297+dependabot-preview[bot]@users.noreply.github.com>\r\nCo-authored-by: Aditya Naag <atopalli@salesforce.com>\r\n\r\n* Bump prettier-plugin-apex from 1.4.0 to 1.5.0 (#111)\r\n\r\nBumps prettier-plugin-apex from 1.4.0 to 1.5.0.\r\n\r\nSigned-off-by: dependabot-preview[bot] <support@dependabot.com>\r\n\r\nCo-authored-by: dependabot-preview[bot] <27856297+dependabot-preview[bot]@users.noreply.github.com>\r\n\r\n* Bump lint-staged from 10.2.4 to 10.2.9 (#112)\r\n\r\nBumps [lint-staged](https://github.com/okonet/lint-staged) from 10.2.4 to 10.2.9.\r\n- [Release notes](https://github.com/okonet/lint-staged/releases)\r\n- [Commits](https://github.com/okonet/lint-staged/compare/v10.2.4...v10.2.9)\r\n\r\nSigned-off-by: dependabot-preview[bot] <support@dependabot.com>\r\n\r\nCo-authored-by: dependabot-preview[bot] <27856297+dependabot-preview[bot]@users.noreply.github.com>\r\nCo-authored-by: Aditya Naag <atopalli@salesforce.com>\r\n\r\n* Aura Linting Tool changes\r\n\r\n* Separated Event Declarations from Dispatch call\r\n\r\n* Split Github Actions for PR and minor code fixes\r\n\r\n* Update Github action name\r\n\r\nCo-authored-by: satyasekharcvb <31529847+satyasekharcvb@users.noreply.github.com>\r\nCo-authored-by: pozil <philippe.ozil@gmail.com>\r\nCo-authored-by: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>\r\nCo-authored-by: Philippe Ozil <5071767+pozil@users.noreply.github.com>\r\nCo-authored-by: dependabot-preview[bot] <27856297+dependabot-preview[bot]@users.noreply.github.com>"
+        },
+        {
+            "commitId": "20d23d4c",
+            "date": "2020-06-19T19:28:37+05:30",
+            "author": "Aditya Naag",
+            "message": "Replaced pubsub with LMS (#113)",
+            "body": "* Replaced pubsub with LMS\r\n\r\n* Removed unneeded check"
+        },
+        {
+            "commitId": "c8ff6924",
+            "date": "2020-05-19T21:44:01+05:30",
+            "author": "Aditya Naag",
+            "message": "Updated to version 49.0 (#102)",
+            "body": ""
+        },
+        {
+            "commitId": "d9cbd607",
+            "date": "2020-05-19T21:20:01+05:30",
+            "author": "Aditya Naag",
+            "message": "ci: migrated CI jobs to GitHub Actions (#104)",
+            "body": "* Migrating to GitHub Actions\r\n\r\n* Migrating to GitHub Actions\r\n\r\n* Updated dependencies and fixed aura linting script\r\n\r\n* Fixed Linting Errors\r\n\r\n* Fixed Linting Errors in Aura\r\n\r\n* Testing package install on a scratch org\r\n\r\n* Fixed label\r\n\r\nCo-authored-by: pozil <philippe.ozil@gmail.com>"
+        },
+        {
+            "commitId": "93910646",
+            "date": "2020-05-04T19:27:50+02:00",
+            "author": "Alba Rivas",
+            "message": "inline message template and svg refactor (#100)",
+            "body": "* Include SVG in template so that is can be scaled\r\nUse link instead of checkbox to show details\r\nAdd inline message template\r\n\r\n* Fix wrong class change\r\n\r\n* Remove unneeded file"
+        },
+        {
+            "commitId": "4c75cbe1",
+            "date": "2020-04-17T13:42:24+02:00",
+            "author": "Alba Rivas",
+            "message": "Error Panel Refactor (#93)",
+            "body": "* Rename inlineMessage to errorPanel for consistency with other sample apps\r\n\r\n* Refactor error panel to follow SLDS styling\r\n\r\n* prettier formatting\r\n\r\n* Small CSS tweak so that the component looks nice in all sample apps\r\n\r\n* Remove not needed file\r\n\r\n* Remove not needed var\r\n\r\n* Prettier formatting\r\n\r\n* Order properties alphabetically and group by type\r\n\r\n* Changed packaging folder for static resource\r\n\r\nCo-authored-by: adityanaag3 <adityanaag@gmail.com>"
+        },
+        {
+            "commitId": "989d0858",
+            "date": "2020-04-14T22:52:35+05:30",
+            "author": "Aditya Naag",
+            "message": "Updated Style Classes to use SLDS Design Tokens (#92)",
+            "body": ""
+        },
+        {
+            "commitId": "0f08c795",
+            "date": "2020-04-06T10:05:20+02:00",
+            "author": "René Winkelmeyer",
+            "message": "feat: 🎉 Prettier 2.0 (#88)",
+            "body": "* feat: 🎉 Prettier 2.0\r\n\r\n* fix: cleanup temporary GH workflows"
+        },
+        {
+            "commitId": "3b12d4c2",
+            "date": "2020-02-17T11:31:08+05:30",
+            "author": "Aditya Naag",
+            "message": "Spring 20 Updates (#76)",
+            "body": "* Bump prettier from 1.18.2 to 1.19.1 (#56)\r\n\r\nBumps [prettier](https://github.com/prettier/prettier) from 1.18.2 to 1.19.1.\r\n- [Release notes](https://github.com/prettier/prettier/releases)\r\n- [Changelog](https://github.com/prettier/prettier/blob/master/CHANGELOG.md)\r\n- [Commits](https://github.com/prettier/prettier/compare/1.18.2...1.19.1)\r\n\r\nSigned-off-by: dependabot-preview[bot] <support@dependabot.com>\r\n\r\n* Bump semver from 6.3.0 to 7.1.2 (#63)\r\n\r\nBumps [semver](https://github.com/npm/node-semver) from 6.3.0 to 7.1.2.\r\n- [Release notes](https://github.com/npm/node-semver/releases)\r\n- [Changelog](https://github.com/npm/node-semver/blob/master/CHANGELOG.md)\r\n- [Commits](https://github.com/npm/node-semver/compare/v6.3.0...v7.1.2)\r\n\r\nSigned-off-by: dependabot-preview[bot] <support@dependabot.com>\r\n\r\nCo-authored-by: Aditya Naag <adityanaag@gmail.com>\r\n\r\n* Bump husky from 3.0.9 to 4.2.1 (#64)\r\n\r\nBumps [husky](https://github.com/typicode/husky) from 3.0.9 to 4.2.1.\r\n- [Release notes](https://github.com/typicode/husky/releases)\r\n- [Changelog](https://github.com/typicode/husky/blob/master/CHANGELOG.md)\r\n- [Commits](https://github.com/typicode/husky/compare/v3.0.9...v4.2.1)\r\n\r\nSigned-off-by: dependabot-preview[bot] <support@dependabot.com>\r\n\r\nCo-authored-by: Aditya Naag <adityanaag@gmail.com>\r\n\r\n* Bump lint-staged from 9.4.2 to 10.0.7 (#65)\r\n\r\nBumps [lint-staged](https://github.com/okonet/lint-staged) from 9.4.2 to 10.0.7.\r\n- [Release notes](https://github.com/okonet/lint-staged/releases)\r\n- [Commits](https://github.com/okonet/lint-staged/compare/v9.4.2...v10.0.7)\r\n\r\nSigned-off-by: dependabot-preview[bot] <support@dependabot.com>\r\n\r\nCo-authored-by: Aditya Naag <adityanaag@gmail.com>\r\n\r\n* Updated Version Numbers (#66)\r\n\r\n* Removed Track Decorator (#67)\r\n\r\n* Updated Version Numbers\r\n\r\n* Removed @track where not needed\r\n\r\n* Prettier Updates (#68)\r\n\r\n* Formatted XML using Prettier (#69)\r\n\r\n* Added WITH SECURITY_ENFORCED Clause to SOQL Queries (#74)\r\n\r\n* updates for with security enforced (#73)\r\n\r\n* updates for with security enforced (#72)\r\n\r\n* updates for with security enforced (#71)\r\n\r\n* Prettier Updates\r\n\r\nCo-authored-by: Kevin Poorman <codefriar@users.noreply.github.com>\r\n\r\n* Updated Package Versions and Readme (#75)\r\n\r\nCo-authored-by: dependabot-preview[bot] <27856297+dependabot-preview[bot]@users.noreply.github.com>\r\nCo-authored-by: Kevin Poorman <codefriar@users.noreply.github.com>\r\n"
+        },
+        {
+            "commitId": "38d4cf2f",
+            "date": "2019-10-17T15:27:24+05:30",
+            "author": "Aditya Naag",
+            "message": "Winter 20 Updates (#55)",
+            "body": "* Update .gitignore (#44)\r\n\r\nIgnore LWC Local Dev cache folder\r\n\r\n* Removed Aura Wrappers for Flows (#47)\r\n\r\n* Updated Versions to 47.0\r\n\r\n* Removed Aura Wrapper for Flows\r\n\r\n* Prettier Updates\r\n\r\n* Updated Description and Screen Component Names\r\n\r\n* Prettier Apex Formatting (#45)\r\n\r\n* Prettier Apex Formatting\r\n\r\nAdd support for Apex formatting using Prettier #36\r\n\r\n* Added support for trigger\r\n\r\n* Updated file types for prettier\r\n\r\n* Updated Versions to 47.0 (#46)\r\n\r\n* Bump husky from 3.0.5 to 3.0.8 (#42)\r\n\r\n* Weekly CI builds (#38)\r\n\r\n* Weekly CI builds (#39)\r\n\r\n* Weekly CI builds (#40)\r\n\r\n* Daily builds on all prerelease branches (#41)\r\n\r\n* Bump husky from 3.0.5 to 3.0.8\r\n\r\nBumps [husky](https://github.com/typicode/husky) from 3.0.5 to 3.0.8.\r\n- [Release notes](https://github.com/typicode/husky/releases)\r\n- [Changelog](https://github.com/typicode/husky/blob/master/CHANGELOG.md)\r\n- [Commits](https://github.com/typicode/husky/compare/v3.0.5...v3.0.8)\r\n\r\nSigned-off-by: dependabot-preview[bot] <support@dependabot.com>\r\n\r\n* Bump lint-staged from 9.3.0 to 9.4.1 (#43)\r\n\r\n* Weekly CI builds (#38)\r\n\r\n* Weekly CI builds (#39)\r\n\r\n* Weekly CI builds (#40)\r\n\r\n* Daily builds on all prerelease branches (#41)\r\n\r\n* Bump lint-staged from 9.3.0 to 9.4.1\r\n\r\nBumps [lint-staged](https://github.com/okonet/lint-staged) from 9.3.0 to 9.4.1.\r\n- [Release notes](https://github.com/okonet/lint-staged/releases)\r\n- [Commits](https://github.com/okonet/lint-staged/compare/v9.3.0...v9.4.1)\r\n\r\nSigned-off-by: dependabot-preview[bot] <support@dependabot.com>\r\n\r\n* Updated Org Preferences (#51)\r\n\r\n* Bump husky from 3.0.5 to 3.0.9 (#50)\r\n\r\n* Weekly CI builds (#38)\r\n\r\n* Weekly CI builds (#39)\r\n\r\n* Weekly CI builds (#40)\r\n\r\n* Daily builds on all prerelease branches (#41)\r\n\r\n* Bump husky from 3.0.5 to 3.0.9\r\n\r\nBumps [husky](https://github.com/typicode/husky) from 3.0.5 to 3.0.9.\r\n- [Release notes](https://github.com/typicode/husky/releases)\r\n- [Changelog](https://github.com/typicode/husky/blob/master/CHANGELOG.md)\r\n- [Commits](https://github.com/typicode/husky/compare/v3.0.5...v3.0.9)\r\n\r\nSigned-off-by: dependabot-preview[bot] <support@dependabot.com>\r\n\r\n* Bump lint-staged from 9.3.0 to 9.4.2 (#49)\r\n\r\n* Weekly CI builds (#38)\r\n\r\n* Weekly CI builds (#39)\r\n\r\n* Weekly CI builds (#40)\r\n\r\n* Daily builds on all prerelease branches (#41)\r\n\r\n* Bump lint-staged from 9.3.0 to 9.4.2\r\n\r\nBumps [lint-staged](https://github.com/okonet/lint-staged) from 9.3.0 to 9.4.2.\r\n- [Release notes](https://github.com/okonet/lint-staged/releases)\r\n- [Commits](https://github.com/okonet/lint-staged/compare/v9.3.0...v9.4.2)\r\n\r\nSigned-off-by: dependabot-preview[bot] <support@dependabot.com>\r\n\r\n* Bug Fixes (#48)\r\n\r\n* Updated Versions to 47.0\r\n\r\n* Lead Status Filter Update\r\n\r\n* Changed cursor to pointer on tiles\r\n\r\n* Prettier fixes\r\n\r\n* Prettier Fix for Apex Class\r\n\r\n* Updated Package Versions and Readme (#52)\r\n\r\n* Updated Readme with Latest Package Versions\r\n\r\n* Fixed Data issue with Spaces CSV (#53)\r\n\r\n* Config update for Prerelease (#54)\r\n"
+        },
+        {
+            "commitId": "5c0d9381",
+            "date": "2019-06-16T18:12:28+02:00",
+            "author": "René Winkelmeyer",
+            "message": "Summer '19 release (#23)",
+            "body": "* Updating MD and API versions\r\n\r\n* Modifying scratch org to enable path\r\n\r\n* Update API version to 46.0\r\n\r\n* Dependency updates (#24)\r\n\r\n* Summer '19 README updates (#25)\r\n\r\n* Dependency updates\r\n"
+        },
+        {
+            "commitId": "6c884f49",
+            "date": "2019-02-11T11:04:08+01:00",
+            "author": "René Winkelmeyer",
+            "message": "Spring '19 GA (#11)",
+            "body": "* Update README for GA\r\n* Update CI config\r\n* Update Prettier config\r\n* Minor code fixes\r\n* Add GA unlocked packages\r\n"
+        },
+        {
+            "commitId": "f00179b6",
+            "date": "2019-01-17T09:15:11+01:00",
+            "author": "René Winkelmeyer",
+            "message": "Prettier - remove trailing comma (#7)",
+            "body": ""
+        },
+        {
+            "commitId": "60fd7784",
+            "date": "2019-01-15T16:17:44-08:00",
+            "author": "Zayne Turner",
+            "message": "Updates to .gitignore syntax and files for jsconfig.json references",
+            "body": ""
+        },
+        {
+            "commitId": "4c982202",
+            "date": "2019-01-04T19:44:31-08:00",
+            "author": "Zayne Turner",
+            "message": "Updating isExposed for components used in app builder",
+            "body": ""
+        },
+        {
+            "commitId": "81970b22",
+            "date": "2018-12-14T05:16:21+01:00",
+            "author": "René Winkelmeyer",
+            "message": "Streamline tooling files (#2)",
+            "body": ""
+        },
+        {
+            "commitId": "cf695b12",
+            "date": "2018-12-12T08:30:01-05:00",
+            "author": "Zayne Turner",
+            "message": "Initial commit",
+            "body": ""
+        }
+    ]
+}
