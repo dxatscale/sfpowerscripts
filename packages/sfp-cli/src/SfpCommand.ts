@@ -88,7 +88,7 @@ export default abstract class sfpCommand extends Command {
             SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
             SFPLogger.log(
                 COLOR_HEADER(
-                    `sfp  -- The DX@Scale CLI -Version:${this.config.version} -Release:${this.config.pjson.release}`
+                    `sfp  -- By Flxbl -Version:${this.config.version} -Release:${this.config.pjson.release}`
                 )
             );
 
