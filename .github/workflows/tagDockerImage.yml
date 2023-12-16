@@ -43,5 +43,5 @@ jobs:
          new-tag:  ${{ github.event.new-tag }} 
          registry: ghcr.io
          username:  ${{ secrets.DOCKER_USERNAME }}
-         token: ${{ secrets.DOCKER_SECRET }}
+         token: ${{ secrets.GITHUB_TOKEN }}
 

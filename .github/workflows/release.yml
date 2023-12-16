@@ -131,7 +131,7 @@ jobs:
       image: 'sfp-lite-rc' 
     secrets:
       username: ${{ secrets.DOCKER_USERNAME }}
-      token: ${{ secrets.DOCKER_SECRET }}
+      token: ${{ secrets.GITHUB_TOKEN }}
     needs: [ build-docker ]
 
   beta-docker-lite:
@@ -144,7 +144,7 @@ jobs:
       image: 'sfp-rc'  
     secrets:
       username: ${{ secrets.DOCKER_USERNAME }}
-      token: ${{ secrets.DOCKER_SECRET }}
+      token: ${{ secrets.GITHUB_TOKEN }}
     needs: [ build-docker-lite ]
  
  
@@ -168,7 +168,7 @@ jobs:
       job-environment: 'sfpowerscripts-prod-docker'
     secrets:
       username: ${{ secrets.DOCKER_USERNAME }}
-      token: ${{ secrets.DOCKER_SECRET }}
+      token: ${{ secrets.GITHUB_TOKEN }}
       signing_secret: ${{ secrets.SIGNING_SECRET }}
       cosign_password:  ${{ secrets.COSIGN_PASSWORD }}
     needs: [ build-docker ]
@@ -182,7 +182,7 @@ jobs:
       image-as: sfp-lite
     secrets:
       username: ${{ secrets.DOCKER_USERNAME }}
-      token: ${{ secrets.DOCKER_SECRET }}
+      token: ${{ secrets.GITHUB_TOKEN }}
       signing_secret: ${{ secrets.SIGNING_SECRET }}
       cosign_password:  ${{ secrets.COSIGN_PASSWORD }}
     needs: [ build-docker-lite ]
