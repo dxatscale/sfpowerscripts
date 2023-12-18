@@ -221,7 +221,7 @@ export default class BuildImplEvents {
         // create initial build lists
         for (const [packageName, packageCharacter] of packageCharacterMap) {
             if (packageCharacter.hasError && !this.failedPackages.includes(packageName)) {
-                this.handlePackageError(packageCharacter.errorMessages.toString(), packageName);
+                this.handlePackageError(packageCharacter.errorMessages, packageName);
             }
             //fill source package creation promises
             if (
@@ -261,25 +261,9 @@ export default class BuildImplEvents {
             // check if the deps package has error , then the main will not be created and the main get the error message from deps
             if (packageCharacter.type === 'unlocked' && packageCharacter.hasError) {
                 if (!this.failedPackages.includes(packageName)) {
-                    this.handlePackageError(packageCharacter.errorMessages.toString(), packageName);
+                    this.handlePackageError(packageCharacter.errorMessages, packageName);
                 }
-                for (const dep of packageCharacter.buildDeps) {
-                    if (packageCharacterMap.has(dep) && packageCharacterMap.get(dep).hasError) {
-                        if (!packageCharacter.hasError) {
-                            packageCharacter.hasError = true;
-                            packageCharacter.errorMessages = `Dependend package ${packageName} has errors: ${
-                                packageCharacterMap.get(dep).errorMessages
-                            }. So build of this package is skipped`;
-
-                            this.handlePackageError(
-                                `Dependend package ${packageName} has errors: ${
-                                    packageCharacterMap.get(dep).errorMessages
-                                }. So build of this package is skipped`,
-                                packageName
-                            );
-                        }
-                    }
-                }
+                this.removeUnlockedPckFromQueue(packageName, packageCharacter.errorMessages, packageCharacterMap);
             }
 
             if (
@@ -333,60 +317,23 @@ export default class BuildImplEvents {
                                     }
                                 }
                             } else {
+                                if(!packageCharacter.hasError){
                                 packageCharacter.hasError = true;
                                 packageCharacter.errorMessages = `The build for this package was not completed in the wait time 240 minutes.`;
-
                                 this.handlePackageError(
                                     `The build for this package was not completed in the wait time 240 minutes.`,
                                     packageName
                                 );
-                                for (const [packageNameDep, packageCharacterDep] of packageCharacterMap) {
-                                    if (
-                                        packageCharacterDep.type === 'unlocked' &&
-                                        packageCharacterDep.buildDeps.includes(packageName) &&
-                                        !packageCharacterDep.hasError
-                                    ) {
-                                        SFPLogger.log(
-                                            COLOR_TRACE(
-                                                `👆 Delete package ${packageNameDep} from queue because the dependend package: ${packageName} runs on error`
-                                            ),
-                                            LoggerLevel.INFO
-                                        );
-                                        this.handlePackageError(
-                                            `Dependend package ${packageName} with errors:\nThe build for the depenend package was not completed in the wait time 240 minutes.`,
-                                            packageNameDep
-                                        );
-                                        packageCharacterMap.get(packageNameDep).hasError = true;
-                                        packageCharacterMap.get(
-                                            packageNameDep
-                                        ).errorMessages = `Dependend package ${packageName} with errors:\nThe build for the depenend package was not completed in the wait time 240 minutes.`;
-                                    }
+                                this.removeUnlockedPckFromQueue(packageName, `The build for this package was not completed in the wait time 240 minutes.`, packageCharacterMap);
                                 }
                             }
                         })
                         .catch((error) => {
+                            if(!packageCharacter.hasError){
                             packageCharacter.hasError = true;
                             packageCharacter.errorMessages = error;
                             this.handlePackageError(error, packageName);
-                            for (const [packageNameDep, packageCharacterDep] of packageCharacterMap) {
-                                if (
-                                    packageCharacterDep.type === 'unlocked' &&
-                                    packageCharacterDep.buildDeps.includes(packageName) &&
-                                    !packageCharacterDep.hasError
-                                ) {
-                                    SFPLogger.log(
-                                        COLOR_TRACE(
-                                            `👆 Delete package ${packageNameDep} from queue because the dependend package: ${packageName} runs on error`
-                                        ),
-                                        LoggerLevel.INFO
-                                    );
-                                    this.handlePackageError(
-                                        `Dependend package with errors ${packageName}:\n ${error}`,
-                                        packageNameDep
-                                    );
-                                    packageCharacterMap.get(packageNameDep).hasError = true;
-                                    packageCharacterMap.get(packageNameDep).errorMessages = error?.reason;
-                                }
+                            this.removeUnlockedPckFromQueue(packageName, error, packageCharacterMap);
                             }
                         })
                 );
@@ -435,27 +382,7 @@ export default class BuildImplEvents {
                 packageCharacterMap.get(packageTypeInfo.Name).hasError = true;
                 packageCharacterMap.get(packageTypeInfo.Name).errorMessages = results.Error.toString();
                 //now check if we have depened packages in pending state, then we can delete it from queue
-                for (const [packageName, packageCharacter] of packageCharacterMap) {
-                    if (
-                        packageCharacter.type === 'unlocked' &&
-                        packageCharacter.buildDeps.includes(packageTypeInfo.Name) &&
-                        !packageCharacter.hasError
-                    ) {
-                        SFPLogger.log(
-                            COLOR_ERROR(
-                                `👆 Delete package ${packageName} from queue because the dependend package: ${packageTypeInfo.Name} runs on error`
-                            ),
-                            LoggerLevel.INFO,
-                            this.logger
-                        );
-                        this.handlePackageError(
-                            `\nDependend package ${packageTypeInfo.Name} with errors:\n ${errorMessage}`,
-                            packageName
-                        );
-                        packageCharacterMap.get(packageName).hasError = true;
-                        packageCharacterMap.get(packageName).errorMessages = results.Error.toString();
-                    }
-                }
+                this.removeUnlockedPckFromQueue(packageTypeInfo.Name, errorMessage, packageCharacterMap);
             }
         );
 
@@ -533,53 +460,15 @@ export default class BuildImplEvents {
                                                 `The build for this package was not completed in the wait time 240 minutes.`,
                                                 packageName
                                             );
-                                            for (const [packageNameDep, packageCharacterDep] of packageCharacterMap) {
-                                                if (
-                                                    packageCharacterDep.type === 'unlocked' &&
-                                                    packageCharacterDep.buildDeps.includes(packageName) &&
-                                                    !packageCharacterDep.hasError
-                                                ) {
-                                                    SFPLogger.log(
-                                                        COLOR_ERROR(
-                                                            `👆 Delete package ${packageNameDep} from queue because the dependend package: ${packageName} runs on error`
-                                                        ),
-                                                        LoggerLevel.INFO
-                                                    );
-                                                    this.handlePackageError(
-                                                        `Dependend package ${packageName} with errors:\nThe build for the depenend package was not completed in the wait time 240 minutes.`,
-                                                        packageNameDep
-                                                    );
-                                                    packageCharacterMap.get(packageNameDep).hasError = true;
-                                                    packageCharacterMap.get(
-                                                        packageNameDep
-                                                    ).errorMessages = `Dependend package ${packageName} with errors:\nThe build for the depenend package was not completed in the wait time 240 minutes.`;
-                                                }
-                                            }
+                                            this.removeUnlockedPckFromQueue(packageName, `The build for this package was not completed in the wait time 240 minutes.`, packageCharacterMap);
                                         }
                                     })
                                     .catch((error) => {
+                                        if(!packageCharacter.hasError){
                                         packageCharacter.hasError = true;
                                         packageCharacter.errorMessages = error;
                                         this.handlePackageError(error, packageName);
-                                        for (const [packageNameDep, packageCharacterDep] of packageCharacterMap) {
-                                            if (
-                                                packageCharacterDep.type === 'unlocked' &&
-                                                packageCharacterDep.buildDeps.includes(packageName) &&
-                                                !packageCharacterDep.hasError
-                                            ) {
-                                                SFPLogger.log(
-                                                    COLOR_ERROR(
-                                                        `👆 Delete package ${packageNameDep} from queue because the dependend package: ${packageName} runs on error`
-                                                    ),
-                                                    LoggerLevel.INFO
-                                                );
-                                                this.handlePackageError(
-                                                    `Dependend package ${packageName} with errors:\n ${error}`,
-                                                    packageNameDep
-                                                );
-                                                packageCharacterMap.get(packageNameDep).hasError = true;
-                                                packageCharacterMap.get(packageNameDep).errorMessages = error?.reason;
-                                            }
+                                        this.removeUnlockedPckFromQueue(packageName, error, packageCharacterMap);
                                         }
                                     })
                             );
@@ -600,6 +489,33 @@ export default class BuildImplEvents {
             generatedPackages: this.generatedPackages,
             failedPackages: this.failedPackages,
         };
+    }
+
+     /*************************************************************************************************************************************************
+        Helper to remove all unlocked pck from queue when a main pck runs on error
+    *************************************************************************************************************************************************/
+
+    private removeUnlockedPckFromQueue(packageName: string,errorMsg: any, packageCharacterMap: Map<string, PackageCharacter>) {
+        for (const [packageNameDep, packageCharacterDep] of packageCharacterMap) {
+            if (
+                packageCharacterDep.type === 'unlocked' &&
+                packageCharacterDep.buildDeps.includes(packageName) &&
+                !packageCharacterDep.hasError
+            ) {
+                SFPLogger.log(
+                    COLOR_TRACE(
+                        `👆 Remove package ${packageNameDep} from build job because the dependend package: ${packageName} runs on error`
+                    ),
+                    LoggerLevel.INFO
+                );
+                this.handlePackageError(
+                    `Dependend package with errors ${packageName}:\n ${errorMsg}`,
+                    packageNameDep
+                );
+                packageCharacterMap.get(packageNameDep).hasError = true;
+                packageCharacterMap.get(packageNameDep).errorMessages = errorMsg?.reason;
+            }
+        }
     }
 
     /*************************************************************************************************************************************************
@@ -739,6 +655,7 @@ export default class BuildImplEvents {
         }
 
         //Remove myself and my  childs
+        
         this.failedPackages.push(pkg);
         SFPStatsSender.logCount('build.failed.packages', { package: pkg });
 
