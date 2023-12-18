@@ -1,6 +1,7 @@
 import {SfProject, SfProjectJson} from '@salesforce/core'
 import {ensureArray} from '@salesforce/ts-types'
 import SFPLogger, { LoggerLevel, COLOR_KEY_VALUE, COLOR_TRACE } from '@dxatscale/sfp-logger';
+import SFPOrg from '../../org/SFPOrg';
 
 
 import {NamedPackageDirLarge, PackageCharacter} from './types'
@@ -10,12 +11,18 @@ import DependencyCheck from './dependency-check.js'
 
 import ValidateDiff from './validate.js'
 export class BuildGeneration {
+  private devHubAlias: string
+  constructor(devHubAlias: string) {
+    this.devHubAlias = devHubAlias
+  }
   public async run(includeOnlyPackages: string[]): Promise<Map<string, PackageCharacter>> {
     SFPLogger.log(
       COLOR_KEY_VALUE(
         'Loop sfdx-project.json package trees to search for modified files or package tree changes in git...',
       ),LoggerLevel.INFO
     )
+
+    const eventCommits = await getCommitsFromDevHub(this.devHubAlias);
 
     // get sfdx project.json
     const project = await SfProject.resolve()
@@ -59,6 +66,17 @@ export class BuildGeneration {
    
     return packageMap
   }
+}
+
+async function getCommitsFromDevHub(devHubAlias: string): Promise<Map<string, string>>{
+   const commitPackageMap = new Map<string, string>()
+   let devhubOrg = await SFPOrg.create({ aliasOrUsername: this.packageCreationParams.devHub });
+   let connection = devhubOrg.getConnection();
+   let packageBatchList = await connection.autoFetchQuery<T>(
+    `select Name,VersionFT__c,VersionEdgSit__c,VersionEwiSit__c,VersionPreProd__c,VersionProd__c from Package__c`
+   );
+   let packageList = packageBatchList.records ? packageBatchList.records : [];
+   return commitPackageMap
 }
 
 async function processPackage(
@@ -134,4 +152,5 @@ async function processPackage(
     packageCharacter.hasDepsChanges = hasPackageDepsChanges
     packageMap.set(pck.package!, packageCharacter)
   }
+
 }
