@@ -493,9 +493,10 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
 					}
 					else {
 						if (!props.disableSourcePackageOverride) {
-							if (ProjectConfig.getPackageType(projectConfig, pkg) != PackageType.Data || ProjectConfig.getPackageType(projectConfig, pkg) != PackageType.Diff)
+              if(ProjectConfig.getPackageType(projectConfig, pkg) == PackageType.Unlocked)
+							{
 								overridedPackages[pkg] = PackageType.Source
-						}
+							}
 					}
 				}
 			}
