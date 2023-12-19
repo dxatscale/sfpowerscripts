@@ -29,7 +29,7 @@ export default class MetadataFetcher {
         if (!metadata_retrieve_result.zipFile)
             SFPLogger.log('Unable to find the requested metadata', LoggerLevel.ERROR, this.logger);
 
-        let retriveLocation = `.sfp/retrieved/${retrievedId.id}`;
+        let retriveLocation = `.sfpowerscripts/retrieved/${retrievedId.id}`;
         //Extract Security
         let zipFileName = `${retriveLocation}/unpackaged_${makeRandomId(8)}.zip`;
         fs.mkdirpSync(retriveLocation);

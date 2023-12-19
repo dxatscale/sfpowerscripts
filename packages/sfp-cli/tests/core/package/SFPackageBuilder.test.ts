@@ -52,7 +52,7 @@ jest.mock('../../../src/core/package/generators/SfpPackageContentGenerator', () 
             configFilePath?: string,
             pathToReplacementForceIgnore?: string
         ): Promise<string> {
-            return '.sfp/3sIRD_source';
+            return '.sfpowerscripts/3sIRD_source';
         }
     }
 

@@ -23,7 +23,7 @@ export default class SfpPackageContentGenerator {
         revisionFrom?: string,
         revisionTo?: string
     ): Promise<string> {
-        let artifactDirectory: string = `.sfp/${this.makefolderid(5)}_source`,
+        let artifactDirectory: string = `.sfpowerscripts/${this.makefolderid(5)}_source`,
             rootDirectory: string;
 
         if (projectDirectory) {

@@ -80,7 +80,7 @@ export default class ChangedComponentsFetcher {
     private getComponentSuccessesFromReports(): any[] {
         let componentSuccesses: any[] = [];
 
-        const reportsDir: string = '.sfp/mdapiDeployReports';
+        const reportsDir: string = '.sfpowerscripts/mdapiDeployReports';
         if (fs.existsSync(reportsDir)) {
             let reports = fs.readdirSync(reportsDir);
             reports.forEach((report) => {

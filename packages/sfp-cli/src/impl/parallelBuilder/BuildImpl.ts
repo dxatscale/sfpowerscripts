@@ -445,11 +445,11 @@ export default class BuildImpl {
 		SFPLogger.log(COLOR_ERROR(`Package Creation Failed for ${pkg}, Here are the details:`));
 		try {
 			// Append error to log file
-			fs.appendFileSync(`.sfp/logs/${pkg}`, reason.message, "utf8");
-			let data = fs.readFileSync(`.sfp/logs/${pkg}`, "utf8");
+			fs.appendFileSync(`.sfpowerscripts/logs/${pkg}`, reason.message, "utf8");
+			let data = fs.readFileSync(`.sfpowerscripts/logs/${pkg}`, "utf8");
 
-			const pathToMarkDownFile = `.sfp/outputs/build-error-info.md`;
-			fs.mkdirpSync(".sfp/outputs");
+			const pathToMarkDownFile = `.sfpowerscripts/outputs/build-error-info.md`;
+			fs.mkdirpSync(".sfpowerscripts/outputs");
 			fs.createFileSync(pathToMarkDownFile);
 			fs.appendFileSync(pathToMarkDownFile, `\nPlease find the errors observed during build\n\n`);
 			fs.appendFileSync(pathToMarkDownFile, `## ${pkg}\n\n`);
@@ -755,7 +755,7 @@ export default class BuildImpl {
 
 
 		return SfpPackageBuilder.buildPackageFromProjectDirectory(
-			new FileLogger(`.sfp/logs/${sfdx_package}`),
+			new FileLogger(`.sfpowerscripts/logs/${sfdx_package}`),
 			this.props.projectDirectory,
 			sfdx_package,
 			{

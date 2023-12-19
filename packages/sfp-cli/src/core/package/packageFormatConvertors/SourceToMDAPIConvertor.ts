@@ -11,7 +11,7 @@ export default class SourceToMDAPIConvertor {
     ) {}
 
     public async convert() {
-        let mdapiDir = `.sfp/${this.makefolderid(5)}_mdapi`;
+        let mdapiDir = `.sfpowerscripts/${this.makefolderid(5)}_mdapi`;
         //Create destination directory
         if (this.projectDirectory != null) mdapiDir = path.resolve(this.projectDirectory, mdapiDir);
 

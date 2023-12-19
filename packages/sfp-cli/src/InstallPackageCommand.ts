@@ -86,6 +86,6 @@ export default abstract class InstallPackageCommand extends sfpCommand {
      */
     private postInstall(): void {
         // Delete temp directory containing unzipped artifacts
-        rimraf.sync('.sfp/unzippedArtifacts');
+        rimraf.sync('.sfpowerscripts/unzippedArtifacts');
     }
 }

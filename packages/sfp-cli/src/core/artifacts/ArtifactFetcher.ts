@@ -64,7 +64,7 @@ export default class ArtifactFetcher {
      * @param artifact
      */
     private static fetchArtifactFilePathsFromZipFile(artifact: string): Artifact {
-        let unzippedArtifactsDirectory: string = `.sfp/unzippedArtifacts/${this.makefolderid(8)}`;
+        let unzippedArtifactsDirectory: string = `.sfpowerscripts/unzippedArtifacts/${this.makefolderid(8)}`;
 
         fs.mkdirpSync(unzippedArtifactsDirectory);
         let zip = new AdmZip(artifact);
@@ -99,7 +99,7 @@ export default class ArtifactFetcher {
      * @param artifact
      */
     private static fetchArtifactFilePathsFromTarball(artifact: string): Artifact {
-        let unzippedArtifactsDirectory: string = `.sfp/unzippedArtifacts/${this.makefolderid(8)}`;
+        let unzippedArtifactsDirectory: string = `.sfpowerscripts/unzippedArtifacts/${this.makefolderid(8)}`;
         fs.mkdirpSync(unzippedArtifactsDirectory);
 
         tar.x({

@@ -16,7 +16,7 @@ export default abstract class PoolJobExecutor {
         hubOrg: Org,
         logLevel: LoggerLevel
     ): Promise<Result<ScriptExecutionResult, JobError>> {
-        this.logToFilePath = `.sfp/prepare_logs/${scratchOrg.alias}.log`;
+        this.logToFilePath = `.sfpowerscripts/prepare_logs/${scratchOrg.alias}.log`;
         //Create file logger
         fs.outputFileSync(this.logToFilePath, `sfp--log${EOL}`);
         SFPLogger.log(`Preparation Log files for ${scratchOrg.username} written to ${this.logToFilePath}`);
