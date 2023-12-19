@@ -106,19 +106,19 @@ export default class InstallSourcePackage extends InstallPackageCommand {
                     if (this.flags.refname) {
                         fs.writeFileSync(
                             '.env',
-                            `${this.flags.refname}_sfp_installsourcepackage_deployment_id=${result.deploy_id}\n`,
+                            `${this.flags.refname}_sfpowerscripts_installsourcepackage_deployment_id=${result.deploy_id}\n`,
                             { flag: 'a' }
                         );
                         console.log(
-                            `${this.flags.refname}_sfp_installsourcepackage_deployment_id=${result.deploy_id}`
+                            `${this.flags.refname}_sfpowerscripts_installsourcepackage_deployment_id=${result.deploy_id}`
                         );
                     } else {
                         fs.writeFileSync(
                             '.env',
-                            `sfp_installsourcepackage_deployment_id=${result.deploy_id}\n`,
+                            `sfpowerscripts_installsourcepackage_deployment_id=${result.deploy_id}\n`,
                             { flag: 'a' }
                         );
-                        console.log(`sfp_installsourcepackage_deployment_id=${result.deploy_id}`);
+                        console.log(`sfpowerscripts_installsourcepackage_deployment_id=${result.deploy_id}`);
                     }
                 }
             }

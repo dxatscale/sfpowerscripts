@@ -140,7 +140,7 @@ export default class Promote extends sfpCommand {
             let artifactFilePaths = ArtifactFetcher.fetchArtifacts(this.flags.artifactdir);
 
             // Pattern captures two named groups, the "package" name and "version" number
-            let pattern = new RegExp('(?<package>^.*)(?:_sfp_artifact_)(?<version>.*)(?:\\.zip)');
+            let pattern = new RegExp('(?<package>^.*)(?:_sfpowerscripts_artifact_)(?<version>.*)(?:\\.zip)');
             for (let artifact of artifacts) {
                 let packageName: string;
                 let packageVersionNumber: string;
@@ -261,7 +261,7 @@ export default class Promote extends sfpCommand {
         let artifactRootDirectory = path.dirname(sfpPackage.sourceDir);
 
         // NPM does not accept packages with uppercase characters
-        let name: string = sfpPackage.packageName.toLowerCase() + '_sfp_artifact';
+        let name: string = sfpPackage.packageName.toLowerCase() + '_sfpowerscriptsartifact';
 
         //Check whether the user has already passed in @
 

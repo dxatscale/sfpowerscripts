@@ -72,7 +72,7 @@ export default class ArtifactFetcher {
         // Overwrite existing files
         zip.extractAllTo(unzippedArtifactsDirectory, true);
 
-        let artifactName: string = path.basename(artifact).match(/.*sfp_artifact/)?.[0];
+        let artifactName: string = path.basename(artifact).match(/.*sfpowerscripts_artifact/)?.[0];
         if (artifactName == null) {
             throw new Error(`Failed to fetch artifact file paths for ${artifact}`);
         }
@@ -128,16 +128,16 @@ export default class ArtifactFetcher {
     /**
      * Find zip and tarball artifacts
      * Artifact format/s:
-     * sfp_artifact_<version>.zip,
-     * [sfdx_package]_sfp_artifact_[version].zip,
-     * [sfdx_package]_sfp_artifact_[version].tgz
+     * sfpowerscripts_artifact_<version>.zip,
+     * [sfdx_package]_sfpowerscripts_artifact_[version].zip,
+     * [sfdx_package]_sfpowerscripts_artifact_[version].tgz
      */
     public static findArtifacts(artifactDirectory: string, sfdx_package?: string): string[] {
         let pattern: string;
         if (sfdx_package) {
-            pattern = `**/*${sfdx_package}_sfp_artifact*.@(zip|tgz)`;
+            pattern = `**/*${sfdx_package}_sfpowerscripts_artifact*.@(zip|tgz)`;
         } else {
-            pattern = `**/*sfp_artifact*.@(zip|tgz)`;
+            pattern = `**/*sfpowerscripts_artifact*.@(zip|tgz)`;
         }
 
         let artifacts: string[] = globSync(pattern, {
@@ -164,7 +164,7 @@ export default class ArtifactFetcher {
             return ext === '.zip' || ext === '.tgz';
         });
 
-        let pattern = new RegExp('(?:^.*)(?:_sfp_artifact[_-])(?<version>.*)(?:\\.zip|\\.tgz)$');
+        let pattern = new RegExp('(?:^.*)(?:_sfpowerscripts_artifact[_-])(?<version>.*)(?:\\.zip|\\.tgz)$');
         let versions: string[] = artifacts.map((artifact) => {
             let match: RegExpMatchArray = path.basename(artifact).match(pattern);
             let version = match?.groups.version;

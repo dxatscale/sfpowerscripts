@@ -39,7 +39,7 @@ export default abstract class sfpCommand extends Command {
      */
     async run(): Promise<any> {
         //Always enable color by default
-        if (process.env.sfp_NOCOLOR) SFPLogger.disableColor();
+        if (process.env.SFPOWERSCRIPTS_NOCOLOR) SFPLogger.disableColor();
         else SFPLogger.enableColor();
 
        
@@ -121,32 +121,32 @@ export default abstract class sfpCommand extends Command {
 
 
     private initializeStatsD() {
-        if (process.env.sfp_STATSD) {
+        if (process.env.SFPOWERSCRIPTS_STATSD) {
             SFPStatsSender.initialize(
-                process.env.sfp_STATSD_PORT,
-                process.env.sfp_STATSD_HOST,
-                process.env.sfp_STATSD_PROTOCOL
+                process.env.SFPOWERSCRIPTS_STATSD_PORT,
+                process.env.SFPOWERSCRIPTS_STATSD_HOST,
+                process.env.SFPOWERSCRIPTS_STATSD_PROTOCOL
             );
         }
-        if (process.env.sfp_DATADOG) {
+        if (process.env.SFPOWERSCRIPTS_DATADOG) {
             SFPStatsSender.initializeNativeMetrics(
                 'DataDog',
-                process.env.sfp_DATADOG_HOST,
-                process.env.sfp_DATADOG_API_KEY,
+                process.env.SFPOWERSCRIPTS_DATADOG_HOST,
+                process.env.SFPOWERSCRIPTS_DATADOG_API_KEY,
                 new ConsoleLogger()
             );
-        } else if (process.env.sfp_NEWRELIC) {
+        } else if (process.env.SFPOWERSCRIPTS_NEWRELIC) {
             SFPStatsSender.initializeNativeMetrics(
                 'NewRelic',
                 null,
-                process.env.sfp_NEWRELIC_API_KEY,
+                process.env.SFPOWERSCRIPTS_NEWRELIC_API_KEY,
                 new ConsoleLogger()
             );
-        } else if (process.env.sfp_SPLUNK) {
+        } else if (process.env.SFPOWERSCRIPTS_SPLUNK) {
             SFPStatsSender.initializeNativeMetrics(
                 'Splunk',
-                process.env.sfp_SPLUNK_HOST,
-                process.env.sfp_SPLUNK_API_KEY,
+                process.env.SFPOWERSCRIPTS_SPLUNK_HOST,
+                process.env.SFPOWERSCRIPTS_SPLUNK_API_KEY,
                 new ConsoleLogger()
             );
         }

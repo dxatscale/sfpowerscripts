@@ -107,9 +107,9 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
 			} else if (
 				this.props.validateAgainst === ValidateAgainst.PRECREATED_POOL
 			) {
-				if (process.env.sfp_DEBUG_PREFETCHED_SCRATCHORG)
+				if (process.env.SFPOWERSCRIPTS_DEBUG_PREFETCHED_SCRATCHORG)
 					scratchOrgUsername =
-						process.env.sfp_DEBUG_PREFETCHED_SCRATCHORG;
+						process.env.SFPOWERSCRIPTS_DEBUG_PREFETCHED_SCRATCHORG;
 				else
 					scratchOrgUsername = await this.fetchScratchOrgFromPool(
 						this.props.pools,

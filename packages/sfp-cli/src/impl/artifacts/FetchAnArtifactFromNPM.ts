@@ -40,8 +40,8 @@ export class FetchAnArtifactFromNPM implements FetchAnArtifact {
             packageName = packageName.toLowerCase();
 
             let cmd: string;
-            if (this.scope) cmd = `npm pack @${this.scope.toLowerCase()}/${packageName}_sfp_artifact`;
-            else cmd = `npm pack ${packageName}_sfp_artifact`;
+            if (this.scope) cmd = `npm pack @${this.scope.toLowerCase()}/${packageName}_sfpowerscripts_artifact`;
+            else cmd = `npm pack ${packageName}_sfpowerscripts_artifact`;
 
             cmd += `@${version}`;
 

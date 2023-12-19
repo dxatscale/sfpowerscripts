@@ -25,7 +25,7 @@ import ProjectConfig from '../../core/project/ProjectConfig';
 import { FileLogger } from '@flxblio/sfp-logger';
 const fs = require('fs-extra');
 
-const sfp_ARTIFACT_PACKAGE = '04t1P000000ka9mQAA';
+const SFPOWERSCRIPTS_ARTIFACT_PACKAGE = '04t1P000000ka9mQAA';
 export default class PrepareOrgJob extends PoolJobExecutor implements PreDeployHook {
     public constructor(
         protected pool: PoolConfig,
@@ -145,22 +145,22 @@ export default class PrepareOrgJob extends PoolJobExecutor implements PreDeployH
         logger: Logger,
         packageCollectionInstaller: InstallUnlockedPackageCollection
     ) {
-        SFPLogger.log(`Installing sfp_artifact package to the ${scratchOrg.alias}`, null, logger);
+        SFPLogger.log(`Installing sfpowerscripts_artifact package to the ${scratchOrg.alias}`, null, logger);
 
         //Install sfp artifact package
         await packageCollectionInstaller.install(
             [
                 {
-                    name: 'sfp_artifact2',
-                    subscriberPackageVersionId: process.env.sfp_ARTIFACT_PACKAGE
-                        ? process.env.sfp_ARTIFACT_PACKAGE
-                        : sfp_ARTIFACT_PACKAGE,
+                    name: 'SFPOWERSCRIPTS_artifact2',
+                    subscriberPackageVersionId: process.env.SFPOWERSCRIPTS_ARTIFACT_PACKAGE
+                        ? process.env.SFPOWERSCRIPTS_ARTIFACT_PACKAGE
+                        : SFPOWERSCRIPTS_ARTIFACT_PACKAGE,
                 },
             ],
             true
         );
 
-        SFPLogger.log(`Suscessfully Installed sfp_artifact package to the ${scratchOrg.alias}`, null, logger);
+        SFPLogger.log(`Suscessfully Installed SFPOWERSCRIPTS_artifact package to the ${scratchOrg.alias}`, null, logger);
     }
 
     private async invokeDeployImpl(

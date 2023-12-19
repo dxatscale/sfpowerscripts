@@ -17,7 +17,7 @@ export default class SFPStatsSender {
             host: host,
             port: port == null ? 8125 : Number(port),
             protocol: protocol == 'tcp' ? 'tcp' : 'udp',
-            prefix: 'sfp.',
+            prefix: 'sfpowerscripts.',
         };
         SFPStatsSender.client = new StatsDClient(options);
     }
@@ -46,8 +46,8 @@ export default class SFPStatsSender {
 
     static initializeLogBasedMetrics() {
         try {
-            fs.mkdirpSync('.sfp/logs');
-            SFPStatsSender.metricsLogger = `.sfp/logs/metrics.log`;
+            fs.mkdirpSync('.sfpowerscripts/logs');
+            SFPStatsSender.metricsLogger = `.sfpowerscripts/logs/metrics.log`;
         } catch (error) {
             console.log('Unable to initiate Log based metrics', error);
         }
@@ -62,7 +62,7 @@ export default class SFPStatsSender {
         }
 
         let metrics = {
-            metric: `sfp.${metric}`,
+            metric: `sfpowerscripts.${metric}`,
             type: `timers`,
             value: elapsedMilliSeconds,
             timestamp: Date.now(),
@@ -80,7 +80,7 @@ export default class SFPStatsSender {
         }
 
         let metrics = {
-            metric: `sfp.${metric}`,
+            metric: `sfpowerscripts.${metric}`,
             type: `guage`,
             value: value,
             timestamp: Date.now(),
@@ -98,7 +98,7 @@ export default class SFPStatsSender {
         }
 
         let metrics = {
-            metric: `sfp.${metric}`,
+            metric: `sfpowerscripts.${metric}`,
             type: `count`,
             timestamp: Date.now(),
             tags: tags,

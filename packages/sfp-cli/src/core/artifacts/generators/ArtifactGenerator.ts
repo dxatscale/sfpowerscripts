@@ -16,7 +16,7 @@ export default class ArtifactGenerator {
     ): Promise<string> {
         try {
             // Artifact folder consisting of artifact metadata, changelog & source
-            let artifactFolder: string = `${sfpPackage.packageName}_sfp_artifact`;
+            let artifactFolder: string = `${sfpPackage.packageName}_sfpowerscripts_artifact`;
 
             // Absolute filepath of artifact
             let artifactFilepath: string;

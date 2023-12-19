@@ -11,8 +11,8 @@ export default class GitIdentity {
     private async setUsername(): Promise<void> {
         let username: string;
 
-        if (process.env.sfp_GIT_USERNAME) {
-            username = process.env.sfp_GIT_USERNAME;
+        if (process.env.SFPOWERSCRIPTS_GIT_USERNAME) {
+            username = process.env.SFPOWERSCRIPTS_GIT_USERNAME;
         } else {
             username = 'sfp';
         }
@@ -23,8 +23,8 @@ export default class GitIdentity {
     private async setEmail(): Promise<void> {
         let email: string;
 
-        if (process.env.sfp_GIT_EMAIL) {
-            email = process.env.sfp_GIT_EMAIL;
+        if (process.env.SFPOWERSCRIPTS_GIT_EMAIL) {
+            email = process.env.SFPOWERSCRIPTS_GIT_EMAIL;
         } else {
             email = 'sfp@flxblio.io';
         }

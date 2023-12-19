@@ -75,10 +75,10 @@ export default class Report extends sfpCommand {
   private validateEnvVars() {
     if (
       !(
-        process.env.sfp_STATSD ||
-        process.env.sfp_DATADOG ||
-        process.env.sfp_NEWRELIC ||
-        process.env.sfp_SPLUNK
+        process.env.SFPOWERSCRIPTS_STATSD ||
+        process.env.SFPOWERSCRIPTS_STATSD_DATADOG ||
+        process.env.SFPOWERSCRIPTS_STATSD_NEWRELIC ||
+        process.env.SFPOWERSCRIPTS_STATSD_SPLUNK
       )
     ) {
       throw new Error('Environment variable not set for metrics. No metrics will be published.');
