@@ -1,6 +1,6 @@
 {
     "name": "@flxblio/forcemula",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "Extract fields from Salesforce formulas",
     "main": "src/index.js",
     "scripts": {

@@ -1,6 +1,6 @@
 {
     "name": "@flxblio/apexlink",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "description": "Wrappers around @nawforce's apexlink java pom ",
     "author": "flxblio",
     "homepage": "https://github.com/flxbl-io/sfp",
@@ -12,8 +12,8 @@
         "/jars"
     ],
     "dependencies": {
-        "@flxblio/sfdx-process-wrapper": "^1.0.2",
-        "@flxblio/sfp-logger": "^2.1.2",
+        "@flxblio/sfdx-process-wrapper": "^1.0.3",
+        "@flxblio/sfp-logger": "^2.1.3",
         "find-java-home": "2.0.0",
         "fs-extra": "11.1.1"
     },

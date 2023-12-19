@@ -1,6 +1,6 @@
 {
     "name": "@flxblio/sfdx-process-wrapper",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "description": "Wraps around SFDXCommand to exeute it using a subprocess",
     "author": "flxbl",
     "homepage": "https://github.com/flxbl-io/sfp#readme",
@@ -11,7 +11,7 @@
         "lib": "lib"
     },
     "dependencies": {
-        "@flxblio/sfp-logger": "^2.1.2",
+        "@flxblio/sfp-logger": "^2.1.3",
         "fs-extra": "^9.1.0"
     },
     "devDependencies": {
