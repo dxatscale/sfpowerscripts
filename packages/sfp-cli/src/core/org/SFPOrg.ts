@@ -14,8 +14,8 @@ export default class SFPOrg extends Org {
     public async getInstalledArtifacts(orderBy: string = `CreatedDate`,logger?:Logger) {
         let records=[]
         try {
-             records = await QueryHelper.query<sfpArtifact2__c>(
-                `SELECT Id, Name, CommitId__c, Version__c, Tag__c FROM sfpArtifact2__c ORDER BY ${orderBy} ASC`,
+             records = await QueryHelper.query<SfpowerscriptsArtifact2__c>(
+                `SELECT Id, Name, CommitId__c, Version__c, Tag__c FROM SfpowerscriptsArtifact2__c ORDER BY ${orderBy} ASC`,
                 this.getConnection(),
                 false
             );
@@ -23,7 +23,7 @@ export default class SFPOrg extends Org {
         } catch (error) {
             SFPLogger.log(
                 'Unable to fetch any sfp artifacts in the org\n' +
-                    '1. sfp package is not installed in the org\n' +
+                    '1. sfpowerscripts artifact package is not installed in the org\n' +
                     '2. The required prerequisite object is not deployed to this org\n',
                 LoggerLevel.WARN,
                 logger
@@ -91,7 +91,7 @@ export default class SFPOrg extends Org {
         if (artifactId == null) {
             artifactId = await ObjectCRUDHelper.createRecord(
                 this.getConnection(),
-                'sfpArtifact2__c',
+                'SfpowerscriptsArtifact2__c',
                 {
                     Name: packageName,
                     Tag__c: sfpPackage.tag,
@@ -102,7 +102,7 @@ export default class SFPOrg extends Org {
         } else {
             artifactId = await ObjectCRUDHelper.updateRecord(
                 this.getConnection(),
-                'sfpArtifact2__c',
+                'SfpowerscriptsArtifact2__c',
                 {
                     Id: artifactId,
                     Name: packageName,
@@ -253,7 +253,7 @@ export interface InstalledArtifact {
     isInstalledBysfp?: boolean;
 }
 
-export interface sfpArtifact2__c {
+export interface SfpowerscriptsArtifact2__c {
     Id?: string;
     Name: string;
     Tag__c: string;
