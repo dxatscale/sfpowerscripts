@@ -477,31 +477,27 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
 
 
 		function computePackageOverrides(props: ValidateProps): { [key: string]: PackageType } {
-			let overridedPackages: { [key: string]: PackageType } = {};
-			const allPackages = ProjectConfig.getAllPackages(null);
-			const projectConfig = ProjectConfig.getSFDXProjectConfig(null);
-			for (const pkg of allPackages) {
-
-				if (ProjectConfig.getPackageType(projectConfig, pkg) !== PackageType.Data) {
-					if (
-						props.validationMode ===
-						ValidationMode.FASTFEEDBACK_LIMITED_BY_RELEASE_CONFIG ||
-						props.validationMode ===
-						ValidationMode.FAST_FEEDBACK
-					) {
-						overridedPackages[pkg] = PackageType.Diff
-					}
-					else {
-						if (!props.disableSourcePackageOverride) {
-              if(ProjectConfig.getPackageType(projectConfig, pkg) == PackageType.Unlocked)
-							{
-								overridedPackages[pkg] = PackageType.Source
-							}
-					}
-				}
-			}
-			return overridedPackages;
-		}
+            let overridedPackages: { [key: string]: PackageType } = {};
+            const allPackages = ProjectConfig.getAllPackages(null);
+            const projectConfig = ProjectConfig.getSFDXProjectConfig(null);
+            for (const pkg of allPackages) {
+                if (ProjectConfig.getPackageType(projectConfig, pkg) !== PackageType.Data) {
+                    if (
+                        props.validationMode === ValidationMode.FASTFEEDBACK_LIMITED_BY_RELEASE_CONFIG ||
+                        props.validationMode === ValidationMode.FAST_FEEDBACK
+                    ) {
+                        overridedPackages[pkg] = PackageType.Diff;
+                    } else {
+                        if (!props.disableSourcePackageOverride) {
+                            if (ProjectConfig.getPackageType(projectConfig, pkg) == PackageType.Unlocked) {
+                                overridedPackages[pkg] = PackageType.Source;
+                            }
+                        }
+                    }
+                }
+            }
+            return overridedPackages;
+        }
 
 		function fetchPackagesAsPerReleaseConfig(
 			logger: Logger,
