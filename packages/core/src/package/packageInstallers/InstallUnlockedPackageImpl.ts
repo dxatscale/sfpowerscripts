@@ -4,6 +4,7 @@ import SFPOrg from '../../org/SFPOrg';
 import { PackageInstallCreateRequest, PackagingSObjects, SubscriberPackageVersion } from '@salesforce/packaging';
 import { delay } from '../../utils/Delay';
 import { SfpPackageInstallationOptions } from './InstallPackage';
+import { ReleaseStreamService } from '../../eventStream/release';
 
 
 
@@ -88,6 +89,7 @@ export default class InstallUnlockedPackageImpl {
                 errorMessage = 'Installation errors: ';
                 for (let i = 0; i < errors.length; i++) {
                     errorMessage += `\n${i + 1}) ${errors[i].message}`;
+                    ReleaseStreamService.buildDeployErrorsMsg(pkgName, '', 'Installation Error', errors[i].message);
                 }
             }
             throw new Error(`Unable to install ${pkgName} due to \n` + errorMessage);

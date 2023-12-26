@@ -27,6 +27,7 @@ import ReleaseConfig from '../release/ReleaseConfig';
 import fs from 'fs-extra';
 import { Align, getMarkdownTable } from 'markdown-table-ts';
 import FileOutputHandler from '../../outputs/FileOutputHandler';
+import { ReleaseStreamService } from '@dxatscale/sfpowerscripts.core/lib/eventStream/release';
 
 
 const Table = require('cli-table');
@@ -153,6 +154,7 @@ export default class DeployImpl {
             for (let i = 0; i < queue.length; i++) {
                 let packageInfo = packagesToPackageInfo[queue[i].packageName];
                 let sfpPackage: SfpPackage = packageInfo.sfpPackage;
+                ReleaseStreamService.buildStatusProgress(sfpPackage);
 
                 let packageType: string = sfpPackage.packageType;
 
@@ -184,7 +186,16 @@ export default class DeployImpl {
                     this.props.logger
                 );
                 if (preHookStatus?.isToFailDeployment) {
-                    failed = queue.slice(i).map((pkg) => packagesToPackageInfo[pkg.packageName]);
+                    ReleaseStreamService.buildDeployErrorsPkg(sfpPackage.packageName);
+                    failed = queue.slice(i).map((pkg) => {
+                        ReleaseStreamService.sendPackageError(
+                            pkg.packageName,
+                            preHookStatus.message
+                                ? preHookStatus.message
+                                : 'Hook Failed to execute, but didnt provide proper message'
+                        );
+                        return packagesToPackageInfo[pkg.packageName];
+                        });
                     throw new Error(
                         preHookStatus.message
                             ? preHookStatus.message
@@ -268,7 +279,10 @@ export default class DeployImpl {
                 } else if (packageInstallationResult.result === PackageInstallationStatus.Skipped) {
                     continue;
                 } else if (packageInstallationResult.result === PackageInstallationStatus.Failed) {
-                    failed = queue.slice(i).map((pkg) => packagesToPackageInfo[pkg.packageName]);
+                    ReleaseStreamService.buildDeployErrorsPkg(sfpPackage.packageName);
+                    failed = queue.slice(i).map((pkg) => {
+                       return packagesToPackageInfo[pkg.packageName]
+                    });
                 }
 
                 // Only deploy post hook when package installation is successful
@@ -283,7 +297,16 @@ export default class DeployImpl {
                     );
 
                     if (postHookStatus?.isToFailDeployment) {
-                        failed = queue.slice(i).map((pkg) => packagesToPackageInfo[pkg.packageName]);
+                        ReleaseStreamService.buildDeployErrorsPkg(sfpPackage.packageName);
+                        failed = queue.slice(i).map((pkg) => {
+                            ReleaseStreamService.sendPackageError(
+                                pkg.packageName,
+                                postHookStatus.message
+                                    ? postHookStatus.message
+                                    : 'Hook Failed to execute, but didnt provide proper message'
+                            );
+                            return packagesToPackageInfo[pkg.packageName];
+                        });
                         throw new Error(
                             postHookStatus.message
                                 ? postHookStatus.message
@@ -293,9 +316,15 @@ export default class DeployImpl {
                 }
 
                 if (packageInstallationResult.result === PackageInstallationStatus.Failed) {
-                    failed = queue.slice(i).map((pkg) => packagesToPackageInfo[pkg.packageName]);
+                    ReleaseStreamService.buildDeployErrorsPkg(sfpPackage.packageName);
+                    failed = queue.slice(i).map((pkg) => {
+                        ReleaseStreamService.sendPackageError(pkg.packageName, packageInstallationResult.message);
+                        return packagesToPackageInfo[pkg.packageName]
+                    });
                     throw new Error(packageInstallationResult.message);
                 }
+
+                ReleaseStreamService.sendPackageSuccess(packageInfo.sfpPackage);
 
                 groupSection.end();
             }
@@ -491,7 +520,7 @@ export default class DeployImpl {
         });
 
         queue.forEach((pkg) => {
-            if (!packagesToPackageInfo[pkg.packageName].isPackageInstalled)
+            if (!packagesToPackageInfo[pkg.packageName].isPackageInstalled){
                 minTable.push([
                     COLOR_KEY_MESSAGE(pkg.packageName),
                     COLOR_KEY_MESSAGE(pkg.versionNumber),
@@ -499,6 +528,15 @@ export default class DeployImpl {
                         ? COLOR_KEY_MESSAGE(packagesToPackageInfo[pkg.packageName].versionInstalledInOrg)
                         : COLOR_KEY_MESSAGE('N/A'),
                 ]);
+                ReleaseStreamService.buildPackageInitialitation(
+                    pkg.packageName,
+                    pkg.versionNumber,
+                    packagesToPackageInfo[pkg.packageName].versionInstalledInOrg
+                        ? COLOR_KEY_MESSAGE(packagesToPackageInfo[pkg.packageName].versionInstalledInOrg)
+                        : COLOR_KEY_MESSAGE('N/A'),
+                    pkg.package_type
+                );
+            }
         });
         SFPLogger.log(minTable.toString(), LoggerLevel.INFO, this.props.logger);
         groupSection.end();
@@ -610,6 +648,12 @@ export default class DeployImpl {
 
         queue.forEach((pkg) => {
             table.push([pkg.packageName, pkg.versionNumber]);
+            ReleaseStreamService.buildPackageInitialitation(
+                pkg.packageName,
+                pkg.versionNumber,
+                'N/A',
+                pkg.package_type
+            );
         });
         SFPLogger.log(table.toString(), LoggerLevel.INFO, this.props.logger);
         groupSection.end();
