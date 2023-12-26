@@ -44,6 +44,10 @@ export default class Merge extends SfpowerscriptsCommand {
             description: messages.getMessage('deleteFlagDescription'),
             required: false,
         }),
+        resetcache: Flags.boolean({
+            description: messages.getMessage('resetCacheFlagDescription'),
+            required: false,
+        }),
         targetorg: requiredUserNameFlag,
         'apiversion': orgApiVersionFlagSfdxStyle,
         loglevel,
@@ -60,15 +64,7 @@ export default class Merge extends SfpowerscriptsCommand {
         let argProfileList = this.flags.profilelist;
         let argMetadatas = this.flags.metadata;
 
-        //  argMetadatas = (val: string) => {
-        //         let parts = val.split(':');
-        //         return {
-        //             MetadataType: parts[0].trim(),
-        //             ApiName: parts.length >= 2 ? parts[1].trim() : '*',
-        //         };
-        //     };
-
-        Sfpowerkit.initCache();
+        Sfpowerkit.initCache(this.flags.resetcache);
 
         let metadatas = undefined;
         let invalidArguments = [];

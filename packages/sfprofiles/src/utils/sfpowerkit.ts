@@ -3,9 +3,8 @@ import chalk from 'chalk';
 import * as fs from 'fs-extra';
 import SQLITEKeyValue from './sqlitekv';
 import FileUtils from './fileutils';
-import SFPLogger, {LoggerLevel } from '@dxatscale/sfp-logger';
+import SFPLogger, { LoggerLevel } from '@dxatscale/sfp-logger';
 import NodeCache from 'node-cache';
-
 
 export class Sfpowerkit {
     private static defaultFolder: string;
@@ -14,7 +13,6 @@ export class Sfpowerkit {
     public static isJsonFormatEnabled: boolean;
     private static sourceApiVersion: any;
     private static cache;
-
 
     static enableColor() {
         chalk.level = 2;
@@ -26,12 +24,14 @@ export class Sfpowerkit {
 
     public static resetCache() {
         const cachePath = FileUtils.getLocalCachePath('sfpowerkit-cache.db');
-        if (fs.existsSync(cachePath))
-            fs.unlinkSync(cachePath);
+        if (fs.existsSync(cachePath)) fs.unlinkSync(cachePath);
     }
 
-    public static initCache() {
+    public static initCache(resetCache?: boolean) {
         try {
+            if (resetCache) {
+                Sfpowerkit.resetCache();
+            }
             //Set the cache path on init,
             //TODO: Move this to a temporary directory with randomization
             Sfpowerkit.cache = new SQLITEKeyValue(FileUtils.getLocalCachePath('sfpowerkit-cache.db'));
@@ -64,7 +64,7 @@ export class Sfpowerkit {
             Sfpowerkit.projectDirectories = [];
             const dxProject = await SfProject.resolve();
             const project = await dxProject.retrieveSfProjectJson();
-            const packages = (project.getPackageDirectoriesSync()) || [];
+            const packages = project.getPackageDirectoriesSync() || [];
             packages.forEach((element) => {
                 Sfpowerkit.projectDirectories.push(element.path);
                 if (element.default) {
@@ -117,5 +117,4 @@ export class Sfpowerkit {
         if (this.isJsonFormatEnabled) return;
         SFPLogger.log(message, logLevel);
     }
-    
 }
