@@ -388,7 +388,7 @@ export default class DeployImpl {
         } else alwaysDeployMessage = undefined;
 
         //Display header
-        SFPLogger.printHeaderLine('Installing Package',COLOR_HEADER,LoggerLevel.INFO);
+        SFPLogger.printHeaderLine('Installing Package',COLOR_HEADER,LoggerLevel.INFO,this.props.logger);
         SFPLogger.log(COLOR_HEADER(`Name: ${COLOR_KEY_MESSAGE(pkg)}`), LoggerLevel.INFO, this.props.logger);
         SFPLogger.log(`Type: ${COLOR_KEY_MESSAGE(sfpPackage.packageType)}`, LoggerLevel.INFO, this.props.logger);
         SFPLogger.log(
