@@ -273,7 +273,7 @@ export default class PoolCreateImpl extends PoolBaseImpl {
 
         function addDescriptionToScratchOrg(pool: PoolConfig) {
 
-            const configClonePath = path.join('.sfp','scratchorg-configs',`${ makeFileId(8)}.json`);
+            const configClonePath = path.join('.sfpowerscripts','scratchorg-configs',`${ makeFileId(8)}.json`);
             fs.mkdirpSync('.sfpowerscripts/scratchorg-configs');
             fs.copyFileSync(pool.configFilePath,configClonePath);
 
