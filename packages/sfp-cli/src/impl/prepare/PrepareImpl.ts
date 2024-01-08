@@ -69,6 +69,7 @@ export default class PrepareImpl {
 
         if (this.pool.releaseConfigFile) {
             restrictedPackages = await getArtifactsByGeneratingReleaseDefinitionFromConfig(this.pool.releaseConfigFile);
+            SFPLogger.log(`Restricted Packages: ${restrictedPackages}`, LoggerLevel.INFO);
             projectConfig = ProjectConfig.cleanupPackagesFromProjectDirectory(null, restrictedPackages);
         }
 
