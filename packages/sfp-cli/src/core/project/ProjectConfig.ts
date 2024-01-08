@@ -244,7 +244,7 @@ export default class ProjectConfig {
         let originalPackageDirectory = projectConfig['packageDirectories'];
         for (let pkg of originalPackageDirectory) {
             for (const sfdxPackage of sfdxPackages) {
-                if (pkg.name == sfdxPackage) {
+                if (pkg.package == sfdxPackage) {
                     pkg.default = false;
                     revisedPackageDirectory.push(pkg);
                 }
