@@ -58,7 +58,7 @@ export default class PackageDiffImpl {
                 if(this.diffOptions?.useBranchCompare)
                 {
                  const mergeBase = await git.raw(['merge-base', this.diffOptions.branch, this.diffOptions.baseBranch]);
-                 modified_files = await git.diff(['--name-only', this.diffOptions.branch, mergeBase.trim()]);
+                 modified_files = await git.diff(['--no-renames','--name-only', this.diffOptions.branch, mergeBase.trim()]);
                 }
                 else
                 {
@@ -112,7 +112,7 @@ export default class PackageDiffImpl {
             if(this.diffOptions?.useBranchCompare)
             {
                 const mergeBase = await git.raw(['merge-base', this.diffOptions.branch, this.diffOptions.baseBranch]);
-                let modified_files = await git.diff(['--name-only', this.diffOptions.branch, mergeBase.trim()]);
+                let modified_files = await git.diff(['--no-renames','--name-only', this.diffOptions.branch, mergeBase.trim()]);
 
                  // Check whether the package has been modified
                 for (let filename of modified_files) {
