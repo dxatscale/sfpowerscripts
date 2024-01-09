@@ -57,7 +57,7 @@ export default class PackageDiffImpl {
             try {
                 if(this.diffOptions?.useBranchCompare)
                 {
-                 modified_files = await git.diff(['--name-only', `${this.diffOptions.baseBranch}...${this.diffOptions.branch}`]);
+                 modified_files = await git.diff(['--name-only', `${this.diffOptions.baseBranch}..${this.diffOptions.branch}`]);
                 }
                 else
                 {
@@ -107,12 +107,34 @@ export default class PackageDiffImpl {
 
             return { isToBeBuilt: false, reason: `No changes found`, tag: tag };
         } else {
-            SFPLogger.log(
-                `Tag missing for ${this.sfdx_package}...marking package for build anyways`,
-                LoggerLevel.TRACE,
-                this.logger
-            );
-            return { isToBeBuilt: true, reason: `Previous version not found` };
+
+            if(this.diffOptions?.useBranchCompare)
+            {
+                let modified_files = await git.diff(['--name-only', `${this.diffOptions.baseBranch}..${this.diffOptions.branch}`]);
+                // Check whether the package has been modified
+                for (let filename of modified_files) {
+                        
+                    let normalizedPkgPath = path.normalize(pkgDescriptor.path);
+                    let normalizedFilename = path.normalize(filename);
+                
+                    let relativePath = path.relative(normalizedPkgPath, normalizedFilename);
+                
+                    if (!relativePath.startsWith('..')) {
+                        SFPLogger.log(`Found change(s) in ${filename}`, LoggerLevel.TRACE, this.logger);
+                        return { isToBeBuilt: true, reason: `Found change(s) in package`, tag: tag };
+                    }
+                }
+                return { isToBeBuilt: false, reason: `No changes found`, tag: tag };
+
+            }
+            else {
+                SFPLogger.log(
+                    `Tag missing for ${this.sfdx_package}...marking package for build anyways`,
+                    LoggerLevel.TRACE,
+                    this.logger
+                );
+                return { isToBeBuilt: true, reason: `Previous version not found` };
+            }
         }
     }
 
