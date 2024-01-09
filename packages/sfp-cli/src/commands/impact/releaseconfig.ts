@@ -18,6 +18,10 @@ const messages = Messages.loadMessages('@flxblio/sfp', 'impact_release_config');
 export default class ReleaseConfig extends sfpCommand {
     public static flags = {
         loglevel,
+        branch: Flags.string({
+            description: messages.getMessage('branchFlagDescription'),
+            required: true,
+        }),
         basebranch: Flags.string({
             description: messages.getMessage('baseCommitOrBranchFlagDescription'),
             required: true,
@@ -32,6 +36,9 @@ export default class ReleaseConfig extends sfpCommand {
         }),
         filterBy: Flags.string({
             description: messages.getMessage('filterByFlagDescription'),
+        }),
+        filterByChangesInBranch: Flags.boolean({
+            description: messages.getMessage('filterByChangesInBranchFlagDescription'),
         }),
     };
 
@@ -51,6 +58,13 @@ export default class ReleaseConfig extends sfpCommand {
                 skipPackageDescriptorChange: false,
             },
         };
+
+        if(this.flags.filterByChangesInBranch)
+        {
+            this.props.diffOptions.useBranchCompare=true;
+            this.props.diffOptions.branch=this.flags.branch;
+            this.props.diffOptions.baseBranch=this.flags.basebranch;
+        }
 
         const impactedPackageResolver = new ImpactedPackageResolver(this.props, new ConsoleLogger());
 

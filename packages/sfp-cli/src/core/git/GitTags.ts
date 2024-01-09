@@ -45,12 +45,13 @@ export default class GitTags {
         let refTagsPointingToBranch: string[] = refTags.filter((refTag) => commits.includes(refTag.substring(0, 40)));
 
         // Only match the name of the tags pointing to the branch
-        refTagsPointingToBranch = refTagsPointingToBranch.map(
-            (refTagPointingToBranch) => refTagPointingToBranch.match(/(?:refs\/tags\/)(.*)((?:-ALIGN)|(?:\^{}))/)[1]
-        );
+        refTagsPointingToBranch = refTagsPointingToBranch.map((refTagPointingToBranch) => {
+            const match = refTagPointingToBranch.match(/(?:refs\/tags\/)(.*)((?:-ALIGN)|(?:\^{}))/);
+            return match ? match[1] : null;
+        });
 
         // Filter the sorted tags - only including tags that point to the branch
-        let tagsPointingToBranch: string[] = tags.filter((tag) => refTagsPointingToBranch.includes(tag));
+        let tagsPointingToBranch: string[] = tags.filter((tag) => refTagsPointingToBranch?.includes(tag));
 
         return tagsPointingToBranch;
     }

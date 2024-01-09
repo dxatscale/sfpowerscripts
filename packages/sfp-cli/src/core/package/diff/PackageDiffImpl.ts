@@ -15,6 +15,9 @@ export class PackageDiffOptions {
     useLatestGitTags?:boolean=true;
     packagesMappedToLastKnownCommitId?: { [p: string]: string };
     pathToReplacementForceIgnore?: string;
+    useBranchCompare?: boolean = false;
+    branch?: string;
+    baseBranch?: string;
 }
 
 export default class PackageDiffImpl {
@@ -52,7 +55,14 @@ export default class PackageDiffImpl {
             // Get the list of modified files between the tag and HEAD refs
             let modified_files: string[];
             try {
-                modified_files = await git.diff([`${tag}`, `HEAD`, `--no-renames`, `--name-only`]);
+                if(this.diffOptions?.useBranchCompare)
+                {
+                 modified_files = await git.diff(['--name-only', `${this.diffOptions.baseBranch}...${this.diffOptions.branch}`]);
+                }
+                else
+                {
+                 modified_files = await git.diff([`${tag}`, `HEAD`, `--no-renames`, `--name-only`]);
+                }
             } catch (error) {
                 SFPLogger.log(COLOR_ERROR(`Unable to compute diff, The head of the branch is not reachable from the commit id ${tag}`));
                 SFPLogger.log(COLOR_ERROR(`Check your current branch (in case of build) or the scratch org in case of validate command`));
