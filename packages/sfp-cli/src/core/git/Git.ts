@@ -166,6 +166,10 @@ export default class Git {
         return git;
     }
 
+    public raw(commands: string[]) {
+        return this._git.raw(commands);
+    }   
+
     public getRepositoryPath() {
         return this.repositoryLocation;
     }
