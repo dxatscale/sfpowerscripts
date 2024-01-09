@@ -29,8 +29,8 @@ export default class ReleaseConfig extends sfpCommand {
             description: messages.getMessage('releaseConfigFileFlagDescription'),
             default: 'config',
         }),
-        explictDependencyCheck: Flags.boolean({
-            description: messages.getMessage('explictDependencyCheckFlagDescription'),
+        explicitDependencyCheck: Flags.boolean({
+            description: messages.getMessage('explicitDependencyCheckFlagDescription'),
             default: false,
         }),
         filterBy: Flags.string({
@@ -80,7 +80,7 @@ export default class ReleaseConfig extends sfpCommand {
         let impactedReleaseConfigs = impactedReleaseConfigResolver.getImpactedReleaseConfigs(
             packagesToBeBuilt,
             this.flags.releaseconfig,
-            this.flags.explictDependencyCheck,
+            this.flags.explicitDependencyCheck,
             this.flags.filterBy
         );
 

@@ -5,5 +5,5 @@
   "baseCommitOrBranchFlagDescription": "The base branch on which the git tags should be used from",
   "filterByFlagDescription": "Filter by a specific release config name",
   "filterByChangesInBranchFlagDescription": "Filter packages by changes with the provided branches as opposed to tags",
-  "explictDependencyCheckFlagDescription": "Activate to consider dependencyOn attribut while handling impact"
+  "explicitDependencyCheckFlagDescription": "Activate to consider dependencyOn attribut while handling impact"
 }
