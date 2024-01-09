@@ -20,7 +20,6 @@ export default class ReleaseConfig extends sfpCommand {
         loglevel,
         branch: Flags.string({
             description: messages.getMessage('branchFlagDescription'),
-            required: true,
         }),
         basebranch: Flags.string({
             description: messages.getMessage('baseCommitOrBranchFlagDescription'),
