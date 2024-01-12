@@ -4,62 +4,87 @@ import path from 'path';
 
 export default class ImpactedRelaseConfigResolver {
 
-    public getImpactedReleaseConfigs(impactedPackages, configDir,isExplicitDependencyCheckEnabled:boolean=false, filterBy?: string) {
+    public getImpactedReleaseConfigs(impactedPackages, configDir, isExplicitDependencyCheckEnabled: boolean = false, filterBy?: string) {
         const impactedReleaseDefs = [];
+        let releaseImpactedPackages = [];
 
+        //Collect impacted packages
         fs.readdirSync(configDir).forEach((file) => {
             const filePath = path.join(configDir, file);
             const fileContent = fs.readFileSync(filePath, 'utf8');
             const releaseConfig = yaml.load(fileContent);
 
+
             if (releaseConfig.releaseName) {
-                let releaseImpactedPackages = [];
+                let packagesDetected = [];
                 //Its a releasedefn,
                 if (releaseConfig.includeOnlyArtifacts) {
-                    releaseImpactedPackages = releaseConfig.includeOnlyArtifacts.filter((artifact) =>
+                    packagesDetected = releaseConfig.includeOnlyArtifacts.filter((artifact) =>
                         impactedPackages.includes(artifact)
                     );
                 } else if (releaseConfig.excludeArtifacts) {
-                    releaseImpactedPackages = impactedPackages.filter(
+                    packagesDetected = impactedPackages.filter(
                         (artifact) => !releaseConfig.excludeArtifacts.includes(artifact)
                     );
                 }
 
-
                 // handle dependencyOn, only do impact if there is atleast one package that is impacted
-                if (releaseImpactedPackages.length>0 && isExplicitDependencyCheckEnabled && releaseConfig.dependencyOn) {
-                    let dependencyImpactedPackages = releaseConfig.dependencyOn.filter((artifact) =>
-                        impactedPackages.includes(artifact)
-                    );
-                    releaseImpactedPackages.push(dependencyImpactedPackages);
+                if (packagesDetected.length > 0 && isExplicitDependencyCheckEnabled && releaseConfig.dependencyOn) {
+                    packagesDetected.push(...releaseConfig.dependencyOn);
                 }
 
+                releaseImpactedPackages.push(...packagesDetected);
+            }
+        });
 
-                if (releaseImpactedPackages.length > 0) {
-                    if (filterBy) {
-                        if (releaseConfig.releaseName.includes(filterBy)) {
+
+        //Double pass to incorporate depedency on
+        if (releaseImpactedPackages.length > 0) {
+            fs.readdirSync(configDir).forEach((file) => {
+                const filePath = path.join(configDir, file);
+                const fileContent = fs.readFileSync(filePath, 'utf8');
+                const releaseConfig = yaml.load(fileContent);
+
+                if (releaseConfig.releaseName) {
+
+                    let packagesDetected = [];
+                    //Its a releasedefn,
+                    if (releaseConfig.includeOnlyArtifacts) {
+                        packagesDetected = releaseConfig.includeOnlyArtifacts.filter((artifact) =>
+                            releaseImpactedPackages.includes(artifact)
+                        );
+                    } else if (releaseConfig.excludeArtifacts) {
+                        packagesDetected = releaseImpactedPackages.filter(
+                            (artifact) => !releaseConfig.excludeArtifacts.includes(artifact)
+                        );
+                    }
+
+                    if (packagesDetected.length > 0) {
+                        if (filterBy) {
+                            if (releaseConfig.releaseName.includes(filterBy)) {
+                                impactedReleaseDefs.push({
+                                    releaseName: releaseConfig.releaseName,
+                                    pool: releaseConfig.pool
+                                        ? releaseConfig.pool
+                                        : releaseConfig.releaseName,
+                                    filePath: filePath,
+                                    impactedPackages: packagesDetected, // Including the impacted packages
+                                });
+                            }
+                        } else {
                             impactedReleaseDefs.push({
                                 releaseName: releaseConfig.releaseName,
                                 pool: releaseConfig.pool
                                     ? releaseConfig.pool
                                     : releaseConfig.releaseName,
                                 filePath: filePath,
-                                impactedPackages: releaseImpactedPackages, // Including the impacted packages
+                                impactedPackages: packagesDetected, // Including the impacted packages
                             });
                         }
-                    } else {
-                        impactedReleaseDefs.push({
-                            releaseName: releaseConfig.releaseName,
-                            pool: releaseConfig.pool
-                                ? releaseConfig.pool
-                                : releaseConfig.releaseName,
-                            filePath: filePath,
-                            impactedPackages: releaseImpactedPackages, // Including the impacted packages
-                        });
                     }
                 }
-            }
-        });
+            });
+        }
 
         const sortedImpactedReleaseDefs = impactedReleaseDefs.sort((a, b) => {
             if (!a.impactedPackages.length && !b.impactedPackages.length) return 0;
