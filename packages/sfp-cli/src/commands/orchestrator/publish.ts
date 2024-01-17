@@ -261,7 +261,7 @@ export default class Promote extends sfpCommand {
         let artifactRootDirectory = path.dirname(sfpPackage.sourceDir);
 
         // NPM does not accept packages with uppercase characters
-        let name: string = sfpPackage.packageName.toLowerCase() + '_sfpowerscriptsartifact';
+        let name: string = sfpPackage.packageName.toLowerCase() + '_sfpowerscripts_artifact';
 
         //Check whether the user has already passed in @
 
