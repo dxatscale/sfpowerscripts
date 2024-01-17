@@ -373,9 +373,9 @@ export default class DeployImpl {
 
     private displayRetryHeader(isRetryOnFailure: boolean, count: number) {
         if (isRetryOnFailure && count > 1) {
-            SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
+            SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO,this.props.logger);
             SFPLogger.log(`Retrying On Failure Attempt: ${count}`, LoggerLevel.INFO, this.props.logger);
-            SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
+            SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO,this.props.logger);
         }
     }
 
@@ -428,7 +428,7 @@ export default class DeployImpl {
         }
 
         if (alwaysDeployMessage) SFPLogger.log(alwaysDeployMessage, LoggerLevel.INFO, this.props.logger);
-        SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
+        SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO,this.props.logger);
     }
 
     private displayTestInfoHeader(sfpPackage: SfpPackage) {
