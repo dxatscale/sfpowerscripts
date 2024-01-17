@@ -25,7 +25,7 @@ export class NewRelicMetricSender extends NativeMetricSender {
     }
 
     public sendGaugeMetric(metric: string, value: number, tags: string[] | { [key: string]: string }) {
-        metric = `sfp.${metric}`;
+        metric = `sfpowerscripts.${metric}`;
         const guageMetric = new GaugeMetric(metric, value);
         guageMetric.attributes = tags as { [key: string]: string };
         const batch = new MetricBatch({}, Date.now(), 1);
@@ -44,7 +44,7 @@ export class NewRelicMetricSender extends NativeMetricSender {
     }
 
     public sendCountMetric(metric: string, tags: string[] | { [key: string]: string }) {
-        metric = `sfp.${metric}`;
+        metric = `sfpowerscripts.${metric}`;
         const countMetric = new CountMetric(metric);
         countMetric.record(1);
         countMetric.attributes = tags as { [key: string]: string };

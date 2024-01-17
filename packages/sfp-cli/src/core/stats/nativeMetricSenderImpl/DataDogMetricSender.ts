@@ -14,7 +14,7 @@ export class DataDogMetricsSender extends NativeMetricSender {
             this.nativeDataDogMetricsLogger = new BufferedMetricsLogger({
                 apiHost: apiHost,
                 apiKey: apiKey,
-                prefix: 'sfp.',
+                prefix: 'sfpowerscripts.',
                 flushIntervalSeconds: 0,
             });
         } catch (error) {
