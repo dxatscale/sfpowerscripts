@@ -68,7 +68,7 @@ export interface Artifact extends Changelog {
     /**
      * Repository URL where the artifact was generated
      */
-    repoUrl: string;
+    repoUrl?: string;
 
     /**
      * Commits between previous artifact's package changelog and current artifact's package changelog
