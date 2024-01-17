@@ -13,7 +13,7 @@
 
 [![Join slack](https://i.imgur.com/FZZmA3g.png)](https://launchpass.com/flxlblio)
 
-A build system for package based development in Salesforce, delivered as a node cli that can be implemented in any CI/CD system of choice.Read more about the cli and details here - https://docs.flxlblio.io
+A build system for package based development in Salesforce, delivered as a node cli that can be implemented in any CI/CD system of choice.Read more about the cli and details here - https://docs.flxlbl.io
 
 #### Features
 
@@ -39,7 +39,7 @@ used by using the [docker image](https://github.com/flxlblio/sfp/pkgs/container/
 
 - Need for artifact driven build system for package based development models especially on complex and large programs
 
-- Providing additional functionality that is either not supported by the sfdx-cli, such as data packages or automatically understanding tests in a given package
+- Providing additional functionality that is either not supported by the sf cli, such as data packages or automatically understanding tests in a given package
 
 - Ease of use, one should not be spending too much time scripting a pipeline.
 
