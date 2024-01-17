@@ -96,10 +96,23 @@ export default class ChangelogMarkdownGenerator {
                     let tableOfCommits = [['Date', 'Time', 'Commit ID', 'Commit Message']];
                     for (let commit of artifact.commits) {
                         let commitDate: Date = new Date(commit.date);
+                        let specificCommitURL: string;
+                        if (artifact.repoUrl != null) {
+                            if(artifact.repoUrl.startsWith("git"))
+                            {
+                              specificCommitURL=""; //no http url available
+                            }
+                            else if (artifact.repoUrl.includes("github.com")) {
+                                let repoUrl = artifact.repoUrl.split('.git')[0];
+                                specificCommitURL = `${repoUrl}/commit/${commit.commitId}`;
+                            } else {
+                                specificCommitURL=""; //other git providers are not supported
+                            }
+                        }
                         tableOfCommits.push([
                             this.getDate(commitDate),
                             this.getTime(commitDate),
-                            commit.commitId,
+                            artifact.repoUrl?`[${commit.commitId}](${specificCommitURL})`:commit.commitId,
                             commit.message,
                         ]);
                     }

@@ -168,6 +168,7 @@ export default class ReleaseChangelogUpdater {
                 from: undefined,
                 to: sfpPackage.sourceVersion?.slice(0, 8),
                 version: sfpPackage.package_version_number,
+                repoUrl: sfpPackage.repository_url,
                 latestCommitId: undefined,
                 commits: undefined,
             };

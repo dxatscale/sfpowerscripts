@@ -66,6 +66,11 @@ export interface Artifact extends Changelog {
     latestCommitId: string;
 
     /**
+     * Repository URL where the artifact was generated
+     */
+    repoUrl: string;
+
+    /**
      * Commits between previous artifact's package changelog and current artifact's package changelog
      */
     commits: Commit[];
