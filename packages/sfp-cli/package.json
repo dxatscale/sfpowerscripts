@@ -22,12 +22,12 @@
         "@oclif/core": "2.11.8",
         "@oclif/plugin-commands": "^3.0.3",
         "@oclif/plugin-help": "5.2.17",
-        "@salesforce/apex-node": "2.1.0",
-        "@salesforce/core": "5.3.9",
-        "@salesforce/kit": "3.0.13",
-        "@salesforce/packaging": "2.3.3",
-        "@salesforce/source-deploy-retrieve": "9.7.24",
-        "@salesforce/source-tracking": "4.2.16",
+        "@salesforce/apex-node": "3.0.2",
+        "@salesforce/core": "6.5.1",
+        "@salesforce/kit": "3.0.15",
+        "@salesforce/packaging": "3.2.5",
+        "@salesforce/source-deploy-retrieve": "10.2.13",
+        "@salesforce/source-tracking": "5.1.7",
         "adm-zip": "^0.5.10",
         "ajv": "8.11.0",
         "apex-parser": "2.13.0",
@@ -82,7 +82,7 @@
         "typescript": "^5"
     },
     "engines": {
-        "node": ">=16.0.0"
+        "node": ">=18.0.0"
     },
     "files": [
         "/lib",

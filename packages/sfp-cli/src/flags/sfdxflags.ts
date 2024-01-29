@@ -14,7 +14,8 @@
 import { Flags } from '@oclif/core';
 import { Lifecycle, Messages, Org, OrgConfigProperties } from '@salesforce/core';
 import { orgApiVersionFlag } from './orgApiVersion';
-import { AliasAccessor } from '@salesforce/core/lib/stateAggregator';
+import { AliasAccessor } from '@salesforce/core/lib/stateAggregator/accessors/aliasAccessor';
+
 
 /**
  * Adds an alias for the orgApiVersionFlag

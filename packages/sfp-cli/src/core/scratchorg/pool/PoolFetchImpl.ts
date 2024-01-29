@@ -225,10 +225,8 @@ export default class PoolFetchImpl extends PoolBaseImpl {
                     setDefaultDevHub: false,
                   });
               
-                  const result = authInfo.getFields(true);
-                  // ensure the clientSecret field... even if it is empty
-                  // as per https://github.com/salesforcecli/plugin-auth/blob/main/src/commands/auth/sfdxurl/store.ts
-                  result.clientSecret = result.clientSecret ?? '';
+                  //https://github.com/salesforcecli/plugin-auth/blob/main/src/commands/org/login/sfdx-url.ts 
+                  const result = { clientSecret: '', ...authInfo.getFields(true) };
                   await AuthInfo.identifyPossibleScratchOrgs(result, authInfo);
 
                 return true;

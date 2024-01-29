@@ -9,7 +9,8 @@ import {
     targetdevhubusername,
     requiredUserNameFlag,
 } from '../../../flags/sfdxflags';
-import { AliasAccessor } from '@salesforce/core/lib/stateAggregator';
+import { AliasAccessor } from '@salesforce/core/lib/stateAggregator/accessors/aliasAccessor';
+
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);

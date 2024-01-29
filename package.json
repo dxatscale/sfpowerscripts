@@ -15,13 +15,12 @@
         "@types/node": "^10",
         "@types/q": "^1.5.2",
         "@types/xml2js": "^0.4.5",
-        "lerna": "^7.1.4",
-        "lerna-update-wizard": "^1.1.0",
+        "lerna": "8.0.2",
         "prettier": "^2.0.5",
         "rimraf": "^3.0.2",
         "semver": "7.5.2",
-        "ts-loader": "~9.4.2",
-        "ts-node": "^9",
+        "ts-loader": "~9.5.1",
+        "ts-node": "10.9.2",
         "typescript": "^5"
     },
     "dependencies": {

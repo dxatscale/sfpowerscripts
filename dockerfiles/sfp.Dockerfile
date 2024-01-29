@@ -2,9 +2,9 @@ FROM ubuntu:22.04
 
 
 ARG SFPOWERSCRIPTS_VERSION=alpha
-ARG SF_CLI_VERSION=2.17.14 
-ARG BROWSERFORCE_VERSION=0.0.3
-ARG SFDMU_VERSION=4.18.2
+ARG SF_CLI_VERSION=2.25.7 
+ARG BROWSERFORCE_VERSION=4.0.0
+ARG SFDMU_VERSION=4.32.2
 ARG GIT_COMMIT
 ARG NODE_MAJOR=18
 
@@ -13,9 +13,9 @@ LABEL org.opencontainers.image.licenses "MIT"
 LABEL org.opencontainers.image.url "https://github.com/flxbl-io/sfp"
 LABEL org.opencontainers.image.documentation "https://docs.flxbl.io"
 LABEL org.opencontainers.image.revision $GIT_COMMIT
-LABEL org.opencontainers.image.vendor "DX@Scale"
+LABEL org.opencontainers.image.vendor "Flxbl"
 LABEL org.opencontainers.image.source "https://github.com/flxbl-io/sfp"
-LABEL org.opencontainers.image.title "DX@Scale sfpowercripts docker image - January 24"
+LABEL org.opencontainers.image.title "Flxbl sfp docker image - January 24"
 
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -103,7 +103,7 @@ RUN mkdir -p $XDG_DATA_HOME && \
 
 
 # Install sfdx plugins
-RUN echo 'y' | sf plugins:install @dxatscale/browserforce@${BROWSERFORCE_VERSION} \
+RUN echo 'y' | sf plugins:install sfdx-browserforce-plugin@${BROWSERFORCE_VERSION} \
     && echo 'y' | sf plugins:install sfdmu@${SFDMU_VERSION} \
     && echo 'y' | sf plugins:install @salesforce/plugin-signups@1.5.0 \
     && echo 'y' | sf plugins:install @salesforce/sfdx-scanner@3.16.0 \
