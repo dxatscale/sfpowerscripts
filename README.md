@@ -3,9 +3,9 @@
 </p>
 
 ![Version](https://img.shields.io/npm/v/@flxblio/sfp.svg)
-[![GitHub stars](https://img.shields.io/github/stars/flxlbl-io/sfp)](https://gitHub.com/flxlblio/sfp/stargazers/)
+[![GitHub stars](https://img.shields.io/github/stars/flxlbl-io/sfp)](https://gitHub.com/flxlbl-io/sfp/stargazers/)
 [![GitHub contributors](https://img.shields.io/github/contributors/flxlbl-io/sfp.svg)](https://github.com/flxlbl-io/sfp/graphs/contributors/)
-[![License](https://img.shields.io/badge/license-MIT-green)](https://github.com/flxlbl-io/sfp/blob/main/LICENSE)
+[![License](https://img.shields.io/badge/license-MIT-green)](https://github.com/flxbl-io/sfp/blob/main/LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
 
 [![DeepScan grade](https://deepscan.io/api/teams/10234/projects/12959/branches/208838/badge/grade.svg)](https://deepscan.io/dashboard#view=project&tid=10234&pid=12959&bid=208838)
