@@ -3,17 +3,17 @@
 </p>
 
 ![Version](https://img.shields.io/npm/v/@flxblio/sfp.svg)
-[![GitHub stars](https://img.shields.io/github/stars/flxlbl-io/sfp)](https://gitHub.com/flxlbl-io/sfp/stargazers/)
-[![GitHub contributors](https://img.shields.io/github/contributors/flxlbl-io/sfp.svg)](https://github.com/flxlbl-io/sfp/graphs/contributors/)
+[![GitHub stars](https://img.shields.io/github/stars/flxbl-io/sfp)](https://gitHub.com/flxbl-io/sfp/stargazers/)
+[![GitHub contributors](https://img.shields.io/github/contributors/flxbl-io/sfp.svg)](https://github.com/flxbl-io/sfp/graphs/contributors/)
 [![License](https://img.shields.io/badge/license-MIT-green)](https://github.com/flxbl-io/sfp/blob/main/LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
 
 [![DeepScan grade](https://deepscan.io/api/teams/10234/projects/12959/branches/208838/badge/grade.svg)](https://deepscan.io/dashboard#view=project&tid=10234&pid=12959&bid=208838)
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fflxbl-io%2Fsfp.svg?type=shield&issueType=license)](https://app.fossa.com/projects/git%2Bgithub.com%2Fflxbl-io%2Fsfp?ref=badge_shield&issueType=license) [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/5614/badge)](https://bestpractices.coreinfrastructure.org/projects/5614)
 
-[![Join slack](https://i.imgur.com/FZZmA3g.png)](https://launchpass.com/flxlblio)
+[![Join slack](https://i.imgur.com/FZZmA3g.png)](https://launchpass.com/flxblio)
 
-A build system for package based development in Salesforce, delivered as a node cli that can be implemented in any CI/CD system of choice.Read more about the cli and details here - https://docs.flxlbl.io
+A build system for package based development in Salesforce, delivered as a node cli that can be implemented in any CI/CD system of choice.Read more about the cli and details here - https://docs.flxbl.io
 
 #### Features
 
@@ -26,10 +26,10 @@ A build system for package based development in Salesforce, delivered as a node 
 - Integrate with any CI/CD system of choice
 - All commands are enabled with statsD, for collecting metrics about your pipeline.
 
-There are lot more features to explore. Read more at https://docs.flxlblio.io
+There are lot more features to explore. Read more at https://docs.flxblio.io
 
-The project is delivered as a <b>CLI</b> that can be deployed in any CI/CD system, The module is available in [NPM](https://www.npmjs.com/package/@flxlblio/sfp) or can be
-used by using the [docker image](https://github.com/flxlblio/sfp/pkgs/container/sfp)
+The project is delivered as a <b>CLI</b> that can be deployed in any CI/CD system, The module is available in [NPM](https://www.npmjs.com/package/@flxblio/sfp) or can be
+used by using the [docker image](https://github.com/flxblio/sfp/pkgs/container/sfp)
 
 
 
@@ -45,20 +45,20 @@ used by using the [docker image](https://github.com/flxlblio/sfp/pkgs/container/
 
 #### CI/CD Reference Implementation
 
-Getting started guides for popular CI/CD platforms along with reference pipelines are available [here](https://docs.flxlblio.io/implementing-your-ci-cd/github)
+Getting started guides for popular CI/CD platforms along with reference pipelines are available [here](https://docs.flxblio.io/implementing-your-ci-cd/github)
 
 #### Installing sfp locally
 
 sfp can be installed on your local device using npm
 
 ```
-npm i -g @flxlblio/sfp
+npm i -g @flxblio/sfp
 ```
 
 
 #### Docker
 
-Docker images for sfp are available at [GitHub Container Registry](https://github.com/flxlblio/sfp/pkgs/container/sfp).
+Docker images for sfp are available at [GitHub Container Registry](https://github.com/flxblio/sfp/pkgs/container/sfp).
 
 We recommend using the sfp docker image to avoid breakages in your CI/CD pipelines due to updates in sfp or any of its dependencies such as the SFDX CLI.
 
@@ -86,13 +86,13 @@ To debug and test plugin
 
 #### Maintainers
 
-List of Maintainers are available in the [link](https://docs.flxlblio.io/about-us)
+List of Maintainers are available in the [link](https://docs.flxblio.io/about-us)
 
 
 #### Where do I reach for queries?
 
-Please create an issue in the repo for bugs or utilize GitHub Discussions for other queries. Join our [Slack Community](https://launchpass.com/flxlblio) as well.
+Please create an issue in the repo for bugs or utilize GitHub Discussions for other queries. Join our [Slack Community](https://launchpass.com/flxblio) as well.
 
 
 ## License
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fflxlblio%2Fsfp.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fflxlblio%2Fsfp?ref=badge_large)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fflxblio%2Fsfp.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fflxblio%2Fsfp?ref=badge_large)
