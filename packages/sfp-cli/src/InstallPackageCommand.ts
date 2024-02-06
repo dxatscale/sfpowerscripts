@@ -1,4 +1,4 @@
-import sfpCommand from './SfpCommand';
+import SfpCommand from './SfpCommand';
 import { Messages } from '@salesforce/core';
 import ArtifactFetcher, { Artifact } from './core/artifacts/ArtifactFetcher';
 import * as rimraf from 'rimraf';
@@ -15,9 +15,9 @@ const messages = Messages.loadMessages('@flxblio/sfp', 'install_package_command'
 /**
  * Base class providing common functionality for package installation
  *
- * @extends sfpCommand
+ * @extends SfpCommand
  */
-export default abstract class InstallPackageCommand extends sfpCommand {
+export default abstract class InstallPackageCommand extends SfpCommand {
     protected sfpPackage: SfpPackage;
     protected sfpOrg: SFPOrg;
     /**

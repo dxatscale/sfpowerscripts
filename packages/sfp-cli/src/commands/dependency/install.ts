@@ -1,4 +1,4 @@
-import sfpCommand from '../../SfpCommand';
+import SfpCommand from '../../SfpCommand';
 import { Messages } from '@salesforce/core';
 import ExternalPackage2DependencyResolver from '../../core/package/dependencies/ExternalPackage2DependencyResolver';
 import ProjectConfig from '../../core/project/ProjectConfig';
@@ -16,7 +16,7 @@ Messages.importMessagesDirectory(__dirname);
 // or any library that is using the messages framework can also be loaded this way.
 const messages = Messages.loadMessages('@flxblio/sfp', 'dependency_install');
 
-export default class Install extends sfpCommand {
+export default class Install extends SfpCommand {
     public static description = messages.getMessage('commandDescription');
     protected static requiresUsername = true;
     protected static requiresDevhubUsername = true;

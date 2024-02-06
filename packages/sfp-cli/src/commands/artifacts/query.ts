@@ -1,4 +1,4 @@
-import sfpCommand from '../../SfpCommand';
+import SfpCommand from '../../SfpCommand';
 import { LoggerLevel, Messages } from '@salesforce/core';
 import SFPOrg from '../../core/org/SFPOrg';
 import SFPLogger, { ConsoleLogger } from '@flxblio/sfp-logger';
@@ -9,7 +9,7 @@ const Table = require('cli-table');
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@flxblio/sfp', 'artifacts_query');
 
-export default class Query extends sfpCommand {
+export default class Query extends SfpCommand {
     public static description = messages.getMessage('commandDescription');
 
     public static examples = [`$ sfp artifacts:query -u <target_org>`];

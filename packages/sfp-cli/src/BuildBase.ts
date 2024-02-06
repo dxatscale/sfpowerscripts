@@ -1,7 +1,7 @@
 import ArtifactGenerator from './core/artifacts/generators/ArtifactGenerator';
 
 import { EOL } from 'os';
-import sfpCommand from './SfpCommand';
+import SfpCommand from './SfpCommand';
 import { Messages } from '@salesforce/core';
 import fs = require('fs');
 import SFPStatsSender from './core/stats/SFPStatsSender';
@@ -34,7 +34,7 @@ Messages.importMessagesDirectory(__dirname);
 // or any library that is using the messages framework can also be loaded this way.
 const messages = Messages.loadMessages('@flxblio/sfp', 'build');
 
-export default abstract class BuildBase extends sfpCommand {
+export default abstract class BuildBase extends SfpCommand {
     protected static requiresUsername = false;
     protected static requiresDevhubUsername = false;
     protected static requiresProject = true;

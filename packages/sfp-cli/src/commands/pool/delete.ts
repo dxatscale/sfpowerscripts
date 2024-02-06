@@ -2,7 +2,7 @@ import { Messages } from '@salesforce/core';
 import PoolDeleteImpl from '../../core/scratchorg/pool/PoolDeleteImpl';
 import OrphanedOrgsDeleteImpl from '../../core/scratchorg/pool/OrphanedOrgsDeleteImpl';
 import ScratchOrg from '../../core/scratchorg/ScratchOrg';
-import sfpCommand from '../../SfpCommand';
+import SfpCommand from '../../SfpCommand';
 import { ZERO_BORDER_TABLE } from '../../ui/TableConstants';
 import SFPLogger, { ConsoleLogger, LoggerLevel } from '@flxblio/sfp-logger';
 import { COLOR_KEY_MESSAGE } from '@flxblio/sfp-logger';
@@ -18,7 +18,7 @@ Messages.importMessagesDirectory(__dirname);
 // or any library that is using the messages framework can also be loaded this way.
 const messages = Messages.loadMessages('@flxblio/sfp', 'pool_delete');
 
-export default class Delete extends sfpCommand {
+export default class Delete extends SfpCommand {
     public static description = messages.getMessage('commandDescription');
 
     protected static requiresDevhubUsername = true;

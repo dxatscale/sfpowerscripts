@@ -8,7 +8,7 @@ import {
     RunAllTestsInPackageOptions,
 } from '../../core/apextest/TestOptions';
 import TriggerApexTests from '../../core/apextest/TriggerApexTests';
-import sfpCommand from '../../SfpCommand';
+import SfpCommand from '../../SfpCommand';
 import { Messages } from '@salesforce/core';
 import SfpPackage from '../../core/package/SfpPackage';
 
@@ -27,7 +27,7 @@ Messages.importMessagesDirectory(__dirname);
 // or any library that is using the messages framework can also be loaded this way.
 const messages = Messages.loadMessages('@flxblio/sfp', 'trigger_apex_test');
 
-export default class TriggerApexTest extends sfpCommand {
+export default class TriggerApexTest extends SfpCommand {
     public static description = messages.getMessage('commandDescription');
 
     public static examples = [

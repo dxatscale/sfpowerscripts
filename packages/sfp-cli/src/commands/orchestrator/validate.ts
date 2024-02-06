@@ -1,5 +1,5 @@
 import { Messages } from '@salesforce/core';
-import sfpCommand from '../../SfpCommand';
+import SfpCommand from '../../SfpCommand';
 import ValidateImpl, { ValidateAgainst, ValidateProps, ValidationMode } from '../../impl/validate/ValidateImpl';
 import SFPStatsSender from '../../core/stats/SFPStatsSender';
 import SFPLogger, { COLOR_HEADER, COLOR_KEY_MESSAGE } from '@flxblio/sfp-logger';
@@ -13,7 +13,7 @@ import { LoggerLevel } from '@flxblio/sfp-logger';
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@flxblio/sfp', 'validate');
 
-export default class Validate extends sfpCommand {
+export default class Validate extends SfpCommand {
     protected static requiresProject = true;
 
     public static description = messages.getMessage('commandDescription');

@@ -13,7 +13,7 @@ import { Org } from '@salesforce/core';
  *
  * @extends SfdxCommand
  */
-export default abstract class sfpCommand extends Command {
+export default abstract class SfpCommand extends Command {
 
     protected static requiresProject: boolean;
 
@@ -170,8 +170,8 @@ export default abstract class sfpCommand extends Command {
     }
 
 
-    protected get statics(): typeof sfpCommand {
-        return this.constructor as typeof sfpCommand;
+    protected get statics(): typeof SfpCommand {
+        return this.constructor as typeof SfpCommand;
     }
 
 }

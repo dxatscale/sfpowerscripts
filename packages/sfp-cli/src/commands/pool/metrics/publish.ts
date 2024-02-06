@@ -1,4 +1,4 @@
-import sfpCommand from '../../../SfpCommand';
+import SfpCommand from '../../../SfpCommand';
 import SFPStatsSender from '../../../core/stats/SFPStatsSender';
 import PoolListImpl from '../../../core/scratchorg/pool/PoolListImpl';
 import ScratchOrg from '../../../core/scratchorg/ScratchOrg';
@@ -15,7 +15,7 @@ Messages.importMessagesDirectory(__dirname);
 // or any library that is using the messages framework can also be loaded this way.
 const messages = Messages.loadMessages('@flxblio/sfp', 'scratchorg_pool_metrics_publish');
 
-export default class Publish extends sfpCommand {
+export default class Publish extends SfpCommand {
     public static description = messages.getMessage('commandDescription');
 
     protected static requiresDevhubUsername = true;

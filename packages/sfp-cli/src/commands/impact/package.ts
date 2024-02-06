@@ -1,5 +1,5 @@
 import { Messages } from '@salesforce/core';
-import sfpCommand from '../../SfpCommand';
+import SfpCommand from '../../SfpCommand';
 import { Stage } from '../../impl/Stage';
 import SFPLogger, { COLOR_KEY_MESSAGE, ConsoleLogger } from '@flxblio/sfp-logger';
 import { Flags } from '@oclif/core';
@@ -14,7 +14,7 @@ import * as fs from 'fs-extra';
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@flxblio/sfp', 'impact_package');
 
-export default class Package extends sfpCommand {
+export default class Package extends SfpCommand {
     public static flags = {
         loglevel,
         basebranch: Flags.string({

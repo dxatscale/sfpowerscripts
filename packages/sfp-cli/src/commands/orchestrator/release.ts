@@ -1,4 +1,4 @@
-import sfpCommand from '../../SfpCommand';
+import SfpCommand from '../../SfpCommand';
 import { LoggerLevel, Messages } from '@salesforce/core';
 import SFPStatsSender from '../../core/stats/SFPStatsSender';
 import ReleaseImpl, { ReleaseProps, ReleaseResult } from '../../impl/release/ReleaseImpl';
@@ -21,7 +21,7 @@ import { Flags } from '@oclif/core';
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@flxblio/sfp', 'release');
 
-export default class Release extends sfpCommand {
+export default class Release extends SfpCommand {
     public static description = messages.getMessage('commandDescription');
 
     public static examples = [

@@ -1,5 +1,5 @@
 import { Messages } from '@salesforce/core';
-import sfpCommand from '../../SfpCommand';
+import SfpCommand from '../../SfpCommand';
 import ReleaseDefinition from '../../impl/release/ReleaseDefinition';
 import ProjectConfig from '../../core/project/ProjectConfig';
 import GroupConsoleLogs from '../../ui/GroupConsoleLogs';
@@ -23,7 +23,7 @@ import { arrayFlagSfdxStyle, loglevel, logsgroupsymbol } from '../../flags/sfdxf
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@flxblio/sfp', 'patch');
 
-export default class Patch extends sfpCommand {
+export default class Patch extends SfpCommand {
     public static description = messages.getMessage('commandDescription');
 
     public static examples = [`$ sfp repo:patch -n <releaseName>`];

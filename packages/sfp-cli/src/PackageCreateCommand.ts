@@ -3,7 +3,7 @@ import { COLOR_HEADER, COLOR_KEY_MESSAGE, ConsoleLogger } from '@flxblio/sfp-log
 import PackageDiffImpl from './core/package/diff/PackageDiffImpl';
 import { Messages } from '@salesforce/core';
 import { EOL } from 'os';
-import sfpCommand from './SfpCommand';
+import SfpCommand from './SfpCommand';
 import SfpPackage, { PackageType } from './core/package/SfpPackage';
 import getFormattedTime from './core/utils/GetFormattedTime';
 const fs = require('fs-extra');
@@ -14,7 +14,7 @@ import { loglevel } from './flags/sfdxflags';
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@flxblio/sfp', 'create-package');
 
-export default abstract class PackageCreateCommand extends sfpCommand {
+export default abstract class PackageCreateCommand extends SfpCommand {
     protected static requiresUsername = false;
     protected static requiresDevhubUsername = false;
     protected static requiresProject = true;

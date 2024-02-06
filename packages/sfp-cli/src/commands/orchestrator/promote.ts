@@ -1,4 +1,4 @@
-import sfpCommand from '../../SfpCommand';
+import SfpCommand from '../../SfpCommand';
 import { Messages } from '@salesforce/core';
 import PromoteUnlockedPackageImpl from '../../core/package/promote/PromoteUnlockedPackageImpl'
 import ArtifactFetcher from '../../core/artifacts/ArtifactFetcher';
@@ -14,7 +14,7 @@ import SFPLogger from '@flxblio/sfp-logger';
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@flxblio/sfp', 'promote');
 
-export default class Promote extends sfpCommand {
+export default class Promote extends SfpCommand {
     public static description = messages.getMessage('commandDescription');
 
     public static examples = [`$ sfp orchestrator:promote -d path/to/artifacts -v <org>`];

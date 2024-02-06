@@ -1,14 +1,14 @@
 import { ConsoleLogger } from '@flxblio/sfp-logger';
 import { Messages } from '@salesforce/core';
 import ReleaseDefinitionGenerator from '../../impl/release/ReleaseDefinitionGenerator';
-import sfpCommand from '../../SfpCommand';
+import SfpCommand from '../../SfpCommand';
 import { Flags } from '@oclif/core';
 import { loglevel } from '../../flags/sfdxflags';
 
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@flxblio/sfp', 'releasedefinition_generate');
 
-export default class Generate extends sfpCommand {
+export default class Generate extends SfpCommand {
     public static description = messages.getMessage('commandDescription');
 
     public static examples = [

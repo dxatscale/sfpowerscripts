@@ -1,6 +1,6 @@
 import TransitiveDependencyResolver from '../../core/package/dependencies/TransitiveDependencyResolver';
 import { Messages } from '@salesforce/core';
-import sfpCommand from '../../SfpCommand';
+import SfpCommand from '../../SfpCommand';
 import ProjectConfig from '../../core/project/ProjectConfig';
 import SFPLogger, { LoggerLevel, Logger } from '@flxblio/sfp-logger';
 import * as fs from 'fs-extra';
@@ -16,7 +16,7 @@ Messages.importMessagesDirectory(__dirname);
 // or any library that is using the messages framework can also be loaded this way.
 const messages = Messages.loadMessages('@flxblio/sfp', 'dependency_expand');
 
-export default class Expand extends sfpCommand {
+export default class Expand extends SfpCommand {
     public static description = messages.getMessage('commandDescription');
 
 

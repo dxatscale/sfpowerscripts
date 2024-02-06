@@ -4,7 +4,7 @@ import { Sfpowerkit } from '@flxblio/sfprofiles/lib/utils/sfpowerkit';
 import SFPLogger, { LoggerLevel } from '@flxblio/sfp-logger';
 import ProfileRetriever from '@flxblio/sfprofiles/lib/impl/metadata/retriever/profileRetriever';
 import ProfileMerge from '@flxblio/sfprofiles/lib/impl/source/profileMerge';
-import sfpCommand from '../../SfpCommand';
+import SfpCommand from '../../SfpCommand';
 import Table from 'cli-table';
 import { ZERO_BORDER_TABLE } from '../../ui/TableConstants';
 import { arrayFlagSfdxStyle, loglevel, orgApiVersionFlagSfdxStyle, requiredUserNameFlag } from '../../flags/sfdxflags';
@@ -14,7 +14,7 @@ Messages.importMessagesDirectory(__dirname);
 
 const messages = Messages.loadMessages('@flxblio/sfp', 'profile_merge');
 
-export default class Merge extends sfpCommand {
+export default class Merge extends SfpCommand {
     public static description = messages.getMessage('commandDescription');
 
     public static examples = [

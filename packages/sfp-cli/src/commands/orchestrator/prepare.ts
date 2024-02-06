@@ -1,5 +1,5 @@
 import { Messages } from '@salesforce/core';
-import sfpCommand from '../../SfpCommand';
+import SfpCommand from '../../SfpCommand';
 import PrepareImpl from '../../impl/prepare/PrepareImpl';
 import SFPStatsSender from '../../core/stats/SFPStatsSender';
 import { Stage } from '../../impl/Stage';
@@ -26,7 +26,7 @@ import { loglevel, logsgroupsymbol, targetdevhubusername } from '../../flags/sfd
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@flxblio/sfp', 'prepare');
 
-export default class Prepare extends sfpCommand {
+export default class Prepare extends SfpCommand {
     protected static requiresDevhubUsername = true;
     protected static requiresProject = true;
 

@@ -12,7 +12,7 @@ import { COLOR_HEADER } from '@flxblio/sfp-logger';
 import { COLOR_SUCCESS } from '@flxblio/sfp-logger';
 import { COLOR_TIME } from '@flxblio/sfp-logger';
 import getFormattedTime from '../../core/utils/GetFormattedTime';
-import sfpCommand from '../../SfpCommand';
+import SfpCommand from '../../SfpCommand';
 import { Flags, ux } from '@oclif/core';
 import { loglevel, orgApiVersionFlagSfdxStyle, targetdevhubusername } from '../../flags/sfdxflags';
 
@@ -23,7 +23,7 @@ Messages.importMessagesDirectory(__dirname);
 // or any library that is using the messages framework can also be loaded this way.
 const messages = Messages.loadMessages('@flxblio/sfp', 'scratchorg_poolFetch');
 
-export default class Fetch extends sfpCommand {
+export default class Fetch extends SfpCommand {
     public static description = messages.getMessage('commandDescription');
 
     protected static requiresDevhubUsername = true;

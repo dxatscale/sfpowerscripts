@@ -1,5 +1,5 @@
 import { LoggerLevel, Messages, Org } from '@salesforce/core';
-import sfpCommand from '../../SfpCommand';
+import SfpCommand from '../../SfpCommand';
 import ValidateImpl, { ValidateAgainst, ValidateProps, ValidationMode } from '../../impl/validate/ValidateImpl';
 import SFPStatsSender from '../../core/stats/SFPStatsSender';
 import SFPLogger, { COLOR_HEADER, COLOR_KEY_MESSAGE } from '@flxblio/sfp-logger';
@@ -13,7 +13,7 @@ import { Flags } from '@oclif/core';
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@flxblio/sfp', 'validateAgainstOrg');
 
-export default class ValidateAgainstOrg extends sfpCommand {
+export default class ValidateAgainstOrg extends SfpCommand {
     public static description = messages.getMessage('commandDescription');
 
     public static examples = [`$ sfp orchestrator:validateAgainstOrg -u <targetorg>`];

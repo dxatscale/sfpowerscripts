@@ -1,4 +1,4 @@
-import sfpCommand from '../../SfpCommand';
+import SfpCommand from '../../SfpCommand';
 import { Messages } from '@salesforce/core';
 import * as fs from 'fs-extra';
 import path = require('path');
@@ -29,7 +29,7 @@ import { Flags } from '@oclif/core';
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@flxblio/sfp', 'publish');
 
-export default class Promote extends sfpCommand {
+export default class Promote extends SfpCommand {
     public static description = messages.getMessage('commandDescription');
 
     public static examples = [

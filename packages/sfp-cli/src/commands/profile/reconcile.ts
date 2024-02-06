@@ -6,7 +6,7 @@ import { METADATA_INFO } from '@flxblio/sfprofiles/lib/impl/metadata/metadataInf
 import * as path from 'path';
 import ProfileReconcile from '@flxblio/sfprofiles/lib/impl/source/profileReconcile';
 import MetadataFiles from '@flxblio/sfprofiles/lib/impl/metadata/metadataFiles';
-import sfpCommand from '../../SfpCommand';
+import SfpCommand from '../../SfpCommand';
 const Table = require('cli-table');
 import { ZERO_BORDER_TABLE } from '../../ui/TableConstants';
 import { Flags } from '@oclif/core';
@@ -17,7 +17,7 @@ Messages.importMessagesDirectory(__dirname);
 
 const messages = Messages.loadMessages('@flxblio/sfp', 'profile_reconcile');
 
-export default class Reconcile extends sfpCommand {
+export default class Reconcile extends SfpCommand {
     public static description = messages.getMessage('commandDescription');
 
     public static examples = [

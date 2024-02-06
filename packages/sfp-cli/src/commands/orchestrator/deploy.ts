@@ -1,4 +1,4 @@
-import sfpCommand from '../../SfpCommand';
+import SfpCommand from '../../SfpCommand';
 import { Messages } from '@salesforce/core';
 import SFPStatsSender from '../../core/stats/SFPStatsSender';
 import DeployImpl, { DeploymentMode, DeployProps, DeploymentResult } from '../../impl/deploy/DeployImpl';
@@ -22,7 +22,7 @@ Messages.importMessagesDirectory(__dirname);
 // or any library that is using the messages framework can also be loaded this way.
 const messages = Messages.loadMessages('@flxblio/sfp', 'deploy');
 
-export default class Deploy extends sfpCommand {
+export default class Deploy extends SfpCommand {
     public static description = messages.getMessage('commandDescription');
 
     public static examples = [`$ sfp orchestrator:deploy -u <username>`];

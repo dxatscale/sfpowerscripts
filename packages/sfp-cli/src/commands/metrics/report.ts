@@ -1,4 +1,4 @@
-import sfpCommand from '../../SfpCommand';
+import SfpCommand from '../../SfpCommand';
 import SFPStatsSender from '../../core/stats/SFPStatsSender';
 import SFPLogger, { LoggerLevel, COLOR_KEY_MESSAGE } from '@flxblio/sfp-logger';
 import { Messages } from '@salesforce/core';
@@ -12,7 +12,7 @@ Messages.importMessagesDirectory(__dirname);
 // or any library that is using the messages framework can also be loaded this way.
 const messages = Messages.loadMessages('@flxblio/sfp', 'metrics_report');
 
-export default class Report extends sfpCommand {
+export default class Report extends SfpCommand {
   public static description = messages.getMessage('commandDescription');
 
   protected static requiresDevhubUsername = false;

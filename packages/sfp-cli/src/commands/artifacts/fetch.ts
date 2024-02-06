@@ -1,4 +1,4 @@
-import sfpCommand from '../../SfpCommand';
+import SfpCommand from '../../SfpCommand';
 import { LoggerLevel, Messages } from '@salesforce/core';
 import FetchImpl, { ArtifactVersion } from '../../impl/artifacts/FetchImpl';
 import ReleaseDefinition from '../../impl/release/ReleaseDefinition';
@@ -12,7 +12,7 @@ import { COLOR_HEADER } from '@flxblio/sfp-logger';
 Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('@flxblio/sfp', 'fetch');
 
-export default class Fetch extends sfpCommand {
+export default class Fetch extends SfpCommand {
     public static description = messages.getMessage('commandDescription');
 
     public static examples = [
