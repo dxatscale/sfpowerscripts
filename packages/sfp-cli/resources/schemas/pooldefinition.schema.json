@@ -119,6 +119,12 @@
             "type": "boolean",
             "default":false
         },
+        "noAnchestors": {
+            "title": "Disable second-generation managed package (2GP) ancestors in the scratch org.",
+            "description": "Don't include second-generation managed package (2GP) ancestors in the scratch org when set to true",
+            "type": "boolean",
+            "default":false
+        },
         "fetchArtifacts": {
             "title": "Fetch Artifacts using below mechanism",
             "description": "Fetch artifacts from artifact registry using below mechanism",

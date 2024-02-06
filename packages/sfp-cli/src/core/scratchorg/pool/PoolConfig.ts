@@ -35,6 +35,5 @@ export interface PoolConfig {
     scratchOrgs?: ScratchOrg[];
     failedToCreate?: number;
     maxRetryCount?:number;
-
-
+    noAnchestors?:boolean;
 }

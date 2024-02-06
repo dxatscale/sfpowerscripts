@@ -145,7 +145,7 @@ export default class PoolCreateImpl extends PoolBaseImpl {
         }
         return ok(this.pool);
 
-      
+
     }
 
     private async computeAllocation(): Promise<number> {
@@ -198,7 +198,7 @@ export default class PoolCreateImpl extends PoolBaseImpl {
         const startTime = Date.now();
         for (let i = 1; i <= pool.to_allocate; i++) {
             const scratchOrgPromise: Promise<ScratchOrg> = scratchOrgCreationLimiter.schedule(() =>
-                scratchOrgOperator.create(`SO` + i, this.pool.configFilePath, this.pool.expiry, this.pool.waitTime)
+                scratchOrgOperator.create(`SO` + i, this.pool.configFilePath, this.pool.expiry, this.pool.waitTime, this.pool)
             );
             scratchOrgPromises.push(scratchOrgPromise);
         }

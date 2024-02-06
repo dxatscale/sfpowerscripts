@@ -7,6 +7,7 @@ import { ScratchOrgRequest } from '@salesforce/core';
 import { COLOR_KEY_MESSAGE } from '@flxblio/sfp-logger';
 import getFormattedTime from '../utils/GetFormattedTime';
 import SFPStatsSender from '../stats/SFPStatsSender';
+import { PoolConfig } from './pool/PoolConfig';
 const retry = require('async-retry');
 
 export default class ScratchOrgOperator {
@@ -16,7 +17,8 @@ export default class ScratchOrgOperator {
         alias: string,
         config_file_path: string,
         expiry: number,
-        waitTime: number = 6
+        waitTime: number = 6,
+        poolConfig: Partial<PoolConfig>
     ): Promise<ScratchOrg> {
         SFPLogger.log('Parameters: ' + alias + ' ' + config_file_path + ' ' + expiry + ' ', LoggerLevel.TRACE);
 
@@ -26,7 +28,8 @@ export default class ScratchOrgOperator {
             alias,
             config_file_path,
             Duration.days(expiry),
-            Duration.minutes(waitTime)
+            Duration.minutes(waitTime),
+            poolConfig
         );
         SFPLogger.log(JSON.stringify(scatchOrgResult), LoggerLevel.TRACE);
 
@@ -81,11 +84,11 @@ export default class ScratchOrgOperator {
         );
     }
 
-    private async requestAScratchOrg(alias: string, definitionFile: string, expireIn: Duration, waitTime: Duration) {
+    private async requestAScratchOrg(alias: string, definitionFile: string, expireIn: Duration, waitTime: Duration, poolConfig: Partial<PoolConfig>) {
         const createCommandOptions: ScratchOrgRequest = {
             durationDays: expireIn.days,
             nonamespace: false,
-            noancestors: false,
+            noancestors: poolConfig.noAnchestors || false,
             wait: waitTime,
             retry: 3,
             definitionfile: definitionFile,
