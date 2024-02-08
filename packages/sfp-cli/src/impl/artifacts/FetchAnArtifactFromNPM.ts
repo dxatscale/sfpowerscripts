@@ -2,14 +2,12 @@ import * as fs from 'fs-extra';
 import child_process = require('child_process');
 import path = require('path');
 import FetchAnArtifact from './FetchAnArtifact';
-import SFPLogger, { COLOR_WARNING } from '@flxblio/sfp-logger';
+import SFPLogger, { COLOR_WARNING, LoggerLevel } from '@flxblio/sfp-logger';
 
 export class FetchAnArtifactFromNPM implements FetchAnArtifact {
     constructor(private scope: string, private npmrcPath: string) {
-        
         //Check whether the user has already passed in @, and remove it
-        this.scope= this.scope.replace(/@/g, '').toLowerCase();
-    
+        this.scope = this.scope.replace(/@/g, '').toLowerCase();
 
         if (this.npmrcPath) {
             try {
@@ -45,20 +43,27 @@ export class FetchAnArtifactFromNPM implements FetchAnArtifact {
 
             cmd += `@${version}`;
 
-            console.log(`Fetching ${packageName} using ${cmd}`);
+            SFPLogger.log(`Fetching ${packageName} using ${cmd}`,LoggerLevel.INFO);
 
             child_process.execSync(cmd, {
                 cwd: artifactDirectory,
                 stdio: 'pipe',
             });
         } catch (error) {
+            SFPLogger.log(
+                COLOR_WARNING(
+                    `Artifact  for ${packageName} not found in the  NPM Registry provided, This might result in deployment failures, Try running with trace log level for more information`
+                ),
+                LoggerLevel.INFO
+            );
+
+            SFPLogger.log(
+                error,
+                LoggerLevel.TRACE
+            );
+
+
             if (!isToContinueOnMissingArtifact) throw error;
-            else
-                SFPLogger.log(
-                    COLOR_WARNING(
-                        `Artifact  for ${packageName} missing in NPM Registry provided, This might result in deployment failures`
-                    )
-                );
         }
     }
 }

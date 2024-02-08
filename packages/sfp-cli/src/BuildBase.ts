@@ -22,7 +22,7 @@ import SFPLogger, {
 } from '@flxblio/sfp-logger';
 import getFormattedTime from './core/utils/GetFormattedTime';
 import SfpPackage from './core/package/SfpPackage';
-import ReleaseConfig from './impl/release/ReleaseConfig';
+import ReleaseConfigLoader from './impl/release/ReleaseConfigLoader';
 import { Flags } from '@oclif/core';
 import { loglevel, orgApiVersionFlagSfdxStyle, targetdevhubusername } from './flags/sfdxflags';
 
@@ -234,8 +234,8 @@ export default abstract class BuildBase extends SfpCommand {
 
     private includeOnlyPackagesAsPerReleaseConfig(releaseConfigFilePath:string,buildProps: BuildProps,logger?:Logger): BuildProps {
         if (releaseConfigFilePath) {
-        let releaseConfig:ReleaseConfig = new ReleaseConfig(logger, releaseConfigFilePath);
-         buildProps.includeOnlyPackages = releaseConfig.getPackagesAsPerReleaseConfig();
+        let releaseConfigLoader:ReleaseConfigLoader = new ReleaseConfigLoader(logger, releaseConfigFilePath);
+         buildProps.includeOnlyPackages = releaseConfigLoader.getPackagesAsPerReleaseConfig();
          printIncludeOnlyPackages(buildProps.includeOnlyPackages);
         }
         return buildProps;

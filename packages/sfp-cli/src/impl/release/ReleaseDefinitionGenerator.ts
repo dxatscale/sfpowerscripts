@@ -1,10 +1,10 @@
 import { GitError } from 'simple-git';
 import * as fs from 'fs-extra';
-import ReleaseDefinitionSchema from './ReleaseDefinitionSchema';
+import ReleaseDefinition from './ReleaseDefinition';
 import ProjectConfig from '../../core/project/ProjectConfig';
 import Ajv, { _ } from 'ajv';
 import SFPLogger, { COLOR_HEADER, COLOR_KEY_MESSAGE, Logger } from '@flxblio/sfp-logger';
-import ReleaseDefinitionGeneratorConfigSchema from './ReleaseDefinitionGeneratorConfigSchema';
+import ReleaseConfig from './ReleaseConfig';
 import lodash = require('lodash');
 import { LoggerLevel } from '@flxblio/sfp-logger';
 import Git from '../../core/git/Git';
@@ -14,11 +14,11 @@ const yaml = require('js-yaml');
 const path = require('path');
 
 export default class ReleaseDefinitionGenerator {
-    private _releaseDefinitionGeneratorSchema: ReleaseDefinitionGeneratorConfigSchema;
+    private _releaseConfiguration: ReleaseConfig;
 
-    get releaseDefinitionGeneratorConfigSchema() {
+    get releaseConfiguration() {
         // Return clone of releaseDefinition for immutability
-        return lodash.cloneDeep(this._releaseDefinitionGeneratorSchema);
+        return lodash.cloneDeep(this._releaseConfiguration);
     }
 
     public constructor(
@@ -27,25 +27,36 @@ export default class ReleaseDefinitionGenerator {
         pathToReleaseDefinition: string,
         private releaseName: string,
         private branch: string,
+        private metadata: any,
         private directory?: string,
         private noPush: boolean = false,
         private forcePush: boolean = false,
         private inMemoryMode:boolean = false
     ) {
-        this._releaseDefinitionGeneratorSchema = yaml.load(fs.readFileSync(pathToReleaseDefinition, 'utf8'));
-        this.validateReleaseDefinitionGeneratorConfig(this._releaseDefinitionGeneratorSchema);
+        this._releaseConfiguration = yaml.load(fs.readFileSync(pathToReleaseDefinition, 'utf8'));
+        this.validateReleaseDefinitionGeneratorConfig(this._releaseConfiguration);
+
+
+        //Attempt to parse metadata flag into JSON
+        if (this.metadata) {
+            try {
+                this.metadata = JSON.parse(this.metadata);
+            } catch (error) {
+                throw new Error(`Invalid JSON for metadata flag: ${error}`);
+            }
+        }   
 
         // Easy to handle here than with schema
         if (
-            this._releaseDefinitionGeneratorSchema.includeOnlyArtifacts &&
-            this.releaseDefinitionGeneratorConfigSchema.excludeArtifacts
+            this._releaseConfiguration.includeOnlyArtifacts &&
+            this.releaseConfiguration.excludeArtifacts
         ) {
             throw new Error('Error: Invalid schema: either use includeArtifacts or excludeArtifacts');
         }
         // Easy to handle here than with schema
         if (
-            this._releaseDefinitionGeneratorSchema.includeOnlyPackageDependencies &&
-            this.releaseDefinitionGeneratorConfigSchema.excludePackageDependencies
+            this._releaseConfiguration.includeOnlyPackageDependencies &&
+            this.releaseConfiguration.excludePackageDependencies
         ) {
             throw new Error(
                 'Error: Invalid schema: either use includePackageDependencies or excludePackageDependencies'
@@ -54,13 +65,13 @@ export default class ReleaseDefinitionGenerator {
 
         // Workaround for jsonschema not supporting validation based on dependency value
         if (
-            this._releaseDefinitionGeneratorSchema.releasedefinitionProperties?.baselineOrg &&
-            !this._releaseDefinitionGeneratorSchema.releasedefinitionProperties?.skipIfAlreadyInstalled
+            this._releaseConfiguration.releasedefinitionProperties?.baselineOrg &&
+            !this._releaseConfiguration.releasedefinitionProperties?.skipIfAlreadyInstalled
         )
             throw new Error("Release option 'skipIfAlreadyInstalled' must be true for 'baselineOrg'");
     }
 
-    async exec(): Promise<ReleaseDefinitionSchema | {
+    async exec(): Promise<ReleaseDefinition | {
         releaseDefinitonYAML: string;
         pathToReleaseDefnDirectory: string;
     }> {
@@ -92,7 +103,7 @@ export default class ReleaseDefinitionGenerator {
         );
     }
 
-    private async execHandler(): Promise<ReleaseDefinitionSchema | {
+    private async execHandler(): Promise<ReleaseDefinition | {
         releaseDefinitonYAML: string;
         pathToReleaseDefnDirectory: string;
     }> {
@@ -146,7 +157,7 @@ export default class ReleaseDefinitionGenerator {
             }
         }
 
-        if (!this.releaseDefinitionGeneratorConfigSchema.excludeAllPackageDependencies) {
+        if (!this.releaseConfiguration.excludeAllPackageDependencies) {
             let allExternalPackages = ProjectConfig.getAllExternalPackages(projectConfig);
             for (const externalPackage of allExternalPackages) {
                 if (
@@ -161,7 +172,7 @@ export default class ReleaseDefinitionGenerator {
         return { artifacts, packageDependencies };
     }
 
-    private async generateReleaseDefintion(artifacts: any, packageDependencies: any, git: Git): Promise<ReleaseDefinitionSchema | {
+    private async generateReleaseDefintion(artifacts: any, packageDependencies: any, git: Git): Promise<ReleaseDefinition | {
     releaseDefinitonYAML: string;
     pathToReleaseDefnDirectory: string;
 }> {
@@ -179,8 +190,10 @@ export default class ReleaseDefinitionGenerator {
                 return obj;
             }, {});
 
-        let releaseDefinition: ReleaseDefinitionSchema = {
+        let releaseDefinition: ReleaseDefinition = {
             release: this.releaseName,
+            releaseConfigName : this.releaseConfiguration?.releaseName,
+            metadata: this.metadata,
             skipIfAlreadyInstalled: true,
             skipArtifactUpdate:false,
             artifacts: artifacts,
@@ -190,18 +203,18 @@ export default class ReleaseDefinitionGenerator {
         if (Object.keys(packageDependencies).length > 0) releaseDefinition.packageDependencies = packageDependencies;
 
         //add promotePackagesBeforeDeploymentToOrg
-        releaseDefinition.promotePackagesBeforeDeploymentToOrg = this.releaseDefinitionGeneratorConfigSchema.releasedefinitionProperties?.promotePackagesBeforeDeploymentToOrg;
+        releaseDefinition.promotePackagesBeforeDeploymentToOrg = this.releaseConfiguration.releasedefinitionProperties?.promotePackagesBeforeDeploymentToOrg;
 	    
         //override skip if already installed
-        if(this.releaseDefinitionGeneratorConfigSchema.releasedefinitionProperties?.skipIfAlreadyInstalled)
-          releaseDefinition.skipIfAlreadyInstalled = this.releaseDefinitionGeneratorConfigSchema.releasedefinitionProperties?.skipIfAlreadyInstalled;
+        if(this.releaseConfiguration.releasedefinitionProperties?.skipIfAlreadyInstalled)
+          releaseDefinition.skipIfAlreadyInstalled = this.releaseConfiguration.releasedefinitionProperties?.skipIfAlreadyInstalled;
 
         //override skip artifact update
-        if(this.releaseDefinitionGeneratorConfigSchema.releasedefinitionProperties?.skipArtifactUpdate)
-            releaseDefinition.skipArtifactUpdate = this.releaseDefinitionGeneratorConfigSchema.releasedefinitionProperties?.skipArtifactUpdate;
+        if(this.releaseConfiguration.releasedefinitionProperties?.skipArtifactUpdate)
+            releaseDefinition.skipArtifactUpdate = this.releaseConfiguration.releasedefinitionProperties?.skipArtifactUpdate;
 
         //Add changelog info
-        releaseDefinition.changelog = this.releaseDefinitionGeneratorConfigSchema.releasedefinitionProperties?.changelog;
+        releaseDefinition.changelog = this.releaseConfiguration.releasedefinitionProperties?.changelog;
 
         if(this.inMemoryMode)
          return releaseDefinition;
@@ -240,10 +253,10 @@ export default class ReleaseDefinitionGenerator {
     }
 
     private validateReleaseDefinitionGeneratorConfig(
-        releaseDefinitionGeneratorSchema: ReleaseDefinitionGeneratorConfigSchema
+        releaseDefinitionGeneratorSchema: ReleaseConfig
     ): void {
         let schema = fs.readJSONSync(
-            path.join(__dirname, '..', '..', '..', 'resources', 'schemas', 'releasedefinitiongenerator.schema.json'),
+            path.join(__dirname, '..', '..', '..', 'resources', 'schemas', 'release-config.schema.json'),
             { encoding: 'UTF-8' }
         );
 
@@ -268,18 +281,18 @@ export default class ReleaseDefinitionGenerator {
     }
 
     private getArtifactPredicate(artifact: string): boolean {
-        if (this.releaseDefinitionGeneratorConfigSchema.includeOnlyArtifacts) {
-            return this.releaseDefinitionGeneratorConfigSchema.includeOnlyArtifacts?.includes(artifact);
-        } else if (this.releaseDefinitionGeneratorConfigSchema.excludeArtifacts) {
-            return !this.releaseDefinitionGeneratorConfigSchema.excludeArtifacts?.includes(artifact);
+        if (this.releaseConfiguration.includeOnlyArtifacts) {
+            return this.releaseConfiguration.includeOnlyArtifacts?.includes(artifact);
+        } else if (this.releaseConfiguration.excludeArtifacts) {
+            return !this.releaseConfiguration.excludeArtifacts?.includes(artifact);
         } else return true;
     }
 
     private getDependencyPredicate(artifact: string): boolean {
-        if (this.releaseDefinitionGeneratorConfigSchema.includeOnlyPackageDependencies) {
-            return this.releaseDefinitionGeneratorConfigSchema.includeOnlyPackageDependencies?.includes(artifact);
-        } else if (this.releaseDefinitionGeneratorConfigSchema.excludePackageDependencies) {
-            return !this.releaseDefinitionGeneratorConfigSchema.excludePackageDependencies?.includes(artifact);
+        if (this.releaseConfiguration.includeOnlyPackageDependencies) {
+            return this.releaseConfiguration.includeOnlyPackageDependencies?.includes(artifact);
+        } else if (this.releaseConfiguration.excludePackageDependencies) {
+            return !this.releaseConfiguration.excludePackageDependencies?.includes(artifact);
         } else return true;
     }
 }

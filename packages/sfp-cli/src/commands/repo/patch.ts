@@ -1,10 +1,10 @@
 import { Messages } from '@salesforce/core';
 import SfpCommand from '../../SfpCommand';
-import ReleaseDefinition from '../../impl/release/ReleaseDefinition';
+import ReleaseDefinitionLoader from '../../impl/release/ReleaseDefinitionLoader';
 import ProjectConfig from '../../core/project/ProjectConfig';
 import GroupConsoleLogs from '../../ui/GroupConsoleLogs';
 import FetchImpl from '../../impl/artifacts/FetchImpl';
-import ReleaseDefinitionSchema from '../../impl/release/ReleaseDefinitionSchema';
+import ReleaseDefinition from '../../impl/release/ReleaseDefinition';
 import path = require('path');
 import ArtifactFetcher, { Artifact } from '../../core/artifacts/ArtifactFetcher';
 import SfpPackage, { PackageType } from '../../core/package/SfpPackage';
@@ -127,7 +127,7 @@ export default class Patch extends SfpCommand {
 
 
     private async fetchArtifacts(
-        releaseDefintions: ReleaseDefinitionSchema[],
+        releaseDefintions: ReleaseDefinition[],
         fetchArtifactScript: string,
         scope: string,
         npmrcPath: string,
@@ -140,17 +140,16 @@ export default class Patch extends SfpCommand {
         groupSection.end();
     }
 
-    private async loadReleaseDefintions(releaseDefinitionPaths: []): Promise<ReleaseDefinitionSchema[]> {
-        let releaseDefinitions: ReleaseDefinitionSchema[] = [];
+    private async loadReleaseDefintions(releaseDefinitionPaths: []): Promise<ReleaseDefinition[]> {
+        let releaseDefinitions: ReleaseDefinition[] = [];
         for (const pathToReleaseDefintion of releaseDefinitionPaths) {
-            let releaseDefinition = (await ReleaseDefinition.loadReleaseDefinition(pathToReleaseDefintion))
-                .releaseDefinition;
+            let releaseDefinition = await ReleaseDefinitionLoader.loadReleaseDefinition(pathToReleaseDefintion);
             releaseDefinitions.push(releaseDefinition);
         }
         return releaseDefinitions;
     }
 
-    private async overwriteModules(releaseDefinitions: ReleaseDefinitionSchema[], git: Git, logger: Logger) {
+    private async overwriteModules(releaseDefinitions: ReleaseDefinition[], git: Git, logger: Logger) {
         let temporaryWorkingDirectory = git.getRepositoryPath();
         let revisedProjectConfig = ProjectConfig.getSFDXProjectConfig(temporaryWorkingDirectory);
         for (const releaseDefinition of releaseDefinitions) {

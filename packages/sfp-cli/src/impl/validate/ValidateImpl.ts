@@ -48,7 +48,7 @@ import ExternalPackage2DependencyResolver from "../../core/package/dependencies/
 import ExternalDependencyDisplayer from "../../core/display/ExternalDependencyDisplayer";
 import { PreDeployHook } from "../deploy/PreDeployHook";
 import GroupConsoleLogs from "../../ui/GroupConsoleLogs";
-import ReleaseConfig from "../release/ReleaseConfig";
+import ReleaseConfigLoader from "../release/ReleaseConfigLoader";
 import { mapInstalledArtifactstoPkgAndCommits } from "../../utils/FetchArtifactsFromOrg";
 import { ApexTestValidator } from "./ApexTestValidator";
 import OrgInfoDisplayer from "../../ui/OrgInfoDisplayer";
@@ -509,12 +509,12 @@ export default class ValidateImpl implements PostDeployHook, PreDeployHook {
 				props.validationMode ===
 				ValidationMode.THOROUGH_LIMITED_BY_RELEASE_CONFIG
 			) {
-				let releaseConfig: ReleaseConfig = new ReleaseConfig(
+				let releaseConfigLoader: ReleaseConfigLoader = new ReleaseConfigLoader(
 					logger,
 					props.releaseConfigPath,
 					true
 				);
-				return releaseConfig.getPackagesAsPerReleaseConfig();
+				return releaseConfigLoader.getPackagesAsPerReleaseConfig();
 			}
 		}
 

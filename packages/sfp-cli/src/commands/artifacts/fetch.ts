@@ -1,7 +1,7 @@
 import SfpCommand from '../../SfpCommand';
 import { LoggerLevel, Messages } from '@salesforce/core';
 import FetchImpl, { ArtifactVersion } from '../../impl/artifacts/FetchImpl';
-import ReleaseDefinition from '../../impl/release/ReleaseDefinition';
+import ReleaseDefinitionLoader from '../../impl/release/ReleaseDefinitionLoader';
 import FetchArtifactsError from '../../impl/artifacts/FetchArtifactsError';
 import { ConsoleLogger } from '@flxblio/sfp-logger';
 import { Flags } from '@oclif/core';
@@ -58,7 +58,7 @@ export default class Fetch extends SfpCommand {
     public async execute() {
         this.validateFlags();
 
-        let releaseDefinition = (await ReleaseDefinition.loadReleaseDefinition(this.flags.releasedefinition)).releaseDefinition;
+        let releaseDefinition = await ReleaseDefinitionLoader.loadReleaseDefinition(this.flags.releasedefinition);
         let result: {
             success: ArtifactVersion[];
             failed:  ArtifactVersion[];

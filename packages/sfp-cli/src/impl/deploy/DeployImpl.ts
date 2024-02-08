@@ -23,7 +23,7 @@ import * as _ from 'lodash';
 import GroupConsoleLogs from '../../ui/GroupConsoleLogs';
 import { ZERO_BORDER_TABLE } from '../../ui/TableConstants';
 import convertBuildNumDotDelimToHyphen from '../../core/utils/VersionNumberConverter';
-import ReleaseConfig from '../release/ReleaseConfig';
+import ReleaseConfigLoader from '../release/ReleaseConfigLoader';
 import fs from 'fs-extra';
 import { Align, getMarkdownTable } from 'markdown-table-ts';
 import FileOutputHandler from '../../outputs/FileOutputHandler';
@@ -327,8 +327,8 @@ export default class DeployImpl {
        else
        {
           SFPLogger.log(COLOR_KEY_MESSAGE(`Filtering packages to be deployed based on release config ${COLOR_KEY_VALUE(releaseConfigPath)}`),LoggerLevel.INFO,logger);
-          let releaseConfig:ReleaseConfig = new ReleaseConfig(logger,releaseConfigPath);
-          let packages = releaseConfig.getPackagesAsPerReleaseConfig();
+          let releaseConfigLoader:ReleaseConfigLoader = new ReleaseConfigLoader(logger,releaseConfigPath);
+          let packages = releaseConfigLoader.getPackagesAsPerReleaseConfig();
           //Filter artifacts based on packages
             let filteredSfPPackages:SfpPackage[] = [];
 

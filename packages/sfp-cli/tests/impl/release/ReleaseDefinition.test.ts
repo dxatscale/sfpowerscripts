@@ -1,6 +1,6 @@
 import { jest, expect } from '@jest/globals';
 const fs = require('fs-extra');
-import ReleaseDefinition from '../../../src/impl/release/ReleaseDefinition';
+import ReleaseDefinitionLoader from '../../../src/impl/release/ReleaseDefinitionLoader';
 
 describe('Given a release definition, validateReleaseDefinition', () => {
     let releaseDefinitionYaml: string;
@@ -18,7 +18,7 @@ describe('Given a release definition, validateReleaseDefinition', () => {
     `;
 
         expect(async () => {
-            await ReleaseDefinition.loadReleaseDefinition('path');
+            await ReleaseDefinitionLoader.loadReleaseDefinition('path');
         }).rejects.toThrowError();
     });
 
@@ -29,7 +29,7 @@ describe('Given a release definition, validateReleaseDefinition', () => {
     `;
 
         expect(async () => {
-            await ReleaseDefinition.loadReleaseDefinition('path');
+            await ReleaseDefinitionLoader.loadReleaseDefinition('path');
         }).rejects.toThrowError();
     });
 
@@ -43,7 +43,7 @@ describe('Given a release definition, validateReleaseDefinition', () => {
     `;
 
         expect(async () => {
-            await ReleaseDefinition.loadReleaseDefinition('path');
+            await ReleaseDefinitionLoader.loadReleaseDefinition('path');
         }).toBeDefined();
     });
 
@@ -57,7 +57,7 @@ describe('Given a release definition, validateReleaseDefinition', () => {
     `;
 
         expect(async () => {
-            await ReleaseDefinition.loadReleaseDefinition('path');
+            await ReleaseDefinitionLoader.loadReleaseDefinition('path');
         }).rejects.toThrowError();
     });
 
@@ -71,7 +71,7 @@ describe('Given a release definition, validateReleaseDefinition', () => {
     `;
 
         expect(async () => {
-            await ReleaseDefinition.loadReleaseDefinition('path');
+            await ReleaseDefinitionLoader.loadReleaseDefinition('path');
         }).toBeDefined();
     });
 
@@ -85,7 +85,7 @@ describe('Given a release definition, validateReleaseDefinition', () => {
     `;
 
         expect(async () => {
-            await ReleaseDefinition.loadReleaseDefinition('path');
+            await ReleaseDefinitionLoader.loadReleaseDefinition('path');
         }).rejects.toThrowError();
     });
 
@@ -103,7 +103,7 @@ describe('Given a release definition, validateReleaseDefinition', () => {
     `;
 
         expect(async () => {
-            await ReleaseDefinition.loadReleaseDefinition('path');
+            await ReleaseDefinitionLoader.loadReleaseDefinition('path');
         }).toBeDefined();
     });
 
@@ -119,7 +119,7 @@ describe('Given a release definition, validateReleaseDefinition', () => {
     `;
 
         expect(async () => {
-            await ReleaseDefinition.loadReleaseDefinition('path');
+            await ReleaseDefinitionLoader.loadReleaseDefinition('path');
         }).rejects.toThrow();
     });
 });

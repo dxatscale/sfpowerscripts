@@ -50,6 +50,10 @@ export default class Generate extends SfpCommand {
             description: messages.getMessage('forcePushFlagDescription'),
             dependsOn: ['push'],
         }),
+        metadata: Flags.string({
+            char: 'm',
+            description: messages.getMessage('metadataFlagDescription'),
+        }),
         loglevel
     };
 
@@ -61,6 +65,7 @@ export default class Generate extends SfpCommand {
                 this.flags.configfile,
                 this.flags.releasename,
                 this.flags.branchname,
+                this.flags.metadata,
                 this.flags.directory,
                 this.flags.nopush,
                 this.flags.forcepush

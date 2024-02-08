@@ -1,14 +1,22 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "$id": "https://github.com/flxbl-io/sfp/blob/develop/packages/sfp-cli/resources/releasedefinitiongenerator.schema.json",
-    "title": "release definition generator",
-    "description": "The definition for generating a release defintion using generator command",
+    "$id": "https://github.com/flxbl-io/json-schemas/blob/main/release-config.schema.json",
+    "title": "Configuration of a release, used as an input to the release definition generator or by sfops for understanding how the repo is structure",
+    "description": "Configuration of a release",
     "type": "object",
     "additionalProperties": true,
     "dependencies": {
         "baselineOrg": ["skipIfAlreadyInstalled"]
     },
     "properties": {
+        "releaseName": {
+            "type": "string",
+            "title": "Name of the domain this release configuration belongs to"
+        },
+        "pool": {
+            "type": "string",
+            "title": "The pool of review sandbox or scratch org to be used for validating the packages that are part of this release configuration"
+        },
         "excludeArtifacts": {
             "type": "array",
             "title": "Exclude the below artifacts while creating a release definition",
@@ -57,7 +65,7 @@
         },
         "releasedefinitionProperties":{
             "type": "object",
-            "title": "Properties that need to be set in the generated definition file",
+            "title": "Properties that need to be set in the generated release definition",
             "additionalProperties": true,
             "properties": {
             "skipIfAlreadyInstalled": {

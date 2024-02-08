@@ -1,4 +1,4 @@
-import ReleaseDefinitionSchema from './ReleaseDefinitionSchema';
+import ReleaseDefinition from './ReleaseDefinition';
 import DeployImpl, { DeployProps, DeploymentMode, DeploymentResult } from '../deploy/DeployImpl';
 import SFPLogger, { COLOR_HEADER, COLOR_KEY_MESSAGE, ConsoleLogger, Logger, LoggerLevel } from '@flxblio/sfp-logger';
 import { Stage } from '../Stage';
@@ -15,7 +15,7 @@ import FetchImpl from '../artifacts/FetchImpl';
 import GroupConsoleLogs  from '../../ui/GroupConsoleLogs';
 
 export interface ReleaseProps {
-    releaseDefinitions: ReleaseDefinitionSchema[];
+    releaseDefinitions: ReleaseDefinition[];
     targetOrg: string;
     fetchArtifactScript: string;
     isNpm: boolean;
@@ -195,9 +195,9 @@ export default class ReleaseImpl {
     }
 
     private async deployArtifacts(
-        releaseDefinitions: ReleaseDefinitionSchema[]
-    ): Promise<{ releaseDefinition: ReleaseDefinitionSchema; result: DeploymentResult }[]> {
-        let deploymentResults: { releaseDefinition: ReleaseDefinitionSchema; result: DeploymentResult }[] = [];
+        releaseDefinitions: ReleaseDefinition[]
+    ): Promise<{ releaseDefinition: ReleaseDefinition; result: DeploymentResult }[]> {
+        let deploymentResults: { releaseDefinition: ReleaseDefinition; result: DeploymentResult }[] = [];
         for (const releaseDefinition of releaseDefinitions) {
             let groupSection = new GroupConsoleLogs(`Release ${releaseDefinition.release}`).begin();
             SFPLogger.log(EOL);
@@ -240,7 +240,7 @@ export default class ReleaseImpl {
     }
 
     private async installPackageDependencies(
-        releaseDefinitions: ReleaseDefinitionSchema[],
+        releaseDefinitions: ReleaseDefinition[],
         targetOrg: string,
         keys: string,
         waitTime: number
@@ -319,7 +319,7 @@ export default class ReleaseImpl {
         return output;
     }
 
-    private displayReleaseInfo(releaseDefinition: ReleaseDefinitionSchema, props: ReleaseProps) {
+    private displayReleaseInfo(releaseDefinition: ReleaseDefinition, props: ReleaseProps) {
         SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
 
         SFPLogger.log(COLOR_KEY_MESSAGE(`Release: ${releaseDefinition.release}`));
@@ -352,7 +352,7 @@ interface InstallDependenciesResult {
 }
 
 export interface ReleaseResult {
-    succeededDeployments: { releaseDefinition: ReleaseDefinitionSchema; result: DeploymentResult }[];
-    failedDeployments: { releaseDefinition: ReleaseDefinitionSchema; result: DeploymentResult }[];
+    succeededDeployments: { releaseDefinition: ReleaseDefinition; result: DeploymentResult }[];
+    failedDeployments: { releaseDefinition: ReleaseDefinition; result: DeploymentResult }[];
     installDependenciesResult: InstallDependenciesResult;
 }

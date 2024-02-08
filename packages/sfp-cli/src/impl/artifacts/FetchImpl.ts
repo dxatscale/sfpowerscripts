@@ -1,7 +1,7 @@
 import * as fs from 'fs-extra';
 import Git from '../../core/git/Git';
 import GitTags from '../../core/git/GitTags';
-import ReleaseDefinitionSchema from '../release/ReleaseDefinitionSchema';
+import ReleaseDefinition from '../release/ReleaseDefinition';
 import FetchArtifactsError from './FetchArtifactsError';
 import * as rimraf from 'rimraf';
 import FetchArtifactSelector from './FetchArtifactSelector';
@@ -22,7 +22,7 @@ export default class FetchImpl {
     }
 
     public async fetchArtifacts(
-        releaseDefinitions: ReleaseDefinitionSchema[]
+        releaseDefinitions: ReleaseDefinition[]
     ): Promise<{
         success: ArtifactVersion[];
         failed: ArtifactVersion[];

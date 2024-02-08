@@ -2,7 +2,7 @@ import SfpCommand from '../../SfpCommand';
 import { LoggerLevel, Messages } from '@salesforce/core';
 import SFPStatsSender from '../../core/stats/SFPStatsSender';
 import ReleaseImpl, { ReleaseProps, ReleaseResult } from '../../impl/release/ReleaseImpl';
-import ReleaseDefinition from '../../impl/release/ReleaseDefinition';
+import ReleaseDefinitionLoader from '../../impl/release/ReleaseDefinitionLoader';
 import ReleaseError from '../../errors/ReleaseError';
 import path = require('path');
 import SFPLogger, {
@@ -14,7 +14,7 @@ import SFPLogger, {
     COLOR_KEY_MESSAGE,
     ConsoleLogger,
 } from '@flxblio/sfp-logger';
-import ReleaseDefinitionSchema from '../../impl/release/ReleaseDefinitionSchema';
+import ReleaseDefinition from '../../impl/release/ReleaseDefinition';
 import { arrayFlagSfdxStyle, loglevel, logsgroupsymbol, optionalDevHubFlag, requiredUserNameFlag } from '../../flags/sfdxflags';
 import { Flags } from '@oclif/core';
 
@@ -95,6 +95,10 @@ export default class Release extends SfpCommand {
                 message: '--allowunpromotedpackages is deprecated, All packages are allowed',
              },
         }),
+        changelogByDomains: Flags.boolean({
+            description: messages.getMessage('changelogByDomainsFlagDescription'),
+            hidden: true
+        }),
         devhubalias: optionalDevHubFlag,
         loglevel
     };
@@ -119,9 +123,9 @@ export default class Release extends SfpCommand {
 
         SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
 
-        let releaseDefinitions: ReleaseDefinitionSchema[] = [];
+        let releaseDefinitions: ReleaseDefinition[] = [];
         for (const pathToReleaseDefintion of this.flags.releasedefinition) {
-            let releaseDefinition = (await ReleaseDefinition.loadReleaseDefinition(pathToReleaseDefintion)).releaseDefinition;
+            let releaseDefinition = await ReleaseDefinitionLoader.loadReleaseDefinition(pathToReleaseDefintion);
 
             //Support Legacy by taking the existing single workItemFilter and pushing it to the new model
             if(releaseDefinition.changelog?.workItemFilter)

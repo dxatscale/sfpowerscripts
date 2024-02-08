@@ -23,10 +23,10 @@ import SFPStatsSender from '../../core/stats/SFPStatsSender';
 import ExternalPackage2DependencyResolver from '../../core/package/dependencies/ExternalPackage2DependencyResolver';
 import ExternalDependencyDisplayer from '../../core/display/ExternalDependencyDisplayer';
 import ReleaseDefinitionGenerator from '../release/ReleaseDefinitionGenerator';
-import ReleaseDefinitionSchema from '../release/ReleaseDefinitionSchema';
+import ReleaseDefinition from '../release/ReleaseDefinition';
 import { ZERO_BORDER_TABLE } from '../../ui/TableConstants';
 import GroupConsoleLogs from '../../ui/GroupConsoleLogs';
-import ReleaseConfig from '../release/ReleaseConfig';
+import ReleaseConfigLoader from '../release/ReleaseConfigLoader';
 import { COLOR_KEY_VALUE } from '@flxblio/sfp-logger';
 
 const Table = require('cli-table');
@@ -114,11 +114,12 @@ export default class PrepareImpl {
                 'prepare',
                 'test',
                 undefined,
+                undefined,
                 true,
                 false,
                 true
             );
-            let releaseDefinition = (await releaseDefinitionGenerator.exec()) as ReleaseDefinitionSchema;
+            let releaseDefinition = (await releaseDefinitionGenerator.exec()) as ReleaseDefinition;
             return Object.keys(releaseDefinition.artifacts);
         }
     }
@@ -288,8 +289,8 @@ export default class PrepareImpl {
 
         function includeOnlyPackagesAsPerReleaseConfig(releaseConfigFilePath:string,buildProps: BuildProps,logger?:Logger): BuildProps {
             if (releaseConfigFilePath) {
-            let releaseConfig:ReleaseConfig = new ReleaseConfig(logger, releaseConfigFilePath);
-             buildProps.includeOnlyPackages = releaseConfig.getPackagesAsPerReleaseConfig();
+            let releaseConfigLoader:ReleaseConfigLoader = new ReleaseConfigLoader(logger, releaseConfigFilePath);
+             buildProps.includeOnlyPackages = releaseConfigLoader.getPackagesAsPerReleaseConfig();
              printIncludeOnlyPackages(buildProps.includeOnlyPackages);
             }
             return buildProps;
