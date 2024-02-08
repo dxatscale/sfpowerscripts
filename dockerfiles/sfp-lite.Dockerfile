@@ -12,7 +12,7 @@ LABEL org.opencontainers.image.documentation "https://docs.flxbl.io/sfp"
 LABEL org.opencontainers.image.revision $GIT_COMMIT
 LABEL org.opencontainers.image.vendor "Flxbl"
 LABEL org.opencontainers.image.source "https://github.com/flxbl-io/sfp"
-LABEL org.opencontainers.image.title "Flxbl sfp lite docker image - January 24"
+LABEL org.opencontainers.image.title "Flxbl sfp lite docker image - February 24"
 
 
 ENV DEBIAN_FRONTEND=noninteractive

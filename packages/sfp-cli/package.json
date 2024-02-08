@@ -1,10 +1,10 @@
 {
     "name": "@flxblio/sfp",
     "description": "Flxbl Toolkit",
-    "version": "31.1.0",
+    "version": "32.0.0",
     "license": "MIT",
     "author": "flxblio",
-    "release": "January 24",
+    "release": "February 24",
     "bin": {
         "sfp": "./bin/run",
         "sfpowerscripts": "./bin/run"
