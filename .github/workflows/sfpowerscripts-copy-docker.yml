@@ -10,7 +10,7 @@ on:
     repo:
       type: string
       required: false
-      default: 'dxatscale'
+      default: 'flxbl-io'
     image:
       type: string
       required: false

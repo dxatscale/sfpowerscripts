@@ -17,7 +17,7 @@ on:
     image:
       type: string
       required: false
-      default: sfpowerscripts
+      default: sfp
     suffix-tag:
       type: string
       required: true
