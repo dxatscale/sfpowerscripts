@@ -43,7 +43,11 @@ type DeploymentStatus = {
     result: DeploymentResult;
 };
 
+
 export default class ReleaseImpl {
+
+   
+
     constructor(private props: ReleaseProps, private logger?: Logger) {}
 
     public async exec(): Promise<ReleaseResult> {
@@ -118,7 +122,7 @@ export default class ReleaseImpl {
                     try {
                         let changelogImpl: ChangelogImpl = new ChangelogImpl(
                             this.logger,
-                            'artifacts',
+                            this.getArtifactDirectory(releaseDefinition),
                             releaseName,
                             workitemFilters,
                             limit,
@@ -235,15 +239,10 @@ export default class ReleaseImpl {
 
             this.displayReleaseInfo(releaseDefinition, this.props);
 
-            //Each release will be downloaded to specific subfolder inside the provided artifact directory
-            //As each release is a collection of artifacts
-            let revisedArtifactDirectory = path.join(
-                'artifacts',
-                releaseDefinition.release.replace(/[/\\?%*:|"<>]/g, '-')
-            );
+
             let deployProps: DeployProps = {
                 targetUsername: this.props.targetOrg,
-                artifactDir: revisedArtifactDirectory,
+                artifactDir: this.getArtifactDirectory(releaseDefinition),
                 waitTime: this.props.waitTime,
                 tags: this.props.tags,
                 isTestsToBeTriggered: false,
@@ -406,6 +405,21 @@ export default class ReleaseImpl {
             SFPLogger.log(COLOR_KEY_MESSAGE(`Promte Packages Before Deployment Activated?: true`));
 
         SFPLogger.printHeaderLine('', COLOR_HEADER, LoggerLevel.INFO);
+    }
+
+    private getArtifactDirectory(releaseDefinition: ReleaseDefinition) {
+        let revisedArtifactDirectory = path.join(
+            'artifacts',
+            releaseDefinition.release.replace(/[/\\?%*:|"<>]/g, '-')
+        );
+        if (releaseDefinition.releaseConfigName) {
+            revisedArtifactDirectory = path.join(
+                'artifacts',
+                releaseDefinition.releaseConfigName.replace(/[/\\?%*:|"<>]/g, '-'),
+                releaseDefinition.release.replace(/[/\\?%*:|"<>]/g, '-')
+            );
+        }
+        return revisedArtifactDirectory;
     }
 }
 
