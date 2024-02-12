@@ -46,7 +46,7 @@ export default class PackageDependencyResolver {
                     let dependency = packageDirectory.dependencies[i];
                     if (this.projectConfig.packageAliases[dependency.package] === undefined && !this.isSubscriberPackageVersionId(dependency.package)) {
                         
-                        throw new Error(`Can't find package id for dependency: ` + dependency.package);
+                        throw new Error(`Can't find package id for dependency: ${dependency.package}, Please ensure that the package is added to sfdx-project.json in your packageAliases`);
                     }
 
                     let packageVersionId = this.isSubscriberPackageVersionId(dependency.package)?dependency.package:this.projectConfig.packageAliases[dependency.package]
@@ -211,7 +211,8 @@ export default class PackageDependencyResolver {
 
         if (!package2VersionOnCurrentBranch) {
             throw new Error(
-                `Failed to find validated Package2 version for dependency ${dependency.package} with version ${dependency.versionNumber} created from the current branch`
+                `Failed to find validated Package2 version for dependency ${dependency.package} with version ${dependency.versionNumber} created from the current branch, 
+                 You will need to create a new version of the package on the current branch to resolve this dependency.`
             );
         }
 

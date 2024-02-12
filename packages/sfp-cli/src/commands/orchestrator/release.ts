@@ -15,7 +15,13 @@ import SFPLogger, {
     ConsoleLogger,
 } from '@flxblio/sfp-logger';
 import ReleaseDefinition from '../../impl/release/ReleaseDefinition';
-import { arrayFlagSfdxStyle, loglevel, logsgroupsymbol, optionalDevHubFlag, requiredUserNameFlag } from '../../flags/sfdxflags';
+import {
+    arrayFlagSfdxStyle,
+    loglevel,
+    logsgroupsymbol,
+    optionalDevHubFlag,
+    requiredUserNameFlag,
+} from '../../flags/sfdxflags';
 import { Flags } from '@oclif/core';
 
 Messages.importMessagesDirectory(__dirname);
@@ -91,16 +97,16 @@ export default class Release extends SfpCommand {
         allowunpromotedpackages: Flags.boolean({
             description: messages.getMessage('allowUnpromotedPackagesFlagDescription'),
             hidden: true,
-            deprecated: { 
+            deprecated: {
                 message: '--allowunpromotedpackages is deprecated, All packages are allowed',
-             },
+            },
         }),
         changelogByDomains: Flags.boolean({
             description: messages.getMessage('changelogByDomainsFlagDescription'),
-            hidden: true
+            hidden: true,
         }),
         devhubalias: optionalDevHubFlag,
-        loglevel
+        loglevel,
     };
 
     public async execute() {
@@ -121,15 +127,14 @@ export default class Release extends SfpCommand {
         SFPLogger.log(COLOR_HEADER(`Release Definitions: ${this.flags.releasedefinition}`));
         SFPLogger.log(COLOR_HEADER(`Artifact Directory: ${path.resolve('artifacts')}`));
 
-        SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
+        SFPLogger.printHeaderLine('', COLOR_HEADER, LoggerLevel.INFO);
 
         let releaseDefinitions: ReleaseDefinition[] = [];
         for (const pathToReleaseDefintion of this.flags.releasedefinition) {
             let releaseDefinition = await ReleaseDefinitionLoader.loadReleaseDefinition(pathToReleaseDefintion);
 
             //Support Legacy by taking the existing single workItemFilter and pushing it to the new model
-            if(releaseDefinition.changelog?.workItemFilter)
-            {
+            if (releaseDefinition.changelog?.workItemFilter) {
                 releaseDefinition.changelog.workItemFilters = new Array<string>();
                 releaseDefinition.changelog.workItemFilters.push(releaseDefinition.changelog?.workItemFilter);
             }
@@ -164,21 +169,19 @@ export default class Release extends SfpCommand {
                 isGenerateChangelog: this.flags.generatechangelog,
                 devhubUserName: this.flags.devhubalias,
                 branch: this.flags.branchname,
-                directory:this.flags.directory,
+                directory: this.flags.directory,
             };
 
-            let releaseImpl: ReleaseImpl = new ReleaseImpl(props,new ConsoleLogger());
+            let releaseImpl: ReleaseImpl = new ReleaseImpl(props, new ConsoleLogger());
 
             releaseResult = await releaseImpl.exec();
-            if(!this.flags.dryrun)
-             SFPStatsSender.logCount('release.succeeded', tags);
+            if (!this.flags.dryrun) SFPStatsSender.logCount('release.succeeded', tags);
         } catch (err) {
             if (err instanceof ReleaseError) {
                 releaseResult = err.data;
             } else SFPLogger.log(err.message);
 
-            if(!this.flags.dryrun)
-              SFPStatsSender.logCount('release.failed', tags);
+            if (!this.flags.dryrun) SFPStatsSender.logCount('release.failed', tags);
 
             // Fail the task when an error occurs
             process.exitCode = 1;
@@ -193,8 +196,7 @@ export default class Release extends SfpCommand {
     }
 
     private sendMetrics(releaseResult: ReleaseResult, tags: any, totalElapsedTime: number) {
-        if(!this.flags.dryrun)
-        {
+        if (!this.flags.dryrun) {
             SFPStatsSender.logCount('release.scheduled', tags);
 
             SFPStatsSender.logGauge('release.duration', totalElapsedTime, tags);
@@ -223,8 +225,8 @@ export default class Release extends SfpCommand {
     private printReleaseSummary(releaseResult: ReleaseResult, totalElapsedTime: number): void {
         if (this.flags.logsgroupsymbol?.[0])
             SFPLogger.log(COLOR_HEADER(this.flags.logsgroupsymbol[0], 'Release Summary'));
-        
-        SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
+
+        SFPLogger.printHeaderLine('', COLOR_HEADER, LoggerLevel.INFO);
         if (releaseResult.installDependenciesResult) {
             SFPLogger.log(COLOR_HEADER(`\nPackage Dependencies`));
             SFPLogger.log(COLOR_SUCCESS(`   ${releaseResult.installDependenciesResult.success.length} succeeded`));
@@ -233,13 +235,25 @@ export default class Release extends SfpCommand {
         }
 
         for (const succeededDeployment of releaseResult.succeededDeployments) {
-            SFPLogger.log(COLOR_HEADER(`\n Release Defintion: ${succeededDeployment.releaseDefinition.release}`));
+            SFPLogger.log(
+                COLOR_HEADER(
+                    `\n Release Defintion: ${succeededDeployment.releaseDefinition.release} for Release Config: ${
+                        succeededDeployment.releaseDefinition.releaseConfigName
+                            ? succeededDeployment.releaseDefinition.releaseConfigName
+                            : 'N/A'
+                    }`
+                )
+            );
             SFPLogger.log(COLOR_SUCCESS(`   ${succeededDeployment.result.deployed.length} succeeded`));
             SFPLogger.log(COLOR_ERROR(`   ${succeededDeployment.result.failed.length} failed`));
         }
 
         for (const failedDeployment of releaseResult.failedDeployments) {
-            SFPLogger.log(COLOR_HEADER(`\n Release Defintion: ${failedDeployment.releaseDefinition.release}`));
+            SFPLogger.log(COLOR_HEADER(`\n Release Defintion: ${failedDeployment.releaseDefinition.release} for for Release Config: ${
+                failedDeployment.releaseDefinition.releaseConfigName
+                    ? failedDeployment.releaseDefinition.releaseConfigName
+                    : 'N/A'
+            }`));
             SFPLogger.log(COLOR_SUCCESS(`   ${failedDeployment.result.deployed.length} succeeded`));
             SFPLogger.log(
                 COLOR_ERROR(
@@ -249,12 +263,11 @@ export default class Release extends SfpCommand {
             );
         }
 
-        SFPLogger.log(COLOR_TIME(`\nElapsed Time: ${new Date(totalElapsedTime).toISOString().substr(11, 8)}`));
-        SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
+        SFPLogger.log(COLOR_TIME(`\nElapsed Time: ${new Date(totalElapsedTime).toISOString().substring(11,19)}`));
+        SFPLogger.printHeaderLine('', COLOR_HEADER, LoggerLevel.INFO);
     }
 
     protected validateFlags() {
         if (this.flags.npm && !this.flags.scope) throw new Error('--scope parameter is required for NPM');
-
     }
 }
