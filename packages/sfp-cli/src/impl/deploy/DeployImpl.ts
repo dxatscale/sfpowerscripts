@@ -524,7 +524,7 @@ export default class DeployImpl {
             }
             const table = getMarkdownTable(tableData);
             const outputHandler:FileOutputHandler = FileOutputHandler.getInstance();
-            outputHandler.writeOutput('deployment-breakdown.md',table) ;
+            outputHandler.appendOutput('deployment-breakdown.md',table) ;
         }
 
         function processColoursForAllPackages(pkg) {

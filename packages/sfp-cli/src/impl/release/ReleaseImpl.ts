@@ -18,6 +18,7 @@ import SfpPackage from '../../core/package/SfpPackage';
 import SfpPackageBuilder from '../../core/package/SfpPackageBuilder';
 import SfpPackageInquirer from '../../core/package/SfpPackageInquirer';
 import ReleaseDefinitionSorter from './ReleaseDefinitionSorter';
+import FileOutputHandler from '../../outputs/FileOutputHandler';
 
 export interface ReleaseProps {
     releaseDefinitions: ReleaseDefinition[];
@@ -72,6 +73,10 @@ export default class ReleaseImpl {
             this.props.waitTime
         );
 
+        //Clear up the deployment output
+        SFPLogger.log(`Clearing deployment output`, LoggerLevel.TRACE, this.logger);
+        FileOutputHandler.getInstance().deleteOutputFile(`deployment-breakdown.md`);
+        FileOutputHandler.getInstance().deleteOutputFile(`release-changelog.md`);
       
         let deploymentResults = await this.deployArtifacts(sortedReleaseDefns);
 
@@ -126,6 +131,7 @@ export default class ReleaseImpl {
                             this.props.branch,
                             false,
                             this.props.isDryRun,
+                            releaseDefinition.releaseConfigName,
                             this.props.targetOrg
                         );
 
@@ -254,6 +260,7 @@ export default class ReleaseImpl {
                 devhubUserName: this.props.devhubUserName,
             };
 
+            FileOutputHandler.getInstance().appendOutput(`deployment-breakdown.md`,`## ReleaseConfig: ${releaseDefinition.releaseConfigName?releaseDefinition.releaseConfigName:""}\n`);
             let deployImpl: DeployImpl = new DeployImpl(deployProps);
 
             let deploymentResult = await deployImpl.exec();
