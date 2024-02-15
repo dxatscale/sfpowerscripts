@@ -32,4 +32,10 @@ export default class FileOutputHandler {
     fs.appendFileSync(path.join(this.containerFolder, fileName), output);
   }
 
+  public deleteOutputFile(fileName: string) {
+    if (fs.existsSync(path.join(this.containerFolder, fileName))) {
+      fs.unlinkSync(path.join(this.containerFolder, fileName));
+    }
+  }
+
 }

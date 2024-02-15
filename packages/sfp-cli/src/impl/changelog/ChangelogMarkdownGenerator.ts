@@ -40,10 +40,10 @@ export default class ChangelogMarkdownGenerator {
 
             if (!release.names) {
                 payload += `\n<a id=${release['name']}></a>\n `; // Create anchor from release hash Id
-                payload += `# ${release['name']}\n`;
+                payload += `## ${release['name']}\n`;
             } else {
                 payload += `\n<a id=${release.hashId}></a>\n`; // Create anchor from release hash Id
-                payload += `# ${release.names.join(`/`)}\n `;
+                payload += `## ${release.names.join(`/`)}\n `;
                 payload += `Cumulative Release Number: <b>${release.buildNumber}</b> \n\n`;
                 if(release.date && !this.isForWorkItemOnlyOutput)
                   payload += `Matching defintion first created or deployed to an org on: ${release.date}\n `

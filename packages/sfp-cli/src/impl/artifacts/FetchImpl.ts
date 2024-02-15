@@ -40,10 +40,19 @@ export default class FetchImpl {
         for (const releaseDefinition of releaseDefinitions) {
             //Each release will be downloaded to specific subfolder inside the provided artifact directory
             //As each release is a collection of artifacts
+            
             let revisedArtifactDirectory = path.join(
                 this.artifactDirectory,
                 releaseDefinition.release.replace(/[/\\?%*:|"<>]/g, '-')
             );
+            if(releaseDefinition.releaseConfigName)
+            {
+                revisedArtifactDirectory = path.join(
+                    this.artifactDirectory,
+                    releaseDefinition.releaseConfigName.replace(/[/\\?%*:|"<>]/g, '-'),
+                    releaseDefinition.release.replace(/[/\\?%*:|"<>]/g, '-')
+                );
+            }
 
             rimraf.sync(revisedArtifactDirectory);
             fs.mkdirpSync(revisedArtifactDirectory);

@@ -5,7 +5,7 @@ import path from 'path';
 export default class ImpactedRelaseConfigResolver {
 
     public getImpactedReleaseConfigs(impactedPackages, configDir,isExplicitDependencyCheckEnabled:boolean=false, filterBy?: string) {
-        const impactedReleaseDefs = [];
+        const impactedReleaseConfigs = [];
 
         fs.readdirSync(configDir).forEach((file) => {
             const filePath = path.join(configDir, file);
@@ -38,7 +38,7 @@ export default class ImpactedRelaseConfigResolver {
                 if (releaseImpactedPackages.length > 0) {
                     if (filterBy) {
                         if (releaseConfig.releaseName.includes(filterBy)) {
-                            impactedReleaseDefs.push({
+                            impactedReleaseConfigs.push({
                                 releaseName: releaseConfig.releaseName,
                                 pool: releaseConfig.pool
                                     ? releaseConfig.pool
@@ -48,7 +48,7 @@ export default class ImpactedRelaseConfigResolver {
                             });
                         }
                     } else {
-                        impactedReleaseDefs.push({
+                        impactedReleaseConfigs.push({
                             releaseName: releaseConfig.releaseName,
                             pool: releaseConfig.pool
                                 ? releaseConfig.pool
@@ -61,7 +61,7 @@ export default class ImpactedRelaseConfigResolver {
             }
         });
 
-        const sortedImpactedReleaseDefs = impactedReleaseDefs.sort((a, b) => {
+        const sortedImpactedReleaseConfigs = impactedReleaseConfigs.sort((a, b) => {
             if (!a.impactedPackages.length && !b.impactedPackages.length) return 0;
             if (!a.impactedPackages.length) return 1; // Move releases with no impacted packages to the end
             if (!b.impactedPackages.length) return -1; // Same as above
@@ -77,7 +77,7 @@ export default class ImpactedRelaseConfigResolver {
         });
 
         const output = {
-            include: sortedImpactedReleaseDefs,
+            include: sortedImpactedReleaseConfigs,
         };
         return output;
     }

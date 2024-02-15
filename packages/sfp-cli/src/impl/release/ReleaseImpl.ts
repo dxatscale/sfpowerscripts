@@ -1,6 +1,6 @@
 import ReleaseDefinition from './ReleaseDefinition';
 import DeployImpl, { DeployProps, DeploymentMode, DeploymentResult } from '../deploy/DeployImpl';
-import SFPLogger, { COLOR_HEADER, COLOR_KEY_MESSAGE, ConsoleLogger, Logger, LoggerLevel } from '@flxblio/sfp-logger';
+import SFPLogger, { COLOR_HEADER, COLOR_INFO, COLOR_KEY_MESSAGE, ConsoleLogger, Logger, LoggerLevel } from '@flxblio/sfp-logger';
 import { Stage } from '../Stage';
 import ReleaseError from '../../errors/ReleaseError';
 import ChangelogImpl from '../changelog/ChangelogImpl';
@@ -12,7 +12,13 @@ import { EOL } from 'os';
 import Package2Detail from '../../core/package/Package2Detail';
 import InstallUnlockedPackageCollection from '../../core/package/packageInstallers/InstallUnlockedPackageCollection';
 import FetchImpl from '../artifacts/FetchImpl';
-import GroupConsoleLogs  from '../../ui/GroupConsoleLogs';
+import GroupConsoleLogs from '../../ui/GroupConsoleLogs';
+import ArtifactFetcher, { Artifact } from '../../core/artifacts/ArtifactFetcher';
+import SfpPackage from '../../core/package/SfpPackage';
+import SfpPackageBuilder from '../../core/package/SfpPackageBuilder';
+import SfpPackageInquirer from '../../core/package/SfpPackageInquirer';
+import ReleaseDefinitionSorter from './ReleaseDefinitionSorter';
+import FileOutputHandler from '../../outputs/FileOutputHandler';
 
 export interface ReleaseProps {
     releaseDefinitions: ReleaseDefinition[];
@@ -32,7 +38,16 @@ export interface ReleaseProps {
     directory: string;
 }
 
+type DeploymentStatus = {
+    releaseDefinition: ReleaseDefinition;
+    result: DeploymentResult;
+};
+
+
 export default class ReleaseImpl {
+
+   
+
     constructor(private props: ReleaseProps, private logger?: Logger) {}
 
     public async exec(): Promise<ReleaseResult> {
@@ -45,6 +60,13 @@ export default class ReleaseImpl {
             this.logger
         );
         await fetchImpl.fetchArtifacts(this.props.releaseDefinitions);
+
+        SFPLogger.log(COLOR_INFO(`Sorting order of release definitions...`), LoggerLevel.INFO, this.logger);
+        const sortedReleaseDefns = await this.getSortedReleaseDefns('artifacts',this.props.releaseDefinitions, this.logger);
+        const sortedReleaseOrder = sortedReleaseDefns.map((def) => def.release);
+        SFPLogger.log(COLOR_KEY_MESSAGE(`Order of  Release Definitions: ${JSON.stringify(sortedReleaseOrder)}`), LoggerLevel.INFO, this.logger);
+
+
         groupSection.end();
 
         let installDependenciesResult: InstallDependenciesResult;
@@ -55,11 +77,16 @@ export default class ReleaseImpl {
             this.props.waitTime
         );
 
-        let deploymentResults = await this.deployArtifacts(this.props.releaseDefinitions);
+        //Clear up the deployment output
+        SFPLogger.log(`Clearing deployment output`, LoggerLevel.TRACE, this.logger);
+        FileOutputHandler.getInstance().deleteOutputFile(`deployment-breakdown.md`);
+        FileOutputHandler.getInstance().deleteOutputFile(`release-changelog.md`);
+      
+        let deploymentResults = await this.deployArtifacts(sortedReleaseDefns);
 
         //Get all suceeded deploys
-        let succeededDeploymentResults = [];
-        let failedDeploymentResults = [];
+        let succeededDeploymentResults: DeploymentStatus[] = [];
+        let failedDeploymentResults: DeploymentStatus[] = [];
         for (const deploymentResult of deploymentResults) {
             if (deploymentResult.result.failed.length === 0) succeededDeploymentResults.push(deploymentResult);
             else failedDeploymentResults.push(deploymentResult);
@@ -76,62 +103,70 @@ export default class ReleaseImpl {
             let limit = 30;
             let workItemUrl: string;
             let showAllArtifacts: boolean = false;
-            for (const releaseDefinition of this.props.releaseDefinitions) {
-                releaseName = releaseName.concat(releaseDefinition.release, '-');
+
+            //Lets go through all the succeeded deployments and get the changelog
+            for (const succededDeployment of succeededDeploymentResults) {
+                releaseName = succededDeployment.releaseDefinition.release;
+                let releaseDefinition = succededDeployment.releaseDefinition;
                 if (releaseDefinition.changelog) {
-                    if(releaseDefinition.changelog.workItemFilters) {
-                       workitemFilters.push(...releaseDefinition.changelog?.workItemFilters);
+                    if (releaseDefinition.changelog.workItemFilters) {
+                        workitemFilters.push(...releaseDefinition.changelog?.workItemFilters);
                     }
                     if (releaseDefinition.changelog.limit > limit) limit = releaseDefinition.changelog.limit;
                     workItemUrl = releaseDefinition.changelog.workItemUrl;
                     showAllArtifacts = releaseDefinition.changelog.showAllArtifacts;
                 }
-            }
-            //Remove the last '-' from the name
-            releaseName = releaseName.slice(0, -1);
-            if (this.props.isGenerateChangelog) {
-                let groupSection = new GroupConsoleLogs('Release changelog').begin();
-                try {
-                    let changelogImpl: ChangelogImpl = new ChangelogImpl(
-                        this.logger,
-                        'artifacts',
-                        releaseName,
-                        workitemFilters,
-                        limit,
-                        workItemUrl,
-                        showAllArtifacts,
-                        this.props.directory,
-                        false,
-                        this.props.branch,
-                        false,
-                        this.props.isDryRun,
-                        this.props.targetOrg
-                    );
 
-                    let releaseChangelog = await changelogImpl.exec();
+                if (this.props.isGenerateChangelog) {
+                    let groupSection = new GroupConsoleLogs('Release changelog').begin();
+                    try {
+                        let changelogImpl: ChangelogImpl = new ChangelogImpl(
+                            this.logger,
+                            this.getArtifactDirectory(releaseDefinition),
+                            releaseName,
+                            workitemFilters,
+                            limit,
+                            workItemUrl,
+                            showAllArtifacts,
+                            releaseDefinition.releaseConfigName
+                                ? path.join(this.props.directory?this.props.directory:"", releaseDefinition.releaseConfigName)
+                                : this.props.directory?this.props.directory:"",
+                            false,
+                            this.props.branch,
+                            false,
+                            this.props.isDryRun,
+                            releaseDefinition.releaseConfigName,
+                            this.props.targetOrg
+                        );
 
-                    const aggregatedNumberOfWorkItemsInRelease = this.getAggregatedNumberOfWorkItemsInRelease(
-                        releaseName,
-                        releaseChangelog.releases
-                    );
+                        let releaseChangelog = await changelogImpl.exec();
 
-                    SFPStatsSender.logGauge('release.workitems', aggregatedNumberOfWorkItemsInRelease, {
-                        releaseName: releaseName,
-                    });
+                        const aggregatedNumberOfWorkItemsInRelease = this.getAggregatedNumberOfWorkItemsInRelease(
+                            releaseName,
+                            releaseChangelog.releases
+                        );
 
-                    const aggregatedNumberOfCommitsInRelease = this.getAggregatedNumberOfCommitsInRelease(
-                        releaseName,
-                        releaseChangelog.releases
-                    );
+                        SFPStatsSender.logGauge('release.workitems', aggregatedNumberOfWorkItemsInRelease, {
+                            releaseName: releaseName,
+                            domain: releaseDefinition.releaseConfigName,
+                        });
 
-                    SFPStatsSender.logGauge('release.commits', aggregatedNumberOfCommitsInRelease, {
-                        releaseName: releaseName,
-                    });
-                } catch (error) {
-                    SFPLogger.log(`Unable to push changelog`, LoggerLevel.WARN, this.logger);
+                        const aggregatedNumberOfCommitsInRelease = this.getAggregatedNumberOfCommitsInRelease(
+                            releaseName,
+                            releaseChangelog.releases
+                        );
+
+                        SFPStatsSender.logGauge('release.commits', aggregatedNumberOfCommitsInRelease, {
+                            releaseName: releaseName,
+                            domain: releaseDefinition.releaseConfigName,
+                        });
+                    } catch (error) {
+                        SFPLogger.log(`Unable to push changelog`, LoggerLevel.WARN, this.logger);
+                        SFPLogger.log(error, LoggerLevel.TRACE, this.logger);
+                    }
+
+                    groupSection.end();
                 }
-
-                groupSection.end();
             }
         }
 
@@ -194,25 +229,20 @@ export default class ReleaseImpl {
         return numberOfCommits;
     }
 
-    private async deployArtifacts(
-        releaseDefinitions: ReleaseDefinition[]
-    ): Promise<{ releaseDefinition: ReleaseDefinition; result: DeploymentResult }[]> {
+  
+
+    private async deployArtifacts(releaseDefinitions: ReleaseDefinition[]): Promise<DeploymentStatus[]> {
         let deploymentResults: { releaseDefinition: ReleaseDefinition; result: DeploymentResult }[] = [];
         for (const releaseDefinition of releaseDefinitions) {
-            let groupSection = new GroupConsoleLogs(`Release ${releaseDefinition.release}`).begin();
+            let groupSection = new GroupConsoleLogs(`Release ${releaseDefinition.release} for Release Configuration: ${releaseDefinition.releaseConfigName}`).begin();
             SFPLogger.log(EOL);
 
             this.displayReleaseInfo(releaseDefinition, this.props);
 
-            //Each release will be downloaded to specific subfolder inside the provided artifact directory
-            //As each release is a collection of artifacts
-            let revisedArtifactDirectory = path.join(
-                'artifacts',
-                releaseDefinition.release.replace(/[/\\?%*:|"<>]/g, '-')
-            );
+
             let deployProps: DeployProps = {
                 targetUsername: this.props.targetOrg,
-                artifactDir: revisedArtifactDirectory,
+                artifactDir: this.getArtifactDirectory(releaseDefinition),
                 waitTime: this.props.waitTime,
                 tags: this.props.tags,
                 isTestsToBeTriggered: false,
@@ -222,11 +252,14 @@ export default class ReleaseImpl {
                 currentStage: Stage.DEPLOY,
                 baselineOrg: releaseDefinition.baselineOrg,
                 isDryRun: this.props.isDryRun,
-                disableArtifactCommit: releaseDefinition.skipArtifactUpdate?releaseDefinition.skipArtifactUpdate:false,
+                disableArtifactCommit: releaseDefinition.skipArtifactUpdate
+                    ? releaseDefinition.skipArtifactUpdate
+                    : false,
                 promotePackagesBeforeDeploymentToOrg: releaseDefinition.promotePackagesBeforeDeploymentToOrg,
                 devhubUserName: this.props.devhubUserName,
             };
 
+            FileOutputHandler.getInstance().appendOutput(`deployment-breakdown.md`,`## ReleaseConfig: ${releaseDefinition.releaseConfigName?releaseDefinition.releaseConfigName:""}\n`);
             let deployImpl: DeployImpl = new DeployImpl(deployProps);
 
             let deploymentResult = await deployImpl.exec();
@@ -237,6 +270,29 @@ export default class ReleaseImpl {
         }
 
         return deploymentResults;
+    }
+
+    private async getSortedReleaseDefns(artifactDirectory: string,releaseDefns:ReleaseDefinition[], logger: Logger): Promise<any> {
+        let artifacts = ArtifactFetcher.fetchArtifacts(artifactDirectory, null, logger);
+        if (artifacts.length === 0) throw new Error(`No artifacts to deploy found in ${artifactDirectory}`);
+
+        //Convert artifacts to SfpPackages
+        let sfpPackages = await this.generateSfpPackageFromArtifacts(artifacts, logger);
+
+        let sfpPackageInquirer: SfpPackageInquirer = new SfpPackageInquirer(sfpPackages, logger);
+        let sfdxProjectConfig = sfpPackageInquirer.getLatestProjectConfig();
+       
+        let releaseDefinitionSorter = new ReleaseDefinitionSorter();
+        return releaseDefinitionSorter.sortReleaseDefinitions(releaseDefns, sfdxProjectConfig, logger);
+    }
+
+    private async generateSfpPackageFromArtifacts(artifacts: Artifact[], logger: Logger): Promise<SfpPackage[]> {
+        let sfpPackages: SfpPackage[] = [];
+        for (const artifact of artifacts) {
+            let sfpPackage = await SfpPackageBuilder.buildPackageFromArtifact(artifact, logger);
+            sfpPackages.push(sfpPackage);
+        }
+        return sfpPackages;
     }
 
     private async installPackageDependencies(
@@ -279,7 +335,11 @@ export default class ReleaseImpl {
                 externalPackage2s.push(dependendentPackage);
             }
             let sfpOrg = await SFPOrg.create({ aliasOrUsername: targetOrg });
-            let packageCollectionInstaller = new InstallUnlockedPackageCollection(sfpOrg, new ConsoleLogger(),this.props.isDryRun);
+            let packageCollectionInstaller = new InstallUnlockedPackageCollection(
+                sfpOrg,
+                new ConsoleLogger(),
+                this.props.isDryRun
+            );
             await packageCollectionInstaller.install(externalPackage2s, true, true);
 
             groupSection.end();
@@ -320,9 +380,12 @@ export default class ReleaseImpl {
     }
 
     private displayReleaseInfo(releaseDefinition: ReleaseDefinition, props: ReleaseProps) {
-        SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
+        SFPLogger.printHeaderLine('', COLOR_HEADER, LoggerLevel.INFO);
 
         SFPLogger.log(COLOR_KEY_MESSAGE(`Release: ${releaseDefinition.release}`));
+        if (releaseDefinition.releaseConfigName) {
+            SFPLogger.log(COLOR_KEY_MESSAGE(`Release Config Name: ${releaseDefinition.releaseConfigName}`));
+        }
 
         SFPLogger.log(
             COLOR_KEY_MESSAGE(
@@ -331,17 +394,32 @@ export default class ReleaseImpl {
         );
 
         SFPLogger.log(COLOR_KEY_MESSAGE(`Dry-run: ${props.isDryRun}`));
-        
+
         if (releaseDefinition.baselineOrg)
             SFPLogger.log(COLOR_KEY_MESSAGE(`Baselined Against Org: ${releaseDefinition.baselineOrg}`));
-       
+
         if (
             releaseDefinition.promotePackagesBeforeDeploymentToOrg &&
             releaseDefinition.promotePackagesBeforeDeploymentToOrg == props.targetOrg
         )
             SFPLogger.log(COLOR_KEY_MESSAGE(`Promte Packages Before Deployment Activated?: true`));
 
-         SFPLogger.printHeaderLine('',COLOR_HEADER,LoggerLevel.INFO);
+        SFPLogger.printHeaderLine('', COLOR_HEADER, LoggerLevel.INFO);
+    }
+
+    private getArtifactDirectory(releaseDefinition: ReleaseDefinition) {
+        let revisedArtifactDirectory = path.join(
+            'artifacts',
+            releaseDefinition.release.replace(/[/\\?%*:|"<>]/g, '-')
+        );
+        if (releaseDefinition.releaseConfigName) {
+            revisedArtifactDirectory = path.join(
+                'artifacts',
+                releaseDefinition.releaseConfigName.replace(/[/\\?%*:|"<>]/g, '-'),
+                releaseDefinition.release.replace(/[/\\?%*:|"<>]/g, '-')
+            );
+        }
+        return revisedArtifactDirectory;
     }
 }
 

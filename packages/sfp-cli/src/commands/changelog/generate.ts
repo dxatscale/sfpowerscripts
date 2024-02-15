@@ -89,6 +89,8 @@ export default class GenerateChangelog extends SfpCommand {
                 this.flags.forcepush,
                 this.flags.branchname,
                 this.flags.nopush,
+                false,
+                undefined,
                 null
             );
 
