@@ -187,6 +187,9 @@
                     "enableFHT": {
                         "$ref": "#/definitions/packageDirectory.enableFHT"
                     },
+                    "enableFlowActivation": {
+                        "$ref": "#/definitions/packageDirectory.enableFlowActivation"
+                    },
                     "enablePicklist": {
                         "$ref": "#/definitions/packageDirectory.enablePicklist"
                     },
@@ -542,6 +545,12 @@
             "default": true,
             "title": "Enable Field History Tracking support?",
             "description": "Enable automated update of field history tracking in the target org upon deployment"
+        },
+        "packageDirectory.enableFlowActivation": {
+            "type": "boolean",
+            "default": true,
+            "title": "Enable Automated Flow Management?",
+            "description": "Enable automated activation,deactivation of flows in the target org, Enabled by default for source/diff packages"
         },
         "packageDirectory.enableFT": {
             "type": "boolean",
