@@ -3,7 +3,7 @@ import SFPOrg from '../../org/SFPOrg';
 import QueryHelper from '../../queryHelper/QueryHelper';
 import SFPLogger, { Logger, LoggerLevel } from '@flxblio/sfp-logger';
 import { activate, deactivate, deleteFlows, Flow, FlowDefinition, getFlowDefinition } from '../../flows/FlowOperations';
-import SfpPackage from '../SfpPackage';
+import SfpPackage, { PackageType } from '../SfpPackage';
 import { Connection } from '@salesforce/core';
 import OrgDetailsFetcher from '../../org/OrgDetailsFetcher';
 import { Schema } from 'jsforce';
@@ -41,9 +41,9 @@ export default class FlowActivator implements DeploymentCustomizer {
         }
 
         try {
-            
             if (masterLabelsOfAllFlowsInPackage.length > 0) {
-                await this.cleanupOldestFlowVersion(masterLabelsOfAllFlowsInPackage, sfpOrg, logger);
+           // Need to move this to a seperate pre deployment process
+          //  await this.cleanupOldestFlowVersion(masterLabelsOfAllFlowsInPackage, sfpOrg, logger);
 
                 if (flowsToBeActivated.length > 0) {
                     SFPLogger.log(
@@ -110,11 +110,7 @@ export default class FlowActivator implements DeploymentCustomizer {
                 );
 
                 await deactivate(flowdefinition, sfpOrg);
-                SFPLogger.log(
-                    `Flow ${flow} is marked as inactive in the org sucessfully`,
-                    LoggerLevel.INFO,
-                    logger
-                );
+                SFPLogger.log(`Flow ${flow} is marked as inactive in the org sucessfully`, LoggerLevel.INFO, logger);
             } catch (error) {
                 SFPLogger.log(`Unable to deactive flow ${flow}, skipping deactivation`, LoggerLevel.ERROR, logger);
                 SFPLogger.log(`Error Details : ${error.stack}`, LoggerLevel.TRACE);
@@ -123,10 +119,15 @@ export default class FlowActivator implements DeploymentCustomizer {
     }
 
     public async isEnabled(sfpPackage: SfpPackage, conn: Connection<Schema>, logger: Logger): Promise<boolean> {
-        //ignore if its a scratch org
-        const orgDetails = await new OrgDetailsFetcher(conn.getUsername()).getOrgDetails();
-        if (orgDetails.isScratchOrg) return false;
-        return true;
+        if (
+            sfpPackage.packageType == PackageType.Diff ||
+            sfpPackage.packageType == PackageType.Source ||
+            sfpPackage.packageDescriptor.enableFlowActivation == undefined ||
+            sfpPackage.packageDescriptor.enableFlowActivation == true
+        ) {
+            return true;
+        }
+        return false;
     }
 
     gatherComponentsToBeDeployed(
@@ -192,10 +193,12 @@ export default class FlowActivator implements DeploymentCustomizer {
             }
             if (table.length > 1 && isFlowVersionPurgeDetected) {
                 SFPLogger.log(table.toString());
-            }
-            else
-            {
-                SFPLogger.log(`All flows in the package have less than 50 versions, skipping version cleanup`, LoggerLevel.INFO, logger);
+            } else {
+                SFPLogger.log(
+                    `All flows in the package have less than 50 versions, skipping version cleanup`,
+                    LoggerLevel.INFO,
+                    logger
+                );
             }
         } catch (error) {
             SFPLogger.log(`Unable to cleanup flow versions`, LoggerLevel.ERROR, logger);
