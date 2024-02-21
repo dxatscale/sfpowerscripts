@@ -144,6 +144,9 @@
             "repo": {
                 "description": "Commands to help with maintaing repository"
             },
+            "flow": {
+                "description": "Commands to help with management of flows"
+            },
             "dependency": {
                 "description": "Commands to help with dependency management of a project",
                 "subtopics": {

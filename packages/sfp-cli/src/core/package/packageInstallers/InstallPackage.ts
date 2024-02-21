@@ -318,7 +318,7 @@ export abstract class InstallPackage {
             try {
                 if (await postDeployer.isEnabled(this.sfpPackage, this.connection, this.logger)) {
                     SFPLogger.log(
-                        `Executing Pre Deployer ${COLOR_KEY_MESSAGE(postDeployer.getName())}`,
+                        `Executing Post Deployer ${COLOR_KEY_MESSAGE(postDeployer.getName())}`,
                         LoggerLevel.INFO,
                         this.logger
                     );

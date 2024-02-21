@@ -1,10 +1,8 @@
 {
-  "activateDescription": "Activate the flow upon the input",
-  "deleteDescription": "Delete the flow",
-  "deactivateDescription": "Deactivate the flow upon the input",
-  "developernameFlagDescription": "The developer name of the flow to deactivate",
+  "activateDescription": "Activate the flow on a target org",
+  "deleteDescription": "Delete the flow on a target org",
+  "deactivateDescription": "Deactivate the flow on a target org",
+  "developernameFlagDescription": "The developer name of the flow",
   "namespacePrefixFlagDescription": "Use to specify a specific namespace prefix",
   "deactivatedDescription": "Deactivate a Flow based on API Name"
-  
-
 }

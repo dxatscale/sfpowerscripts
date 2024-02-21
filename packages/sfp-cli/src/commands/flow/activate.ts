@@ -1,9 +1,9 @@
 import { Messages } from '@salesforce/core';
 import sfpCommand from '../../SfpCommand';
-import SFPLogger, { LoggerLevel, Logger } from '@flxblio/sfp-logger';
+import SFPLogger, { LoggerLevel, Logger, COLOR_KEY_MESSAGE, COLOR_HEADER, COLOR_ERROR } from '@flxblio/sfp-logger';
 import { Flags } from '@oclif/core';
 import { loglevel } from '../../flags/sfdxflags';
-import {activate, getFlowDefinition} from '../../core/utils/FlowUtils';
+import {activate, getFlowDefinition} from '../../core/flows/FlowOperations';
 import { requiredUserNameFlag } from '../../flags/sfdxflags';
 import SFPOrg from '../../core/org/SFPOrg';
 
@@ -38,6 +38,7 @@ export default class Activate extends sfpCommand {
     };
 
     public async execute() {
+      SFPLogger.log(COLOR_HEADER(`command: ${COLOR_KEY_MESSAGE(`flow:activate`)}`),LoggerLevel.INFO);
       const { developername, namespaceprefix } = this.flags as unknown as {
         developername: string;
         namespaceprefix: string;
@@ -57,7 +58,7 @@ export default class Activate extends sfpCommand {
           
 
       } catch (error) {
-          throw new Error('Unable to activate flow:' + error);
+          throw new Error(COLOR_ERROR('Unable to activate flow:' + error.message));
       }
     }
 }

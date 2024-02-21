@@ -1,9 +1,9 @@
 import { Messages } from '@salesforce/core';
 import sfpCommand from '../../SfpCommand';
-import SFPLogger, { LoggerLevel, Logger } from '@flxblio/sfp-logger';
+import SFPLogger, { LoggerLevel, Logger, COLOR_HEADER, COLOR_KEY_MESSAGE, COLOR_ERROR } from '@flxblio/sfp-logger';
 import { Flags } from '@oclif/core';
 import { loglevel } from '../../flags/sfdxflags';
-import {deactivate, getFlowDefinition} from '../../core/utils/FlowUtils';
+import {deactivate, getFlowDefinition} from '../../core/flows/FlowOperations';
 import { requiredUserNameFlag } from '../../flags/sfdxflags';
 import SFPOrg from '../../core/org/SFPOrg';
 
@@ -14,7 +14,7 @@ Messages.importMessagesDirectory(__dirname);
 // or any library that is using the messages framework can also be loaded this way.
 const messages = Messages.loadMessages('@flxblio/sfp', 'flow');
 
-export default class Activate extends sfpCommand {
+export default class DeActivate extends sfpCommand {
     public static description = messages.getMessage('deactivateDescription');
 
     protected sfpOrg: SFPOrg;
@@ -38,6 +38,7 @@ export default class Activate extends sfpCommand {
     };
 
     public async execute() {
+      SFPLogger.log(COLOR_HEADER(`command: ${COLOR_KEY_MESSAGE(`flow:deactivate`)}`),LoggerLevel.INFO);
       const { developername, namespaceprefix } = this.flags as unknown as {
         developername: string;
         namespaceprefix: string;
@@ -57,7 +58,7 @@ export default class Activate extends sfpCommand {
           
 
       } catch (error) {
-          throw new Error('Unable to deactivate flow:' + error);
+          throw new Error(COLOR_ERROR('Unable to deactivate flow:' + error.message));
       }
     }
 }
