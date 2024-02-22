@@ -12,7 +12,6 @@ export class DeploymentFilterRegistry {
         let entitlementVersionFilter = new EntitlementVersionFilter();
         deploymentFilterImpls.push(entitlementVersionFilter);
     
-        
         return deploymentFilterImpls;
     }
 }
