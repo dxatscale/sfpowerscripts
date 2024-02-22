@@ -2,6 +2,7 @@ import { Query, SaveResult } from 'jsforce';
 import SFPOrg from '../org/SFPOrg';
 import SFPLogger, { Logger, LoggerLevel } from '@flxblio/sfp-logger';
 import QueryHelper from '../queryHelper/QueryHelper';
+const retry = require('async-retry');
 
 export async function getFlowDefinition(opts: FlowOptions, org: SFPOrg, logger?: Logger): Promise<FlowDefinition> {
     const { developername, namespaceprefix } = opts;
@@ -16,15 +17,17 @@ export async function getFlowDefinition(opts: FlowOptions, org: SFPOrg, logger?:
     const records = await QueryHelper.query(flowDefinitionQuery, conn, true);
 
     if (!records || records.length <= 0) {
-        throw  new Error(
-            `Could not find a definition for flow ${[developername]} in the org.`
-        );
+        throw new Error(`Could not find a definition for flow ${[developername]} in the org.`);
     }
 
     return records[0] as FlowDefinition;
 }
 
-export async function getFlowsByDefinition(flowdefinition: FlowDefinition, org: SFPOrg,logger:Logger): Promise<Flow[]> {
+export async function getFlowsByDefinition(
+    flowdefinition: FlowDefinition,
+    org: SFPOrg,
+    logger: Logger
+): Promise<Flow[]> {
     const conn = org.getConnection();
     let flowQuery = `Select Id, VersionNumber, MasterLabel from Flow where DefinitionId = '${flowdefinition.Id}'`;
     if (flowdefinition.NamespacePrefix) {
@@ -35,23 +38,30 @@ export async function getFlowsByDefinition(flowdefinition: FlowDefinition, org: 
     const records = await QueryHelper.query(flowQuery, conn, true);
 
     if (!records || records.length <= 0) {
-       throw new Error(`Could not find a definition for flow ${[[flowdefinition.DeveloperName]]} in the org.`);
+        throw new Error(`Could not find a definition for flow ${[[flowdefinition.DeveloperName]]} in the org.`);
     }
     return records as Flow[];
 }
 
-export async function deleteFlows(flows: Flow[], org: SFPOrg,logger:Logger): Promise<any[]> {
+export async function deleteFlows(flows: Flow[], org: SFPOrg, logger: Logger): Promise<string[]> {
     const flowIds = flows.map((flow) => flow.Id);
     const conn = org.getConnection();
+    const succeededFlows = [];
     for (let id of flowIds) {
-        const results = await conn.tooling.sobject('Flow').del(id);
-        if (results.success) {
-            SFPLogger.log('Deleted flow version with id: ' + id, LoggerLevel.INFO);
-        } else {
-            SFPLogger.log('Failed to delete flow with id: ' + id + 'ERROR: ' + results.errors, LoggerLevel.ERROR,logger);
-        }
+         await retry(
+            async (bail) => {
+                const results = await conn.tooling.sobject('Flow').del(id);
+                if (results.success) {
+                    SFPLogger.log('Deleted flow version with id: ' + id, LoggerLevel.INFO);
+                    succeededFlows.push(id);
+                } else {
+                    throw new Error(`Unable to delete flow version with id: ${id},retrying in 5 seconds...`)
+                }
+            },
+            { retries: 3, minTimeout: 5000 }
+        );
     }
-    return null;
+    return succeededFlows;
 }
 
 export async function deactivate(flow: FlowDefinition, org: SFPOrg): Promise<SaveResult> {
@@ -64,7 +74,7 @@ export async function deactivate(flow: FlowDefinition, org: SFPOrg): Promise<Sav
     });
 
     if (!flowResult || !flowResult.success) {
-       throw new Error(`Unable to deactivate flow ${[flow.DeveloperName]}.`);
+        throw new Error(`Unable to deactivate flow ${[flow.DeveloperName]}.`);
     }
     return flowResult;
 }

@@ -1,6 +1,6 @@
 {
   "activateDescription": "Activate the flow on a target org",
-  "deleteDescription": "Delete the flow on a target org",
+  "cleanupDescription": "Cleanup inactive flows on a target org",
   "deactivateDescription": "Deactivate the flow on a target org",
   "developernameFlagDescription": "The developer name of the flow",
   "namespacePrefixFlagDescription": "Use to specify a specific namespace prefix",
