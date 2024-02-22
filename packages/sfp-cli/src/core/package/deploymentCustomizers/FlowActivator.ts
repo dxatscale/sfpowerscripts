@@ -119,9 +119,9 @@ export default class FlowActivator implements DeploymentCustomizer {
     }
 
     public async isEnabled(sfpPackage: SfpPackage, conn: Connection<Schema>, logger: Logger): Promise<boolean> {
+        if(sfpPackage.packageDescriptor.package_type == PackageType.Data)
+            return false;
         if (
-            sfpPackage.packageType == PackageType.Diff ||
-            sfpPackage.packageType == PackageType.Source ||
             sfpPackage.packageDescriptor.enableFlowActivation == undefined ||
             sfpPackage.packageDescriptor.enableFlowActivation == true
         ) {
